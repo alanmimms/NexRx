@@ -1,4 +1,4 @@
-(footprint "L_Wurth_8.1mm_sq_SMT"
+(footprint "L_Wurth_8.4mm_sq_SMT"
 	(version 20241229)
 	(generator "pcbnew")
 	(generator_version "9.0")
@@ -17,7 +17,7 @@
 			)
 		)
 	)
-	(property "Value" "L_Wurth_8.1mm_sq_SMT"
+	(property "Value" "L_Wurth_8.4mm_sq_SMT"
 		(at 0 3 0)
 		(unlocked yes)
 		(layer "F.Fab")
@@ -68,8 +68,8 @@
 		(uuid "b675406b-b2ff-43e2-9def-aa1d03f7320a")
 	)
 	(fp_rect
-		(start -4.05 -4.05)
-		(end 4.05 4.05)
+		(start -4.2 -4.2)
+		(end 4.2 4.2)
 		(stroke
 			(width 0.1)
 			(type dash)
@@ -91,14 +91,14 @@
 		)
 	)
 	(pad "1" smd rect
-		(at -3.5 0)
-		(size 2.45 2.4)
+		(at -3.35 0)
+		(size 2.3 3)
 		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "b0651a18-f829-4954-8869-32bff50db4c5")
 	)
 	(pad "2" smd rect
-		(at 3.5 0)
-		(size 2.45 2.4)
+		(at 3.35 0)
+		(size 2.3 3)
 		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "ef536099-a2bc-4645-b7fd-fb6c3e07f94f")
 	)
