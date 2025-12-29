@@ -497,10 +497,12 @@
     "pinned_footprint_libs": [
       "Library"
     ],
-    "pinned_symbol_libs": []
+    "pinned_symbol_libs": [
+      "Library"
+    ]
   },
   "meta": {
-    "filename": "NextRx.kicad_pro",
+    "filename": "NexRx.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -1123,6 +1125,9 @@
       "Net-(C1810-Pad1)": [
         "Power"
       ],
+      "Net-(C1812-Pad1)": [
+        "Power"
+      ],
       "Net-(C1817-Pad1)": [
         "Power"
       ],
@@ -1130,6 +1135,9 @@
         "Power"
       ],
       "Net-(C1820-Pad1)": [
+        "Power"
+      ],
+      "Net-(C1822-Pad1)": [
         "Power"
       ],
       "Net-(C2001-Pad1)": [
@@ -1218,6 +1226,12 @@
       ],
       "Net-(C2201-Pad2)": [
         "PowerRF"
+      ],
+      "Net-(C306-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C307-Pad1)": [
+        "rf50"
       ],
       "Net-(C308-Pad1)": [
         "rf50"
@@ -1825,6 +1839,9 @@
       "Net-(IC7702-VIN)": [
         "Power"
       ],
+      "Net-(J101-In)": [
+        "rf50"
+      ],
       "Net-(J2301-RD+)": [
         "diff75"
       ],
@@ -2227,6 +2244,12 @@
       "Net-(R902-Pad1)": [
         "rf50"
       ],
+      "Net-(T101-PA)": [
+        "rf200"
+      ],
+      "Net-(T101-PB)": [
+        "rf50"
+      ],
       "Net-(T301-OUT1A)": [
         "rf50"
       ],
@@ -2464,7 +2487,13 @@
       "Net-(U1806-OUT)": [
         "Power"
       ],
+      "Net-(U1806-SW)": [
+        "Power"
+      ],
       "Net-(U1807-OUT)": [
+        "Power"
+      ],
+      "Net-(U1808-OUT)": [
         "Power"
       ],
       "Net-(U1901-J2)": [
@@ -3981,9 +4010,21 @@
           "label": "label",
           "name": "label",
           "show": false
+        },
+        {
+          "group_by": false,
+          "label": "MFG",
+          "name": "MFG",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "MPN",
+          "name": "MPN",
+          "show": false
         }
       ],
-      "filter_string": "c",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",

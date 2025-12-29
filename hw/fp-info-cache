@@ -1,4 +1,4 @@
-26975583468279619
+26979117436037930
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -70937,6 +70937,20 @@ L_Toroid Vertical series Radial pin pitch 5.08mm  length 10mm width 5mm
 0
 8
 8
+Library
+Transformer-2P-3S-BN-43-202
+
+
+0
+10
+10
+Library
+Transformer-unun-BN-43-202
+
+
+0
+4
+4
 Library
 UJ20CHGMSMT4P16TR
 UJ20-C-H-G-MSMT-4-P16-TR-2
