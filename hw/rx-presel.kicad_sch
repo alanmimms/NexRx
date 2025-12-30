@@ -472,7 +472,7 @@
 					(justify left top)
 				)
 			)
-			(property "Footprint" "SOT65P220X110-6N"
+			(property "Footprint" "Library:SOT65P220X110-6N"
 				(at 21.59 -94.92 0)
 				(effects
 					(font
@@ -754,7 +754,7 @@
 					(justify left top)
 				)
 			)
-			(property "Footprint" "QFN65P600X600X100-29N-D"
+			(property "Footprint" "Library:QFN65P600X600X100-29N-D"
 				(at 29.21 -87.376 0)
 				(effects
 					(font
@@ -1393,7 +1393,7 @@
 					)
 				)
 			)
-			(property "Footprint" "PW14"
+			(property "Footprint" "Library:PW14"
 				(at -12.7 0 0)
 				(effects
 					(font
@@ -1420,14 +1420,6 @@
 						(size 1.27 1.27)
 					)
 					(hide yes)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
 				)
 			)
 			(property "ki_keywords" "SN74LVC04APW"
@@ -6710,7 +6702,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 346.38 148.59 0)
 			(effects
 				(font
@@ -7688,7 +7680,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PW14"
+		(property "Footprint" "Library:PW14"
 			(at 33.02 44.45 0)
 			(effects
 				(font
@@ -7879,7 +7871,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 123.52 148.59 0)
 			(effects
 				(font
@@ -8578,7 +8570,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 57.48 148.59 0)
 			(effects
 				(font
@@ -9362,7 +9354,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 73.99 148.59 0)
 			(effects
 				(font
@@ -9690,7 +9682,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 40.97 148.59 0)
 			(effects
 				(font
@@ -11028,7 +11020,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at -25.07 148.59 0)
 			(effects
 				(font
@@ -12009,7 +12001,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 107.01 148.59 0)
 			(effects
 				(font
@@ -12777,7 +12769,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PW14"
+		(property "Footprint" "Library:PW14"
 			(at 33.02 81.28 0)
 			(effects
 				(font
@@ -13706,7 +13698,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 90.5 148.59 0)
 			(effects
 				(font
@@ -14775,7 +14767,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "QFN65P600X600X100-29N-D"
+		(property "Footprint" "Library:QFN65P600X600X100-29N-D"
 			(at 107.95 145.796 0)
 			(effects
 				(font
@@ -16018,7 +16010,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 140.03 148.59 0)
 			(effects
 				(font
@@ -16516,7 +16508,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 7.95 148.59 0)
 			(effects
 				(font
@@ -17603,7 +17595,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 24.46 148.59 0)
 			(effects
 				(font
@@ -18307,7 +18299,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SOT65P220X110-6N"
+		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at -8.56 148.59 0)
 			(effects
 				(font

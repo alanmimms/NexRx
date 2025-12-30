@@ -1125,9 +1125,6 @@
       "Net-(C1810-Pad1)": [
         "Power"
       ],
-      "Net-(C1812-Pad1)": [
-        "Power"
-      ],
       "Net-(C1817-Pad1)": [
         "Power"
       ],
@@ -1135,9 +1132,6 @@
         "Power"
       ],
       "Net-(C1820-Pad1)": [
-        "Power"
-      ],
-      "Net-(C1822-Pad1)": [
         "Power"
       ],
       "Net-(C2001-Pad1)": [
@@ -2487,13 +2481,7 @@
       "Net-(U1806-OUT)": [
         "Power"
       ],
-      "Net-(U1806-SW)": [
-        "Power"
-      ],
       "Net-(U1807-OUT)": [
-        "Power"
-      ],
-      "Net-(U1808-OUT)": [
         "Power"
       ],
       "Net-(U1901-J2)": [
@@ -3683,6 +3671,30 @@
       {
         "netclass": "Power",
         "pattern": "+3.3VFPGAIO"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VBUS"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+5VA"
+      },
+      {
+        "netclass": "diff90",
+        "pattern": "/Power/usbDP"
+      },
+      {
+        "netclass": "diff90",
+        "pattern": "/Power/usbDN"
+      },
+      {
+        "netclass": "power-lite",
+        "pattern": "+1V65bias"
+      },
+      {
+        "netclass": "power-lite",
+        "pattern": "+2V5bias"
       }
     ]
   },
@@ -4024,7 +4036,7 @@
           "show": false
         }
       ],
-      "filter_string": "",
+      "filter_string": "r",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
@@ -4134,10 +4146,6 @@
     [
       "a3931169-68de-4e8b-813d-ff6ffed62146",
       "Tpad 6"
-    ],
-    [
-      "acc2372a-588f-45d7-a9dc-955cac4e7364",
-      "Ethernet"
     ],
     [
       "d4b536b3-8496-4c97-8d52-85d67c75a967",

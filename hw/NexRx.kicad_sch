@@ -1612,11 +1612,11 @@
 	)
 	(bus_alias "Ctrl"
 		(members "audioReset" "qsdBCLK" "qsdMCLK" "qsdWCLK" "qsdData" "qsdNSS"
-			"qsdSCK" "qsdMOSI" "switchSCK" "switchMOSI" "switchRCK" "enable5V" "tmpSCL"
+			"qsdSCK" "qsdMOSI" "tuneRCK" "tuneMOSI" "tuneSCK" "enable5V" "tmpSCL"
 			"tmpSDA" "qsdPh0a" "qsdPh0b" "qsdPh0c" "qsdPh0d" "qsdPh1a" "qsdPh1b" "qsdPh1c"
 			"qsdPh1d" "qsdPh2a" "qsdPh2b" "qsdPh2c" "qsdPh2d" "enable6V" "enable3VA"
 			"enable5VA" "enable3V3" "audioSCL" "audioSDA" "enableFPGAVCORE" "usbCC1adc"
-			"usbCC2adc"
+			"usbCC2adc" "tuneNSS" "atten24dB" "atten12dB" "atten6dB" "atten3dB"
 		)
 	)
 	(text "~25V pk-pk\nprotection"
@@ -1728,6 +1728,16 @@
 			(type default)
 		)
 		(uuid "1d579616-3fee-4525-a1d5-c464660874bb")
+	)
+	(wire
+		(pts
+			(xy 208.28 106.68) (xy 223.52 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "218330a3-77fc-440d-8f9d-e0e090645289")
 	)
 	(wire
 		(pts
@@ -1859,6 +1869,16 @@
 		)
 		(uuid "79e10f31-2e2e-4ea7-a1df-05fd35d9138e")
 	)
+	(wire
+		(pts
+			(xy 208.28 104.14) (xy 223.52 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7c4b0bcd-bebf-4a94-a65c-b829de9c0285")
+	)
 	(bus
 		(pts
 			(xy 171.45 55.88) (xy 171.45 82.55)
@@ -1898,6 +1918,16 @@
 			(type default)
 		)
 		(uuid "91fdc2a0-2666-4fdf-8e21-299ddf47590d")
+	)
+	(wire
+		(pts
+			(xy 161.29 88.9) (xy 180.34 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9957d8b8-a5ae-46b1-b4ee-189dc04a24c5")
 	)
 	(wire
 		(pts
@@ -4756,6 +4786,16 @@
 				(justify right)
 			)
 		)
+		(pin "fpgaTestInject" input
+			(at 161.29 88.9 0)
+			(uuid "1afb7672-86c9-4666-9eae-ff1ef3e9ffee")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
@@ -4817,6 +4857,16 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+			)
+		)
+		(pin "fpgaTestInject" input
+			(at 180.34 88.9 180)
+			(uuid "1669524d-b8b3-4670-81d1-a51a350722b9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 			)
 		)
 		(instances
@@ -4882,6 +4932,26 @@
 				(justify left)
 			)
 		)
+		(pin "usbDN" bidirectional
+			(at 223.52 106.68 180)
+			(uuid "52552a02-c813-4267-8755-2a53280149a2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "usbDP" bidirectional
+			(at 223.52 104.14 180)
+			(uuid "e5467183-265d-4e51-b08a-672622633e19")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
@@ -4933,6 +5003,26 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+			)
+		)
+		(pin "usbDN" bidirectional
+			(at 208.28 106.68 0)
+			(uuid "739dfc55-4ab9-43b2-a3da-80a6921048ff")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "usbDP" bidirectional
+			(at 208.28 104.14 0)
+			(uuid "fef46672-9142-46ac-b6b7-0391b93a803b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 		(instances
