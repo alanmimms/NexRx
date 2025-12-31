@@ -312,6 +312,157 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:FerriteBead_Small"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "FB"
+				(at 1.905 1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "FerriteBead_Small"
+				(at 1.905 -1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Ferrite bead, small symbol"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "L ferrite bead inductor filter"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Inductor_* L_* *Ferrite*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "FerriteBead_Small_0_1"
+				(polyline
+					(pts
+						(xy -1.8288 0.2794) (xy -1.1176 1.4986) (xy 1.8288 -0.2032) (xy 1.1176 -1.4224) (xy -1.8288 0.2794)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0.889) (xy 0 1.2954)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -1.27) (xy 0 -0.7874)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "FerriteBead_Small_1_1"
+				(pin passive line
+					(at 0 2.54 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:L"
 			(pin_numbers
 				(hide yes)
@@ -2538,6 +2689,256 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "power:+5C"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+5C"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+5C\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+5C_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+5C_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:+5VA"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+5VA"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+5VA\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+5VA_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+5VA_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:GND"
 			(power)
 			(pin_numbers
@@ -3041,16 +3442,6 @@
 		)
 		(uuid "c0835619-f0a9-4b2f-afc2-f831204bf8f2")
 	)
-	(text "+3.3VA but only enabled when VDD 3.3V\nis > 1V to meet STM32H753 requirement."
-		(exclude_from_sim no)
-		(at 241.046 121.92 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "cadcdb59-688f-4765-a328-e2c3702b502f")
-	)
 	(text "+3.3V 3A\n(logic, etc.)"
 		(exclude_from_sim no)
 		(at 72.644 41.402 0)
@@ -3302,6 +3693,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "9512a194-412b-44e9-8b80-5581e6d67d63")
+	)
+	(junction
+		(at 142.24 101.6)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9ece5596-b574-4966-b6f5-89a669958043")
 	)
 	(junction
 		(at 228.6 113.03)
@@ -3677,6 +4074,16 @@
 	)
 	(wire
 		(pts
+			(xy 142.24 101.6) (xy 144.78 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "17594e44-01fa-477b-a544-aecc02c71de3")
+	)
+	(wire
+		(pts
 			(xy 69.85 88.9) (xy 69.85 96.52)
 		)
 		(stroke
@@ -3987,6 +4394,16 @@
 	)
 	(wire
 		(pts
+			(xy 135.89 101.6) (xy 142.24 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "39506e07-ffb9-45b6-b6b0-b0177960db84")
+	)
+	(wire
+		(pts
 			(xy 113.03 39.37) (xy 113.03 40.64)
 		)
 		(stroke
@@ -4107,7 +4524,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 101.6) (xy 144.78 101.6)
+			(xy 125.73 101.6) (xy 130.81 101.6)
 		)
 		(stroke
 			(width 0)
@@ -4684,6 +5101,16 @@
 			(type default)
 		)
 		(uuid "807e87da-7a9e-414e-9cbc-8d69606263d7")
+	)
+	(wire
+		(pts
+			(xy 142.24 96.52) (xy 142.24 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "81386c01-207b-4848-bcfb-4d0dd575f47b")
 	)
 	(wire
 		(pts
@@ -7456,6 +7883,72 @@
 			(project ""
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
 					(reference "C1811")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 142.24 96.52 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3291c523-f05e-48de-88c2-27078f7145fe")
+		(property "Reference" "#FLG01804"
+			(at 142.24 94.615 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 142.24 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 142.24 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 142.24 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 142.24 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4a4535cd-878e-4cb3-a644-c1c1bc8c10a1")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
+					(reference "#FLG01804")
 					(unit 1)
 				)
 			)
@@ -10949,7 +11442,7 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3.3VA")
+		(lib_id "power:+5VA")
 		(at 185.42 90.17 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -11112,6 +11605,161 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
 					(reference "D1801")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:FerriteBead_Small")
+		(at 133.35 101.6 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "6461fc85-6276-4d6f-98ac-e973fcb86595")
+		(property "Reference" "FB1801"
+			(at 133.3119 95.25 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "600"
+			(at 135.128 97.282 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
+			(at 133.35 103.378 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 133.35 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Ferrite bead, small symbol"
+			(at 133.35 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 133.35 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 133.35 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Mfg" ""
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MfgPN" ""
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser-part-number" "875-MI0603J601R-10"
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Core" ""
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "label" ""
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "Laird Technologies"
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "MI0603J601R-10"
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "875-MI0603J601R-10"
+			(at 133.35 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4869d49a-1b81-4159-b3fb-31c899e9d189")
+		)
+		(pin "2"
+			(uuid "aa76e34c-62ae-4e48-af52-bef08d29988f")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
+					(reference "FB1801")
 					(unit 1)
 				)
 			)
@@ -11877,7 +12525,7 @@
 				)
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "10uF"
 			(at 54.61 37.592 0)
 			(effects
 				(font
@@ -12153,7 +12801,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 52.07 35.56 0)
 			(effects
 				(font
@@ -12162,7 +12810,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
+		(property "Manufacturer_Name" "Taoup Uidem"
 			(at 52.07 35.56 0)
 			(effects
 				(font
@@ -12171,7 +12819,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
+		(property "Manufacturer_Part_Number" "81-GXT155R71E223KE1D"
 			(at 52.07 35.56 0)
 			(effects
 				(font
@@ -12180,7 +12828,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
+		(property "Mouser Part Number" "963-MLAST168BB5106MT"
 			(at 52.07 35.56 0)
 			(effects
 				(font
@@ -12562,7 +13210,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 47.2948 105.41 0)
 			(effects
 				(font
@@ -12830,7 +13478,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "16V"
+		(property "working-voltage" "25V"
 			(at 48.26 101.6 0)
 			(effects
 				(font
@@ -12839,7 +13487,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Kyocera AVX"
+		(property "Manufacturer_Name" "Taoup Uidem"
 			(at 48.26 101.6 0)
 			(effects
 				(font
@@ -12848,7 +13496,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "CM21X5R106K16AT"
+		(property "Manufacturer_Part_Number" "81-GXT155R71E223KE1D"
 			(at 48.26 101.6 0)
 			(effects
 				(font
@@ -12857,7 +13505,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "346-CM21X5R106K16AT"
+		(property "Mouser Part Number" "963-MLAST168BB5106MT"
 			(at 48.26 101.6 0)
 			(effects
 				(font
@@ -17726,7 +18374,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "90k"
+		(property "Value" "85k"
 			(at 97.536 108.458 0)
 			(effects
 				(font
@@ -19334,7 +19982,7 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3.3V")
+		(lib_id "power:+5C")
 		(at 125.73 90.17 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -19352,7 +20000,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+6V"
+		(property "Value" "+5.7V"
 			(at 125.73 85.09 0)
 			(effects
 				(font
@@ -19378,7 +20026,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"+6V\""
+		(property "Description" "Power symbol creates a global label with name \"+5C\""
 			(at 125.73 90.17 0)
 			(effects
 				(font

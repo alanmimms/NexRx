@@ -1612,11 +1612,10 @@
 	)
 	(bus_alias "Ctrl"
 		(members "audioReset" "qsdBCLK" "qsdMCLK" "qsdWCLK" "qsdData" "qsdNSS"
-			"qsdSCK" "qsdMOSI" "tuneRCK" "tuneMOSI" "tuneSCK" "enable5V" "tmpSCL"
-			"tmpSDA" "qsdPh0a" "qsdPh0b" "qsdPh0c" "qsdPh0d" "qsdPh1a" "qsdPh1b" "qsdPh1c"
-			"qsdPh1d" "qsdPh2a" "qsdPh2b" "qsdPh2c" "qsdPh2d" "enable6V" "enable3VA"
-			"enable5VA" "enable3V3" "audioSCL" "audioSDA" "enableFPGAVCORE" "usbCC1adc"
-			"usbCC2adc" "tuneNSS" "atten24dB" "atten12dB" "atten6dB" "atten3dB"
+			"qsdSCK" "qsdMOSI" "qsdPh0a" "qsdPh0b" "qsdPh0c" "qsdPh0d" "qsdPh1a" "qsdPh1b"
+			"qsdPh1c" "qsdPh1d" "qsdPh2a" "qsdPh2b" "qsdPh2c" "qsdPh2d" "enable6V"
+			"enable3VA" "enable5VA" "enable3V3" "audioSCL" "audioSDA" "enableFPGAVCORE"
+			"usbCC1adc" "usbCC2adc"
 		)
 	)
 	(text "~25V pk-pk\nprotection"
@@ -1718,6 +1717,16 @@
 			(type default)
 		)
 		(uuid "14a559a1-8d31-44f3-9f04-c98c7759b50a")
+	)
+	(bus
+		(pts
+			(xy 161.29 86.36) (xy 180.34 86.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1bb055d6-4daf-4326-b047-b4eeec4ff001")
 	)
 	(bus
 		(pts
@@ -4796,6 +4805,16 @@
 				(justify right)
 			)
 		)
+		(pin "Tune{Tune}" input
+			(at 161.29 86.36 0)
+			(uuid "77922920-3737-408a-936c-949518790eb7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
@@ -4862,6 +4881,16 @@
 		(pin "fpgaTestInject" input
 			(at 180.34 88.9 180)
 			(uuid "1669524d-b8b3-4670-81d1-a51a350722b9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "Tune{Tune}" output
+			(at 180.34 86.36 180)
+			(uuid "7fa272d7-35e0-46c7-bb35-8f52fbfcc3d1")
 			(effects
 				(font
 					(size 1.27 1.27)
