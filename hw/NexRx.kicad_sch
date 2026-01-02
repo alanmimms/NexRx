@@ -3187,7 +3187,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "81-GRM3195C2A104JA1D"
+		(property "Mouser Part Number" "81-GRM31C5C2A104JA1L "
 			(at 85.09 77.47 90)
 			(effects
 				(font
@@ -3800,7 +3800,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 54.864 84.074 90)
 			(effects
 				(font
@@ -4901,7 +4901,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
-					(page "6")
+					(page "13")
 				)
 			)
 		)
@@ -5057,7 +5057,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
-					(page "18")
+					(page "12")
 				)
 			)
 		)

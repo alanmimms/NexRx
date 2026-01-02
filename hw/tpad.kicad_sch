@@ -708,7 +708,7 @@
 	)
 	(text "${step}dB digitally controlled\nattenuator pad"
 		(exclude_from_sim no)
-		(at 57.15 67.818 0)
+		(at 109.22 69.088 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -717,14 +717,14 @@
 		(uuid "7f66fdac-e0a8-4623-8764-b764eb66fcec")
 	)
 	(junction
-		(at 57.15 81.28)
+		(at 109.22 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fb827aa3-d385-4697-81fc-699a5bf45e82")
 	)
 	(wire
 		(pts
-			(xy 22.86 76.2) (xy 27.94 76.2)
+			(xy 74.93 77.47) (xy 80.01 77.47)
 		)
 		(stroke
 			(width 0)
@@ -734,7 +734,7 @@
 	)
 	(wire
 		(pts
-			(xy 57.15 82.55) (xy 57.15 81.28)
+			(xy 109.22 83.82) (xy 109.22 82.55)
 		)
 		(stroke
 			(width 0)
@@ -744,7 +744,7 @@
 	)
 	(wire
 		(pts
-			(xy 66.04 81.28) (xy 67.31 81.28)
+			(xy 118.11 82.55) (xy 119.38 82.55)
 		)
 		(stroke
 			(width 0)
@@ -754,7 +754,7 @@
 	)
 	(wire
 		(pts
-			(xy 22.86 81.28) (xy 27.94 81.28)
+			(xy 74.93 82.55) (xy 80.01 82.55)
 		)
 		(stroke
 			(width 0)
@@ -764,7 +764,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 78.74) (xy 81.28 78.74)
+			(xy 132.08 80.01) (xy 156.21 80.01)
 		)
 		(stroke
 			(width 0)
@@ -774,7 +774,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.66 86.36) (xy 73.66 87.63)
+			(xy 125.73 87.63) (xy 125.73 88.9)
 		)
 		(stroke
 			(width 0)
@@ -784,7 +784,7 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 81.28) (xy 93.98 81.28)
+			(xy 143.51 82.55) (xy 146.05 82.55)
 		)
 		(stroke
 			(width 0)
@@ -794,7 +794,7 @@
 	)
 	(wire
 		(pts
-			(xy 46.99 76.2) (xy 67.31 76.2)
+			(xy 99.06 77.47) (xy 119.38 77.47)
 		)
 		(stroke
 			(width 0)
@@ -804,7 +804,7 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 76.2) (xy 93.98 76.2)
+			(xy 143.51 77.47) (xy 146.05 77.47)
 		)
 		(stroke
 			(width 0)
@@ -814,7 +814,7 @@
 	)
 	(wire
 		(pts
-			(xy 33.02 81.28) (xy 34.29 81.28)
+			(xy 85.09 82.55) (xy 86.36 82.55)
 		)
 		(stroke
 			(width 0)
@@ -824,7 +824,7 @@
 	)
 	(wire
 		(pts
-			(xy 46.99 81.28) (xy 48.26 81.28)
+			(xy 99.06 82.55) (xy 100.33 82.55)
 		)
 		(stroke
 			(width 0)
@@ -834,7 +834,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 76.2) (xy 86.36 76.2)
+			(xy 132.08 77.47) (xy 138.43 77.47)
 		)
 		(stroke
 			(width 0)
@@ -844,7 +844,7 @@
 	)
 	(wire
 		(pts
-			(xy 33.02 78.74) (xy 34.29 78.74)
+			(xy 64.77 80.01) (xy 86.36 80.01)
 		)
 		(stroke
 			(width 0)
@@ -854,7 +854,7 @@
 	)
 	(wire
 		(pts
-			(xy 57.15 90.17) (xy 57.15 91.44)
+			(xy 109.22 91.44) (xy 109.22 92.71)
 		)
 		(stroke
 			(width 0)
@@ -864,7 +864,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 81.28) (xy 57.15 81.28)
+			(xy 107.95 82.55) (xy 109.22 82.55)
 		)
 		(stroke
 			(width 0)
@@ -874,7 +874,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.64 86.36) (xy 40.64 87.63)
+			(xy 92.71 87.63) (xy 92.71 88.9)
 		)
 		(stroke
 			(width 0)
@@ -884,7 +884,7 @@
 	)
 	(wire
 		(pts
-			(xy 57.15 81.28) (xy 58.42 81.28)
+			(xy 109.22 82.55) (xy 110.49 82.55)
 		)
 		(stroke
 			(width 0)
@@ -894,7 +894,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 81.28) (xy 86.36 81.28)
+			(xy 132.08 82.55) (xy 138.43 82.55)
 		)
 		(stroke
 			(width 0)
@@ -904,7 +904,7 @@
 	)
 	(wire
 		(pts
-			(xy 33.02 76.2) (xy 34.29 76.2)
+			(xy 85.09 77.47) (xy 86.36 77.47)
 		)
 		(stroke
 			(width 0)
@@ -914,7 +914,7 @@
 	)
 	(hierarchical_label "nEn"
 		(shape input)
-		(at 93.98 76.2 0)
+		(at 146.05 77.47 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -925,7 +925,7 @@
 	)
 	(hierarchical_label "nEn"
 		(shape input)
-		(at 22.86 76.2 180)
+		(at 74.93 77.47 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -936,7 +936,7 @@
 	)
 	(hierarchical_label "in"
 		(shape input)
-		(at 33.02 78.74 180)
+		(at 64.77 80.01 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -947,7 +947,7 @@
 	)
 	(hierarchical_label "en"
 		(shape input)
-		(at 22.86 81.28 180)
+		(at 74.93 82.55 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -958,7 +958,7 @@
 	)
 	(hierarchical_label "out"
 		(shape output)
-		(at 81.28 78.74 0)
+		(at 156.21 80.01 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -969,7 +969,7 @@
 	)
 	(hierarchical_label "en"
 		(shape input)
-		(at 93.98 81.28 0)
+		(at 146.05 82.55 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -981,7 +981,7 @@
 	(rule_area
 		(polyline
 			(pts
-				(xy 41.91 73.66) (xy 72.39 73.66) (xy 72.39 81.915) (xy 72.39 83.82) (xy 41.91 83.82)
+				(xy 93.98 74.93) (xy 124.46 74.93) (xy 124.46 83.185) (xy 124.46 85.09) (xy 93.98 85.09)
 			)
 			(stroke
 				(width 0)
@@ -996,7 +996,70 @@
 	(netclass_flag ""
 		(length 2.54)
 		(shape diamond)
-		(at 58.42 73.66 0)
+		(at 153.67 80.01 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "38a970f5-d144-4071-8143-b52ba2f062ea")
+		(property "Netclass" "rf200"
+			(at 154.8765 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Component Class" ""
+			(at 210.82 10.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape diamond)
+		(at 67.31 80.01 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ab4617cd-d9b3-42c8-a02d-bd699b948f30")
+		(property "Netclass" "rf200"
+			(at 66.1035 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Component Class" ""
+			(at 10.16 10.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape diamond)
+		(at 110.49 74.93 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1006,7 +1069,7 @@
 		)
 		(uuid "fd662d5b-e34c-480a-a33a-ad3624939ff0")
 		(property "Netclass" "rf200"
-			(at 59.6265 71.12 0)
+			(at 111.6965 72.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1015,7 +1078,7 @@
 			)
 		)
 		(property "Component Class" ""
-			(at 115.57 3.81 0)
+			(at 167.64 5.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1026,7 +1089,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 40.64 87.63 0)
+		(at 92.71 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1034,8 +1097,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0ea609e4-c8a6-4eba-812b-436d4f7222f3")
-		(property "Reference" "#PWR01901"
-			(at 40.64 93.98 0)
+		(property "Reference" "#PWR0801"
+			(at 92.71 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1044,7 +1107,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 40.64 92.71 0)
+			(at 92.71 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1053,7 +1116,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 40.64 87.63 0)
+			(at 92.71 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1062,7 +1125,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 40.64 87.63 0)
+			(at 92.71 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1071,7 +1134,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 40.64 87.63 0)
+			(at 92.71 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1085,19 +1148,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "#PWR01901")
+					(reference "#PWR0801")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "#PWR02601")
+					(reference "#PWR01101")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "#PWR02201")
+					(reference "#PWR0901")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "#PWR02501")
+					(reference "#PWR01001")
 					(unit 1)
 				)
 			)
@@ -1105,7 +1168,7 @@
 	)
 	(symbol
 		(lib_id "Library:AS183-92LF")
-		(at 40.64 78.74 0)
+		(at 92.71 80.01 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -1113,8 +1176,8 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "295ff378-cafc-489d-8fa8-3b01054a2ffb")
-		(property "Reference" "U1901"
-			(at 40.64 69.85 0)
+		(property "Reference" "U801"
+			(at 92.71 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1122,7 +1185,7 @@
 			)
 		)
 		(property "Value" "AS183-92LF"
-			(at 40.64 72.39 0)
+			(at 92.71 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1130,7 +1193,7 @@
 			)
 		)
 		(property "Footprint" "Library:SOT65P220X110-6N"
-			(at 19.05 173.66 0)
+			(at 71.12 174.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1140,7 +1203,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.skyworksinc.com/-/media/SkyWorks/Documents/Products/1-100/200177D.pdf"
-			(at 19.05 273.66 0)
+			(at 71.12 274.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1150,7 +1213,7 @@
 			)
 		)
 		(property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm"
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1159,7 +1222,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1167,7 +1230,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1175,7 +1238,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1184,7 +1247,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1193,7 +1256,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1202,7 +1265,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1211,7 +1274,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1220,7 +1283,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1229,7 +1292,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1238,7 +1301,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1247,7 +1310,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1256,7 +1319,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1265,7 +1328,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1274,7 +1337,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1283,7 +1346,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1292,7 +1355,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1301,7 +1364,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1310,7 +1373,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1319,7 +1382,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1328,7 +1391,7 @@
 			)
 		)
 		(property "Height" "1.1"
-			(at 19.05 473.66 0)
+			(at 71.12 474.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1338,7 +1401,7 @@
 			)
 		)
 		(property "Mouser Part Number" "873-AS183-92LF"
-			(at 19.05 573.66 0)
+			(at 71.12 574.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1348,7 +1411,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Skyworks-Solutions-Inc/AS183-92LF?qs=WMHGlxXAKT9uKJ5iI33IgQ%3D%3D"
-			(at 19.05 673.66 0)
+			(at 71.12 674.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1358,7 +1421,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "Skyworks"
-			(at 19.05 773.66 0)
+			(at 71.12 774.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1368,7 +1431,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "AS183-92LF"
-			(at 19.05 873.66 0)
+			(at 71.12 874.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1378,7 +1441,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1387,7 +1450,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1396,7 +1459,7 @@
 			)
 		)
 		(property "label" ""
-			(at 40.64 78.74 0)
+			(at 92.71 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1425,19 +1488,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "U1901")
+					(reference "U801")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "U2601")
+					(reference "U1101")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "U2201")
+					(reference "U901")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "U2501")
+					(reference "U1001")
 					(unit 1)
 				)
 			)
@@ -1445,15 +1508,15 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
-		(at 88.9 81.28 90)
+		(at 140.97 82.55 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "47ed22f8-a148-4e2f-82d2-09ba4a962f73")
-		(property "Reference" "R1907"
-			(at 84.328 80.264 90)
+		(property "Reference" "R807"
+			(at 136.398 81.534 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1461,7 +1524,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 91.186 80.264 90)
+			(at 143.256 81.534 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1469,7 +1532,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 88.9 81.28 0)
+			(at 140.97 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1478,7 +1541,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 88.9 81.28 0)
+			(at 140.97 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1487,7 +1550,7 @@
 			)
 		)
 		(property "Description" "Resistor, small US symbol"
-			(at 88.9 81.28 0)
+			(at 140.97 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1496,7 +1559,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 88.9 81.28 90)
+			(at 140.97 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1505,7 +1568,7 @@
 			)
 		)
 		(property "label" ""
-			(at 88.9 81.28 90)
+			(at 140.97 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1522,19 +1585,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "R1907")
+					(reference "R807")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "R2607")
+					(reference "R1107")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "R2207")
+					(reference "R907")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "R2507")
+					(reference "R1007")
 					(unit 1)
 				)
 			)
@@ -1542,15 +1605,15 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 57.15 86.36 0)
+		(at 109.22 87.63 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "5e0eb24a-d760-4cd0-bcb8-63a346831a15")
-		(property "Reference" "R1904"
-			(at 58.674 86.868 0)
+		(property "Reference" "R804"
+			(at 110.744 88.138 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1559,7 +1622,7 @@
 			)
 		)
 		(property "Value" "562"
-			(at 58.674 88.646 0)
+			(at 110.744 89.916 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1567,8 +1630,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
-			(at 58.166 86.614 90)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 110.236 87.884 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1577,7 +1640,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1586,7 +1649,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1595,7 +1658,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1604,7 +1667,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1613,7 +1676,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1622,7 +1685,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1631,7 +1694,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1640,7 +1703,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1649,7 +1712,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1658,7 +1721,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1667,7 +1730,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1676,7 +1739,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1685,7 +1748,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1694,7 +1757,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1703,7 +1766,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1712,7 +1775,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1721,7 +1784,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1730,7 +1793,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1739,7 +1802,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1748,7 +1811,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1757,7 +1820,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1766,7 +1829,7 @@
 			)
 		)
 		(property "label" ""
-			(at 57.15 86.36 0)
+			(at 109.22 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1783,19 +1846,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "R1904")
+					(reference "R804")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "R2604")
+					(reference "R1104")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "R2204")
+					(reference "R904")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "R2504")
+					(reference "R1004")
 					(unit 1)
 				)
 			)
@@ -1803,15 +1866,15 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
-		(at 30.48 76.2 90)
+		(at 82.55 77.47 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "61140bef-a3be-40bb-9ab9-ca1dd4a81f2a")
-		(property "Reference" "R1901"
-			(at 25.908 75.184 90)
+		(property "Reference" "R801"
+			(at 77.978 76.454 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1819,7 +1882,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 32.766 75.184 90)
+			(at 84.836 76.454 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1827,7 +1890,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 30.48 76.2 0)
+			(at 82.55 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1836,7 +1899,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 30.48 76.2 0)
+			(at 82.55 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1845,7 +1908,7 @@
 			)
 		)
 		(property "Description" "Resistor, small US symbol"
-			(at 30.48 76.2 0)
+			(at 82.55 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1854,7 +1917,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 30.48 76.2 90)
+			(at 82.55 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1863,7 +1926,7 @@
 			)
 		)
 		(property "label" ""
-			(at 30.48 76.2 90)
+			(at 82.55 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1880,19 +1943,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "R1901")
+					(reference "R801")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "R2601")
+					(reference "R1101")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "R2201")
+					(reference "R901")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "R2501")
+					(reference "R1001")
 					(unit 1)
 				)
 			)
@@ -1900,15 +1963,15 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
-		(at 30.48 81.28 90)
+		(at 82.55 82.55 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "bb75365e-5df3-4f1f-81e5-97bdcedd3cb5")
-		(property "Reference" "R1902"
-			(at 25.908 80.264 90)
+		(property "Reference" "R802"
+			(at 77.978 81.534 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1916,7 +1979,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 32.766 80.264 90)
+			(at 84.836 81.534 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1924,7 +1987,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 30.48 81.28 0)
+			(at 82.55 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1933,7 +1996,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 30.48 81.28 0)
+			(at 82.55 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1942,7 +2005,7 @@
 			)
 		)
 		(property "Description" "Resistor, small US symbol"
-			(at 30.48 81.28 0)
+			(at 82.55 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1951,7 +2014,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 30.48 81.28 90)
+			(at 82.55 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1960,7 +2023,7 @@
 			)
 		)
 		(property "label" ""
-			(at 30.48 81.28 90)
+			(at 82.55 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1977,19 +2040,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "R1902")
+					(reference "R802")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "R2602")
+					(reference "R1102")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "R2202")
+					(reference "R902")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "R2502")
+					(reference "R1002")
 					(unit 1)
 				)
 			)
@@ -1997,15 +2060,15 @@
 	)
 	(symbol
 		(lib_id "Library:AS183-92LF")
-		(at 73.66 78.74 0)
+		(at 125.73 80.01 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "c3bc6c59-f586-423e-be83-1171bdcd1921")
-		(property "Reference" "U1902"
-			(at 73.66 69.85 0)
+		(property "Reference" "U802"
+			(at 125.73 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2013,7 +2076,7 @@
 			)
 		)
 		(property "Value" "AS183-92LF"
-			(at 73.66 72.39 0)
+			(at 125.73 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2021,7 +2084,7 @@
 			)
 		)
 		(property "Footprint" "Library:SOT65P220X110-6N"
-			(at 95.25 173.66 0)
+			(at 147.32 174.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2031,7 +2094,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.skyworksinc.com/-/media/SkyWorks/Documents/Products/1-100/200177D.pdf"
-			(at 95.25 273.66 0)
+			(at 147.32 274.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2041,7 +2104,7 @@
 			)
 		)
 		(property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm"
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2050,7 +2113,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2058,7 +2121,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2066,7 +2129,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2075,7 +2138,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2084,7 +2147,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2093,7 +2156,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2102,7 +2165,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2111,7 +2174,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2120,7 +2183,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2129,7 +2192,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2138,7 +2201,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2147,7 +2210,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2156,7 +2219,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2165,7 +2228,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2174,7 +2237,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2183,7 +2246,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2192,7 +2255,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2201,7 +2264,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2210,7 +2273,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2219,7 +2282,7 @@
 			)
 		)
 		(property "Height" "1.1"
-			(at 95.25 473.66 0)
+			(at 147.32 474.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2229,7 +2292,7 @@
 			)
 		)
 		(property "Mouser Part Number" "873-AS183-92LF"
-			(at 95.25 573.66 0)
+			(at 147.32 574.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2239,7 +2302,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Skyworks-Solutions-Inc/AS183-92LF?qs=WMHGlxXAKT9uKJ5iI33IgQ%3D%3D"
-			(at 95.25 673.66 0)
+			(at 147.32 674.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2249,7 +2312,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "Skyworks"
-			(at 95.25 773.66 0)
+			(at 147.32 774.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2259,7 +2322,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "AS183-92LF"
-			(at 95.25 873.66 0)
+			(at 147.32 874.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2269,7 +2332,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2278,7 +2341,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2287,7 +2350,7 @@
 			)
 		)
 		(property "label" ""
-			(at 73.66 78.74 0)
+			(at 125.73 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2316,19 +2379,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "U1902")
+					(reference "U802")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "U2602")
+					(reference "U1102")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "U2202")
+					(reference "U902")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "U2502")
+					(reference "U1002")
 					(unit 1)
 				)
 			)
@@ -2336,7 +2399,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 57.15 91.44 0)
+		(at 109.22 92.71 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2344,8 +2407,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d134cf0d-3026-45ee-8b6e-424cae1322d3")
-		(property "Reference" "#PWR01902"
-			(at 57.15 97.79 0)
+		(property "Reference" "#PWR0802"
+			(at 109.22 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2354,7 +2417,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 57.15 96.52 0)
+			(at 109.22 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2363,7 +2426,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 57.15 91.44 0)
+			(at 109.22 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2372,7 +2435,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 57.15 91.44 0)
+			(at 109.22 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2381,7 +2444,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 57.15 91.44 0)
+			(at 109.22 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2395,19 +2458,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "#PWR01902")
+					(reference "#PWR0802")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "#PWR02602")
+					(reference "#PWR01102")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "#PWR02202")
+					(reference "#PWR0902")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "#PWR02502")
+					(reference "#PWR01002")
 					(unit 1)
 				)
 			)
@@ -2415,15 +2478,15 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 62.23 81.28 90)
+		(at 114.3 82.55 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "d9a3c06e-8394-4f95-bae6-485b0c927b71")
-		(property "Reference" "R1905"
-			(at 62.484 79.248 90)
+		(property "Reference" "R805"
+			(at 114.554 80.518 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2431,15 +2494,15 @@
 			)
 		)
 		(property "Value" "34"
-			(at 61.976 83.058 90)
+			(at 114.046 84.328 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
-			(at 62.484 80.264 90)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 114.554 81.534 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2448,7 +2511,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 62.23 81.28 0)
+			(at 114.3 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2457,7 +2520,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 62.23 81.28 0)
+			(at 114.3 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2466,7 +2529,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2475,7 +2538,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2484,7 +2547,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2493,7 +2556,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2502,7 +2565,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2511,7 +2574,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2520,7 +2583,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2529,7 +2592,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2538,7 +2601,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2547,7 +2610,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2556,7 +2619,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2565,7 +2628,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2574,7 +2637,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2583,7 +2646,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2592,7 +2655,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2601,7 +2664,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2610,7 +2673,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2619,7 +2682,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2628,7 +2691,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2637,7 +2700,7 @@
 			)
 		)
 		(property "label" ""
-			(at 62.23 81.28 90)
+			(at 114.3 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2654,19 +2717,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "R1905")
+					(reference "R805")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "R2605")
+					(reference "R1105")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "R2205")
+					(reference "R905")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "R2505")
+					(reference "R1005")
 					(unit 1)
 				)
 			)
@@ -2674,7 +2737,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 73.66 87.63 0)
+		(at 125.73 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2682,8 +2745,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "eff3f95c-194d-4193-ab7b-97845379a43b")
-		(property "Reference" "#PWR01903"
-			(at 73.66 93.98 0)
+		(property "Reference" "#PWR0803"
+			(at 125.73 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2692,7 +2755,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 73.66 92.71 0)
+			(at 125.73 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2701,7 +2764,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 73.66 87.63 0)
+			(at 125.73 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2710,7 +2773,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 73.66 87.63 0)
+			(at 125.73 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2719,7 +2782,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 73.66 87.63 0)
+			(at 125.73 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2733,19 +2796,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "#PWR01903")
+					(reference "#PWR0803")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "#PWR02603")
+					(reference "#PWR01103")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "#PWR02203")
+					(reference "#PWR0903")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "#PWR02503")
+					(reference "#PWR01003")
 					(unit 1)
 				)
 			)
@@ -2753,15 +2816,15 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 52.07 81.28 270)
+		(at 104.14 82.55 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "f46d8378-2a03-41c5-820e-ad62c3c0eaa8")
-		(property "Reference" "R1903"
-			(at 52.324 79.248 90)
+		(property "Reference" "R803"
+			(at 104.394 80.518 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2769,15 +2832,15 @@
 			)
 		)
 		(property "Value" "34"
-			(at 52.07 83.312 90)
+			(at 104.14 84.582 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
-			(at 51.816 82.296 90)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 103.886 83.566 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2786,7 +2849,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 52.07 81.28 0)
+			(at 104.14 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2795,7 +2858,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 52.07 81.28 0)
+			(at 104.14 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2804,7 +2867,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2813,7 +2876,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2822,7 +2885,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2831,7 +2894,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2840,7 +2903,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2849,7 +2912,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2858,7 +2921,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2867,7 +2930,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2876,7 +2939,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2885,7 +2948,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2894,7 +2957,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2903,7 +2966,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2912,7 +2975,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2921,7 +2984,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2930,7 +2993,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2939,7 +3002,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2948,7 +3011,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2957,7 +3020,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2966,7 +3029,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2975,7 +3038,7 @@
 			)
 		)
 		(property "label" ""
-			(at 52.07 81.28 90)
+			(at 104.14 82.55 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2992,19 +3055,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "R1903")
+					(reference "R803")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "R2603")
+					(reference "R1103")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "R2203")
+					(reference "R903")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "R2503")
+					(reference "R1003")
 					(unit 1)
 				)
 			)
@@ -3012,15 +3075,15 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
-		(at 88.9 76.2 90)
+		(at 140.97 77.47 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "fc03059b-faff-499a-90de-5535a5800a51")
-		(property "Reference" "R1906"
-			(at 84.328 75.184 90)
+		(property "Reference" "R806"
+			(at 136.398 76.454 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3028,7 +3091,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 91.186 75.184 90)
+			(at 143.256 76.454 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3036,7 +3099,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 88.9 76.2 0)
+			(at 140.97 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3045,7 +3108,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 88.9 76.2 0)
+			(at 140.97 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3054,7 +3117,7 @@
 			)
 		)
 		(property "Description" "Resistor, small US symbol"
-			(at 88.9 76.2 0)
+			(at 140.97 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3063,7 +3126,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 88.9 76.2 90)
+			(at 140.97 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3072,7 +3135,7 @@
 			)
 		)
 		(property "label" ""
-			(at 88.9 76.2 90)
+			(at 140.97 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3089,19 +3152,19 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/00580834-a893-4f64-96cc-eed31636bfe9"
-					(reference "R1906")
+					(reference "R806")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/9d22ac7c-7c0b-45c3-a875-a3a1935f96cc"
-					(reference "R2606")
+					(reference "R1106")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/a3931169-68de-4e8b-813d-ff6ffed62146"
-					(reference "R2206")
+					(reference "R906")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/d4b536b3-8496-4c97-8d52-85d67c75a967"
-					(reference "R2506")
+					(reference "R1006")
 					(unit 1)
 				)
 			)

@@ -811,6 +811,9 @@
       "/Rx Front End/QSD2/rfIn": [
         "rf50"
       ],
+      "/Rx Front End/Rx Preselector/preselIn": [
+        "rf200"
+      ],
       "/Rx Front End/RxI0n": [
         "rf50"
       ],
@@ -973,10 +976,7 @@
         "Power"
       ],
       "GND": [
-        "pwr200",
-        "rf200",
-        "rf50",
-        "rf800"
+        "rf50"
       ],
       "Net-(C1401-Pad1)": [
         "PowerRF"
@@ -1220,9 +1220,6 @@
       ],
       "Net-(C2201-Pad2)": [
         "PowerRF"
-      ],
-      "Net-(C305-Pad1)": [
-        "rf50"
       ],
       "Net-(C306-Pad1)": [
         "rf50"
@@ -2130,11 +2127,17 @@
       "Net-(R1002-Pad1)": [
         "rf50"
       ],
+      "Net-(R1003-Pad1)": [
+        "rf200"
+      ],
       "Net-(R1101-Pad1)": [
         "rf50"
       ],
       "Net-(R1102-Pad1)": [
         "rf50"
+      ],
+      "Net-(R1103-Pad1)": [
+        "rf200"
       ],
       "Net-(R1903-Pad1)": [
         "rf200"
@@ -2235,11 +2238,17 @@
       "Net-(R802-Pad1)": [
         "rf50"
       ],
+      "Net-(R803-Pad1)": [
+        "rf200"
+      ],
       "Net-(R901-Pad1)": [
         "rf50"
       ],
       "Net-(R902-Pad1)": [
         "rf50"
+      ],
+      "Net-(R903-Pad1)": [
+        "rf200"
       ],
       "Net-(T101-PA)": [
         "rf200"
@@ -2260,16 +2269,16 @@
         "rf50"
       ],
       "Net-(U1001-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U1001-J3)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U1001-SW)": [
         "Power"
       ],
       "Net-(U1002-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U1004-SW)": [
         "Power"
@@ -2278,18 +2287,21 @@
         "Power"
       ],
       "Net-(U1101-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U1101-J3)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U1102-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U1104-SW)": [
         "Power"
       ],
       "Net-(U1105-SW)": [
+        "Power"
+      ],
+      "Net-(U1201-SW)": [
         "Power"
       ],
       "Net-(U1202-COM1)": [
@@ -2306,6 +2318,9 @@
       ],
       "Net-(U1202-NO1)": [
         "rf50"
+      ],
+      "Net-(U1202-SW)": [
+        "Power"
       ],
       "Net-(U1204-SW)": [
         "Power"
@@ -2346,19 +2361,10 @@
       "Net-(U1402-NO1)": [
         "rf50"
       ],
-      "Net-(U1501-J1)": [
-        "rf200"
-      ],
       "Net-(U1501-OUT)": [
         "Power"
       ],
-      "Net-(U1502-J1)": [
-        "rf200"
-      ],
       "Net-(U1503-J1)": [
-        "rf200"
-      ],
-      "Net-(U1504-J1)": [
         "rf200"
       ],
       "Net-(U1505-CB)": [
@@ -2392,9 +2398,6 @@
         "rf200"
       ],
       "Net-(U1512-J1)": [
-        "rf200"
-      ],
-      "Net-(U1512-J3)": [
         "rf200"
       ],
       "Net-(U1513-J1)": [
@@ -2616,6 +2619,9 @@
       "Net-(U302-OUT)": [
         "Power"
       ],
+      "Net-(U302-VDD18)": [
+        "power-lite"
+      ],
       "Net-(U303-J2)": [
         "rf50"
       ],
@@ -2626,6 +2632,12 @@
         "rf50"
       ],
       "Net-(U306-J2)": [
+        "rf50"
+      ],
+      "Net-(U401-NO1)": [
+        "rf50"
+      ],
+      "Net-(U402-NO1)": [
         "rf50"
       ],
       "Net-(U405-J1)": [
@@ -2691,14 +2703,65 @@
       "Net-(U426-J1)": [
         "rf800"
       ],
+      "Net-(U501-NO1)": [
+        "rf50"
+      ],
+      "Net-(U502-NO1)": [
+        "rf50"
+      ],
       "Net-(U601-4-VCCPLL)": [
         "Power"
+      ],
+      "Net-(U601-NO1)": [
+        "rf50"
       ],
       "Net-(U601-OUT)": [
         "Power"
       ],
       "Net-(U602-4-VCCPLL)": [
         "Power"
+      ],
+      "Net-(U602-NO1)": [
+        "rf50"
+      ],
+      "Net-(U701-J1)": [
+        "rf200"
+      ],
+      "Net-(U702-J1)": [
+        "rf200"
+      ],
+      "Net-(U703-J1)": [
+        "rf200"
+      ],
+      "Net-(U704-J1)": [
+        "rf200"
+      ],
+      "Net-(U705-J1)": [
+        "rf200"
+      ],
+      "Net-(U706-J1)": [
+        "rf200"
+      ],
+      "Net-(U707-J1)": [
+        "rf200"
+      ],
+      "Net-(U708-J1)": [
+        "rf200"
+      ],
+      "Net-(U709-J1)": [
+        "rf200"
+      ],
+      "Net-(U710-J1)": [
+        "rf200"
+      ],
+      "Net-(U711-J1)": [
+        "rf200"
+      ],
+      "Net-(U712-J1)": [
+        "rf200"
+      ],
+      "Net-(U712-J3)": [
+        "rf200"
       ],
       "Net-(U7705-J2)": [
         "rf50"
@@ -3379,22 +3442,22 @@
         "rf800"
       ],
       "Net-(U801-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U801-J3)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U802-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U901-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U901-J3)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U902-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Veer": [
         "PowerRF"
@@ -4051,7 +4114,7 @@
           "show": false
         }
       ],
-      "filter_string": "f",
+      "filter_string": "c",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
@@ -4131,10 +4194,6 @@
       "Rx Front End"
     ],
     [
-      "18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641",
-      "FPGA"
-    ],
-    [
       "f0576e51-08ef-46e9-b901-7c65fd3b885d",
       "QSD1"
     ],
@@ -4151,10 +4210,6 @@
       "Rx Preselector"
     ],
     [
-      "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
-      "Power"
-    ],
-    [
       "00580834-a893-4f64-96cc-eed31636bfe9",
       "Tpad 3"
     ],
@@ -4169,6 +4224,14 @@
     [
       "9d22ac7c-7c0b-45c3-a875-a3a1935f96cc",
       "Tpad 24"
+    ],
+    [
+      "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
+      "Power"
+    ],
+    [
+      "18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641",
+      "FPGA"
     ]
   ],
   "text_variables": {
