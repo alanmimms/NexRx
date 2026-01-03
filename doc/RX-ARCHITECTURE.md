@@ -12,7 +12,7 @@
 1. [Introduction](#introduction)
 2. [Architecture Overview](#architecture-overview)
 3. [Front-End Protection and Attenuation](#front-end-protection-and-attenuation)
-4. [800Ω Preselector Design](#800ω-preselector-design)
+4. [200Ω Preselector Design](#200ω-preselector-design)
 5. [Impedance Transformation](#impedance-transformation)
 6. [Triple-QSD Architecture](#triple-qsd-architecture)
 7. [Programmable Gain Amplifiers](#programmable-gain-amplifiers)
@@ -44,7 +44,7 @@ different sampling phases and frequencies, the system achieves >40 dB
 harmonic rejection through mathematical cancellation rather than
 analog filtering.
 
-**Impedance Domain Optimization**: The preselector operates at 800Ω
+**Impedance Domain Optimization**: The preselector operates at 200Ω
 nominal impedance rather than the traditional 50Ω, providing superior
 selectivity and reduced component stress while maintaining excellent
 dynamic range.
@@ -74,9 +74,8 @@ graph LR
     LPFs --> TRrelay[T/R Relay]
 	TRrelay --> TVS25[25V pk-pk<br/>Limiter]
 	TVS25 --> C[Digital<br/>Attenuator<br/>0-45dB]
-    C --> D[Impedance<br/>Transform<br/>200→800Ω]
-    D --> E[Preselector<br/>800Ω LC Tank]
-    E --> F[Transform<br/>800→3×50Ω]
+    C --> E[Preselector<br/>200Ω LC Tank]
+    E --> F[Transform<br/>200→3×36Ω]
 	F --> TVS13[13V pk-pk<br/>Limiter]
 	TVS13 --> G[Triple QSD<br/>Array]
     G --> H[6× MAX9939<br/>PGAs]
@@ -94,7 +93,7 @@ The receiver processes signals through distinct functional blocks,
 each optimized for its specific role:
 
 1. **Protection and Attenuation**: Handles strong signals and provides coarse gain control
-2. **Preselector**: Provides band-specific selectivity at 800Ω impedance
+2. **Preselector**: Provides band-specific selectivity at 200Ω impedance
 3. **Triple-QSD Demodulation**: Converts RF to baseband with harmonic rejection
 4. **Programmable Gain**: Fine gain control with differential signal processing PGAs
 5. **Digitization**: High-resolution conversion with anti-aliasing
@@ -158,21 +157,19 @@ any attenuation combination from 0 to 45 dB in 3 dB steps.
 
 ---
 
-## 800Ω Preselector Design
+## 200Ω Preselector Design
 
-### Why 800Ω?
+### Why 200Ω?
 
 Traditional 50Ω preselectors suffer from several limitations:
 
-| Parameter | 50Ω System | 800Ω System | Improvement |
+| Parameter | 50Ω System | 200Ω System | Improvement |
 |-----------|------------|-------------|-------------|
-| Q Factor | R/X_L = 50/X_L | R/X_L = 800/X_L | 16× higher |
-| Voltage for 1W | 7.1V | 28.3V | 4× higher |
-| Current for 1W | 141mA | 35mA | 4× lower |
+| Q Factor | R/X_L = 50/X_L | R/X_L = 200/X_L | 4× higher |
 | Component stress | High current | Low current | Reduced |
 | Selectivity | Limited Q | Excellent Q | Superior |
 
-The 800Ω impedance represents a balance between achievable Q,
+The 200Ω impedance represents a balance between achievable Q,
 component stress, and practical implementation.
 
 ### LC Tank Circuit
@@ -226,35 +223,22 @@ Parallel inductor combinations fill coverage gaps, ensuring continuous
 
 ## Impedance Transformation
 
-### Input Transformer (200Ω to 800Ω)
-
-The input transformer provides impedance transformation while maintaining signal integrity:
-
-**Specifications**:
-- Core: FT50-43 ferrite toroid (or FT50-63 for lower frequencies)
-- Autotransformer: 8t #26 AWG bifilar with (50Ω) on center and (800Ω) on hot end.
-- Voltage gain: +6 dB
-- Bandwidth: >30 MHz
-
-The 1:2 turns ratio provides the 1:4 impedance transformation,
-stepping up from 200Ω to 800Ω. The ferrite material ensures low loss
-and wide bandwidth.
-
-### Output Transformer (800Ω to 3×50Ω)
+### Output Transformer (200Ω to 3×36Ω)
 
 This critical transformer must provide three identical outputs for the triple-QSD array:
 
 **Specifications**:
-- Core: FT50-43 binocular or toroid
-- Primary: 16 turns, #26 AWG (800Ω)
-- Secondaries: Three separate 4-turn #26 AWG trifilar wound for matched coupling
-- Impedance: 800Ω to 50Ω per output (nominal)
-- Actual output impedance: 2-4Ω at HF (dominated by leakage inductance)
+- Core: BN-43-202 binocular
+- Winding: pentafilar 2 turns each #30AWG
+- Primary: two of the windings in series
+- Secondaries: Remaining windings
+- Impedance: 200Ω to 36Ω per output (nominal)
+- Actual output impedance: 2-4Ω at HF
 
-**Why Trifilar Winding?**: The three secondary windings must be
-absolutely identical in impedance and coupling to maintain I/Q balance
-across the three QSDs. Trifilar winding—where all three wires are
-wound together—ensures this matching.
+**Why Pentafilar Winding?**: The five windings must be absolutely
+identical in impedance and coupling to maintain I/Q balance across the
+three QSDs. Pentafilar winding—where all five wires are wound
+together—ensures this matching.
 
 **Low Output Impedance Requirement**: The QSDs present switched
 capacitive loads (1000pF sampling capacitors). At 30 MHz with 6×
@@ -642,9 +626,10 @@ graph TB
     end
     
     subgraph Preselector
-        A3 --> B1[50:800Ω]
+        A3 --> B0[50:200Ω]
+	    B0 --> B1[digital attenuator 3,6,12,24dB]
         B1 --> B2[LC Tank]
-        B2 --> B3[800:3×50Ω]
+        B2 --> B3[200:3×36Ω]
     end
     
     subgraph QSD Array
@@ -902,7 +887,7 @@ Built-in test signal generation enables self-calibration:
 - No expensive crystal filters
 - Exceptional harmonic rejection
 
-### Why 800Ω Preselector?
+### Why 200Ω Preselector?
 
 **Alternative Considered**: Traditional 50Ω
 - Pros: Standard impedance throughout
@@ -912,8 +897,8 @@ Built-in test signal generation enables self-calibration:
 - Pros: Even better Q
 - Cons: Voltage stress exceeds component ratings
 
-**800Ω Optimum**:
-- 16× Q improvement over 50Ω
+**200Ω Optimum**:
+- 4× Q improvement over 50Ω
 - Manageable voltage levels
 - Available components
 - Proven in high-performance receivers
@@ -1031,13 +1016,13 @@ reference for coherent receiver arrays or GPS disciplining.
 The NexRig receiver architecture represents a significant advancement
 in amateur radio receiver design. The triple-QSD approach provides
 exceptional harmonic rejection without complex filtering, while the
-800Ω preselector delivers superior selectivity with reduced component
+200Ω preselector delivers superior selectivity with reduced component
 stress.
 
 Key innovations include:
 
 1. **Triple-QSD sampling** eliminates traditional direct conversion limitations
-2. **800Ω preselector impedance** optimizes Q factor and component stress
+2. **200Ω preselector impedance** optimizes Q factor and component stress
 3. **Comprehensive protection** ensures survival in harsh RF environments
 4. **Software-defined flexibility** enables continuous improvement
 5. **Integration with transmitter** provides vector network analysis capability
