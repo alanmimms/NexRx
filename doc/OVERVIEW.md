@@ -1,11 +1,11 @@
-# NexRig: Open-Source Ham Radio SDR Transceiver System
+# NexRx: Open-Source Ham Radio SDR Receiver System
 ## Overview & Core Concepts
 
-### What is NexRig?
+### What is NexRx?
 
-NexRig is an ambitious open-source project that reimagines how we
-interact with ham radio transceivers. Instead of the knobs, buttons,
-and menu diving that have defined radio interfaces for decades, NexRig
+NexRx is an ambitious open-source project that reimagines how we
+interact with ham radio receivers. Instead of the knobs, buttons,
+and menu diving that have defined radio interfaces for decades, NexRx
 presents a browser-based interface built around a revolutionary
 concept called "setboxes."
 
@@ -22,13 +22,13 @@ forward for everyone.
 
 ### The Big Idea: Setboxes
 
-Here's where NexRig gets interesting. Traditional radios force you to
+Here's where NexRx gets interesting. Traditional radios force you to
 think in terms of physical controls - turn this knob for frequency,
 press that button for mode, flip this switch for antenna selection.
 But why should software-defined radio be limited by the metaphors of
 analog hardware?
 
-NexRig introduces "setboxes" - think of them as smart presets that can
+NexRx introduces "setboxes" - think of them as smart presets that can
 inherit settings from each other, just like object-oriented
 programming. Instead of having separate "band" and "mode" controls,
 you might have a setbox called "40m-CW-Contest" that inherits basic
@@ -74,34 +74,32 @@ operating style instead of forcing you to adapt to its limitations.
 
 ### System Overview
 
-NexRig consists of three main components that work together
+NexRx consists of three main components that work together
 seamlessly:
 
 **Hardware Platform**: Built around an STM32H753 microcontroller
 running at 480MHz with a full megabyte each of flash and RAM. This
 isn't your typical Arduino project - we're talking serious
-computational power running Zephyr RTOS. The RF hardware handles ten
-HF bands (160m through 10m) with a sophisticated envelope elimination
-and restoration (EER) power amplifier capable of 50 watts output.
+computational power running Zephyr RTOS. The RF hardware handles general
+HF coverage from 1MHz to 30MHz.
 
 **Embedded Software**: Written in modern C++20, this handles the
 real-time RF control, basic DSP processing, and serves as a web
-server. It presents itself to your computer as a USB ethernet device
-with a captive portal, so there's no driver installation or network
-configuration hassles.
+server. It presents itself to your computer as USB, so there's no
+driver installation or network configuration hassles.
 
-**Browser Application**: This is where the magic happens. Using modern
-JavaScript and HTML5, the browser handles advanced DSP, the setbox
-management system, and provides rich visualizations like waterfall
-displays and spectrum analysis. The interface runs entirely in your
-browser - Chrome, Edge, or Safari - with no plugins or special
-software required.
+**Native Application**: This is where the magic happens. Using a
+modern framework (TBD) this app runs on Linux, MacOS, and even Windows
+on 64-bit PC or ARM. It handles advanced DSP, the setbox management
+system, and provides rich visualizations like waterfall displays and
+spectrum analysis. The interface runs entirely on the PC. The NexRx
+hardware is essentially "headless".
 
 The beauty of this architecture is its simplicity from the user's
-perspective. Plug in the USB cable, open your browser, and you're
-ready to operate. But under the hood, you have access to computational
-power and interface flexibility that would be impossible with
-traditional radio architectures.
+perspective. Plug in the USB cable, install the app, and you're ready
+to operate. But under the hood, you have access to computational power
+and interface flexibility that would be impossible with traditional
+radio architectures.
 
 ### Key Design Principles
 
@@ -111,22 +109,21 @@ inheritance handle the complexity. Your "DX" setbox can inherit from
 your "20m" setbox, which inherits from your "HF" setbox, which
 inherits from your global preferences.
 
-**Browser-Native Interface**: No custom applications to install, no
-drivers to manage, no compatibility worries across different operating
-systems. If it runs a modern browser, it can run NexRig.
+**Native Interface**: No drivers to manage, no compatibility worries
+across different operating systems.
 
 **Community-Driven Development**: The entire project is open source
 with permissive licensing specifically to encourage community
 contributions, modifications, and improvements. This is ham radio,
 after all - we're supposed to be experimenting and learning.
 
-**Real-Time Performance**: Despite the web-based interface, NexRig
+**Real-Time Performance**: Despite the web-based interface, NexRx
 maintains the real-time performance requirements of RF operation
 through careful architecture and efficient protocols.
 
 ### The Vision
 
-NexRig isn't just another SDR project - it's an attempt to demonstrate
+NexRx isn't just another SDR project - it's an attempt to demonstrate
 what ham radio interfaces could become if we stopped thinking in terms
 of analog radio metaphors and started thinking in terms of modern
 software design patterns.

@@ -1,9 +1,9 @@
-# NexRig: User Experience & Features
+# NexRx: User Experience & Features
 ## Interface Design, Workflows, and Operating Features
 
 ### The Browser-Native Interface
 
-Opening NexRig feels nothing like traditional radio software. There's
+Opening NexRx feels nothing like traditional radio software. There's
 no installation process, no driver hunting, no compatibility concerns
 across operating systems. Plug in the USB cable, open Chrome or
 Safari, navigate to the captive portal, and you're immediately
@@ -106,7 +106,7 @@ antennas.
 
 ### Inheritance Inspector and State Management
 
-One of NexRig's most powerful features is making the setbox
+One of NexRx's most powerful features is making the setbox
 inheritance system completely transparent. When you adjust any
 control, the interface shows exactly where that setting's value comes
 from in the inheritance hierarchy.
@@ -133,7 +133,7 @@ overwrites of carefully configured setboxes.
 
 ### Advanced Visualization and Analysis
 
-Because significant DSP processing happens in the browser, NexRig can
+Because significant DSP processing happens in the browser, NexRx can
 provide visualization and analysis tools that would be impossible in
 traditional hardware radios.
 
@@ -157,7 +157,7 @@ antenna tuning to interference identification.
 ### Memory and Logging Systems
 
 Traditional memory channels become much more powerful in the setbox
-paradigm. Instead of just storing frequency and mode, a NexRig memory
+paradigm. Instead of just storing frequency and mode, a NexRx memory
 can capture the complete operating state - antenna selections, DSP
 settings, power levels, even waterfall color schemes.
 
@@ -180,7 +180,7 @@ configuration.
 
 ### Multi-Modal Control Integration
 
-NexRig leverages the full range of modern input methods rather than
+NexRx leverages the full range of modern input methods rather than
 forcing everything through point-and-click interfaces.
 
 **Keyboard-Centric Operation**: Comprehensive keyboard shortcuts
@@ -232,7 +232,7 @@ and frameworks.
 The setbox data format uses standard JSON, making it easy to create
 external tools for setbox management, backup, or sharing
 configurations between operators. Advanced users can manipulate their
-configurations programmatically or integrate NexRig with other station
+configurations programmatically or integrate NexRx with other station
 automation systems.
 
 The open-source nature means the entire ham community can contribute
