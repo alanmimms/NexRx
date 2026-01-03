@@ -1,0 +1,255 @@
+* NexRx Digital Twin - Full Receiver Chain
+* Complete RF path from antenna to QSD outputs
+*
+* Reference: RX-ARCHITECTURE.md
+*
+* Signal path:
+*   Antenna (50Ω) → XFMR 1:4 → Attenuator (200Ω) → XFMR 1:4 →
+*   Preselector (800Ω) → XFMR splitter → Triple QSD → 6 I/Q outputs
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+* .INCLUDE 'stimulus.lib' - not used, using direct source instead
+
+*======================================================================
+* NEXRX RECEIVER SUBCIRCUIT
+*
+* Inputs:
+*   ANT_IN  - Antenna input (50 ohm)
+*   GND     - Ground reference
+*
+* Controls:
+*   ATTEN_EN     - Attenuator enable (0=bypass, 1=attenuate)
+*   L1_EN..L4_EN - Preselector inductor enables
+*   C0..C9       - Preselector capacitor enables (10-bit)
+*   Q0_PH0..3    - QSD0 phase clocks
+*   Q1_PH0..3    - QSD1 phase clocks
+*   Q2_PH0..5    - QSD2 phase clocks (6-phase)
+*
+* Outputs:
+*   Q0_I, Q0_Q   - QSD0 I/Q
+*   Q1_I, Q1_Q   - QSD1 I/Q
+*   Q2_I, Q2_Q   - QSD2 I/Q (sextature)
+*======================================================================
+
+.SUBCKT NEXRX_RECEIVER ANT_IN GND
++ L1_EN L2_EN L3_EN L4_EN
++ C0 C1 C2 C3 C4 C5 C6 C7 C8 C9
++ Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3
++ Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3
++ Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5
++ Q0_I Q0_Q Q1_I Q1_Q Q2_I Q2_Q
+
+*----------------------------------------------------------------------
+* Stage 1: 50 to 200 ohm transformer
+*----------------------------------------------------------------------
+L_T1_LO ANT_IN GND 2.5u
+L_T1_HI ANT_IN NODE_200 7.5u
+K_T1 L_T1_LO L_T1_HI 0.995
+
+*----------------------------------------------------------------------
+* Stage 2: Attenuator (at 200 ohm impedance level)
+* Simplified: just direct connection for now (bypass always)
+* Full attenuator model can be enabled later
+*----------------------------------------------------------------------
+R_ATTEN_BYP NODE_200 NODE_200B 0.1
+
+*----------------------------------------------------------------------
+* Stage 3: 200 to 800 ohm transformer
+*----------------------------------------------------------------------
+L_T2_LO NODE_200B GND 10u
+L_T2_HI NODE_200B NODE_800 30u
+K_T2 L_T2_LO L_T2_HI 0.995
+
+*----------------------------------------------------------------------
+* Stage 4: 800 ohm Preselector
+* Switched LC tank for band selection
+*----------------------------------------------------------------------
+
+* DC bias for switches (3.3V = on)
+* Inductor switches
+X_SW_L1 NODE_800 L1_IN L1_EN GND SW_TS3A4751
+X_SW_L2 NODE_800 L2_IN L2_EN GND SW_TS3A4751
+X_SW_L3 NODE_800 L3_IN L3_EN GND SW_TS3A4751
+X_SW_L4 NODE_800 L4_IN L4_EN GND SW_TS3A4751
+
+* Inductors (simplified - full model in preselector.cir)
+L_L1 L1_IN LC_COMMON 500n
+L_L2 L2_IN LC_COMMON 480n
+L_L3 L3_IN LC_COMMON 180n
+L_L4 L4_IN LC_COMMON 68n
+
+* Parasitic capacitance
+C_PAR LC_COMMON GND 18p
+
+* Binary capacitor bank
+X_SW_C0 LC_COMMON C0_NODE C0 GND SW_TS3A4751
+C_C0 C0_NODE GND 4p
+
+X_SW_C1 LC_COMMON C1_NODE C1 GND SW_TS3A4751
+C_C1 C1_NODE GND 8p
+
+X_SW_C2 LC_COMMON C2_NODE C2 GND SW_TS3A4751
+C_C2 C2_NODE GND 16p
+
+X_SW_C3 LC_COMMON C3_NODE C3 GND SW_TS3A4751
+C_C3 C3_NODE GND 32p
+
+X_SW_C4 LC_COMMON C4_NODE C4 GND SW_TS3A4751
+C_C4 C4_NODE GND 64p
+
+X_SW_C5 LC_COMMON C5_NODE C5 GND SW_TS3A4751
+C_C5 C5_NODE GND 128p
+
+X_SW_C6 LC_COMMON C6_NODE C6 GND SW_TS3A4751
+C_C6 C6_NODE GND 256p
+
+X_SW_C7 LC_COMMON C7_NODE C7 GND SW_TS3A4751
+C_C7 C7_NODE GND 512p
+
+X_SW_C8 LC_COMMON C8_NODE C8 GND SW_TS3A4751
+C_C8 C8_NODE GND 1024p
+
+X_SW_C9 LC_COMMON C9_NODE C9 GND SW_TS3A4751
+C_C9 C9_NODE GND 2048p
+
+*----------------------------------------------------------------------
+* Stage 5: 800 to 3x50 ohm splitter transformer
+*----------------------------------------------------------------------
+L_T3_PRI LC_COMMON GND 40u
+
+L_T3_A RF_Q0 GND 2.5u
+L_T3_B RF_Q1 GND 2.5u
+L_T3_C RF_Q2 GND 2.5u
+
+K_T3_PA L_T3_PRI L_T3_A 0.98
+K_T3_PB L_T3_PRI L_T3_B 0.98
+K_T3_PC L_T3_PRI L_T3_C 0.98
+
+K_T3_AB L_T3_A L_T3_B 0.995
+K_T3_AC L_T3_A L_T3_C 0.995
+K_T3_BC L_T3_B L_T3_C 0.995
+
+*----------------------------------------------------------------------
+* Stage 6: Triple QSD
+*----------------------------------------------------------------------
+X_QSD0 RF_Q0 GND Q0_I Q0_Q Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3 QSD_4PHASE
+X_QSD1 RF_Q1 GND Q1_I Q1_Q Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3 QSD_4PHASE
+X_QSD2 RF_Q2 GND Q2_I Q2_Q Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5 QSD_6PHASE
+
+.ENDS NEXRX_RECEIVER
+
+*======================================================================
+* TEST CIRCUIT - Full receiver at 14 MHz
+*
+* Configuration:
+*   RF: 14.1 MHz, 100mV peak (~S9 signal)
+*   Attenuator: Bypass (0dB)
+*   Preselector: L3 (180nH), C = 716pF for 14 MHz
+*   QSD0: 13.99 MHz LO (f - 10kHz)
+*   QSD1: 14.01 MHz LO (f + 10kHz)
+*   QSD2: 84 MHz LO (6f) - simplified for testing
+*======================================================================
+
+* RF Input - 14.1 MHz tone, 100mV peak
+* Direct voltage source instead of subcircuit for reliability
+V_ANT V_ANT_SRC 0 SIN(0 0.1 14.1MEG)
+R_ANT_SRC V_ANT_SRC ANT_IN 50
+
+*----------------------------------------------------------------------
+* Control signals
+*----------------------------------------------------------------------
+
+* Attenuator bypass (not used in simplified model)
+* V_ATTEN ATTEN_EN 0 0
+
+* Preselector: L3 on, C = 512+128+64+8+4 = 716pF
+V_L1 L1_EN 0 0
+V_L2 L2_EN 0 0
+V_L3 L3_EN 0 3.3
+V_L4 L4_EN 0 0
+
+V_C0 C0 0 3.3
+V_C1 C1 0 3.3
+V_C2 C2 0 0
+V_C3 C3 0 0
+V_C4 C4 0 3.3
+V_C5 C5 0 3.3
+V_C6 C6 0 0
+V_C7 C7 0 3.3
+V_C8 C8 0 0
+V_C9 C9 0 0
+
+*----------------------------------------------------------------------
+* QSD0 LO at 13.99 MHz
+*----------------------------------------------------------------------
+V_Q0_PH0_S Q0_PH0_S 0 SIN(1.65 1.65 13.99MEG 0)
+V_Q0_PH1_S Q0_PH1_S 0 SIN(1.65 1.65 13.99MEG 17.87n)
+V_Q0_PH2_S Q0_PH2_S 0 SIN(1.65 1.65 13.99MEG 35.74n)
+V_Q0_PH3_S Q0_PH3_S 0 SIN(1.65 1.65 13.99MEG 53.61n)
+
+B_Q0_PH0 Q0_PH0 0 V='3.3 * (1 + tanh(100*(V(Q0_PH0_S) - 1.65))) / 2'
+B_Q0_PH1 Q0_PH1 0 V='3.3 * (1 + tanh(100*(V(Q0_PH1_S) - 1.65))) / 2'
+B_Q0_PH2 Q0_PH2 0 V='3.3 * (1 + tanh(100*(V(Q0_PH2_S) - 1.65))) / 2'
+B_Q0_PH3 Q0_PH3 0 V='3.3 * (1 + tanh(100*(V(Q0_PH3_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* QSD1 LO at 14.01 MHz
+*----------------------------------------------------------------------
+V_Q1_PH0_S Q1_PH0_S 0 SIN(1.65 1.65 14.01MEG 0)
+V_Q1_PH1_S Q1_PH1_S 0 SIN(1.65 1.65 14.01MEG 17.84n)
+V_Q1_PH2_S Q1_PH2_S 0 SIN(1.65 1.65 14.01MEG 35.68n)
+V_Q1_PH3_S Q1_PH3_S 0 SIN(1.65 1.65 14.01MEG 53.53n)
+
+B_Q1_PH0 Q1_PH0 0 V='3.3 * (1 + tanh(100*(V(Q1_PH0_S) - 1.65))) / 2'
+B_Q1_PH1 Q1_PH1 0 V='3.3 * (1 + tanh(100*(V(Q1_PH1_S) - 1.65))) / 2'
+B_Q1_PH2 Q1_PH2 0 V='3.3 * (1 + tanh(100*(V(Q1_PH2_S) - 1.65))) / 2'
+B_Q1_PH3 Q1_PH3 0 V='3.3 * (1 + tanh(100*(V(Q1_PH3_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* QSD2 LO at 14 MHz (simplified - using same freq as QSD0/1 for faster sim)
+* In real system this would be 84 MHz (6f)
+*----------------------------------------------------------------------
+V_Q2_PH0_S Q2_PH0_S 0 SIN(1.65 1.65 14MEG 0)
+V_Q2_PH1_S Q2_PH1_S 0 SIN(1.65 1.65 14MEG 11.90n)
+V_Q2_PH2_S Q2_PH2_S 0 SIN(1.65 1.65 14MEG 23.81n)
+V_Q2_PH3_S Q2_PH3_S 0 SIN(1.65 1.65 14MEG 35.71n)
+V_Q2_PH4_S Q2_PH4_S 0 SIN(1.65 1.65 14MEG 47.62n)
+V_Q2_PH5_S Q2_PH5_S 0 SIN(1.65 1.65 14MEG 59.52n)
+
+B_Q2_PH0 Q2_PH0 0 V='3.3 * (1 + tanh(100*(V(Q2_PH0_S) - 1.65))) / 2'
+B_Q2_PH1 Q2_PH1 0 V='3.3 * (1 + tanh(100*(V(Q2_PH1_S) - 1.65))) / 2'
+B_Q2_PH2 Q2_PH2 0 V='3.3 * (1 + tanh(100*(V(Q2_PH2_S) - 1.65))) / 2'
+B_Q2_PH3 Q2_PH3 0 V='3.3 * (1 + tanh(100*(V(Q2_PH3_S) - 1.65))) / 2'
+B_Q2_PH4 Q2_PH4 0 V='3.3 * (1 + tanh(100*(V(Q2_PH4_S) - 1.65))) / 2'
+B_Q2_PH5 Q2_PH5 0 V='3.3 * (1 + tanh(100*(V(Q2_PH5_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* Receiver instance
+*----------------------------------------------------------------------
+X_RX ANT_IN 0
++ L1_EN L2_EN L3_EN L4_EN
++ C0 C1 C2 C3 C4 C5 C6 C7 C8 C9
++ Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3
++ Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3
++ Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5
++ Q0_I Q0_Q Q1_I Q1_Q Q2_I Q2_Q
++ NEXRX_RECEIVER
+
+* Output loads (ADC input impedance)
+R_LOAD_Q0_I Q0_I 0 10k
+R_LOAD_Q0_Q Q0_Q 0 10k
+R_LOAD_Q1_I Q1_I 0 10k
+R_LOAD_Q1_Q Q1_Q 0 10k
+R_LOAD_Q2_I Q2_I 0 10k
+R_LOAD_Q2_Q Q2_Q 0 10k
+
+* Analysis - shorter simulation for debug
+.TRAN 1n 20u
+
+* Print all I/Q outputs and intermediate nodes for debug
+.PRINT TRAN V(ANT_IN) V(X_RX:NODE_200) V(X_RX:NODE_800) V(X_RX:RF_Q0) V(Q0_I) V(Q0_Q)
+
+.END

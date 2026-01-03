@@ -1,0 +1,22 @@
+* NexRx Digital Twin Test Netlist - Simple RC Circuit
+* Tests basic Xyce integration with a step response
+*
+* Circuit: Vin --[R1 1k]-- out --[C1 1nF]-- GND
+* Time constant: tau = R*C = 1k * 1nF = 1us
+
+* Input voltage source - step from 0V to 1V at t=0
+Vin in 0 PULSE(0 1 0 1n 1n 10m 20m)
+
+* Resistor
+R1 in out 1k
+
+* Capacitor
+C1 out 0 1n
+
+* Transient analysis - run for 10us to see settling
+.TRAN 1n 10u
+
+* Print output voltage
+.PRINT TRAN V(out) V(in)
+
+.END

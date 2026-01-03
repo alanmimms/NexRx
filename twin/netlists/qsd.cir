@@ -1,0 +1,249 @@
+* NexRx Digital Twin - Quadrature Sampling Detector Models
+* QSD mixer/demodulator using TS3A4751 CMOS switches
+*
+* Reference: RX-ARCHITECTURE.md Section "QSD Architecture"
+*
+* QSD0/1: 4-phase quadrature (0, 90, 180, 270 degrees)
+* QSD2: 6-phase sextature (0, 60, 120, 180, 240, 300 degrees)
+*
+* Copyright 2026 NexRx Project - MIT License
+
+* NOTE: This file expects components.lib to be included by the top-level netlist
+* Do not add .INCLUDE 'components.lib' here to avoid duplicate definitions
+
+*======================================================================
+* 4-PHASE QUADRATURE SAMPLING DETECTOR (QSD0, QSD1)
+*
+* Operation:
+*   RF input is switched to one of four sampling capacitors based on
+*   LO phase. Each cap integrates RF during its "on" window.
+*   I output = (phase0 - phase180) / 2
+*   Q output = (phase90 - phase270) / 2
+*
+* Inputs:
+*   RF_IN   - RF signal input (~50 ohm source impedance)
+*   GND     - Ground reference
+*   PH0-PH3 - Phase control signals (3.3V = on, 0V = off)
+*            PH0=0deg, PH1=90deg, PH2=180deg, PH3=270deg
+*
+* Outputs:
+*   I_OUT, Q_OUT - Baseband I/Q outputs (single-ended, 1.65V DC bias)
+*
+* Parameters:
+*   CSAMP - Sampling capacitor value (default 2.2uF)
+*======================================================================
+
+.SUBCKT QSD_4PHASE RF_IN GND I_OUT Q_OUT PH0 PH1 PH2 PH3 CSAMP=2.2u
+
+*----------------------------------------------------------------------
+* DC Bias - 1.65V reference for single-ended operation
+* In real hardware this comes from a precision voltage reference
+*----------------------------------------------------------------------
+V_BIAS BIAS_REF GND 1.65
+
+*----------------------------------------------------------------------
+* Input coupling - DC block to prevent bias shift
+*----------------------------------------------------------------------
+C_COUPLE RF_IN RF_AC 100n
+R_BIAS RF_AC BIAS_REF 10k
+
+*----------------------------------------------------------------------
+* Four sampling switches - one per phase
+* Each switch connects RF to its sampling capacitor when active
+*----------------------------------------------------------------------
+
+* Phase 0 (0 degrees) - positive I
+X_SW0 RF_AC SAMP0 PH0 GND SW_TS3A4751
+C_SAMP0 SAMP0 GND {CSAMP}
+
+* Phase 1 (90 degrees) - positive Q
+X_SW1 RF_AC SAMP1 PH1 GND SW_TS3A4751
+C_SAMP1 SAMP1 GND {CSAMP}
+
+* Phase 2 (180 degrees) - negative I
+X_SW2 RF_AC SAMP2 PH2 GND SW_TS3A4751
+C_SAMP2 SAMP2 GND {CSAMP}
+
+* Phase 3 (270 degrees) - negative Q
+X_SW3 RF_AC SAMP3 PH3 GND SW_TS3A4751
+C_SAMP3 SAMP3 GND {CSAMP}
+
+*----------------------------------------------------------------------
+* Differential to single-ended conversion
+* Using behavioral sources for clean differential operation
+*
+* I = (SAMP0 - SAMP2)/2 + 1.65V (centered around bias)
+* Q = (SAMP1 - SAMP3)/2 + 1.65V
+*----------------------------------------------------------------------
+
+* I channel output - differential with bias
+B_I_OUT I_PRE GND V='(V(SAMP0) - V(SAMP2))/2 + 1.65'
+R_I_OUT I_PRE I_OUT 100
+C_I_FILT I_OUT GND 10n
+
+* Q channel output - differential with bias
+B_Q_OUT Q_PRE GND V='(V(SAMP1) - V(SAMP3))/2 + 1.65'
+R_Q_OUT Q_PRE Q_OUT 100
+C_Q_FILT Q_OUT GND 10n
+
+.ENDS QSD_4PHASE
+
+*======================================================================
+* 6-PHASE SEXTATURE SAMPLING DETECTOR (QSD2)
+*
+* Six-phase sampling provides additional image rejection capability
+* when combined with QSD0/1 outputs in DSP.
+*
+* Phase arrangement:
+*   PH0=0deg, PH1=60deg, PH2=120deg, PH3=180deg, PH4=240deg, PH5=300deg
+*
+* I output = weighted sum of even phases (0, 120, 240)
+* Q output = weighted sum of odd phases (60, 180, 300)
+*======================================================================
+
+.SUBCKT QSD_6PHASE RF_IN GND I_OUT Q_OUT PH0 PH1 PH2 PH3 PH4 PH5 CSAMP=2.2u
+
+*----------------------------------------------------------------------
+* DC Bias
+*----------------------------------------------------------------------
+V_BIAS BIAS_REF GND 1.65
+
+*----------------------------------------------------------------------
+* Input coupling
+*----------------------------------------------------------------------
+C_COUPLE RF_IN RF_AC 100n
+R_BIAS RF_AC BIAS_REF 10k
+
+*----------------------------------------------------------------------
+* Six sampling switches
+*----------------------------------------------------------------------
+
+* Phase 0 (0 degrees)
+X_SW0 RF_AC SAMP0 PH0 GND SW_TS3A4751
+C_SAMP0 SAMP0 GND {CSAMP}
+
+* Phase 1 (60 degrees)
+X_SW1 RF_AC SAMP1 PH1 GND SW_TS3A4751
+C_SAMP1 SAMP1 GND {CSAMP}
+
+* Phase 2 (120 degrees)
+X_SW2 RF_AC SAMP2 PH2 GND SW_TS3A4751
+C_SAMP2 SAMP2 GND {CSAMP}
+
+* Phase 3 (180 degrees)
+X_SW3 RF_AC SAMP3 PH3 GND SW_TS3A4751
+C_SAMP3 SAMP3 GND {CSAMP}
+
+* Phase 4 (240 degrees)
+X_SW4 RF_AC SAMP4 PH4 GND SW_TS3A4751
+C_SAMP4 SAMP4 GND {CSAMP}
+
+* Phase 5 (300 degrees)
+X_SW5 RF_AC SAMP5 PH5 GND SW_TS3A4751
+C_SAMP5 SAMP5 GND {CSAMP}
+
+*----------------------------------------------------------------------
+* 6-phase to I/Q conversion using behavioral sources
+*
+* For 6-phase sextature sampling:
+*   I = SAMP0 - SAMP3 (0 vs 180 degrees)
+*   Q_raw = 0.866 * ((SAMP1 - SAMP4) + (SAMP2 - SAMP5))
+*
+* Each output centered around 1.65V bias
+*----------------------------------------------------------------------
+
+* I channel: difference of 0 and 180 degree samples
+B_I_OUT I_PRE GND V='(V(SAMP0) - V(SAMP3))/2 + 1.65'
+R_I_OUT I_PRE I_OUT 100
+C_I_FILT I_OUT GND 10n
+
+* Q channel: weighted sum of 60/240 and 120/300 differences
+* cos(30°) = 0.866, scaling for proper quadrature amplitude
+B_Q_OUT Q_PRE GND V='0.433*(V(SAMP1)-V(SAMP4)+V(SAMP2)-V(SAMP5)) + 1.65'
+R_Q_OUT Q_PRE Q_OUT 100
+C_Q_FILT Q_OUT GND 10n
+
+.ENDS QSD_6PHASE
+
+*======================================================================
+* SIMPLIFIED QSD FOR FASTER SIMULATION
+*
+* Behavioral model that computes I/Q directly from RF * LO
+* Much faster than switch-level simulation
+* Use for system-level testing, not for detailed switch analysis
+*======================================================================
+
+.SUBCKT QSD_BEHAVIORAL RF_IN GND I_OUT Q_OUT LO_I LO_Q
+
+* DC Bias
+V_BIAS BIAS_REF GND 1.65
+
+* I = RF * LO_I (mixer action)
+* LO_I swings 0 to 3.3V, center at 1.65V
+* Normalize LO to +/-1 range: (LO - 1.65) / 1.65
+B_I_MIX I_MIX GND V='V(RF_IN) * (V(LO_I) - 1.65) / 1.65'
+
+* Q = RF * LO_Q
+B_Q_MIX Q_MIX GND V='V(RF_IN) * (V(LO_Q) - 1.65) / 1.65'
+
+* Low-pass filter (represents integration by sampling caps)
+* Corner frequency ~100kHz for 96kHz sample rate
+R_I_LPF I_MIX I_FILT 1k
+C_I_LPF I_FILT GND 1.6u
+
+R_Q_LPF Q_MIX Q_FILT 1k
+C_Q_LPF Q_FILT GND 1.6u
+
+* Add DC bias to output
+E_I_OUT I_OUT GND VOL='V(I_FILT) + 1.65'
+E_Q_OUT Q_OUT GND VOL='V(Q_FILT) + 1.65'
+
+.ENDS QSD_BEHAVIORAL
+
+*======================================================================
+* TEST CIRCUIT - 4-phase QSD with 14 MHz RF and LO
+*======================================================================
+
+* Include component library for standalone testing
+.INCLUDE 'components.lib'
+
+* 14.1 MHz RF input signal (100mV peak, representing ~S9 signal)
+* Offset from 14 MHz LO by 100 kHz to create beat note (10us period)
+VRF RF_SRC 0 SIN(0 0.1 14.1MEG)
+R_SRC RF_SRC RF_IN 50
+
+* 14 MHz LO with 4 phases (simulated as delayed sinusoids)
+* In real system these come from FPGA-generated square waves
+* Period = 1/14MHz = 71.43ns, 90deg = 17.86ns delay
+
+* Phase 0 (0 degrees) - on during positive half of LO
+V_PH0 PH0_SIN 0 SIN(1.65 1.65 14MEG 0)
+* Phase 1 (90 degrees)
+V_PH1 PH1_SIN 0 SIN(1.65 1.65 14MEG 17.86n)
+* Phase 2 (180 degrees)
+V_PH2 PH2_SIN 0 SIN(1.65 1.65 14MEG 35.71n)
+* Phase 3 (270 degrees)
+V_PH3 PH3_SIN 0 SIN(1.65 1.65 14MEG 53.57n)
+
+* Convert sinusoidal LO to digital control signals
+* Threshold at 1.65V: >1.65V = 3.3V (on), <1.65V = 0V (off)
+B_PH0 PH0 0 V='3.3 * (1 + tanh(100*(V(PH0_SIN) - 1.65))) / 2'
+B_PH1 PH1 0 V='3.3 * (1 + tanh(100*(V(PH1_SIN) - 1.65))) / 2'
+B_PH2 PH2 0 V='3.3 * (1 + tanh(100*(V(PH2_SIN) - 1.65))) / 2'
+B_PH3 PH3 0 V='3.3 * (1 + tanh(100*(V(PH3_SIN) - 1.65))) / 2'
+
+* QSD instance
+X_QSD RF_IN 0 I_OUT Q_OUT PH0 PH1 PH2 PH3 QSD_4PHASE
+
+* Output loads (representing ADC input impedance)
+R_LOAD_I I_OUT 0 10k
+R_LOAD_Q Q_OUT 0 10k
+
+* Analysis - need fine time step for 14 MHz
+* Run 100us to see ~10 cycles of 100kHz beat note
+.TRAN 1n 100u
+
+* Print I/Q outputs and intermediate nodes
+.PRINT TRAN V(RF_IN) V(I_OUT) V(Q_OUT) V(X_QSD:SAMP0) V(X_QSD:SAMP2)
+
+.END

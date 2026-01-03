@@ -1,0 +1,161 @@
+* NexRx Digital Twin - Triple QSD Array
+* Complete Triple-QSD subsystem for image rejection
+*
+* Reference: RX-ARCHITECTURE.md Section "Triple-QSD Architecture"
+*
+* QSD0: f - k (offset lower)    - 4-phase quadrature
+* QSD1: f + k (offset higher)   - 4-phase quadrature
+* QSD2: 6f (sextature)          - 6-phase sextature
+*
+* The three QSDs sample the same RF input but with different LO frequencies.
+* DSP combines these to achieve wideband image rejection.
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+
+*======================================================================
+* TRIPLE QSD ARRAY SUBCIRCUIT
+*
+* Inputs:
+*   RF_IN   - RF signal from preselector (50 ohm)
+*   GND     - Ground reference
+*
+* Control (QSD0 4-phase):
+*   Q0_PH0, Q0_PH1, Q0_PH2, Q0_PH3 - Phase clocks at f-k
+*
+* Control (QSD1 4-phase):
+*   Q1_PH0, Q1_PH1, Q1_PH2, Q1_PH3 - Phase clocks at f+k
+*
+* Control (QSD2 6-phase):
+*   Q2_PH0..Q2_PH5 - Phase clocks at 6f
+*
+* Outputs (6 I/Q pairs = 12 signals total):
+*   Q0_I, Q0_Q - QSD0 I/Q outputs
+*   Q1_I, Q1_Q - QSD1 I/Q outputs
+*   Q2_I, Q2_Q - QSD2 I/Q outputs
+*======================================================================
+
+.SUBCKT TRIPLE_QSD RF_IN GND
++ Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3
++ Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3
++ Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5
++ Q0_I Q0_Q Q1_I Q1_Q Q2_I Q2_Q
+
+*----------------------------------------------------------------------
+* Input Power Splitter
+* 3-way resistive splitter - simple but lossy (~6dB)
+* Real hardware uses transformer splitter from transformers.cir
+*----------------------------------------------------------------------
+R_SPLIT0 RF_IN RF_Q0 16.7
+R_SPLIT1 RF_IN RF_Q1 16.7
+R_SPLIT2 RF_IN RF_Q2 16.7
+
+*----------------------------------------------------------------------
+* QSD0 - Operating at f - k
+* 4-phase quadrature sampling
+*----------------------------------------------------------------------
+X_QSD0 RF_Q0 GND Q0_I Q0_Q Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3 QSD_4PHASE
+
+*----------------------------------------------------------------------
+* QSD1 - Operating at f + k
+* 4-phase quadrature sampling
+*----------------------------------------------------------------------
+X_QSD1 RF_Q1 GND Q1_I Q1_Q Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3 QSD_4PHASE
+
+*----------------------------------------------------------------------
+* QSD2 - Operating at 6f
+* 6-phase sextature sampling
+*----------------------------------------------------------------------
+X_QSD2 RF_Q2 GND Q2_I Q2_Q Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5 QSD_6PHASE
+
+.ENDS TRIPLE_QSD
+
+*======================================================================
+* TEST CIRCUIT - Triple QSD with 14.1 MHz RF
+*
+* Test configuration:
+*   RF: 14.1 MHz (100kHz above LO center)
+*   QSD0: 14.0 MHz - 10kHz = 13.99 MHz LO (gives 110kHz beat)
+*   QSD1: 14.0 MHz + 10kHz = 14.01 MHz LO (gives 90kHz beat)
+*   QSD2: 84 MHz LO (6 × 14 MHz, gives 600kHz beat)
+*
+* The DSP can combine QSD0 and QSD1 outputs to cancel images.
+*======================================================================
+
+* RF input signal - 14.1 MHz tone, 100mV peak
+VRF RF_SRC 0 SIN(0 0.1 14.1MEG)
+R_SRC RF_SRC RF_IN 50
+
+*----------------------------------------------------------------------
+* QSD0 LO at 13.99 MHz (f - k where k = 10kHz)
+* Period = 71.48ns, 90deg = 17.87ns
+*----------------------------------------------------------------------
+V_Q0_PH0_SIN Q0_PH0_S 0 SIN(1.65 1.65 13.99MEG 0)
+V_Q0_PH1_SIN Q0_PH1_S 0 SIN(1.65 1.65 13.99MEG 17.87n)
+V_Q0_PH2_SIN Q0_PH2_S 0 SIN(1.65 1.65 13.99MEG 35.74n)
+V_Q0_PH3_SIN Q0_PH3_S 0 SIN(1.65 1.65 13.99MEG 53.61n)
+
+B_Q0_PH0 Q0_PH0 0 V='3.3 * (1 + tanh(100*(V(Q0_PH0_S) - 1.65))) / 2'
+B_Q0_PH1 Q0_PH1 0 V='3.3 * (1 + tanh(100*(V(Q0_PH1_S) - 1.65))) / 2'
+B_Q0_PH2 Q0_PH2 0 V='3.3 * (1 + tanh(100*(V(Q0_PH2_S) - 1.65))) / 2'
+B_Q0_PH3 Q0_PH3 0 V='3.3 * (1 + tanh(100*(V(Q0_PH3_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* QSD1 LO at 14.01 MHz (f + k)
+* Period = 71.38ns, 90deg = 17.84ns
+*----------------------------------------------------------------------
+V_Q1_PH0_SIN Q1_PH0_S 0 SIN(1.65 1.65 14.01MEG 0)
+V_Q1_PH1_SIN Q1_PH1_S 0 SIN(1.65 1.65 14.01MEG 17.84n)
+V_Q1_PH2_SIN Q1_PH2_S 0 SIN(1.65 1.65 14.01MEG 35.68n)
+V_Q1_PH3_SIN Q1_PH3_S 0 SIN(1.65 1.65 14.01MEG 53.53n)
+
+B_Q1_PH0 Q1_PH0 0 V='3.3 * (1 + tanh(100*(V(Q1_PH0_S) - 1.65))) / 2'
+B_Q1_PH1 Q1_PH1 0 V='3.3 * (1 + tanh(100*(V(Q1_PH1_S) - 1.65))) / 2'
+B_Q1_PH2 Q1_PH2 0 V='3.3 * (1 + tanh(100*(V(Q1_PH2_S) - 1.65))) / 2'
+B_Q1_PH3 Q1_PH3 0 V='3.3 * (1 + tanh(100*(V(Q1_PH3_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* QSD2 LO at 84 MHz (6f) - 6-phase sextature
+* Period = 11.90ns, 60deg = 1.984ns
+*----------------------------------------------------------------------
+V_Q2_PH0_SIN Q2_PH0_S 0 SIN(1.65 1.65 84MEG 0)
+V_Q2_PH1_SIN Q2_PH1_S 0 SIN(1.65 1.65 84MEG 1.984n)
+V_Q2_PH2_SIN Q2_PH2_S 0 SIN(1.65 1.65 84MEG 3.968n)
+V_Q2_PH3_SIN Q2_PH3_S 0 SIN(1.65 1.65 84MEG 5.952n)
+V_Q2_PH4_SIN Q2_PH4_S 0 SIN(1.65 1.65 84MEG 7.937n)
+V_Q2_PH5_SIN Q2_PH5_S 0 SIN(1.65 1.65 84MEG 9.921n)
+
+B_Q2_PH0 Q2_PH0 0 V='3.3 * (1 + tanh(100*(V(Q2_PH0_S) - 1.65))) / 2'
+B_Q2_PH1 Q2_PH1 0 V='3.3 * (1 + tanh(100*(V(Q2_PH1_S) - 1.65))) / 2'
+B_Q2_PH2 Q2_PH2 0 V='3.3 * (1 + tanh(100*(V(Q2_PH2_S) - 1.65))) / 2'
+B_Q2_PH3 Q2_PH3 0 V='3.3 * (1 + tanh(100*(V(Q2_PH3_S) - 1.65))) / 2'
+B_Q2_PH4 Q2_PH4 0 V='3.3 * (1 + tanh(100*(V(Q2_PH4_S) - 1.65))) / 2'
+B_Q2_PH5 Q2_PH5 0 V='3.3 * (1 + tanh(100*(V(Q2_PH5_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* Triple QSD Instance
+*----------------------------------------------------------------------
+X_TRIPLE RF_IN 0
++ Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3
++ Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3
++ Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5
++ Q0_I Q0_Q Q1_I Q1_Q Q2_I Q2_Q
++ TRIPLE_QSD
+
+* Output loads (ADC input impedance)
+R_LOAD_Q0_I Q0_I 0 10k
+R_LOAD_Q0_Q Q0_Q 0 10k
+R_LOAD_Q1_I Q1_I 0 10k
+R_LOAD_Q1_Q Q1_Q 0 10k
+R_LOAD_Q2_I Q2_I 0 10k
+R_LOAD_Q2_Q Q2_Q 0 10k
+
+* Analysis - short simulation for initial test
+.TRAN 1n 50u
+
+* Print all 6 I/Q outputs
+.PRINT TRAN V(Q0_I) V(Q0_Q) V(Q1_I) V(Q1_Q) V(Q2_I) V(Q2_Q)
+
+.END

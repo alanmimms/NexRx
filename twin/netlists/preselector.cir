@@ -1,0 +1,160 @@
+* NexRx Digital Twin - 800 Ohm Preselector
+* Switched LC tank for band selection
+*
+* Reference: RX-ARCHITECTURE.md Section "800 Ohm Preselector Design"
+* Nominal impedance: 800 ohms
+* Frequency range: 1-30 MHz
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+
+*======================================================================
+* PRESELECTOR SUBCIRCUIT
+* Ports: IN, OUT, GND
+* Control: L1_EN, L2_EN, L3_EN, L4_EN (inductor select)
+*          C0-C9 (10-bit binary capacitor bank)
+*======================================================================
+
+.SUBCKT PRESELECTOR IN OUT GND
++ L1_EN L2_EN L3_EN L4_EN
++ C0 C1 C2 C3 C4 C5 C6 C7 C8 C9
+
+*----------------------------------------------------------------------
+* Switched Inductor Bank
+* L1: 500nH with 2.2nF parallel resonance trap + 6.8 ohm damping (160m/80m)
+* L2: 480nH (mid-HF)
+* L3: 180nH (upper-HF)
+* L4: 68nH (10m)
+* Inductors can be paralleled for intermediate values
+*----------------------------------------------------------------------
+
+* L1 path with 160m trap (series resonant at ~4.8 MHz to damp low-band ringing)
+X_SW_L1 IN L1_IN L1_EN GND SW_TS3A4751
+R_DAMP1 L1_IN L1_MID 6.8
+X_L1 L1_MID L_COMMON IND_Q LVAL=500n QVAL=80 FQ=3MEG
+C_TRAP1 L1_MID L_COMMON 2.2n
+
+* L2 path - 480nH (mid-HF bands)
+X_SW_L2 IN L2_IN L2_EN GND SW_TS3A4751
+X_L2 L2_IN L_COMMON IND_Q LVAL=480n QVAL=100 FQ=10MEG
+
+* L3 path - 180nH (upper-HF)
+X_SW_L3 IN L3_IN L3_EN GND SW_TS3A4751
+X_L3 L3_IN L_COMMON IND_Q LVAL=180n QVAL=120 FQ=20MEG
+
+* L4 path - 68nH (10m band)
+X_SW_L4 IN L4_IN L4_EN GND SW_TS3A4751
+X_L4 L4_IN L_COMMON IND_Q LVAL=68n QVAL=100 FQ=28MEG
+
+*----------------------------------------------------------------------
+* Binary Weighted Capacitor Bank
+* 10 bits: 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048 pF
+* Total range: 4-4092 pF in 4 pF steps
+* Plus ~18pF parasitic
+*----------------------------------------------------------------------
+
+* Parasitic capacitance (PCB + switch)
+C_PAR L_COMMON GND 18p
+
+* Switched capacitors (C0=LSB=4pF, C9=MSB=2048pF)
+* Using simplified switch model - ideal switch + cap
+
+* C0 - 4pF
+X_SW_C0 L_COMMON C0_NODE C0 GND SW_TS3A4751
+C_C0 C0_NODE GND 4p
+
+* C1 - 8pF
+X_SW_C1 L_COMMON C1_NODE C1 GND SW_TS3A4751
+C_C1 C1_NODE GND 8p
+
+* C2 - 16pF
+X_SW_C2 L_COMMON C2_NODE C2 GND SW_TS3A4751
+C_C2 C2_NODE GND 16p
+
+* C3 - 32pF
+X_SW_C3 L_COMMON C3_NODE C3 GND SW_TS3A4751
+C_C3 C3_NODE GND 32p
+
+* C4 - 64pF
+X_SW_C4 L_COMMON C4_NODE C4 GND SW_TS3A4751
+C_C4 C4_NODE GND 64p
+
+* C5 - 128pF
+X_SW_C5 L_COMMON C5_NODE C5 GND SW_TS3A4751
+C_C5 C5_NODE GND 128p
+
+* C6 - 256pF
+X_SW_C6 L_COMMON C6_NODE C6 GND SW_TS3A4751
+C_C6 C6_NODE GND 256p
+
+* C7 - 512pF
+X_SW_C7 L_COMMON C7_NODE C7 GND SW_TS3A4751
+C_C7 C7_NODE GND 512p
+
+* C8 - 1024pF
+X_SW_C8 L_COMMON C8_NODE C8 GND SW_TS3A4751
+C_C8 C8_NODE GND 1024p
+
+* C9 - 2048pF (MSB)
+X_SW_C9 L_COMMON C9_NODE C9 GND SW_TS3A4751
+C_C9 C9_NODE GND 2048p
+
+*----------------------------------------------------------------------
+* Output connection
+*----------------------------------------------------------------------
+* Direct connection from LC tank to output
+R_OUT L_COMMON OUT 0.1
+
+.ENDS PRESELECTOR
+
+*======================================================================
+* TEST CIRCUIT - Preselector tuned for 20m band (14 MHz)
+* Using L3 (180nH) and appropriate capacitance
+* f = 1/(2*pi*sqrt(L*C)) -> C = 1/(4*pi^2*f^2*L)
+* At 14 MHz with 180nH: C = 716 pF
+* Binary: 512 + 128 + 64 + 8 + 4 = 716 pF -> C0,C1,C4,C5,C7 on
+*======================================================================
+
+* Input source - 50 ohm impedance
+VIN IN_50 0 SIN(0 0.1 14MEG)
+R_SRC IN_50 IN_200 150
+
+* 50 to 200 ohm transformer (simulated as resistor divider for test)
+* In real circuit this is a transmission line transformer
+R_MATCH IN_200 PRESEL_IN 0.1
+
+* Preselector instance
+X_PRESEL PRESEL_IN PRESEL_OUT 0
++ L1_EN L2_EN L3_EN L4_EN
++ C0 C1 C2 C3 C4 C5 C6 C7 C8 C9
++ PRESELECTOR
+
+* Control voltages for 20m (14 MHz) tuning
+* L3 enabled (180nH), C0+C1+C4+C5+C7 = 716pF
+V_L1 L1_EN 0 0
+V_L2 L2_EN 0 0
+V_L3 L3_EN 0 3.3
+V_L4 L4_EN 0 0
+
+V_C0 C0 0 3.3
+V_C1 C1 0 3.3
+V_C2 C2 0 0
+V_C3 C3 0 0
+V_C4 C4 0 3.3
+V_C5 C5 0 3.3
+V_C6 C6 0 0
+V_C7 C7 0 3.3
+V_C8 C8 0 0
+V_C9 C9 0 0
+
+* Load resistor (represents QSD input impedance after transformer)
+R_LOAD PRESEL_OUT 0 800
+
+* Transient analysis
+.TRAN 1n 2u
+
+* Print output
+.PRINT TRAN V(PRESEL_IN) V(PRESEL_OUT)
+
+.END

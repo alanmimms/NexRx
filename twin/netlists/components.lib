@@ -1,0 +1,115 @@
+* NexRx Digital Twin - Component Library
+* Basic component models for RF simulation
+*
+* Copyright 2026 NexRx Project - MIT License
+
+*======================================================================
+* TS3A4751 CMOS Analog Switch Model
+* Simplified as voltage-controlled resistor
+* Ron = 0.9 ohm, Roff = 10M ohm
+* Control voltage: 0V = off, 3.3V = on
+*======================================================================
+
+.SUBCKT SW_TS3A4751 IN OUT CTRL GND
+* Behavioral switch using Xyce's voltage-controlled resistor
+* R = Roff when CTRL < 1.65V, R = Ron when CTRL > 1.65V
+* Using smooth transition to help convergence
+R_SW IN OUT R='0.9 + 1e7 * (1 - tanh(10*(V(CTRL,GND) - 1.65)))/2'
+.ENDS SW_TS3A4751
+
+*======================================================================
+* Inductor with Q factor (series ESR model)
+* Parameters: LVAL=inductance, QVAL=quality factor at FQ, FQ=Q measurement freq
+*======================================================================
+
+.SUBCKT IND_Q IN OUT LVAL=1u QVAL=100 FQ=10MEG
+* ESR = 2*pi*Fq*L / Q
+R_ESR IN 1 R='6.2832*{FQ}*{LVAL}/{QVAL}'
+L_MAIN 1 OUT {LVAL}
+.ENDS IND_Q
+
+*======================================================================
+* Capacitor with ESR (for realistic high-Q caps)
+* Parameters: CVAL=capacitance, ESR=equivalent series resistance
+*======================================================================
+
+.SUBCKT CAP_ESR IN OUT CVAL=1n ESR=0.01
+R_ESR IN 1 {ESR}
+C_MAIN 1 OUT {CVAL}
+.ENDS CAP_ESR
+
+*======================================================================
+* RF Relay/Switch - Ideal SPDT
+* SEL=0 selects NC (normally closed), SEL=1 selects NO
+*======================================================================
+
+.SUBCKT SPDT_SW COM NC NO SEL GND
+* NC path - on when SEL < 0.5V
+R_NC COM NC R='0.1 + 1e6 * (tanh(10*(V(SEL,GND) - 0.5)) + 1)/2'
+* NO path - on when SEL > 0.5V
+R_NO COM NO R='0.1 + 1e6 * (1 - tanh(10*(V(SEL,GND) - 0.5)))/2'
+.ENDS SPDT_SW
+
+*======================================================================
+* Digital Attenuator Pad (Pi topology)
+* Parameters: ATTEN_DB=attenuation in dB, Z0=characteristic impedance
+* Control: EN=0 bypass, EN=1 attenuate
+*======================================================================
+
+.SUBCKT ATTEN_PAD IN OUT EN GND ATTEN_DB=3 Z0=200
+* Calculate resistor values for Pi attenuator
+* K = 10^(ATTEN_DB/20)
+* R1 = Z0 * (K-1) / (K+1)  [series]
+* R2 = Z0 * (K^2-1) / (2*K) [shunt]
+.PARAM K='PWR(10, {ATTEN_DB}/20)'
+.PARAM R1='{Z0} * ({K}-1) / ({K}+1)'
+.PARAM R2='{Z0} * ({K}*{K}-1) / (2*{K})'
+
+* Bypass path (low resistance when EN=0)
+R_BYP IN OUT R='0.1 + 1e6 * (tanh(10*(V(EN,GND) - 0.5)) + 1)/2'
+
+* Attenuator path (active when EN=1)
+* Input shunt
+R_SH1 IN GND R='{R2} + 1e6 * (1 - tanh(10*(V(EN,GND) - 0.5)))/2'
+* Series
+R_SER IN OUT R='{R1} + 1e6 * (1 - tanh(10*(V(EN,GND) - 0.5)))/2'
+* Output shunt
+R_SH2 OUT GND R='{R2} + 1e6 * (1 - tanh(10*(V(EN,GND) - 0.5)))/2'
+.ENDS ATTEN_PAD
+
+*======================================================================
+* Bias Tee - injects DC while passing RF
+*======================================================================
+
+.SUBCKT BIAS_TEE RF_IN RF_OUT DC_IN
+* DC blocking cap (large value for HF)
+C_BLOCK RF_IN RF_OUT 1u
+* RF choke (high impedance at RF)
+L_CHOKE DC_IN RF_OUT 2.2u
+.ENDS BIAS_TEE
+
+*======================================================================
+* Simple transformer model (ideal turns ratio)
+* Parameters: NRATIO = turns ratio (Vsec/Vpri)
+*======================================================================
+
+.SUBCKT XFMR_IDEAL PRI_P PRI_N SEC_P SEC_N NRATIO=1
+E_SEC SEC_P SEC_N PRI_P PRI_N {NRATIO}
+* Current scaling handled by dependent source
+F_PRI PRI_P PRI_N VSENSE {NRATIO}
+VSENSE SEC_P SEC_INT 0
+R_DUMMY SEC_INT SEC_N 1e-6
+.ENDS XFMR_IDEAL
+
+*======================================================================
+* Coupled inductor transformer (more realistic)
+* Parameters: L1VAL=primary, L2VAL=secondary, KVAL=coupling coefficient
+*======================================================================
+
+.SUBCKT XFMR_COUPLED PRI_P PRI_N SEC_P SEC_N L1VAL=1u L2VAL=1u KVAL=0.99
+L_PRI PRI_P PRI_N {L1VAL}
+L_SEC SEC_P SEC_N {L2VAL}
+K_XFMR L_PRI L_SEC {KVAL}
+.ENDS XFMR_COUPLED
+
+.END

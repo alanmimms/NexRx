@@ -1,0 +1,148 @@
+* NexRx Digital Twin - RF Stimulus Sources
+* Signal generators for receiver testing
+*
+* Reference: IMPLEMENTATION-PLAN.md Stage 7
+*
+* Provides:
+* - Single tone generator
+* - Two-tone generator for IMD testing
+* - Amplitude modulated signal
+* - Noise source
+*
+* Copyright 2026 NexRx Project - MIT License
+
+*======================================================================
+* SINGLE TONE RF SOURCE
+*
+* Parameters:
+*   FREQ - Frequency in Hz
+*   AMP  - Peak amplitude in Volts
+*   Z0   - Source impedance in Ohms
+*======================================================================
+
+.SUBCKT RF_TONE_50 RF_OUT GND FREQ=14MEG AMP=0.1 Z0=50
+V_SIG VSRC GND SIN(0 {AMP} {FREQ})
+R_SRC VSRC RF_OUT {Z0}
+.ENDS RF_TONE_50
+
+*======================================================================
+* TWO-TONE RF SOURCE
+* For intermodulation distortion testing
+*
+* Parameters:
+*   FREQ1, FREQ2 - Two tone frequencies
+*   AMP1, AMP2   - Individual amplitudes
+*   Z0           - Source impedance
+*======================================================================
+
+.SUBCKT RF_TWOTONE RF_OUT GND FREQ1=14MEG FREQ2=14.002MEG AMP1=0.1 AMP2=0.1 Z0=50
+V_SIG1 VSRC1 GND SIN(0 {AMP1} {FREQ1})
+V_SIG2 VSRC2 GND SIN(0 {AMP2} {FREQ2})
+* Sum the two signals
+R_SUM1 VSRC1 VSUM 100
+R_SUM2 VSRC2 VSUM 100
+* Output with source impedance
+R_SRC VSUM RF_OUT {Z0}
+.ENDS RF_TWOTONE
+
+*======================================================================
+* AM MODULATED RF SOURCE
+* Amplitude modulated carrier for receiver testing
+*
+* Parameters:
+*   FC   - Carrier frequency
+*   FM   - Modulation frequency
+*   AMP  - Carrier amplitude
+*   MOD  - Modulation depth (0-1)
+*   Z0   - Source impedance
+*======================================================================
+
+.SUBCKT RF_AM RF_OUT GND FC=14MEG FM=1k AMP=0.1 MOD=0.5 Z0=50
+* AM signal: A * (1 + m*sin(2*pi*fm*t)) * sin(2*pi*fc*t)
+* Using behavioral source
+B_AM VSRC GND V='{AMP} * (1 + {MOD}*sin(6.2832*{FM}*TIME)) * sin(6.2832*{FC}*TIME)'
+R_SRC VSRC RF_OUT {Z0}
+.ENDS RF_AM
+
+*======================================================================
+* THERMAL NOISE SOURCE
+* Approximates receiver thermal noise floor
+*
+* Uses pseudo-random noise via polynomial feedback
+* Not spectrally flat but useful for simulation
+*
+* Parameters:
+*   NF   - Noise figure equivalent (affects amplitude)
+*   BW   - Noise bandwidth (approximation)
+*   Z0   - Source impedance
+*======================================================================
+
+.SUBCKT RF_NOISE RF_OUT GND NF=10 BW=100k Z0=50
+* Thermal noise power: kTB = 4e-21 * BW (W/Hz at 290K)
+* Noise voltage: sqrt(4kTBR) = sqrt(4 * 1.38e-23 * 290 * BW * R)
+* For BW=100kHz, R=50: Vn_rms = 0.9 uV
+* NF adds gain: Vn_total = Vn * 10^(NF/20)
+
+* Behavioral noise source using hash function
+* TIME is converted to pseudo-random value
+B_NOISE VNOISE GND V='0.9e-6 * pow(10, {NF}/20) * sin(12345.67*TIME + sin(9876.54*TIME))'
+R_SRC VNOISE RF_OUT {Z0}
+.ENDS RF_NOISE
+
+*======================================================================
+* COMPOSITE RF STIMULUS
+* Combines signal + noise for realistic receiver testing
+*
+* Parameters:
+*   FREQ - Signal frequency
+*   AMP  - Signal amplitude
+*   SNR  - Signal to noise ratio in dB
+*   Z0   - Source impedance
+*======================================================================
+
+.SUBCKT RF_STIMULUS RF_OUT GND FREQ=14MEG AMP=0.1 SNR=40 Z0=50
+* Signal path
+V_SIG VSIG GND SIN(0 {AMP} {FREQ})
+
+* Noise level: Vnoise = Vsig / 10^(SNR/20)
+* Pseudo-random noise using behavioral source
+B_NOISE VNOISE GND V='{AMP} / pow(10, {SNR}/20) * sin(12345.67*TIME + cos(98765.4*TIME))'
+
+* Sum signal and noise
+R_SIG VSIG VSUM 100
+R_NOISE VNOISE VSUM 100
+
+* Output with source impedance
+R_SRC VSUM RF_OUT {Z0}
+.ENDS RF_STIMULUS
+
+*======================================================================
+* CONFIGURABLE ANTENNA STIMULUS
+* Most flexible stimulus for digital twin
+* Supports single tone, two-tone, or external drive
+*
+* This is the primary stimulus used by the orchestrator.
+* In full simulation, the Xyce callback would update VSRC value.
+*======================================================================
+
+.SUBCKT ANTENNA_INPUT RF_OUT GND
++ FREQ=14MEG AMP=0.1 Z0=50
++ ENABLE_NOISE=0 SNR=40
+
+* Primary signal source
+V_SIG VSIG GND SIN(0 {AMP} {FREQ})
+
+* Optional noise (controlled by ENABLE_NOISE parameter)
+* When ENABLE_NOISE=0, noise contribution is zero
+B_NOISE VNOISE GND V='{ENABLE_NOISE} * {AMP} / pow(10, {SNR}/20) * sin(12345.67*TIME)'
+
+* Combine signal and noise
+R_SIG VSIG VSUM 100
+R_NOISE VNOISE VSUM 100
+
+* Output matching
+R_SRC VSUM RF_OUT {Z0}
+
+.ENDS ANTENNA_INPUT
+
+.END
