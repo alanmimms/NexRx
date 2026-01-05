@@ -1,0 +1,73 @@
+* NexRx Digital Twin - Hexafilar Transformer Loading Test
+*
+* Compare transformer voltage ratio with:
+* 1. Resistive 22 ohm load (design intent)
+* 2. QSD switched capacitor load
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+.INCLUDE 'hexafilar.lib'
+
+.PARAM F_RF=14.01MEG
+.PARAM F_LO=14MEG
+.PARAM T_LO='1/F_LO'
+.PARAM T_PHASE='T_LO/4'
+
+*======================================================================
+* RF SOURCE - 100mV peak at 14.01 MHz, 200 ohm source
+*======================================================================
+V_RF RF_SRC 0 SIN(0 0.1 {F_RF})
+R_RF_SRC RF_SRC PRI_P 200
+
+*======================================================================
+* TEST 1: Hexafilar with resistive 22 ohm loads (design intent)
+*======================================================================
+X_HEXA_R PRI_P 0 SEC_R_A SEC_R_B SEC_R_C 0 XFMR_HEXAFILAR
+
+R_LOAD_R_A SEC_R_A 0 22
+R_LOAD_R_B SEC_R_B 0 22
+R_LOAD_R_C SEC_R_C 0 22
+
+*======================================================================
+* TEST 2: Hexafilar with QSD load on SEC_A (switched caps)
+*======================================================================
+* Use separate transformer instance to isolate tests
+* Drive from same primary node to keep conditions identical
+
+* Actually, we can't share the primary - need separate source
+V_RF2 RF_SRC2 0 SIN(0 0.1 {F_RF})
+R_RF_SRC2 RF_SRC2 PRI_P2 200
+
+X_HEXA_Q PRI_P2 0 SEC_Q_A SEC_Q_B SEC_Q_C 0 XFMR_HEXAFILAR
+
+* QSD on SEC_A, resistive loads on B and C
+V_PH0_S PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_PH1_S PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE})
+V_PH2_S PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE})
+V_PH3_S PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE})
+
+B_PH0 PH0 0 V='3.3 * (1 + tanh(100*(V(PH0_S) - 1.65))) / 2'
+B_PH1 PH1 0 V='3.3 * (1 + tanh(100*(V(PH1_S) - 1.65))) / 2'
+B_PH2 PH2 0 V='3.3 * (1 + tanh(100*(V(PH2_S) - 1.65))) / 2'
+B_PH3 PH3 0 V='3.3 * (1 + tanh(100*(V(PH3_S) - 1.65))) / 2'
+
+X_QSD SEC_Q_A 0 I_OUT Q_OUT PH0 PH1 PH2 PH3 QSD_4PHASE
+
+R_LOAD_Q_B SEC_Q_B 0 22
+R_LOAD_Q_C SEC_Q_C 0 22
+R_LOAD_I I_OUT 0 10k
+R_LOAD_Q Q_OUT 0 10k
+
+*======================================================================
+* Analysis - 50us to see RF behavior
+*======================================================================
+.TRAN 0 50u 0 5n
+.OPTIONS TIMEINT DELMAX=5n
+
+.PRINT TRAN
++ V(PRI_P) V(SEC_R_A)
++ V(PRI_P2) V(SEC_Q_A)
+
+.END

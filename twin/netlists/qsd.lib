@@ -25,12 +25,13 @@
 *   I_OUT, Q_OUT - Baseband I/Q outputs (single-ended, 1.65V DC bias)
 *
 * Parameters:
-*   CSAMP - Sampling capacitor value (default 47nF)
+*   CSAMP - Sampling capacitor value (default 470pF)
 *           Sets baseband bandwidth: f_bb ≈ 1/(2π×R×C)
-*           With 50Ω source and 47nF: f_bb ≈ 68kHz
+*           With 22Ω source and 470pF: Xc=24Ω at 14MHz (good match)
+*           Baseband filtering done downstream before ADC
 *======================================================================
 
-.SUBCKT QSD_4PHASE RF_IN GND I_OUT Q_OUT PH0 PH1 PH2 PH3 CSAMP=47n
+.SUBCKT QSD_4PHASE RF_IN GND I_OUT Q_OUT PH0 PH1 PH2 PH3 CSAMP=470p
 
 *----------------------------------------------------------------------
 * DC Bias - 1.65V reference for single-ended operation
@@ -98,7 +99,7 @@ C_Q_FILT Q_OUT GND 10n
 * Q output = weighted sum of odd phases (60, 180, 300)
 *======================================================================
 
-.SUBCKT QSD_6PHASE RF_IN GND I_OUT Q_OUT PH0 PH1 PH2 PH3 PH4 PH5 CSAMP=47n
+.SUBCKT QSD_6PHASE RF_IN GND I_OUT Q_OUT PH0 PH1 PH2 PH3 PH4 PH5 CSAMP=470p
 
 *----------------------------------------------------------------------
 * DC Bias

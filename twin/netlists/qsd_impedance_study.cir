@@ -1,0 +1,74 @@
+* NexRx Digital Twin - QSD Source Impedance Study
+*
+* Compare QSD output with different source impedances
+* to understand required driving impedance
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+
+*======================================================================
+* TEST PARAMETERS
+*======================================================================
+.PARAM F_LO=14MEG
+.PARAM F_RF=14.01MEG
+.PARAM T_LO='1/F_LO'
+.PARAM T_PHASE='T_LO/4'
+
+*======================================================================
+* QSD LO Generation - 4 phases at 14 MHz
+*======================================================================
+V_PH0_S PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_PH1_S PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE})
+V_PH2_S PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE})
+V_PH3_S PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE})
+
+B_PH0 PH0 0 V='3.3 * (1 + tanh(100*(V(PH0_S) - 1.65))) / 2'
+B_PH1 PH1 0 V='3.3 * (1 + tanh(100*(V(PH1_S) - 1.65))) / 2'
+B_PH2 PH2 0 V='3.3 * (1 + tanh(100*(V(PH2_S) - 1.65))) / 2'
+B_PH3 PH3 0 V='3.3 * (1 + tanh(100*(V(PH3_S) - 1.65))) / 2'
+
+*======================================================================
+* TEST 1: Low impedance source (0.5 ohm) - should work well
+* Simulates ideal voltage-mode driving
+*======================================================================
+V_RF_LO RF_LO_SRC 0 SIN(0 0.033 {F_RF})
+R_SRC_LO RF_LO_SRC RF_IN_LO 0.5
+
+X_QSD_LO RF_IN_LO 0 I_OUT_LO Q_OUT_LO PH0 PH1 PH2 PH3 QSD_4PHASE
+R_LOAD_I_LO I_OUT_LO 0 10k
+R_LOAD_Q_LO Q_OUT_LO 0 10k
+
+*======================================================================
+* TEST 2: Hexafilar impedance (22 ohm) - expected QSD source
+*======================================================================
+V_RF_22 RF_22_SRC 0 SIN(0 0.033 {F_RF})
+R_SRC_22 RF_22_SRC RF_IN_22 22
+
+X_QSD_22 RF_IN_22 0 I_OUT_22 Q_OUT_22 PH0 PH1 PH2 PH3 QSD_4PHASE
+R_LOAD_I_22 I_OUT_22 0 10k
+R_LOAD_Q_22 Q_OUT_22 0 10k
+
+*======================================================================
+* TEST 3: With buffer (2 ohm output) - practical implementation
+*======================================================================
+V_RF_BUF RF_BUF_SRC 0 SIN(0 0.033 {F_RF})
+R_SRC_BUF RF_BUF_SRC RF_IN_BUF 2
+
+X_QSD_BUF RF_IN_BUF 0 I_OUT_BUF Q_OUT_BUF PH0 PH1 PH2 PH3 QSD_4PHASE
+R_LOAD_I_BUF I_OUT_BUF 0 10k
+R_LOAD_Q_BUF Q_OUT_BUF 0 10k
+
+*======================================================================
+* Analysis - 300us for 3 baseband cycles
+*======================================================================
+.TRAN 0 300u 0 5n
+.OPTIONS TIMEINT DELMAX=5n
+
+.PRINT TRAN
++ V(I_OUT_LO) V(Q_OUT_LO)
++ V(I_OUT_22) V(Q_OUT_22)
++ V(I_OUT_BUF) V(Q_OUT_BUF)
+
+.END

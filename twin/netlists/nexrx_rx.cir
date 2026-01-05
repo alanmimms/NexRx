@@ -3,14 +3,14 @@
 *
 * Signal path:
 *   Antenna (50Ω) → T1 (50:200Ω) → Digital Atten (200Ω) →
-*   Preselector (200Ω) → Pentafilar (200:3×50Ω) → 3× QSD
+*   Preselector (200Ω) → Hexafilar (200:3×22Ω) → 3× QSD
 *
 * Copyright 2026 NexRx Project - MIT License
 
 .INCLUDE 'components.lib'
 .INCLUDE 'qsd.lib'
 .INCLUDE 'preselector_200.lib'
-.INCLUDE 'pentafilar.lib'
+.INCLUDE 'hexafilar.lib'
 
 *======================================================================
 * NEXRX RECEIVER SUBCIRCUIT
@@ -76,9 +76,10 @@ X_PRESEL ATTEN_OUT PRESEL_OUT GND
 + PRESELECTOR_200
 
 *----------------------------------------------------------------------
-* Stage 4: Pentafilar Transformer (200 ohm to 3x 50 ohm)
+* Stage 4: Hexafilar Transformer (200 ohm to 3x 22 ohm)
+* 3:1 turns ratio per secondary, 9:1 impedance ratio
 *----------------------------------------------------------------------
-X_PENTA PRESEL_OUT GND RF_Q0 RF_Q1 RF_Q2 GND XFMR_PENTAFILAR
+X_HEXA PRESEL_OUT GND RF_Q0 RF_Q1 RF_Q2 GND XFMR_HEXAFILAR
 
 *----------------------------------------------------------------------
 * Stage 5: Triple QSD (all identical, different clocking)

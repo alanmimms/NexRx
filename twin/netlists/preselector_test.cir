@@ -1,0 +1,55 @@
+* NexRx Digital Twin - Preselector Test
+*
+* Test shunt LC tank at 14 MHz
+* L702 only (220nH), C = 583pF for resonance
+*
+* f = 1/(2π√LC) = 1/(2π√(220nH × 583pF)) = 14.1 MHz
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'preselector_200.lib'
+
+*======================================================================
+* RF Source - sweep around 14 MHz
+*======================================================================
+V_RF RF_SRC 0 AC 1
+R_SRC RF_SRC IN 200
+
+*======================================================================
+* Preselector configured for 14 MHz
+* L701_SHORT = 3.3V (use L702 only = 220nH)
+* C707(560) + C702(15) + C701(8) = 583pF
+*======================================================================
+X_PRESEL IN OUT 0
++ L701_SHORT
++ C701_EN C702_EN C703_EN C704_EN C705_EN
++ C706_EN C707_EN C708_EN C709_EN C710_EN C711_EN
++ PRESELECTOR_200
+
+* Control signals
+V_L701_SHORT L701_SHORT 0 3.3
+
+* Enable C701, C702, C707 for 583pF total
+V_C701 C701_EN 0 3.3
+V_C702 C702_EN 0 3.3
+V_C703 C703_EN 0 0
+V_C704 C704_EN 0 0
+V_C705 C705_EN 0 0
+V_C706 C706_EN 0 0
+V_C707 C707_EN 0 3.3
+V_C708 C708_EN 0 0
+V_C709 C709_EN 0 0
+V_C710 C710_EN 0 0
+V_C711 C711_EN 0 0
+
+* Load
+R_LOAD OUT 0 200
+
+*======================================================================
+* AC Analysis - sweep 1 MHz to 30 MHz
+*======================================================================
+.AC DEC 100 1MEG 30MEG
+
+.PRINT AC VDB(OUT) VP(OUT)
+
+.END

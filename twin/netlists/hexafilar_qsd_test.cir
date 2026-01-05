@@ -1,0 +1,90 @@
+* NexRx Digital Twin - Hexafilar + Single QSD Test
+*
+* Verify hexafilar transformer (200Ω to 22Ω) with one QSD
+* RF: 14.01 MHz, LO: 14 MHz → expect 10kHz baseband
+*
+* Hexafilar: 3:1 turns ratio, 9:1 impedance ratio
+*   Primary: 200Ω (3 windings × 2 turns in series = 6 turns)
+*   Secondary: 22Ω each (2 turns)
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+.INCLUDE 'hexafilar.lib'
+
+*======================================================================
+* TEST PARAMETERS
+*======================================================================
+.PARAM F_LO=14MEG
+.PARAM F_RF=14.01MEG
+.PARAM F_BASEBAND=10k
+.PARAM T_LO='1/F_LO'
+.PARAM T_PHASE='T_LO/4'
+
+*======================================================================
+* RF SOURCE - 100mV peak at 14.01 MHz, 200 ohm source impedance
+* (matching hexafilar primary impedance)
+*======================================================================
+V_RF RF_SRC 0 SIN(0 0.1 {F_RF})
+R_RF_SRC RF_SRC PRI_P 200
+
+*======================================================================
+* Hexafilar Transformer
+* PRI_P/PRI_N = 200Ω primary
+* SEC_A/B/C = 22Ω secondaries (only using SEC_A for this test)
+*======================================================================
+X_HEXA PRI_P 0 SEC_A SEC_B SEC_C 0 XFMR_HEXAFILAR
+
+* Terminate unused secondaries with 22 ohm loads
+R_LOAD_B SEC_B 0 22
+R_LOAD_C SEC_C 0 22
+
+*======================================================================
+* QSD LO Generation - 4 phases at 14 MHz
+* Period = 71.43ns, each phase = 17.86ns offset
+*======================================================================
+V_PH0_S PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_PH1_S PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE})
+V_PH2_S PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE})
+V_PH3_S PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE})
+
+* Square up with tanh
+B_PH0 PH0 0 V='3.3 * (1 + tanh(100*(V(PH0_S) - 1.65))) / 2'
+B_PH1 PH1 0 V='3.3 * (1 + tanh(100*(V(PH1_S) - 1.65))) / 2'
+B_PH2 PH2 0 V='3.3 * (1 + tanh(100*(V(PH2_S) - 1.65))) / 2'
+B_PH3 PH3 0 V='3.3 * (1 + tanh(100*(V(PH3_S) - 1.65))) / 2'
+
+*======================================================================
+* Single QSD Instance (on SEC_A output)
+*======================================================================
+X_QSD SEC_A 0 I_OUT Q_OUT PH0 PH1 PH2 PH3 QSD_4PHASE
+
+* Output loads (ADC input impedance)
+R_LOAD_I I_OUT 0 10k
+R_LOAD_Q Q_OUT 0 10k
+
+*======================================================================
+* Analysis
+* Run for 300us to see 3 cycles of 10kHz baseband (T=100us)
+* Use 5ns timestep to capture 14MHz RF accurately
+*======================================================================
+.TRAN 0 300u 0 5n
+.OPTIONS TIMEINT DELMAX=5n
+
+*======================================================================
+* Print key nodes:
+*   PRI_P - Hexafilar primary input
+*   SEC_A - Hexafilar secondary output (QSD input)
+*   SAMP0-3 - QSD sampling capacitor voltages
+*   I_OUT, Q_OUT - Baseband I/Q outputs
+*
+* At 10kHz baseband, should see sine wave on I_OUT and Q_OUT
+* with 90 degree phase relationship
+*======================================================================
+.PRINT TRAN
++ V(PRI_P) V(SEC_A)
++ V(X_QSD:SAMP0) V(X_QSD:SAMP1) V(X_QSD:SAMP2) V(X_QSD:SAMP3)
++ V(I_OUT) V(Q_OUT)
+
+.END

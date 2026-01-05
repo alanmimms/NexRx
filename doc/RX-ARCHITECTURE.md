@@ -75,7 +75,7 @@ graph LR
 	TRrelay --> TVS25[25V pk-pk<br/>Limiter]
 	TVS25 --> C[Digital<br/>Attenuator<br/>0-45dB]
     C --> E[Preselector<br/>200Ω LC Tank]
-    E --> F[Transform<br/>200→3×36Ω]
+    E --> F[Transform<br/>200→3×22Ω]
 	F --> TVS13[13V pk-pk<br/>Limiter]
 	TVS13 --> G[Triple QSD<br/>Array]
     G --> H[6× MAX9939<br/>PGAs]
@@ -176,63 +176,30 @@ component stress, and practical implementation.
 
 The preselector uses switched inductors and a binary-weighted capacitor bank:
 
-**Inductors** (Selected via AS169-73LF pHEMT switches):
-- L1: 500nH with 2.2nF parallel resonance trap and 6.8Ω series damping (160m/80m)
-- L2: 480nH (mid-HF bands)
-- L3: 180nH (upper-HF bands)
-- L4: 68nH (10m band)
+**Inductors**
 
-These can be used individually or in parallel combinations to achieve
-continuous coverage from 1-30 MHz.
+The inductors are simple. There's a 220nH inductor that is always in
+circuit, and a 1.5uH inductor that is sometimes shorted out (by
+AS169-73LF pHEMT switch) for the higher bands, or put into series with
+the first inductor for the lower bands.
 
 **Capacitor Bank**:
-- 10-bit binary-weighted: 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048 pF
-- Total range: 4-4092 pF in 4 pF steps
-- Additional fixed 10nF for 160m operation
+- 10-bit binary-weighted: 8, 15, 33, 68, 120, 250, 560, 2200, 3900, 8200pF
+- Total range: 8-15354pF in 8pF steps
 - ~18pF parasitic (PCB and switch capacitance)
-
-### Q Management Strategy
-
-The preselector Q varies with frequency and configuration:
-
-```
-At 1.9 MHz (160m): Q = 91 (reduced by 6.8Ω series resistor)
-   Bandwidth = 1.9 MHz / 91 = 21 kHz
-
-At 7 MHz (40m): Q = 533 (natural inductor Q)
-   Bandwidth = 7 MHz / 533 = 13 kHz
-
-At 28 MHz (10m): Q = 667 (approaching inductor limit)
-   Bandwidth = 28 MHz / 667 = 42 kHz
-```
-
-### Frequency Coverage
-
-| Band | Frequency Range | L Config | Effective L | C Range | Tuning Step |
-|------|-----------------|----------|-------------|---------|-------------|
-| 160m | 1.8-2.0 MHz | L1+2.2nF | 500nH damped | 12-14 nF | 0.5 kHz/4pF |
-| 80m | 3.5-4.0 MHz | L1+2.2nF | 500nH damped | 3.6-4.5 nF | 2.0 kHz/4pF |
-| 40m | 7.0-7.3 MHz | L3 | 180nH | 2.85-2.90 nF | 10 kHz/4pF |
-| 20m | 14.0-14.35 MHz | L2\|\|L3 | 131nH | 985-990 pF | 40 kHz/4pF |
-| 10m | 28.0-29.7 MHz | L4 | 68nH | 475-480 pF | 70 kHz/4pF |
-
-Parallel inductor combinations fill coverage gaps, ensuring continuous
-1-30 MHz general coverage capability.
-
----
 
 ## Impedance Transformation
 
-### Output Transformer (200Ω to 3×36Ω)
+### Output Transformer (200Ω to 3×22Ω)
 
 This critical transformer must provide three identical outputs for the triple-QSD array:
 
 **Specifications**:
 - Core: BN-43-202 binocular
-- Winding: pentafilar 2 turns each #30AWG
+- Winding: pentafilar 3 turns each #30AWG
 - Primary: two of the windings in series
 - Secondaries: Remaining windings
-- Impedance: 200Ω to 36Ω per output (nominal)
+- Impedance: 200Ω to 22Ω per output (nominal)
 - Actual output impedance: 2-4Ω at HF
 
 **Why Pentafilar Winding?**: The five windings must be absolutely
@@ -629,7 +596,7 @@ graph TB
         A3 --> B0[50:200Ω]
 	    B0 --> B1[digital attenuator 3,6,12,24dB]
         B1 --> B2[LC Tank]
-        B2 --> B3[200:3×36Ω]
+        B2 --> B3[200:3×22Ω]
     end
     
     subgraph QSD Array

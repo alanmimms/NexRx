@@ -41,25 +41,75 @@ R_SW IN OUT R='0.35 + 1e7 * (1 - tanh(10*(V(CTRL,GND) - 1.65)))/2'
 + C706_EN C707_EN C708_EN C709_EN C710_EN C711_EN
 
 *----------------------------------------------------------------------
-* TEMPORARY: Simple bypass (wire) for testing rest of chain
-* TODO: Design proper preselector topology
+* SHUNT PARALLEL LC TANK TOPOLOGY
+*
+* Signal path: IN ---+--- OUT
+*                    |
+*                 +--+--+
+*                 |     |
+*                L_eq  C_eq
+*                 |     |
+*                 +--+--+
+*                    |
+*                   GND
+*
+* At resonance f = 1/(2π√LC), parallel tank has max impedance → signal passes
+* Off resonance, tank impedance drops → signal attenuated to ground
 *----------------------------------------------------------------------
 
-* Direct connection with minimal series resistance
-R_BYPASS IN OUT 0.1
+* Signal path - direct connection
+R_PATH IN OUT 0.1
 
-* Dummy loads for unused control signals (to prevent warnings)
-R_L701 L701_SHORT GND 1e9
-R_C701 C701_EN GND 1e9
-R_C702 C702_EN GND 1e9
-R_C703 C703_EN GND 1e9
-R_C704 C704_EN GND 1e9
-R_C705 C705_EN GND 1e9
-R_C706 C706_EN GND 1e9
-R_C707 C707_EN GND 1e9
-R_C708 C708_EN GND 1e9
-R_C709 C709_EN GND 1e9
-R_C710 C710_EN GND 1e9
-R_C711 C711_EN GND 1e9
+*----------------------------------------------------------------------
+* Inductor branch: L701 in series with L702, L701 can be shorted
+* L701_SHORT = 3.3V → L701 bypassed (use for HIGH freq, L702 only = 220nH)
+* L701_SHORT = 0V → L701 in circuit (use for LOW freq, total = 1.72uH)
+*----------------------------------------------------------------------
+
+* L701 with parallel bypass switch
+L_L701 OUT L701_L702 1.5u
+X_SW_L701 OUT L701_L702 L701_SHORT GND SW_AS183
+
+* L702 always in circuit, connects to ground
+L_L702 L701_L702 GND 220n
+
+*----------------------------------------------------------------------
+* Capacitor branch (parallel to inductor branch)
+* Switched cap bank - each cap has series switch from OUT to GND
+* EN = 3.3V → cap in circuit, EN = 0V → cap disconnected
+*----------------------------------------------------------------------
+
+X_SW_C701 OUT C701_SW C701_EN GND SW_AS183
+C_C701 C701_SW GND 8p
+
+X_SW_C702 OUT C702_SW C702_EN GND SW_AS183
+C_C702 C702_SW GND 15p
+
+X_SW_C703 OUT C703_SW C703_EN GND SW_AS183
+C_C703 C703_SW GND 33p
+
+X_SW_C704 OUT C704_SW C704_EN GND SW_AS183
+C_C704 C704_SW GND 68p
+
+X_SW_C705 OUT C705_SW C705_EN GND SW_AS183
+C_C705 C705_SW GND 120p
+
+X_SW_C706 OUT C706_SW C706_EN GND SW_AS183
+C_C706 C706_SW GND 250p
+
+X_SW_C707 OUT C707_SW C707_EN GND SW_AS183
+C_C707 C707_SW GND 560p
+
+X_SW_C708 OUT C708_SW C708_EN GND SW_AS183
+C_C708 C708_SW GND 1000p
+
+X_SW_C709 OUT C709_SW C709_EN GND SW_AS183
+C_C709 C709_SW GND 2200p
+
+X_SW_C710 OUT C710_SW C710_EN GND SW_AS183
+C_C710 C710_SW GND 3900p
+
+X_SW_C711 OUT C711_SW C711_EN GND SW_AS183
+C_C711 C711_SW GND 8200p
 
 .ENDS PRESELECTOR_200
