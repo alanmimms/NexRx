@@ -4457,7 +4457,7 @@
 		)
 		(uuid "de3d5ae0-51c3-4e24-9549-728e68a17977")
 	)
-	(text "BN-43-202\n200 : 3-way 50 ohm\npentafilar 2 turns\n#30 AWG"
+	(text "BN-43-202\n200 : 3-way 22 ohm\nhexafilar 2 turns\n#30 AWG"
 		(exclude_from_sim no)
 		(at 102.87 55.118 0)
 		(effects
@@ -4700,6 +4700,12 @@
 		(uuid "b3975564-543c-4d45-8ac4-9cc76643abaa")
 	)
 	(junction
+		(at 77.47 62.23)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b3bc6eae-4a66-4875-abaf-881ff1d094f6")
+	)
+	(junction
 		(at 62.23 62.23)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4752,12 +4758,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d26213de-ce16-406c-8425-5a64587c8ef2")
-	)
-	(junction
-		(at 77.47 62.23)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "d400c0c1-a733-4234-81a2-aad8f32a5292")
 	)
 	(junction
 		(at 218.44 34.29)
@@ -5232,6 +5232,16 @@
 			(type default)
 		)
 		(uuid "1d2531dd-a372-46bf-8ef7-b6454a5115c8")
+	)
+	(wire
+		(pts
+			(xy 77.47 62.23) (xy 88.9 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1df68cda-6e02-4eaf-a799-551a0ccd100a")
 	)
 	(wire
 		(pts
@@ -5815,6 +5825,16 @@
 	)
 	(wire
 		(pts
+			(xy 77.47 62.23) (xy 77.47 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "586e5b9c-7197-4781-8191-37efcc3f696a")
+	)
+	(wire
+		(pts
 			(xy 218.44 132.08) (xy 204.47 132.08)
 		)
 		(stroke
@@ -5902,16 +5922,6 @@
 			(type default)
 		)
 		(uuid "622cd43c-c6c8-4909-8f2e-2b82585974ee")
-	)
-	(wire
-		(pts
-			(xy 77.47 62.23) (xy 77.47 66.675)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "627081bf-6148-41a1-ae84-d60285478ed0")
 	)
 	(wire
 		(pts
@@ -6142,16 +6152,6 @@
 			(type default)
 		)
 		(uuid "79813bba-c6fa-43b8-8636-804ca306cb4b")
-	)
-	(wire
-		(pts
-			(xy 77.47 78.105) (xy 77.47 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7aeade8f-9d8e-437b-bc49-c9791cb8553f")
 	)
 	(wire
 		(pts
@@ -7385,16 +7385,6 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 62.23) (xy 88.9 62.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e1ccda0a-78ea-4312-995d-3a9e2e2d6634")
-	)
-	(wire
-		(pts
 			(xy 205.74 116.84) (xy 205.74 118.11)
 		)
 		(stroke
@@ -7422,6 +7412,16 @@
 			(type default)
 		)
 		(uuid "e5cc0f41-fdd4-4223-8483-60c7fecdef1e")
+	)
+	(wire
+		(pts
+			(xy 77.47 78.74) (xy 77.47 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e63d6660-a61c-4b42-a03c-fbafb906158a")
 	)
 	(wire
 		(pts
@@ -9263,7 +9263,7 @@
 	)
 	(symbol
 		(lib_id "Library:CDSOD323-TxxC")
-		(at 77.47 72.39 0)
+		(at 77.47 73.025 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9271,7 +9271,7 @@
 		(dnp no)
 		(uuid "20104eb7-6e29-44bc-85e7-dd68c31b39ba")
 		(property "Reference" "D301"
-			(at 78.232 67.818 0)
+			(at 78.232 68.453 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9280,7 +9280,7 @@
 			)
 		)
 		(property "Value" "CDSOD323-TxxC"
-			(at 67.31 79.756 0)
+			(at 67.31 80.391 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9289,7 +9289,7 @@
 			)
 		)
 		(property "Footprint" "Diode_SMD:D_SOD-323"
-			(at 82.042 102.87 0)
+			(at 82.042 103.505 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9299,7 +9299,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.mouser.com/datasheet/3/40/1/cdsod323_txxc.pdf"
-			(at 77.597 98.425 0)
+			(at 77.597 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9308,7 +9308,7 @@
 			)
 		)
 		(property "Description" "ESD Protection Diodes / TVS Diodes TVS Diode xx VOLT"
-			(at 74.422 101.6 0)
+			(at 74.422 102.235 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9317,7 +9317,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 77.47 72.39 0)
+			(at 77.47 73.025 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9325,7 +9325,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 77.47 72.39 0)
+			(at 77.47 73.025 0)
 			(effects
 				(font
 					(size 1.27 1.27)

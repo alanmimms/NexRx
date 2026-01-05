@@ -196,19 +196,21 @@ This critical transformer must provide three identical outputs for the triple-QS
 
 **Specifications**:
 - Core: BN-43-202 binocular
-- Winding: pentafilar 3 turns each #30AWG
-- Primary: two of the windings in series
+- Winding: hexafilar 2 turns each #30AWG
+- Primary: three of the windings in series
 - Secondaries: Remaining windings
 - Impedance: 200Ω to 22Ω per output (nominal)
 - Actual output impedance: 2-4Ω at HF
 
-**Why Pentafilar Winding?**: The five windings must be absolutely
+**Why Hexafilar Winding?**: The six windings must be absolutely
 identical in impedance and coupling to maintain I/Q balance across the
-three QSDs. Pentafilar winding—where all five wires are wound
-together—ensures this matching.
+three QSDs. Hexafilar winding—where all six wires are wound
+together—ensures this matching. This is done by twisting separately
+(10-12 twists/inch) three pairs of wires. These three twisted pairs
+are then twisted together to create the hexafilar windings.
 
 **Low Output Impedance Requirement**: The QSDs present switched
-capacitive loads (1000pF sampling capacitors). At 30 MHz with 6×
+capacitive loads (470pF sampling capacitors). At 30 MHz with 6×
 oversampling, each capacitor must charge in ~1.4ns. The transformer's
 low output impedance (2-4Ω from winding resistance and leakage
 inductance) enables adequate charging even at high frequencies.
