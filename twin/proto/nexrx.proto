@@ -1,0 +1,144 @@
+// NexRx Digital Twin - Protocol Buffer Schema
+//
+// Defines the control API and I/Q data format for Host↔STM32 communication.
+// Transport-agnostic: works over USB, Ethernet, or simulation IPC.
+//
+// Copyright 2026 NexRx Project - MIT License
+
+syntax = "proto3";
+
+package nexrx;
+
+option optimize_for = LITE_RUNTIME;
+
+//======================================================================
+// VFO CONTROL
+// Each QSD has its own NCO frequency
+//======================================================================
+
+message SetVfoFreq {
+    uint32 qsd_index = 1;       // 0, 1, or 2
+    uint64 freq_hz = 2;         // Frequency in Hz (e.g., 14200000 for 14.2 MHz)
+}
+
+message GetVfoFreq {
+    uint32 qsd_index = 1;
+}
+
+message VfoFreqResponse {
+    uint32 qsd_index = 1;
+    uint64 freq_hz = 2;
+}
+
+//======================================================================
+// PRESELECTOR CONTROL
+// Switched LC tank: L701 bypass + 11 capacitor switches
+//======================================================================
+
+message SetPreselector {
+    bool l701_short = 1;        // true = bypass L701 (use L702 only for high freq)
+    uint32 cap_mask = 2;        // Bit mask for C701-C711 (bit 0 = C701, etc.)
+}
+
+message GetPreselector {
+}
+
+message PreselectorResponse {
+    bool l701_short = 1;
+    uint32 cap_mask = 2;
+    uint32 total_capacitance_pf = 3;  // Calculated total C in pF
+}
+
+//======================================================================
+// ATTENUATOR CONTROL
+// Four switchable stages: 3dB, 6dB, 12dB, 24dB
+//======================================================================
+
+message SetAttenuator {
+    bool atten_3db = 1;         // true = 3dB attenuation enabled
+    bool atten_6db = 2;
+    bool atten_12db = 3;
+    bool atten_24db = 4;
+}
+
+message GetAttenuator {
+}
+
+message AttenuatorResponse {
+    bool atten_3db = 1;
+    bool atten_6db = 2;
+    bool atten_12db = 3;
+    bool atten_24db = 4;
+    uint32 total_atten_db = 5;  // Calculated total attenuation
+}
+
+//======================================================================
+// I/Q SAMPLE DATA
+// 24-bit samples from three QSDs, interleaved
+//======================================================================
+
+message IQSample {
+    int32 i = 1;                // 24-bit signed, stored in int32
+    int32 q = 2;                // 24-bit signed, stored in int32
+}
+
+message IQFrame {
+    // Samples from each QSD (typically 1 sample per frame at 96kHz)
+    IQSample qsd0 = 1;
+    IQSample qsd1 = 2;
+    IQSample qsd2 = 3;
+
+    uint64 timestamp_ns = 4;    // Nanoseconds since simulation start
+    uint32 sequence = 5;        // Frame sequence number for dropout detection
+}
+
+// Batch of frames for efficient transfer
+message IQFrameBatch {
+    repeated IQFrame frames = 1;
+}
+
+//======================================================================
+// SYSTEM STATUS
+//======================================================================
+
+message GetStatus {
+}
+
+message StatusResponse {
+    bool running = 1;
+    uint64 uptime_ms = 2;
+    uint64 sample_count = 3;
+    uint32 overruns = 4;        // Buffer overrun count
+}
+
+//======================================================================
+// UNIFIED REQUEST/RESPONSE WRAPPER
+// Allows multiplexing different message types over single channel
+//======================================================================
+
+message Request {
+    uint32 request_id = 1;      // For matching responses to requests
+
+    oneof payload {
+        SetVfoFreq set_vfo_freq = 10;
+        GetVfoFreq get_vfo_freq = 11;
+        SetPreselector set_preselector = 20;
+        GetPreselector get_preselector = 21;
+        SetAttenuator set_attenuator = 30;
+        GetAttenuator get_attenuator = 31;
+        GetStatus get_status = 40;
+    }
+}
+
+message Response {
+    uint32 request_id = 1;      // Matches the request
+    bool success = 2;
+    string error_message = 3;   // Set if success == false
+
+    oneof payload {
+        VfoFreqResponse vfo_freq = 10;
+        PreselectorResponse preselector = 20;
+        AttenuatorResponse attenuator = 30;
+        StatusResponse status = 40;
+    }
+}

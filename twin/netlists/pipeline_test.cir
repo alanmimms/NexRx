@@ -1,0 +1,118 @@
+* NexRx Digital Twin - Full Pipeline Test
+*
+* Complete RF path test for ADC sampling validation:
+*   Antenna (50Ω) → T1 (50:200Ω) → Preselector (bypassed) →
+*   Hexafilar (200:3×22Ω) → 3× QSD → I/Q outputs
+*
+* RF: 14.01 MHz, 100mV peak
+* LO: 14.00 MHz
+* Expected baseband: 10kHz I/Q outputs
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+.INCLUDE 'hexafilar.lib'
+
+*======================================================================
+* TEST PARAMETERS
+*======================================================================
+.PARAM F_RF=14.01MEG
+.PARAM F_LO=14MEG
+.PARAM T_LO='1/F_LO'
+.PARAM T_PHASE_4='T_LO/4'
+.PARAM T_PHASE_6='T_LO/6'
+
+*======================================================================
+* RF SOURCE - 100mV peak at 14.01 MHz through 50 ohm antenna
+*======================================================================
+V_ANT RF_SRC 0 SIN(0 0.1 {F_RF})
+R_ANT RF_SRC ANT_IN 50
+
+*======================================================================
+* 50:200 ohm input transformer (simplified ideal model)
+* Turns ratio N=2, impedance ratio 4:1
+*======================================================================
+* Ideal transformer using controlled sources
+E_T1_SEC T1_SEC 0 ANT_IN 0 2
+F_T1_PRI ANT_IN 0 V_T1_SENSE 2
+V_T1_SENSE T1_SEC T1_OUT 0
+
+* 200 ohm source impedance to hexafilar
+R_T1_OUT T1_OUT HEXA_IN 1
+
+*======================================================================
+* Hexafilar Transformer (200Ω to 3×22Ω)
+*======================================================================
+X_HEXA HEXA_IN 0 RF_Q0 RF_Q1 RF_Q2 0 XFMR_HEXAFILAR
+
+*======================================================================
+* QSD0 LO at 14 MHz (4-phase quadrature)
+*======================================================================
+V_Q0_PH0_S Q0_PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_Q0_PH1_S Q0_PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE_4})
+V_Q0_PH2_S Q0_PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE_4})
+V_Q0_PH3_S Q0_PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE_4})
+
+B_Q0_PH0 Q0_PH0 0 V='3.3 * (1 + tanh(100*(V(Q0_PH0_S) - 1.65))) / 2'
+B_Q0_PH1 Q0_PH1 0 V='3.3 * (1 + tanh(100*(V(Q0_PH1_S) - 1.65))) / 2'
+B_Q0_PH2 Q0_PH2 0 V='3.3 * (1 + tanh(100*(V(Q0_PH2_S) - 1.65))) / 2'
+B_Q0_PH3 Q0_PH3 0 V='3.3 * (1 + tanh(100*(V(Q0_PH3_S) - 1.65))) / 2'
+
+X_QSD0 RF_Q0 0 Q0_I Q0_Q Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3 QSD_4PHASE
+
+*======================================================================
+* QSD1 LO at 14 MHz (4-phase quadrature, same as QSD0 for this test)
+*======================================================================
+V_Q1_PH0_S Q1_PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_Q1_PH1_S Q1_PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE_4})
+V_Q1_PH2_S Q1_PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE_4})
+V_Q1_PH3_S Q1_PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE_4})
+
+B_Q1_PH0 Q1_PH0 0 V='3.3 * (1 + tanh(100*(V(Q1_PH0_S) - 1.65))) / 2'
+B_Q1_PH1 Q1_PH1 0 V='3.3 * (1 + tanh(100*(V(Q1_PH1_S) - 1.65))) / 2'
+B_Q1_PH2 Q1_PH2 0 V='3.3 * (1 + tanh(100*(V(Q1_PH2_S) - 1.65))) / 2'
+B_Q1_PH3 Q1_PH3 0 V='3.3 * (1 + tanh(100*(V(Q1_PH3_S) - 1.65))) / 2'
+
+X_QSD1 RF_Q1 0 Q1_I Q1_Q Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3 QSD_4PHASE
+
+*======================================================================
+* QSD2 LO at 14 MHz (6-phase sextature)
+*======================================================================
+V_Q2_PH0_S Q2_PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_Q2_PH1_S Q2_PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE_6})
+V_Q2_PH2_S Q2_PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE_6})
+V_Q2_PH3_S Q2_PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE_6})
+V_Q2_PH4_S Q2_PH4_S 0 SIN(1.65 1.65 {F_LO} {4*T_PHASE_6})
+V_Q2_PH5_S Q2_PH5_S 0 SIN(1.65 1.65 {F_LO} {5*T_PHASE_6})
+
+B_Q2_PH0 Q2_PH0 0 V='3.3 * (1 + tanh(100*(V(Q2_PH0_S) - 1.65))) / 2'
+B_Q2_PH1 Q2_PH1 0 V='3.3 * (1 + tanh(100*(V(Q2_PH1_S) - 1.65))) / 2'
+B_Q2_PH2 Q2_PH2 0 V='3.3 * (1 + tanh(100*(V(Q2_PH2_S) - 1.65))) / 2'
+B_Q2_PH3 Q2_PH3 0 V='3.3 * (1 + tanh(100*(V(Q2_PH3_S) - 1.65))) / 2'
+B_Q2_PH4 Q2_PH4 0 V='3.3 * (1 + tanh(100*(V(Q2_PH4_S) - 1.65))) / 2'
+B_Q2_PH5 Q2_PH5 0 V='3.3 * (1 + tanh(100*(V(Q2_PH5_S) - 1.65))) / 2'
+
+X_QSD2 RF_Q2 0 Q2_I Q2_Q Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5 QSD_6PHASE
+
+*======================================================================
+* Output loads (ADC input impedance)
+*======================================================================
+R_LOAD_Q0_I Q0_I 0 10k
+R_LOAD_Q0_Q Q0_Q 0 10k
+R_LOAD_Q1_I Q1_I 0 10k
+R_LOAD_Q1_Q Q1_Q 0 10k
+R_LOAD_Q2_I Q2_I 0 10k
+R_LOAD_Q2_Q Q2_Q 0 10k
+
+*======================================================================
+* Analysis - 1ms simulation (96 samples at 96kHz)
+* Use 5ns max timestep to capture 14MHz RF
+*======================================================================
+.TRAN 0 1m 0 5n
+.OPTIONS TIMEINT DELMAX=5n
+
+* Print I/Q outputs for all three QSDs
+.PRINT TRAN V(Q0_I) V(Q0_Q) V(Q1_I) V(Q1_Q) V(Q2_I) V(Q2_Q)
+
+.END

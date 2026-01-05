@@ -183,10 +183,84 @@ target_compile_options(twin_core PRIVATE
 )
 
 # -----------------------------------------------------------------------------
+# Transport library - IPC for Host<->Firmware communication
+# -----------------------------------------------------------------------------
+add_library(twin_transport STATIC
+    src/transport/SharedMemTransport.cpp
+    src/transport/UnixSocketTransport.cpp
+)
+
+target_include_directories(twin_transport PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(twin_transport PUBLIC
+    rt          # POSIX shared memory
+    Threads::Threads
+)
+
+target_compile_options(twin_transport PRIVATE
+    -Wall -Wextra -Wpedantic
+    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+)
+
+# -----------------------------------------------------------------------------
+# Protobuf generation (optional - enable with -DWITH_PROTOBUF=ON)
+# -----------------------------------------------------------------------------
+option(WITH_PROTOBUF "Enable protobuf message generation" OFF)
+if(WITH_PROTOBUF)
+    find_package(Protobuf REQUIRED)
+    protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS proto/nexrx.proto)
+    add_library(twin_proto STATIC ${PROTO_SRCS} ${PROTO_HDRS})
+    target_include_directories(twin_proto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+    target_link_libraries(twin_proto PUBLIC protobuf::libprotobuf-lite)
+endif()
+
+# -----------------------------------------------------------------------------
+# Sampler library - ADC sampling from Xyce
+# -----------------------------------------------------------------------------
+add_library(twin_sampler STATIC
+    src/sampler/AdcSampler.cpp
+)
+
+target_include_directories(twin_sampler PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${XYCE_INCLUDE_DIRS}
+)
+
+target_link_libraries(twin_sampler PUBLIC
+    twin_core
+)
+
+target_compile_options(twin_sampler PRIVATE
+    -Wall -Wextra -Wpedantic
+    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+)
+
+# -----------------------------------------------------------------------------
 # Main executable
 # -----------------------------------------------------------------------------
 add_executable(twin src/main.cpp)
-target_link_libraries(twin PRIVATE twin_core)
+target_link_libraries(twin PRIVATE twin_core twin_transport twin_sampler)
+if(WITH_PROTOBUF)
+    target_link_libraries(twin PRIVATE twin_proto)
+endif()
+
+# -----------------------------------------------------------------------------
+# Pipeline test executable
+# -----------------------------------------------------------------------------
+add_executable(pipeline_test src/pipeline_test.cpp)
+target_link_libraries(pipeline_test PRIVATE twin_core twin_transport twin_sampler)
+
+# -----------------------------------------------------------------------------
+# Stimulus test executable (header-only stimulus library)
+# -----------------------------------------------------------------------------
+add_executable(stimulus_test src/stimulus_test.cpp)
+target_include_directories(stimulus_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # -----------------------------------------------------------------------------
 # Install rules
