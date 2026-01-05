@@ -4114,7 +4114,7 @@
           "show": false
         }
       ],
-      "filter_string": "c",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
