@@ -1,4 +1,4 @@
-27307775029208414
+27309542605969141
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71756,6 +71756,13 @@ Transformer-2P-3S-BN-43-202
 0
 10
 10
+Library
+Transformer-hexafilar-200-to-3x22-ohm-BN-43-202
+
+
+0
+12
+12
 Library
 Transformer-pentafilar-200-to-3x36-ohm-BN-43-202
 
