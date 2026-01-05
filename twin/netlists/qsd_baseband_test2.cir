@@ -1,0 +1,60 @@
+* NexRx Digital Twin - QSD Baseband Test with Source Impedance Study
+*
+* Test: RF at F+10kHz, LO at F, expect 10kHz baseband
+* Added series resistance to understand QSD input loading
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+
+*======================================================================
+* TEST PARAMETERS
+*======================================================================
+.PARAM F_CENTER=14MEG
+.PARAM F_OFFSET=10k
+.PARAM F_RF='F_CENTER + F_OFFSET'
+.PARAM F_LO=F_CENTER
+.PARAM T_LO='1/F_LO'
+.PARAM T_PHASE='T_LO/4'
+
+*======================================================================
+* RF SOURCE - 50mV peak at F+10kHz
+* Using very low source impedance to see what QSD receives
+*======================================================================
+V_RF RF_SRC 0 SIN(0 0.05 {F_RF})
+R_RF_SRC RF_SRC RF_IN 1
+
+*======================================================================
+* QSD LO Generation - 4 phases at F_LO
+*======================================================================
+V_PH0_S PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_PH1_S PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE})
+V_PH2_S PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE})
+V_PH3_S PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE})
+
+B_PH0 PH0 0 V='3.3 * (1 + tanh(100*(V(PH0_S) - 1.65))) / 2'
+B_PH1 PH1 0 V='3.3 * (1 + tanh(100*(V(PH1_S) - 1.65))) / 2'
+B_PH2 PH2 0 V='3.3 * (1 + tanh(100*(V(PH2_S) - 1.65))) / 2'
+B_PH3 PH3 0 V='3.3 * (1 + tanh(100*(V(PH3_S) - 1.65))) / 2'
+
+*======================================================================
+* QSD Instance
+*======================================================================
+X_QSD RF_IN 0 I_OUT Q_OUT PH0 PH1 PH2 PH3 QSD_4PHASE
+
+R_LOAD_I I_OUT 0 10k
+R_LOAD_Q Q_OUT 0 10k
+
+*======================================================================
+* Shorter simulation - just 200us (2 cycles of 10kHz)
+*======================================================================
+.TRAN 0 200u 0 5n
+.OPTIONS TIMEINT DELMAX=5n
+
+.PRINT TRAN
++ V(RF_IN)
++ V(X_QSD:SAMP0) V(X_QSD:SAMP1) V(X_QSD:SAMP2) V(X_QSD:SAMP3)
++ V(I_OUT) V(Q_OUT)
+
+.END

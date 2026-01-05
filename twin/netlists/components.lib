@@ -91,14 +91,17 @@ L_CHOKE DC_IN RF_OUT 2.2u
 *======================================================================
 * Simple transformer model (ideal turns ratio)
 * Parameters: NRATIO = turns ratio (Vsec/Vpri)
+* Impedance ratio = NRATIO^2 (so 2:1 turns = 4:1 impedance)
 *======================================================================
 
 .SUBCKT XFMR_IDEAL PRI_P PRI_N SEC_P SEC_N NRATIO=1
-E_SEC SEC_P SEC_N PRI_P PRI_N {NRATIO}
-* Current scaling handled by dependent source
+* Sense current at secondary output (0V source in series)
+VSENSE SEC_P_INT SEC_P 0
+* Voltage source sets secondary voltage from primary
+E_SEC SEC_P_INT SEC_N PRI_P PRI_N {NRATIO}
+* Current dependent source reflects secondary current to primary
+* I_pri = I_sec * NRATIO for power conservation
 F_PRI PRI_P PRI_N VSENSE {NRATIO}
-VSENSE SEC_P SEC_INT 0
-R_DUMMY SEC_INT SEC_N 1e-6
 .ENDS XFMR_IDEAL
 
 *======================================================================

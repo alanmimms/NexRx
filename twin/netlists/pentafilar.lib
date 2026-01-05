@@ -1,0 +1,99 @@
+* NexRx Digital Twin - Pentafilar Transformer (Library)
+* 200 ohm to 3x ~50 ohm splitter for QSD drive - SUBCIRCUIT ONLY
+*
+* Core: BN-43-202 (binocular ferrite, Type 43 material)
+* Windings: 5 x 2 turns #30AWG (pentafilar wound)
+*   - Primary: 2 windings in series (4 turns total, 200 ohm)
+*   - Secondary: 3 separate windings (2 turns each, ~50 ohm)
+*
+* Turns ratio: 4:2 = 2:1 per secondary
+* Impedance ratio: 4:1, so 200 ohm -> 50 ohm per secondary
+*
+* BN-43-202 AL = 2200 nH/turn^2
+* Each 2-turn winding: L = 2200 * 4 = 8.8 uH
+* Primary (4 turns effective): L = 2200 * 16 = 35.2 uH
+*
+* Copyright 2026 NexRx Project - MIT License
+
+*======================================================================
+* PENTAFILAR TRANSFORMER SUBCIRCUIT
+*
+* Ports:
+*   PRI_P, PRI_N  - Primary (200 ohm)
+*   SEC_A, SEC_B, SEC_C - Secondary outputs (each ~50 ohm to GND)
+*   GND - Ground reference for secondaries
+*
+* All secondaries share a common ground (center tap style)
+*======================================================================
+
+.SUBCKT XFMR_PENTAFILAR PRI_P PRI_N SEC_A SEC_B SEC_C GND
+
+* Small winding resistance (30AWG copper, ~2 inches per winding)
+* ~100 mohm per winding - in series with each inductor
+
+* Primary: Two 2-turn windings in series
+* PRI_P -> R -> L -> mid-tap -> R -> L -> PRI_N
+R_PRI_A PRI_P PRI_A_L 0.1
+L_PRI_A PRI_A_L PRI_MID 8.8u
+R_PRI_B PRI_MID PRI_B_L 0.1
+L_PRI_B PRI_B_L PRI_N 8.8u
+
+* Three secondary windings, each 2 turns
+* SEC_x -> R -> L -> GND
+R_SEC_A SEC_A SEC_A_L 0.1
+L_SEC_A SEC_A_L GND 8.8u
+R_SEC_B SEC_B SEC_B_L 0.1
+L_SEC_B SEC_B_L GND 8.8u
+R_SEC_C SEC_C SEC_C_L 0.1
+L_SEC_C SEC_C_L GND 8.8u
+
+* Coupling coefficients (pentafilar wound = very tight coupling)
+* All windings coupled to each other with k ~ 0.995
+
+* Primary A to all others
+K_PA_PB L_PRI_A L_PRI_B 0.995
+K_PA_SA L_PRI_A L_SEC_A 0.995
+K_PA_SB L_PRI_A L_SEC_B 0.995
+K_PA_SC L_PRI_A L_SEC_C 0.995
+
+* Primary B to secondaries
+K_PB_SA L_PRI_B L_SEC_A 0.995
+K_PB_SB L_PRI_B L_SEC_B 0.995
+K_PB_SC L_PRI_B L_SEC_C 0.995
+
+* Secondary to secondary coupling
+K_SA_SB L_SEC_A L_SEC_B 0.995
+K_SA_SC L_SEC_A L_SEC_C 0.995
+K_SB_SC L_SEC_B L_SEC_C 0.995
+
+.ENDS XFMR_PENTAFILAR
+
+*======================================================================
+* IDEAL PENTAFILAR (for faster simulation / debugging)
+* Uses dependent sources to enforce exact 2:1 turns ratio
+*======================================================================
+
+.SUBCKT XFMR_PENTAFILAR_IDEAL PRI_P PRI_N SEC_A SEC_B SEC_C GND
+
+* Voltage sources to enforce 2:1 ratio
+* V_sec = V_pri / 2
+E_SEC_A SEC_A GND PRI_P PRI_N 0.5
+E_SEC_B SEC_B GND PRI_P PRI_N 0.5
+E_SEC_C SEC_C GND PRI_P PRI_N 0.5
+
+* Current sensing for power balance
+* I_pri = (I_sec_a + I_sec_b + I_sec_c) / 2
+VSENSE_A SEC_A SEC_A_INT 0
+VSENSE_B SEC_B SEC_B_INT 0
+VSENSE_C SEC_C SEC_C_INT 0
+
+R_LOAD_A SEC_A_INT GND 1e-6
+R_LOAD_B SEC_B_INT GND 1e-6
+R_LOAD_C SEC_C_INT GND 1e-6
+
+* Reflect current to primary
+F_PRI PRI_P PRI_N VSENSE_A 0.5
+F_PRI_B PRI_P PRI_N VSENSE_B 0.5
+F_PRI_C PRI_P PRI_N VSENSE_C 0.5
+
+.ENDS XFMR_PENTAFILAR_IDEAL

@@ -1,0 +1,80 @@
+* NexRx Digital Twin - QSD Baseband Verification Test
+*
+* Test: RF at F+10kHz, LO at 4×F, expect 10kHz baseband
+*
+* For F = 14 MHz:
+*   RF = 14.010 MHz (F + 10kHz)
+*   LO = 56 MHz (4×F) - but QSD samples at F, with 4 phases at 4×F
+*   Actually: Each phase samples at rate F, offset by 1/(4F)
+*
+* QSD Operation:
+*   - 4 phases sample RF at 0°, 90°, 180°, 270° of LO
+*   - I = (SAMP0 - SAMP2), Q = (SAMP1 - SAMP3)
+*   - With 10kHz offset, I/Q should show 10kHz baseband sine
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+
+*======================================================================
+* TEST PARAMETERS
+*======================================================================
+.PARAM F_CENTER=14MEG
+.PARAM F_OFFSET=10k
+.PARAM F_RF='F_CENTER + F_OFFSET'
+.PARAM F_LO=F_CENTER
+.PARAM T_LO='1/F_LO'
+.PARAM T_PHASE='T_LO/4'
+
+*======================================================================
+* RF SOURCE - 50mV peak at F+10kHz, 50 ohm source
+*======================================================================
+V_RF RF_SRC 0 SIN(0 0.05 {F_RF})
+R_RF_SRC RF_SRC RF_IN 50
+
+*======================================================================
+* QSD LO Generation - 4 phases at F_LO
+* Period at 14MHz = 71.43ns, each phase = 17.86ns offset
+*======================================================================
+
+* Sine wave sources with phase delays
+V_PH0_S PH0_S 0 SIN(1.65 1.65 {F_LO} 0)
+V_PH1_S PH1_S 0 SIN(1.65 1.65 {F_LO} {T_PHASE})
+V_PH2_S PH2_S 0 SIN(1.65 1.65 {F_LO} {2*T_PHASE})
+V_PH3_S PH3_S 0 SIN(1.65 1.65 {F_LO} {3*T_PHASE})
+
+* Square up with tanh
+B_PH0 PH0 0 V='3.3 * (1 + tanh(100*(V(PH0_S) - 1.65))) / 2'
+B_PH1 PH1 0 V='3.3 * (1 + tanh(100*(V(PH1_S) - 1.65))) / 2'
+B_PH2 PH2 0 V='3.3 * (1 + tanh(100*(V(PH2_S) - 1.65))) / 2'
+B_PH3 PH3 0 V='3.3 * (1 + tanh(100*(V(PH3_S) - 1.65))) / 2'
+
+*======================================================================
+* QSD Instance
+*======================================================================
+X_QSD RF_IN 0 I_OUT Q_OUT PH0 PH1 PH2 PH3 QSD_4PHASE
+
+* Output loads (ADC input impedance)
+R_LOAD_I I_OUT 0 10k
+R_LOAD_Q Q_OUT 0 10k
+
+*======================================================================
+* Analysis
+* Run for 500us to see several cycles of 10kHz baseband (T=100us)
+* Need fine timestep (5ns) to capture 14MHz RF accurately
+*======================================================================
+.TRAN 0 500u 0 5n
+.OPTIONS TIMEINT DELMAX=5n
+
+*======================================================================
+* Print RF input, sampling caps, and I/Q outputs
+* At 10kHz baseband, should see sine wave on I_OUT and Q_OUT
+* with 90° phase relationship
+*======================================================================
+.PRINT TRAN
++ V(RF_IN)
++ V(X_QSD:SAMP0) V(X_QSD:SAMP1) V(X_QSD:SAMP2) V(X_QSD:SAMP3)
++ V(I_OUT) V(Q_OUT)
+
+.END

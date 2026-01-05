@@ -1,0 +1,65 @@
+* NexRx Digital Twin - 200 Ohm Preselector (Library)
+* Switched LC tank for band selection - SUBCIRCUIT ONLY
+*
+* Nominal impedance: 200 ohms
+* Frequency range: 1-30 MHz
+*
+* Inductors:
+*   L701 = 1.5uH (can be shorted by SW_L701)
+*   L702 = 220nH (always in series with L701 or alone)
+*   Total: 1.72uH (L701+L702) or 220nH (L702 only)
+*
+* Capacitors (each switchable, active high):
+*   C701=8pF, C702=15pF, C703=33pF, C704=68pF, C705=120pF
+*   C706=250pF, C707=560pF, C708=1000pF, C709=2200pF
+*   C710=3900pF, C711=8200pF
+*   Total range: 0 to ~16.3nF
+*
+* Copyright 2026 NexRx Project - MIT License
+
+*======================================================================
+* AS183-92LF SPDT SWITCH MODEL
+* Ron ~= 0.35 ohm, Roff ~= 10M ohm (better than TS3A4751)
+* Control voltage: 0V = off, 3.3V = on
+*======================================================================
+
+.SUBCKT SW_AS183 IN OUT CTRL GND
+R_SW IN OUT R='0.35 + 1e7 * (1 - tanh(10*(V(CTRL,GND) - 1.65)))/2'
+.ENDS SW_AS183
+
+*======================================================================
+* PRESELECTOR SUBCIRCUIT (200 OHM)
+*
+* Ports: IN, OUT, GND
+* Control: L701_SHORT (1=short L701, leaving only L702)
+*          C701_EN..C711_EN (capacitor enables, active high)
+*======================================================================
+
+.SUBCKT PRESELECTOR_200 IN OUT GND
++ L701_SHORT
++ C701_EN C702_EN C703_EN C704_EN C705_EN
++ C706_EN C707_EN C708_EN C709_EN C710_EN C711_EN
+
+*----------------------------------------------------------------------
+* TEMPORARY: Simple bypass (wire) for testing rest of chain
+* TODO: Design proper preselector topology
+*----------------------------------------------------------------------
+
+* Direct connection with minimal series resistance
+R_BYPASS IN OUT 0.1
+
+* Dummy loads for unused control signals (to prevent warnings)
+R_L701 L701_SHORT GND 1e9
+R_C701 C701_EN GND 1e9
+R_C702 C702_EN GND 1e9
+R_C703 C703_EN GND 1e9
+R_C704 C704_EN GND 1e9
+R_C705 C705_EN GND 1e9
+R_C706 C706_EN GND 1e9
+R_C707 C707_EN GND 1e9
+R_C708 C708_EN GND 1e9
+R_C709 C709_EN GND 1e9
+R_C710 C710_EN GND 1e9
+R_C711 C711_EN GND 1e9
+
+.ENDS PRESELECTOR_200
