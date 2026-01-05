@@ -295,6 +295,28 @@ target_include_directories(host_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(host_test PRIVATE twin_host twin_transport)
 
 # -----------------------------------------------------------------------------
+# Firmware process manager (for launching Zephyr native_sim)
+# -----------------------------------------------------------------------------
+add_library(twin_firmware STATIC
+    src/zephyr/FirmwareProcess.cpp
+)
+
+target_include_directories(twin_firmware PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(twin_firmware PUBLIC
+    Threads::Threads
+)
+
+target_compile_options(twin_firmware PRIVATE
+    -Wall -Wextra -Wpedantic
+    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+)
+
+# -----------------------------------------------------------------------------
 # Install rules
 # -----------------------------------------------------------------------------
 install(TARGETS twin
