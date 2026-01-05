@@ -8787,7 +8787,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "33nF"
+		(property "Value" "470pF"
 			(at 126.238 159.512 0)
 			(effects
 				(font
@@ -8796,7 +8796,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 126.6952 161.29 0)
 			(effects
 				(font
@@ -9010,7 +9010,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "KEMET"
+		(property "Manufacturer_Name" "Kyocera AVX"
 			(at 125.73 157.48 0)
 			(effects
 				(font
@@ -9019,7 +9019,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "C0805C333F3GEC7210"
+		(property "Manufacturer_Part_Number" "KGM15ACG1H471FT"
 			(at 125.73 157.48 0)
 			(effects
 				(font
@@ -9028,7 +9028,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "80-C0805C333F3GECLR"
+		(property "Mouser Part Number" "581-KGM15ACG1H471FT"
 			(at 125.73 157.48 0)
 			(effects
 				(font
@@ -9444,7 +9444,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "33nF"
+		(property "Value" "470pF"
 			(at 133.858 159.512 0)
 			(effects
 				(font
@@ -9453,7 +9453,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 134.3152 161.29 0)
 			(effects
 				(font
@@ -9667,7 +9667,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "KEMET"
+		(property "Manufacturer_Name" "Kyocera AVX"
 			(at 133.35 157.48 0)
 			(effects
 				(font
@@ -9676,7 +9676,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "C0805C333F3GEC7210"
+		(property "Manufacturer_Part_Number" "KGM15ACG1H471FT"
 			(at 133.35 157.48 0)
 			(effects
 				(font
@@ -9685,7 +9685,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "80-C0805C333F3GECLR"
+		(property "Mouser Part Number" "581-KGM15ACG1H471FT"
 			(at 133.35 157.48 0)
 			(effects
 				(font
@@ -9827,7 +9827,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "33nF"
+		(property "Value" "470pF"
 			(at 117.348 159.512 0)
 			(effects
 				(font
@@ -9836,7 +9836,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 117.8052 161.29 0)
 			(effects
 				(font
@@ -10050,7 +10050,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "KEMET"
+		(property "Manufacturer_Name" "Kyocera AVX"
 			(at 116.84 157.48 0)
 			(effects
 				(font
@@ -10059,7 +10059,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "C0805C333F3GEC7210"
+		(property "Manufacturer_Part_Number" "KGM15ACG1H471FT"
 			(at 116.84 157.48 0)
 			(effects
 				(font
@@ -10068,7 +10068,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "80-C0805C333F3GECLR"
+		(property "Mouser Part Number" "581-KGM15ACG1H471FT"
 			(at 116.84 157.48 0)
 			(effects
 				(font
@@ -13887,7 +13887,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "33nF"
+		(property "Value" "470pF"
 			(at 107.188 159.512 0)
 			(effects
 				(font
@@ -13896,7 +13896,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 107.6452 161.29 0)
 			(effects
 				(font
@@ -14110,7 +14110,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "KEMET"
+		(property "Manufacturer_Name" "Kyocera AVX"
 			(at 106.68 157.48 0)
 			(effects
 				(font
@@ -14119,7 +14119,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "C0805C333F3GEC7210"
+		(property "Manufacturer_Part_Number" "KGM15ACG1H471FT"
 			(at 106.68 157.48 0)
 			(effects
 				(font
@@ -14128,7 +14128,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "80-C0805C333F3GECLR"
+		(property "Mouser Part Number" "581-KGM15ACG1H471FT"
 			(at 106.68 157.48 0)
 			(effects
 				(font
