@@ -263,6 +263,38 @@ add_executable(stimulus_test src/stimulus_test.cpp)
 target_include_directories(stimulus_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # -----------------------------------------------------------------------------
+# Host library - DSP pipeline and visualization
+# -----------------------------------------------------------------------------
+add_library(twin_host STATIC
+    src/host/HostApp.cpp
+    src/host/DspPipeline.cpp
+    src/host/Visualizer.cpp
+)
+
+target_include_directories(twin_host PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(twin_host PUBLIC
+    twin_transport
+    Threads::Threads
+)
+
+target_compile_options(twin_host PRIVATE
+    -Wall -Wextra -Wpedantic
+    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+)
+
+# -----------------------------------------------------------------------------
+# Host test executable
+# -----------------------------------------------------------------------------
+add_executable(host_test src/host_test.cpp)
+target_include_directories(host_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(host_test PRIVATE twin_host twin_transport)
+
+# -----------------------------------------------------------------------------
 # Install rules
 # -----------------------------------------------------------------------------
 install(TARGETS twin
