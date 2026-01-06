@@ -4,116 +4,102 @@
 * Reference: RX-ARCHITECTURE.md Section "Impedance Transformation"
 *
 * Signal path impedances:
-*   Antenna 50Ω → 200Ω → Attenuator → 800Ω → Preselector → 3×50Ω → QSDs
+*   Antenna 50Ω → 200Ω → Attenuator → Preselector → 3×22Ω → QSDs
 *
 * Copyright 2026 NexRx Project - MIT License
 
 .INCLUDE 'components.lib'
 
 *======================================================================
-* 50 to 200 OHM TRANSFORMER (1:2 turns, 1:4 impedance)
-* Autotransformer on FT50-43 ferrite toroid
-* Primary inductance ~10uH for good low-frequency response
+* 50 TO 200 OHM AUTOTRANSFORMER
+* Bifilar wound autotransformer on BN-43-202 binocular core
+*
+* Construction:
+*   - Bifilar winding: 3-4 twists/inch, #30AWG
+*   - 4 turns on BN-43-202 core
+*   - Centertap feed from antenna (50 ohm)
+*   - Full winding output to 200 ohm zone
+*
+* BN-43-202 AL ≈ 2200 nH/turn²
+*   - 2-turn section (antenna to centertap): L = 2200 × 4 = 8.8 µH
+*   - 4-turn total: L = 2200 × 16 = 35.2 µH
+*
+* Impedance ratio: (4/2)² = 4:1, so 50Ω → 200Ω
 *======================================================================
 
-.SUBCKT XFMR_50_200 IN_50 GND OUT_200
-* Coupled inductor model
-* Turns ratio 1:2, so L2 = 4*L1 for equal flux linkage
-* L1 = 2.5uH (50 ohm section), L2_total = 10uH
-L_LO IN_50 GND 2.5u
-L_HI IN_50 OUT_200 7.5u
+.SUBCKT XFMR_50_200_AUTO IN_50 GND OUT_200
+* Autotransformer model with centertap feed
+* IN_50 connects to centertap (2 turns from ground)
+* OUT_200 is full winding (4 turns from ground)
+
+* Lower section: ground to centertap (2 turns)
+L_LO GND IN_50 8.8u
+
+* Upper section: centertap to output (2 more turns)
+L_HI IN_50 OUT_200 8.8u
+
+* Tight coupling between sections (bifilar wound)
 K_AUTO L_LO L_HI 0.995
-* Small winding resistance
-R_LOSS IN_50 1_INT 0.1
-.ENDS XFMR_50_200
+
+* Winding resistance (#30AWG, ~2 inches total)
+R_LO GND GND_INT 0.05
+R_HI OUT_200 OUT_INT 0.05
+
+.ENDS XFMR_50_200_AUTO
 
 *======================================================================
-* 200 to 800 OHM TRANSFORMER (1:2 turns, 1:4 impedance)
-* Autotransformer on FT50-43 ferrite toroid
+* IDEAL 50 TO 200 OHM TRANSFORMER
+* For faster simulation / debugging
+* Uses dependent sources to enforce exact 2:1 turns ratio
 *======================================================================
 
-.SUBCKT XFMR_200_800 IN_200 GND OUT_800
-* Coupled inductor model
-* Turns ratio 1:2 for 200:800 ohm transformation
-L_LO IN_200 GND 10u
-L_HI IN_200 OUT_800 30u
-K_AUTO L_LO L_HI 0.995
-* Small winding resistance
-R_LOSS IN_200 1_INT 0.2
-.ENDS XFMR_200_800
+.SUBCKT XFMR_50_200_IDEAL IN_50 GND OUT_200
+* Voltage scaling: V_out = V_in × 2 (for 50→200 ohm)
+E_OUT OUT_200 GND IN_50 GND 2.0
 
-*======================================================================
-* 800 OHM TO 3x50 OHM SPLITTER TRANSFORMER
-* Trifilar wound for matched outputs to three QSDs
-* Primary: 16 turns (800 ohm), Secondaries: 4 turns each (~50 ohm)
-* Core: FT50-43 binocular
-*======================================================================
-
-.SUBCKT XFMR_800_3X50 IN_800 GND OUT_A OUT_B OUT_C
-* Primary inductance ~40uH for good coupling
-* Secondary inductance ~2.5uH each (turns ratio 4:1)
-* Leakage inductance provides low output impedance (~2-4 ohms)
-
-L_PRI IN_800 GND 40u
-
-* Three matched secondaries - tightly coupled to primary
-* Each secondary referenced to ground
-L_SEC_A OUT_A GND 2.5u
-L_SEC_B OUT_B GND 2.5u
-L_SEC_C OUT_C GND 2.5u
-
-* Coupling coefficients (high for trifilar)
-K_PA L_PRI L_SEC_A 0.98
-K_PB L_PRI L_SEC_B 0.98
-K_PC L_PRI L_SEC_C 0.98
-
-* Inter-secondary coupling (very high for trifilar wound)
-K_AB L_SEC_A L_SEC_B 0.995
-K_AC L_SEC_A L_SEC_C 0.995
-K_BC L_SEC_B L_SEC_C 0.995
-
-* Small leakage inductance + winding resistance models low Zout
-R_LEAK_A OUT_A 1_A 2.0
-R_LEAK_B OUT_B 1_B 2.0
-R_LEAK_C OUT_C 1_C 2.0
-
-.ENDS XFMR_800_3X50
+* Current scaling (for power balance)
+* Not modeled here - ideal transformer
+.ENDS XFMR_50_200_IDEAL
 
 *======================================================================
 * TEST CIRCUIT - Full transformer chain with 14 MHz signal
+* Signal path: 50Ω antenna → 200Ω → Preselector → 3×22Ω → QSDs
 *======================================================================
 
-* Input source - 50 ohm matched
+* Input source - 50 ohm matched antenna
 VIN IN_SRC 0 SIN(0 0.1 14MEG)
 R_SRC IN_SRC IN_50 50
 
-* 50 to 200 ohm transformer
-X_T1 IN_50 0 NODE_200 XFMR_50_200
+* 50 to 200 ohm autotransformer
+X_T1 IN_50 0 NODE_200 XFMR_50_200_AUTO
+
+* DC blocking capacitor (100nF)
+C_DCBLOCK NODE_200 NODE_200B 100n
 
 * Attenuator placeholder (0 dB for now - just wire)
-R_ATTEN NODE_200 NODE_200B 0.1
+R_ATTEN NODE_200B NODE_200C 0.1
 
-* 200 to 800 ohm transformer
-X_T2 NODE_200B 0 NODE_800 XFMR_200_800
+* Preselector placeholder (LC tank tuned to 14 MHz at 200 ohm)
+* f = 1/(2*pi*sqrt(L*C)) -> L = 180nH, C = 716pF for 14 MHz
+L_PRESEL NODE_200C NODE_LC 180n
+C_PRESEL NODE_LC 0 716p
+R_Q NODE_200C NODE_LC 10
 
-* Preselector placeholder (just LC at 14 MHz)
-* L = 180nH, C = 716pF for 14 MHz resonance
-L_PRESEL NODE_800 NODE_800_LC 180n
-C_PRESEL NODE_800_LC 0 716p
-R_Q NODE_800 NODE_800_LC 10
+* Include hexafilar transformer model
+.INCLUDE 'hexafilar.lib'
 
-* 800 to 3x50 ohm splitter
-X_T3 NODE_800_LC 0 QSD_A QSD_B QSD_C XFMR_800_3X50
+* 200 to 3x22 ohm hexafilar transformer
+X_T2 NODE_LC 0 QSD_A QSD_B QSD_C 0 XFMR_HEXAFILAR
 
-* 50 ohm loads representing QSD inputs
-R_LOAD_A QSD_A 0 50
-R_LOAD_B QSD_B 0 50
-R_LOAD_C QSD_C 0 50
+* 22 ohm loads representing QSD input impedance
+R_LOAD_A QSD_A 0 22
+R_LOAD_B QSD_B 0 22
+R_LOAD_C QSD_C 0 22
 
 * Analysis
 .TRAN 1n 1u
 
 * Print outputs
-.PRINT TRAN V(IN_50) V(NODE_200) V(NODE_800) V(QSD_A) V(QSD_B) V(QSD_C)
+.PRINT TRAN V(IN_50) V(NODE_200) V(NODE_LC) V(QSD_A) V(QSD_B) V(QSD_C)
 
 .END

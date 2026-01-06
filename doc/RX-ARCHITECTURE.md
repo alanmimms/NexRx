@@ -190,6 +190,39 @@ the first inductor for the lower bands.
 
 ## Impedance Transformation
 
+### Input Transformer (50Ω to 200Ω)
+
+The antenna input uses an autotransformer to step up from 50Ω to the
+200Ω preselector impedance:
+
+**Specifications**:
+- Core: BN-43-202 binocular
+- Winding: Bifilar, 3-4 twists/inch, #30AWG
+- Turns: 4 total (2+2 autotransformer configuration)
+- Configuration: Centertap fed from antenna (50Ω), full winding to 200Ω
+
+**Construction Details**:
+```
+    ┌─────────────────┐
+    │    BN-43-202    │
+    │                 │
+GND─┼──┬─2T─┬─2T──────┼── 200Ω out
+    │      │          │
+    │   50Ω in        │
+    │  (centertap)    │
+    └─────────────────┘
+
+- Two tightly-coupled 2-turn windings form 4-turn autotransformer
+- Antenna connects to centertap (2 turns from ground)
+- 200Ω zone connects to full 4 turns
+- Turns ratio: 2:1, Impedance ratio: 4:1
+```
+
+A 100nF DC blocking capacitor follows the transformer output before
+the attenuator pads.
+
+---
+
 ### Output Transformer (200Ω to 3×22Ω)
 
 This critical transformer must provide three identical outputs for the triple-QSD array:
@@ -255,9 +288,10 @@ Each QSD uses a **Texas Instruments TS3A4751** analog switch:
 - -3dB bandwidth: >300 MHz
 - Charge injection: <2 pC
 
-**Sampling Capacitors**: Each QSD output (I+, I-, Q+, Q-) connects to
-a 2.2uF C0G capacitor. These capacitors integrate the switched RF
-signal, providing the baseband I/Q outputs.
+**Sampling Capacitors**: Each QSD switch output (I+, I-, Q+, Q-)
+connects to a 470pF C0G capacitor. These capacitors integrate the
+switched RF signal over each clock phase, providing the baseband I/Q
+outputs.
 
 ### Signal Biasing
 
@@ -265,12 +299,12 @@ The QSD inputs must remain within 0-3.3V. This is achieved through AC
 coupling and DC biasing:
 
 ```
-Transformer Secondary → 1μF AC coupling → +1.65V bias injection → QSD input
+Transformer Secondary → 100nF DC block → 100k to +1.65V bias → QSD input
 
 Bias injection circuit:
-- 2.2μH RFC from +1.65V reference
-- 1μF bypass capacitor on bias rail
-- Provides high-impedance DC bias without loading RF
+- 100nF AC coupling capacitor from transformer
+- 100k resistor to +1.65V reference (sets DC bias point)
+- High-impedance bias doesn't load RF signal
 ```
 
 With the transformer providing ±0.7V AC signals and 1.65V DC bias, the
@@ -344,6 +378,27 @@ Benefits of differential operation:
 
 The MAX9939 converts single-ended QSD outputs to differential signals
 internally, maintaining signal integrity through the analog chain.
+
+**Input Biasing and Feedback Network**:
+
+Each MAX9939 channel uses the following circuit:
+
+```
+QSD output → 100nF DC block → MAX9939 INA
+                            → 10k to +2.5V bias
+
+MAX9939 OUTA ─┬─ 10k ──┬── INB (feedback)
+              └─ 150pF ─┘
+              └─ 330Ω → 3.3nF → GND (LPF)
+
+MAX9939 OUTB ─┬─ 10k ──┬── INB (feedback)
+              └─ 150pF ─┘
+              └─ 330Ω → 3.3nF → GND (LPF)
+```
+
+- 10k to 2.5V sets input DC bias point
+- 10k || 150pF feedback from OUTA/OUTB to INB sets gain/bandwidth
+- 330Ω + 3.3nF forms RC lowpass filter (~145 kHz cutoff) for anti-aliasing
 
 ### Independent Channel Gain
 

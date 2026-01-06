@@ -1,8 +1,8 @@
-* NexRx Digital Twin - 800 Ohm Preselector
+* NexRx Digital Twin - 200 Ohm Preselector
 * Switched LC tank for band selection
 *
-* Reference: RX-ARCHITECTURE.md Section "800 Ohm Preselector Design"
-* Nominal impedance: 800 ohms
+* Reference: RX-ARCHITECTURE.md Section "200 Ohm Preselector Design"
+* Nominal impedance: 200 ohms
 * Frequency range: 1-30 MHz
 *
 * Copyright 2026 NexRx Project - MIT License
@@ -148,8 +148,8 @@ V_C7 C7 0 3.3
 V_C8 C8 0 0
 V_C9 C9 0 0
 
-* Load resistor (represents QSD input impedance after transformer)
-R_LOAD PRESEL_OUT 0 800
+* Load resistor (represents QSD input impedance presented via transformer)
+R_LOAD PRESEL_OUT 0 200
 
 * Transient analysis
 .TRAN 1n 2u

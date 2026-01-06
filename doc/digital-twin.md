@@ -24,7 +24,7 @@ The Digital Twin is a **Software-in-the-Loop (SiL)** simulation environment that
         
     - **Preselector:** Models the 200Ω switched LC bank using DCR/ESR data from commercial SMD inductors.
         
-    - **Pentafilar Transformer:** A mutual-inductance model ($K$-factors) representing the BN-43-202 core.
+    - **Hexafilar Transformer:** A mutual-inductance model ($K$-factors) representing the BN-43-202 core (200Ω to 3×22Ω).
         
     - **Triple-QSD:** Time-varying resistors ($R_{on}/R_{off}$) representing the **TS3A4751** CMOS switches.
         

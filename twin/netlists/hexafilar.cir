@@ -1,8 +1,8 @@
-* NexRx Digital Twin - Hexafilar Transformer (Library)
-* 200 ohm to 3x 22 ohm splitter for QSD drive - SUBCIRCUIT ONLY
+* NexRx Digital Twin - Hexafilar Transformer
+* 200 ohm to 3x 22 ohm splitter for QSD drive
 *
 * Core: BN-43-202 (binocular ferrite, Type 43 material)
-* Windings: 6 x 2 turns #30AWG (hexafilar wound)
+* Windings: 6 × 2 turns #30AWG (hexafilar wound)
 *   - Primary: 3 windings in series (6 turns total, 200 ohm)
 *   - Secondary: 3 separate windings (2 turns each, ~22 ohm)
 *
@@ -28,24 +28,26 @@
 *   SEC_A, SEC_B, SEC_C - Secondary outputs (each ~22 ohm to GND)
 *   GND - Ground reference for secondaries
 *
-* Primary: 3 windings in series (W1-W2-W3)
-* Secondaries: W4, W5, W6 each independent
+* All secondaries share a common ground
 *======================================================================
 
 .SUBCKT XFMR_HEXAFILAR PRI_P PRI_N SEC_A SEC_B SEC_C GND
 
-*----------------------------------------------------------------------
-* Primary: 3 windings in series = 6 turns total
-* L_pri = AL * N^2 = 2200nH * 36 = 79.2uH
-* DCR = 3 * 100mOhm = 300mOhm (three 2-turn windings in series)
-*----------------------------------------------------------------------
-R_PRI PRI_P PRI_L 0.3
-L_PRI PRI_L PRI_N 79.2u
+* Primary: Three 2-turn windings in series
+* PRI_P -> L1 -> L2 -> L3 -> PRI_N
+* Each winding has small series resistance
 
-*----------------------------------------------------------------------
-* Secondaries: Each 2 turns, L = 2200nH * 4 = 8.8uH
-* DCR = 100mOhm each
-*----------------------------------------------------------------------
+R_PRI_A PRI_P PRI_A_L 0.1
+L_PRI_A PRI_A_L PRI_MID1 8.8u
+
+R_PRI_B PRI_MID1 PRI_B_L 0.1
+L_PRI_B PRI_B_L PRI_MID2 8.8u
+
+R_PRI_C PRI_MID2 PRI_C_L 0.1
+L_PRI_C PRI_C_L PRI_N 8.8u
+
+* Three secondary windings, each 2 turns
+* SEC_x -> R -> L -> GND
 R_SEC_A SEC_A SEC_A_L 0.1
 L_SEC_A SEC_A_L GND 8.8u
 
@@ -55,54 +57,86 @@ L_SEC_B SEC_B_L GND 8.8u
 R_SEC_C SEC_C SEC_C_L 0.1
 L_SEC_C SEC_C_L GND 8.8u
 
-*----------------------------------------------------------------------
 * Coupling coefficients (hexafilar wound = very tight coupling)
-* Primary to each secondary: k ~ 0.995
-* Secondary to secondary: k ~ 0.995
-*
-* Turns ratio = sqrt(L_pri/L_sec) = sqrt(79.2/8.8) = 3:1
-* Impedance ratio = L_pri/L_sec = 9:1 (200 ohm -> 22 ohm)
-*----------------------------------------------------------------------
+* All windings coupled to each other with k ~ 0.995
 
-* Primary to secondaries
-K_PRI_A L_PRI L_SEC_A 0.995
-K_PRI_B L_PRI L_SEC_B 0.995
-K_PRI_C L_PRI L_SEC_C 0.995
+* Primary windings coupled to each other
+K_PA_PB L_PRI_A L_PRI_B 0.995
+K_PA_PC L_PRI_A L_PRI_C 0.995
+K_PB_PC L_PRI_B L_PRI_C 0.995
+
+* Primary A to all secondaries
+K_PA_SA L_PRI_A L_SEC_A 0.995
+K_PA_SB L_PRI_A L_SEC_B 0.995
+K_PA_SC L_PRI_A L_SEC_C 0.995
+
+* Primary B to all secondaries
+K_PB_SA L_PRI_B L_SEC_A 0.995
+K_PB_SB L_PRI_B L_SEC_B 0.995
+K_PB_SC L_PRI_B L_SEC_C 0.995
+
+* Primary C to all secondaries
+K_PC_SA L_PRI_C L_SEC_A 0.995
+K_PC_SB L_PRI_C L_SEC_B 0.995
+K_PC_SC L_PRI_C L_SEC_C 0.995
 
 * Secondary to secondary coupling
-K_A_B L_SEC_A L_SEC_B 0.995
-K_A_C L_SEC_A L_SEC_C 0.995
-K_B_C L_SEC_B L_SEC_C 0.995
+K_SA_SB L_SEC_A L_SEC_B 0.995
+K_SA_SC L_SEC_A L_SEC_C 0.995
+K_SB_SC L_SEC_B L_SEC_C 0.995
 
 .ENDS XFMR_HEXAFILAR
 
 *======================================================================
 * IDEAL HEXAFILAR (for faster simulation / debugging)
 * Uses dependent sources to enforce exact 3:1 turns ratio
-* V_sec = V_pri / 3, I_pri = I_sec_total / 3
 *======================================================================
 
 .SUBCKT XFMR_HEXAFILAR_IDEAL PRI_P PRI_N SEC_A SEC_B SEC_C GND
 
-* Voltage sources to enforce 3:1 ratio (6 turns : 2 turns)
+* Voltage sources to enforce 3:1 ratio (6 turns primary : 2 turns secondary)
 * V_sec = V_pri / 3
 E_SEC_A SEC_A GND PRI_P PRI_N 0.333333
 E_SEC_B SEC_B GND PRI_P PRI_N 0.333333
 E_SEC_C SEC_C GND PRI_P PRI_N 0.333333
 
 * Current sensing for power balance
+* I_pri = (I_sec_a + I_sec_b + I_sec_c) / 3
 VSENSE_A SEC_A SEC_A_INT 0
 VSENSE_B SEC_B SEC_B_INT 0
 VSENSE_C SEC_C SEC_C_INT 0
 
-* Tiny load resistors to allow current sensing
 R_LOAD_A SEC_A_INT GND 1e-6
 R_LOAD_B SEC_B_INT GND 1e-6
 R_LOAD_C SEC_C_INT GND 1e-6
 
-* Reflect current to primary: I_pri = (I_sec_a + I_sec_b + I_sec_c) / 3
+* Reflect current to primary
 F_PRI_A PRI_P PRI_N VSENSE_A 0.333333
 F_PRI_B PRI_P PRI_N VSENSE_B 0.333333
 F_PRI_C PRI_P PRI_N VSENSE_C 0.333333
 
 .ENDS XFMR_HEXAFILAR_IDEAL
+
+*======================================================================
+* TEST CIRCUIT - Hexafilar with 14 MHz signal
+*======================================================================
+
+* Input source - 200 ohm matched (preselector output)
+VIN V_SRC 0 SIN(0 0.1 14MEG)
+R_SRC V_SRC PRI_IN 200
+
+* Hexafilar transformer instance
+X_HEXA PRI_IN 0 QSD_A QSD_B QSD_C 0 XFMR_HEXAFILAR
+
+* 22 ohm loads on each secondary (representing QSD input impedance)
+R_LOAD_A QSD_A 0 22
+R_LOAD_B QSD_B 0 22
+R_LOAD_C QSD_C 0 22
+
+* Analysis
+.TRAN 1n 1u
+
+* Print outputs
+.PRINT TRAN V(PRI_IN) V(QSD_A) V(QSD_B) V(QSD_C)
+
+.END

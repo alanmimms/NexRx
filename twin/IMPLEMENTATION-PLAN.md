@@ -65,8 +65,8 @@ This enables firmware development, DSP algorithm validation, and UI testing befo
 **Goal:** Xyce models for NexRx analog path
 
 **Deliverables:**
-- `twin/netlists/preselector.cir` - 800Ω LC bank with switched components
-- `twin/netlists/transformer.cir` - Pentafilar transformer (K-factors)
+- `twin/netlists/preselector.cir` - 200Ω LC bank with switched components
+- `twin/netlists/hexafilar.cir` - Hexafilar transformer 200Ω to 3×22Ω (K-factors)
 - `twin/netlists/qsd.cir` - Triple-QSD with TS3A4751 switch models
 - `twin/netlists/nexrx_rx.cir` - Full receiver path (top-level)
 - `twin/netlists/stimulus.cir` - RF signal injection (subcircuit)

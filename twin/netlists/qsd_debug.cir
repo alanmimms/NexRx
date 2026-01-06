@@ -11,7 +11,7 @@
 * TEST CIRCUIT - Single QSD at 14 MHz
 *======================================================================
 
-* RF Input - 14 MHz tone, 50mV peak (representing signal after pentafilar)
+* RF Input - 14 MHz tone, 50mV peak (representing signal after hexafilar)
 V_RF RF_SRC 0 SIN(0 0.05 14MEG)
 R_RF_SRC RF_SRC RF_IN 50
 
