@@ -89,10 +89,14 @@ target_compile_options(setbox_test PRIVATE
 # -----------------------------------------------------------------------------
 # Main application executable
 # -----------------------------------------------------------------------------
-add_executable(nexrx_app src/main.cpp)
+add_executable(nexrx_app
+    src/main.cpp
+    src/FontRenderer.cpp
+)
 
 target_include_directories(nexrx_app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/extern
     ${SDL2_INCLUDE_DIRS}
 )
 

@@ -4,6 +4,7 @@
  */
 
 #include "setbox/SetBox.hpp"
+#include "FontRenderer.hpp"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -13,6 +14,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <cmath>
 
 // Forward declarations
 class App;
@@ -103,6 +105,27 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+        // Initialize font renderer
+        // Try common font paths
+        const char* fontPaths[] = {
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            "fonts/DejaVuSans.ttf",
+            nullptr
+        };
+
+        for (const char** path = fontPaths; *path; ++path) {
+            if (font_.loadFont(*path, 16.0f)) {
+                std::cout << "Loaded font: " << *path << std::endl;
+                break;
+            }
+        }
+
+        if (!font_.isLoaded()) {
+            std::cerr << "Warning: Could not load any font" << std::endl;
+        }
+
         // Initialize Lua
         if (!initLua()) {
             return false;
@@ -184,6 +207,92 @@ public:
         glClearColor(r, g, b, 1.0f);
     }
 
+    // Text drawing
+    float drawText(float x, float y, const std::string& text, float r, float g, float b, float a) {
+        return font_.drawText(x, y, text, r, g, b, a);
+    }
+
+    float measureText(const std::string& text) {
+        return font_.measureText(text);
+    }
+
+    float getLineHeight() {
+        return font_.lineHeight();
+    }
+
+    // Additional drawing primitives
+    void drawLine(float x1, float y1, float x2, float y2, float r, float g, float b, float a, float thickness) {
+        glColor4f(r, g, b, a);
+        glLineWidth(thickness);
+        glBegin(GL_LINES);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y2);
+        glEnd();
+    }
+
+    void drawCircle(float cx, float cy, float radius, float r, float g, float b, float a, int segments = 32) {
+        glColor4f(r, g, b, a);
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(cx, cy);
+        for (int i = 0; i <= segments; ++i) {
+            float angle = 2.0f * 3.14159265f * i / segments;
+            glVertex2f(cx + std::cos(angle) * radius, cy + std::sin(angle) * radius);
+        }
+        glEnd();
+    }
+
+    void drawCircleOutline(float cx, float cy, float radius, float r, float g, float b, float a, float thickness, int segments = 32) {
+        glColor4f(r, g, b, a);
+        glLineWidth(thickness);
+        glBegin(GL_LINE_LOOP);
+        for (int i = 0; i < segments; ++i) {
+            float angle = 2.0f * 3.14159265f * i / segments;
+            glVertex2f(cx + std::cos(angle) * radius, cy + std::sin(angle) * radius);
+        }
+        glEnd();
+    }
+
+    void drawRoundedRect(float x, float y, float w, float h, float radius, float r, float g, float b, float a) {
+        glColor4f(r, g, b, a);
+
+        // Clamp radius
+        radius = std::min(radius, std::min(w, h) / 2.0f);
+        const int cornerSegments = 8;
+
+        glBegin(GL_TRIANGLE_FAN);
+        // Center
+        glVertex2f(x + w/2, y + h/2);
+
+        // Top-left corner
+        for (int i = cornerSegments; i >= 0; --i) {
+            float angle = 3.14159265f/2.0f + (3.14159265f/2.0f) * i / cornerSegments;
+            glVertex2f(x + radius + std::cos(angle) * radius, y + radius + std::sin(angle) * radius);
+        }
+
+        // Top-right corner
+        for (int i = cornerSegments; i >= 0; --i) {
+            float angle = (3.14159265f/2.0f) * i / cornerSegments;
+            glVertex2f(x + w - radius + std::cos(angle) * radius, y + radius + std::sin(angle) * radius);
+        }
+
+        // Bottom-right corner
+        for (int i = cornerSegments; i >= 0; --i) {
+            float angle = -((3.14159265f/2.0f) * i / cornerSegments);
+            glVertex2f(x + w - radius + std::cos(angle) * radius, y + h - radius + std::sin(angle) * radius);
+        }
+
+        // Bottom-left corner
+        for (int i = cornerSegments; i >= 0; --i) {
+            float angle = 3.14159265f + (3.14159265f/2.0f) * i / cornerSegments;
+            glVertex2f(x + radius + std::cos(angle) * radius, y + h - radius + std::sin(angle) * radius);
+        }
+
+        // Close back to top-left
+        glVertex2f(x, y + radius);
+
+        glEnd();
+    }
+
 private:
     bool initLua() {
         lua_.open_libraries(
@@ -251,6 +360,41 @@ private:
 
         lua_.set_function("setClearColor", [this](float r, float g, float b) {
             setClearColor(r, g, b);
+        });
+
+        // Text drawing
+        lua_.set_function("drawText", [this](float x, float y, const std::string& text,
+                                              float r, float g, float b, float a) {
+            return drawText(x, y, text, r, g, b, a);
+        });
+
+        lua_.set_function("measureText", [this](const std::string& text) {
+            return measureText(text);
+        });
+
+        lua_.set_function("getLineHeight", [this]() {
+            return getLineHeight();
+        });
+
+        // Additional drawing primitives
+        lua_.set_function("drawLine", [this](float x1, float y1, float x2, float y2,
+                                              float r, float g, float b, float a, float thickness) {
+            drawLine(x1, y1, x2, y2, r, g, b, a, thickness);
+        });
+
+        lua_.set_function("drawCircle", [this](float cx, float cy, float radius,
+                                                float r, float g, float b, float a) {
+            drawCircle(cx, cy, radius, r, g, b, a);
+        });
+
+        lua_.set_function("drawCircleOutline", [this](float cx, float cy, float radius,
+                                                       float r, float g, float b, float a, float thickness) {
+            drawCircleOutline(cx, cy, radius, r, g, b, a, thickness);
+        });
+
+        lua_.set_function("drawRoundedRect", [this](float x, float y, float w, float h, float radius,
+                                                     float r, float g, float b, float a) {
+            drawRoundedRect(x, y, w, h, radius, r, g, b, a);
         });
 
         // Expose SetBox engine
@@ -414,6 +558,7 @@ private:
     SDL_GLContext glContext_ = nullptr;
     sol::state lua_;
     NexRx::SetBox::SetBoxEngine setbox_;
+    FontRenderer font_;
 
     int windowWidth_ = 0;
     int windowHeight_ = 0;
