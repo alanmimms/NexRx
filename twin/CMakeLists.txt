@@ -33,6 +33,19 @@ set(TRILINOS_INCLUDE_DIR "/home/alan/ham/XyceLibs/Serial/include" CACHE PATH "Tr
 # Find required system libraries
 # -----------------------------------------------------------------------------
 find_package(Threads REQUIRED)
+find_package(PkgConfig REQUIRED)
+
+# LuaJIT for stimulus scripting
+pkg_check_modules(LUAJIT REQUIRED luajit)
+
+# sol2 header-only Lua binding library
+include(FetchContent)
+FetchContent_Declare(
+    sol2
+    GIT_REPOSITORY https://github.com/ThePhD/sol2.git
+    GIT_TAG v3.3.0
+)
+FetchContent_MakeAvailable(sol2)
 
 # FFTW3
 find_library(FFTW3_LIBRARY fftw3 HINTS /usr/lib/x86_64-linux-gnu)
@@ -257,10 +270,53 @@ add_executable(pipeline_test src/pipeline_test.cpp)
 target_link_libraries(pipeline_test PRIVATE twin_core twin_transport twin_sampler)
 
 # -----------------------------------------------------------------------------
-# Stimulus test executable (header-only stimulus library)
+# Stimulus library - signal generation for antenna input
+# -----------------------------------------------------------------------------
+add_library(twin_stimulus STATIC
+    src/stimulus/StimulusManager.cpp
+    src/stimulus/MorseGenerator.cpp
+    src/stimulus/SsbGenerator.cpp
+    src/stimulus/SweepGenerator.cpp
+    src/stimulus/TtsEngine.cpp
+    src/stimulus/StimulusLua.cpp
+)
+
+target_include_directories(twin_stimulus PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${LUAJIT_INCLUDE_DIRS}
+)
+
+# Optional espeak-ng for TTS
+find_library(ESPEAK_NG_LIBRARY espeak-ng)
+find_path(ESPEAK_NG_INCLUDE_DIR espeak-ng/speak_lib.h)
+
+target_link_libraries(twin_stimulus PUBLIC
+    ${LUAJIT_LIBRARIES}
+    sol2::sol2
+    Threads::Threads
+)
+
+if(ESPEAK_NG_LIBRARY AND ESPEAK_NG_INCLUDE_DIR)
+    target_include_directories(twin_stimulus PRIVATE ${ESPEAK_NG_INCLUDE_DIR})
+    target_link_libraries(twin_stimulus PUBLIC ${ESPEAK_NG_LIBRARY})
+    message(STATUS "  espeak-ng: found")
+else()
+    message(STATUS "  espeak-ng: not found (TTS will use fallback)")
+endif()
+
+target_compile_options(twin_stimulus PRIVATE
+    -Wall -Wextra -Wpedantic
+    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+)
+
+# -----------------------------------------------------------------------------
+# Stimulus test executable
 # -----------------------------------------------------------------------------
 add_executable(stimulus_test src/stimulus_test.cpp)
 target_include_directories(stimulus_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(stimulus_test PRIVATE twin_stimulus)
 
 # -----------------------------------------------------------------------------
 # Host library - DSP pipeline and visualization
