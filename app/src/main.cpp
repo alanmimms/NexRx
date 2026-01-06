@@ -5,6 +5,7 @@
 
 #include "setbox/SetBox.hpp"
 #include "FontRenderer.hpp"
+#include "AudioEngine.hpp"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -126,6 +127,11 @@ public:
             std::cerr << "Warning: Could not load any font" << std::endl;
         }
 
+        // Initialize audio engine
+        if (!audio_.init(48000, 2)) {
+            std::cerr << "Warning: Could not initialize audio" << std::endl;
+        }
+
         // Initialize Lua
         if (!initLua()) {
             return false;
@@ -136,6 +142,9 @@ public:
     }
 
     void shutdown() {
+        // Shutdown audio first
+        audio_.shutdown();
+
         if (glContext_) {
             SDL_GL_DeleteContext(glContext_);
             glContext_ = nullptr;
@@ -429,6 +438,53 @@ private:
             return setbox_.getBool(name, defaultVal);
         };
 
+        // Expose audio engine to Lua
+        lua_["audio"] = lua_.create_table();
+
+        lua_["audio"]["start"] = [this]() {
+            return audio_.start();
+        };
+
+        lua_["audio"]["stop"] = [this]() {
+            audio_.stop();
+        };
+
+        lua_["audio"]["isPlaying"] = [this]() {
+            return audio_.isPlaying();
+        };
+
+        lua_["audio"]["setVolume"] = [this](float volume) {
+            audio_.setVolume(volume);
+        };
+
+        lua_["audio"]["getVolume"] = [this]() {
+            return audio_.getVolume();
+        };
+
+        lua_["audio"]["setMuted"] = [this](bool muted) {
+            audio_.setMuted(muted);
+        };
+
+        lua_["audio"]["isMuted"] = [this]() {
+            return audio_.isMuted();
+        };
+
+        lua_["audio"]["setTestTone"] = [this](bool enabled, sol::optional<float> frequency) {
+            audio_.setTestTone(enabled, frequency.value_or(440.0f));
+        };
+
+        lua_["audio"]["isTestToneEnabled"] = [this]() {
+            return audio_.isTestToneEnabled();
+        };
+
+        lua_["audio"]["getSampleRate"] = [this]() {
+            return audio_.getSampleRate();
+        };
+
+        lua_["audio"]["isInitialized"] = [this]() {
+            return audio_.isInitialized();
+        };
+
         // Load SetBox base config
         if (!setbox_.loadFile("config/base/defaults.lua")) {
             std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
@@ -559,6 +615,7 @@ private:
     sol::state lua_;
     NexRx::SetBox::SetBoxEngine setbox_;
     FontRenderer font_;
+    AudioEngine audio_;
 
     int windowWidth_ = 0;
     int windowHeight_ = 0;

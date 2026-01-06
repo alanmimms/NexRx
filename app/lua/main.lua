@@ -29,6 +29,9 @@ local nrEnabled = false
 local nbEnabled = false
 local selectedMode = "USB"
 local selectedBand = "20m"
+local audioMuted = false
+local testToneEnabled = false
+local testToneFreq = 440
 
 -- VFO state
 local vfoA = 14.200
@@ -69,6 +72,16 @@ function init()
     local bg = setbox.getString("background", "#1a1a2e")
     local r, g, b = hexToRgb(bg)
     setClearColor(r, g, b)
+
+    -- Initialize audio
+    if audio.isInitialized() then
+        audio.setVolume(volume)
+        audio.start()
+        print("[Lua] Audio started at " .. audio.getSampleRate() .. " Hz")
+    else
+        print("[Lua] Warning: Audio not initialized")
+    end
+
     print("[Lua] NexRx UI initialized with layout system")
 end
 
@@ -259,7 +272,11 @@ function draw()
 
         lx, ly = layout.getCursor()
         ui.label(lx, ly, "Vol:")
-        volume = ui.slider("volume", lx + 40, ly, w - 70, 0, 1, volume)
+        local newVolume = ui.slider("volume", lx + 40, ly, w - 70, 0, 1, volume)
+        if newVolume ~= volume then
+            volume = newVolume
+            audio.setVolume(volume)
+        end
         local volPct = string.format("%d%%", math.floor(volume * 100))
         drawText(lx + w - 60, ly - 2, volPct, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
@@ -268,6 +285,30 @@ function draw()
         ui.label(lx, ly, "Sql:")
         squelch = ui.slider("squelch", lx + 40, ly, w - 70, 0, 1, squelch)
         layout.newLine(24)
+
+        -- Mute checkbox
+        cx, cy = layout.getCursor()
+        local newMuted = ui.checkbox("mute", "Mute", cx, cy, audioMuted)
+        if newMuted ~= audioMuted then
+            audioMuted = newMuted
+            audio.setMuted(audioMuted)
+        end
+        layout.newLine(24)
+
+        -- Test tone button
+        local toneTags = testToneEnabled and {"Primary"} or {"Secondary"}
+        local toneLabel = testToneEnabled and "Tone ON" or "Test Tone"
+        local tx, ty = layout.getCursor()
+        if ui.button("test_tone", toneLabel, tx, ty, 90, 26, toneTags) then
+            testToneEnabled = not testToneEnabled
+            audio.setTestTone(testToneEnabled, testToneFreq)
+            if testToneEnabled then
+                print("[Lua] Test tone ON: " .. testToneFreq .. " Hz")
+            else
+                print("[Lua] Test tone OFF")
+            end
+        end
+        layout.newLine(28)
     end
     layout.endDock()
 

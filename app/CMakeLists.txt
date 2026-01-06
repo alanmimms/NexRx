@@ -92,6 +92,7 @@ target_compile_options(setbox_test PRIVATE
 add_executable(nexrx_app
     src/main.cpp
     src/FontRenderer.cpp
+    src/AudioEngine.cpp
 )
 
 target_include_directories(nexrx_app PRIVATE
@@ -100,11 +101,24 @@ target_include_directories(nexrx_app PRIVATE
     ${SDL2_INCLUDE_DIRS}
 )
 
+# Platform-specific audio libraries for miniaudio
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(AUDIO_LIBS dl m)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    find_library(COREAUDIO_LIBRARY CoreAudio)
+    find_library(AUDIOUNIT_LIBRARY AudioUnit)
+    find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+    set(AUDIO_LIBS ${COREAUDIO_LIBRARY} ${AUDIOUNIT_LIBRARY} ${COREFOUNDATION_LIBRARY})
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(AUDIO_LIBS winmm)
+endif()
+
 target_link_libraries(nexrx_app PRIVATE
     setbox
     ${SDL2_LIBRARIES}
     OpenGL::GL
     Threads::Threads
+    ${AUDIO_LIBS}
 )
 
 target_compile_options(nexrx_app PRIVATE
