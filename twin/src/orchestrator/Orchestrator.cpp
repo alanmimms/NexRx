@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <chrono>
 #include <thread>
+#include <vector>
 
 namespace NexRx::Twin {
 
@@ -39,6 +40,11 @@ bool Orchestrator::initialize(const OrchestratorConfig& config) {
     adcSamplePeriod_s_ = 1.0 / config_.adcSampleRate_Hz;
     nextAdcSampleTime_s_ = adcSamplePeriod_s_; // First sample after one period
     adcSampleIndex_ = 0;
+
+    // Initialize stimulus injection
+    stimulusBatchPeriod_s_ = config_.stimulusBatchSize_us * 1e-6;
+    nextStimulusUpdateTime_s_ = 0.0;
+    stimulusEnabled_ = false;
 
     // Reset statistics
     stats_ = SimulationStats{};
@@ -91,6 +97,13 @@ bool Orchestrator::runFor(double duration_s) {
         double stepTarget = *currentTime + (config_.simulationTimeStep_ns * 1e-9);
         if (stepTarget > targetTime) {
             stepTarget = targetTime;
+        }
+
+        // Update stimulus data if needed (before stepping)
+        if (stimulusEnabled_ && *currentTime >= nextStimulusUpdateTime_s_) {
+            double batchEnd = nextStimulusUpdateTime_s_ + stimulusBatchPeriod_s_;
+            updateStimulusData(nextStimulusUpdateTime_s_, batchEnd);
+            nextStimulusUpdateTime_s_ = batchEnd;
         }
 
         // Execute step
@@ -209,6 +222,21 @@ void Orchestrator::setAdcSampleCallback(AdcSampleCallback callback) {
     adcCallback_ = std::move(callback);
 }
 
+void Orchestrator::setStimulusManager(std::shared_ptr<nexrx::StimulusManager> manager) {
+    stimulusManager_ = std::move(manager);
+
+    // Enable stimulus injection if we have a manager
+    if (stimulusManager_ && initialized_) {
+        stimulusEnabled_ = true;
+        nextStimulusUpdateTime_s_ = 0.0;
+
+        if (config_.verbose) {
+            std::cout << "[Orchestrator] Stimulus manager attached ("
+                      << stimulusManager_->count() << " stimuli)" << std::endl;
+        }
+    }
+}
+
 std::optional<double> Orchestrator::getNodeVoltage(const std::string& nodeName) const {
     return xyce_.getNodeVoltage(nodeName);
 }
@@ -233,6 +261,50 @@ void Orchestrator::checkAdcSample(double currentTime_s) {
         stats_.adcSamplesGenerated++;
         adcSampleIndex_++;
         nextAdcSampleTime_s_ += adcSamplePeriod_s_;
+    }
+}
+
+void Orchestrator::updateStimulusData(double startTime_s, double endTime_s) {
+    if (!stimulusEnabled_ || !stimulusManager_ || stimulusManager_->count() == 0) {
+        return;
+    }
+
+    // Generate samples for the time window
+    // Use high sample rate to capture RF frequencies (at least 2x max freq)
+    // For HF (30 MHz max), we need at least 60 MHz sample rate
+    // But Xyce interpolates, so we can use a reasonable rate
+    constexpr double sampleRate_Hz = 100e6;  // 100 MHz sample rate
+    const double samplePeriod_s = 1.0 / sampleRate_Hz;
+
+    // Calculate number of samples
+    double duration_s = endTime_s - startTime_s;
+    size_t numSamples = static_cast<size_t>(duration_s * sampleRate_Hz) + 2;
+
+    // Generate time-voltage pairs
+    std::vector<double> times;
+    std::vector<double> voltages;
+    times.reserve(numSamples);
+    voltages.reserve(numSamples);
+
+    for (size_t i = 0; i < numSamples; ++i) {
+        double t = startTime_s + i * samplePeriod_s;
+        if (t > endTime_s + samplePeriod_s) break;
+
+        times.push_back(t);
+        voltages.push_back(stimulusManager_->getSample(t));
+    }
+
+    // Update Xyce voltage source
+    if (!times.empty()) {
+        bool success = xyce_.updateTimeVoltagePairs(
+            config_.stimulusSourceName, times, voltages);
+
+        if (!success && config_.verbose) {
+            std::cerr << "[Orchestrator] Failed to update stimulus data: "
+                      << xyce_.getLastError() << std::endl;
+            // Disable further attempts if source doesn't exist
+            stimulusEnabled_ = false;
+        }
     }
 }
 

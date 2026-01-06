@@ -1,0 +1,168 @@
+* NexRx Digital Twin - Full Receiver Chain with External Stimulus
+* Antenna input driven by external time-voltage data from StimulusManager
+*
+* Signal path:
+*   Antenna (50Ω) → T1 (50:200Ω) → Digital Atten (200Ω) →
+*   Preselector (200Ω) → Hexafilar (200:3×22Ω) → 3× QSD
+*
+* Copyright 2026 NexRx Project - MIT License
+
+.INCLUDE 'components.lib'
+.INCLUDE 'qsd.lib'
+.INCLUDE 'preselector_200.lib'
+.INCLUDE 'hexafilar.lib'
+
+*======================================================================
+* NEXRX RECEIVER SUBCIRCUIT
+* (same as nexrx_rx.cir)
+*======================================================================
+
+.SUBCKT NEXRX_RECEIVER ANT_IN GND
++ ATTEN_3DB ATTEN_6DB ATTEN_12DB ATTEN_24DB
++ L701_SHORT
++ C701_EN C702_EN C703_EN C704_EN C705_EN
++ C706_EN C707_EN C708_EN C709_EN C710_EN C711_EN
++ Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3
++ Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3
++ Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5
++ Q0_I Q0_Q Q1_I Q1_Q Q2_I Q2_Q
+
+* Stage 1: 50 to 200 ohm transformer
+X_T1 ANT_IN GND NODE_200 GND XFMR_IDEAL NRATIO=2
+
+* Stage 2: Digital Attenuator (200 ohm)
+X_ATT_3DB NODE_200 ATT_3DB_OUT ATTEN_3DB GND ATTEN_PAD ATTEN_DB=3 Z0=200
+X_ATT_6DB ATT_3DB_OUT ATT_6DB_OUT ATTEN_6DB GND ATTEN_PAD ATTEN_DB=6 Z0=200
+X_ATT_12DB ATT_6DB_OUT ATT_12DB_OUT ATTEN_12DB GND ATTEN_PAD ATTEN_DB=12 Z0=200
+X_ATT_24DB ATT_12DB_OUT ATTEN_OUT ATTEN_24DB GND ATTEN_PAD ATTEN_DB=24 Z0=200
+
+* Stage 3: 200 ohm Preselector
+X_PRESEL ATTEN_OUT PRESEL_OUT GND
++ L701_SHORT
++ C701_EN C702_EN C703_EN C704_EN C705_EN
++ C706_EN C707_EN C708_EN C709_EN C710_EN C711_EN
++ PRESELECTOR_200
+
+* Stage 4: Hexafilar Transformer
+X_HEXA PRESEL_OUT GND RF_Q0 RF_Q1 RF_Q2 GND XFMR_HEXAFILAR
+
+* Stage 5: Triple QSD
+X_QSD0 RF_Q0 GND Q0_I Q0_Q Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3 QSD_4PHASE
+X_QSD1 RF_Q1 GND Q1_I Q1_Q Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3 QSD_4PHASE
+X_QSD2 RF_Q2 GND Q2_I Q2_Q Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5 QSD_6PHASE
+
+.ENDS NEXRX_RECEIVER
+
+*======================================================================
+* EXTERNAL STIMULUS INPUT
+*
+* V_STIM is a TVPAIRLIN (time-voltage pair linear interpolation) source
+* that receives data from the twin's StimulusManager via the API.
+* This allows runtime-controllable RF signals: CW, SSB, sweeps, etc.
+*======================================================================
+
+* External stimulus voltage source - receives data from StimulusManager
+* Initial data is 0V; twin will update via updateTimeVoltagePairs()
+V_STIM V_STIM_SRC 0 PWL 0 0 1n 0
+
+* 50 ohm source impedance
+R_STIM_SRC V_STIM_SRC ANT_IN 50
+
+*----------------------------------------------------------------------
+* Control signals (same as nexrx_rx.cir)
+*----------------------------------------------------------------------
+
+* Attenuator - all bypassed
+V_ATT_3DB ATTEN_3DB 0 0
+V_ATT_6DB ATTEN_6DB 0 0
+V_ATT_12DB ATTEN_12DB 0 0
+V_ATT_24DB ATTEN_24DB 0 0
+
+* Preselector: L701 shorted (using L702=220nH only)
+V_L701_SHORT L701_SHORT 0 3.3
+
+* Capacitors: C707(560) + C702(15) + C701(8) = 583pF for 14 MHz with 220nH
+V_C701 C701_EN 0 3.3
+V_C702 C702_EN 0 3.3
+V_C703 C703_EN 0 0
+V_C704 C704_EN 0 0
+V_C705 C705_EN 0 0
+V_C706 C706_EN 0 0
+V_C707 C707_EN 0 3.3
+V_C708 C708_EN 0 0
+V_C709 C709_EN 0 0
+V_C710 C710_EN 0 0
+V_C711 C711_EN 0 0
+
+*----------------------------------------------------------------------
+* QSD0 LO at 14 MHz
+*----------------------------------------------------------------------
+V_Q0_PH0_S Q0_PH0_S 0 SIN(1.65 1.65 14MEG 0)
+V_Q0_PH1_S Q0_PH1_S 0 SIN(1.65 1.65 14MEG 17.86n)
+V_Q0_PH2_S Q0_PH2_S 0 SIN(1.65 1.65 14MEG 35.71n)
+V_Q0_PH3_S Q0_PH3_S 0 SIN(1.65 1.65 14MEG 53.57n)
+
+B_Q0_PH0 Q0_PH0 0 V='3.3 * (1 + tanh(100*(V(Q0_PH0_S) - 1.65))) / 2'
+B_Q0_PH1 Q0_PH1 0 V='3.3 * (1 + tanh(100*(V(Q0_PH1_S) - 1.65))) / 2'
+B_Q0_PH2 Q0_PH2 0 V='3.3 * (1 + tanh(100*(V(Q0_PH2_S) - 1.65))) / 2'
+B_Q0_PH3 Q0_PH3 0 V='3.3 * (1 + tanh(100*(V(Q0_PH3_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* QSD1 LO at 14 MHz (same as QSD0 for simplicity)
+*----------------------------------------------------------------------
+V_Q1_PH0_S Q1_PH0_S 0 SIN(1.65 1.65 14MEG 0)
+V_Q1_PH1_S Q1_PH1_S 0 SIN(1.65 1.65 14MEG 17.86n)
+V_Q1_PH2_S Q1_PH2_S 0 SIN(1.65 1.65 14MEG 35.71n)
+V_Q1_PH3_S Q1_PH3_S 0 SIN(1.65 1.65 14MEG 53.57n)
+
+B_Q1_PH0 Q1_PH0 0 V='3.3 * (1 + tanh(100*(V(Q1_PH0_S) - 1.65))) / 2'
+B_Q1_PH1 Q1_PH1 0 V='3.3 * (1 + tanh(100*(V(Q1_PH1_S) - 1.65))) / 2'
+B_Q1_PH2 Q1_PH2 0 V='3.3 * (1 + tanh(100*(V(Q1_PH2_S) - 1.65))) / 2'
+B_Q1_PH3 Q1_PH3 0 V='3.3 * (1 + tanh(100*(V(Q1_PH3_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* QSD2 LO at 14 MHz
+*----------------------------------------------------------------------
+V_Q2_PH0_S Q2_PH0_S 0 SIN(1.65 1.65 14MEG 0)
+V_Q2_PH1_S Q2_PH1_S 0 SIN(1.65 1.65 14MEG 11.90n)
+V_Q2_PH2_S Q2_PH2_S 0 SIN(1.65 1.65 14MEG 23.81n)
+V_Q2_PH3_S Q2_PH3_S 0 SIN(1.65 1.65 14MEG 35.71n)
+V_Q2_PH4_S Q2_PH4_S 0 SIN(1.65 1.65 14MEG 47.62n)
+V_Q2_PH5_S Q2_PH5_S 0 SIN(1.65 1.65 14MEG 59.52n)
+
+B_Q2_PH0 Q2_PH0 0 V='3.3 * (1 + tanh(100*(V(Q2_PH0_S) - 1.65))) / 2'
+B_Q2_PH1 Q2_PH1 0 V='3.3 * (1 + tanh(100*(V(Q2_PH1_S) - 1.65))) / 2'
+B_Q2_PH2 Q2_PH2 0 V='3.3 * (1 + tanh(100*(V(Q2_PH2_S) - 1.65))) / 2'
+B_Q2_PH3 Q2_PH3 0 V='3.3 * (1 + tanh(100*(V(Q2_PH3_S) - 1.65))) / 2'
+B_Q2_PH4 Q2_PH4 0 V='3.3 * (1 + tanh(100*(V(Q2_PH4_S) - 1.65))) / 2'
+B_Q2_PH5 Q2_PH5 0 V='3.3 * (1 + tanh(100*(V(Q2_PH5_S) - 1.65))) / 2'
+
+*----------------------------------------------------------------------
+* Receiver instance
+*----------------------------------------------------------------------
+X_RX ANT_IN 0
++ ATTEN_3DB ATTEN_6DB ATTEN_12DB ATTEN_24DB
++ L701_SHORT
++ C701_EN C702_EN C703_EN C704_EN C705_EN
++ C706_EN C707_EN C708_EN C709_EN C710_EN C711_EN
++ Q0_PH0 Q0_PH1 Q0_PH2 Q0_PH3
++ Q1_PH0 Q1_PH1 Q1_PH2 Q1_PH3
++ Q2_PH0 Q2_PH1 Q2_PH2 Q2_PH3 Q2_PH4 Q2_PH5
++ Q0_I Q0_Q Q1_I Q1_Q Q2_I Q2_Q
++ NEXRX_RECEIVER
+
+* Output loads (ADC input impedance)
+R_LOAD_Q0_I Q0_I 0 10k
+R_LOAD_Q0_Q Q0_Q 0 10k
+R_LOAD_Q1_I Q1_I 0 10k
+R_LOAD_Q1_Q Q1_Q 0 10k
+R_LOAD_Q2_I Q2_I 0 10k
+R_LOAD_Q2_Q Q2_Q 0 10k
+
+* Analysis - 100us simulation (longer to capture Morse/SSB dynamics)
+.TRAN 1n 100u
+
+* Print intermediate nodes and I/Q outputs
+.PRINT TRAN V(ANT_IN) V(X_RX:NODE_200) V(X_RX:PRESEL_OUT) V(Q0_I) V(Q0_Q)
+
+.END

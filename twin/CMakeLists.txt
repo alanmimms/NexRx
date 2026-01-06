@@ -174,6 +174,7 @@ target_include_directories(twin_core PUBLIC
 )
 
 target_link_libraries(twin_core PUBLIC
+    twin_stimulus
     ${XYCE_LIBRARY}
     ${TRILINOS_LIBRARIES}
     ${FFTW3_LIBRARY}

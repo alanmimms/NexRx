@@ -11,6 +11,7 @@
 #pragma once
 
 #include "xyce/XyceWrapper.hpp"
+#include "stimulus/StimulusManager.hpp"
 #include <memory>
 #include <string>
 #include <functional>
@@ -28,6 +29,10 @@ struct OrchestratorConfig {
     double adcSampleRate_Hz = 96000.0;  ///< ADC sample rate (96 kHz)
     bool realTimeMode = false;          ///< Enable real-time mode
     bool verbose = false;               ///< Enable verbose logging
+
+    // Stimulus injection
+    std::string stimulusSourceName = "V_STIM";  ///< Xyce voltage source for stimulus
+    double stimulusBatchSize_us = 10.0;         ///< Batch size for stimulus updates (µs)
 };
 
 /**
@@ -127,6 +132,20 @@ public:
     void setAdcSampleCallback(AdcSampleCallback callback);
 
     /**
+     * @brief Set stimulus manager for RF signal injection
+     * @param manager Shared pointer to stimulus manager
+     */
+    void setStimulusManager(std::shared_ptr<nexrx::StimulusManager> manager);
+
+    /**
+     * @brief Get stimulus manager
+     * @return Shared pointer to stimulus manager (may be null)
+     */
+    [[nodiscard]] std::shared_ptr<nexrx::StimulusManager> getStimulusManager() const {
+        return stimulusManager_;
+    }
+
+    /**
      * @brief Get a node voltage from the current simulation state
      * @param nodeName Node name
      * @return Voltage value, or nullopt if not found
@@ -172,6 +191,19 @@ private:
      * @param currentTime_s Current simulation time
      */
     void checkAdcSample(double currentTime_s);
+
+    /**
+     * @brief Update stimulus data in Xyce
+     * @param startTime_s Start time for stimulus batch
+     * @param endTime_s End time for stimulus batch
+     */
+    void updateStimulusData(double startTime_s, double endTime_s);
+
+    // Stimulus injection
+    std::shared_ptr<nexrx::StimulusManager> stimulusManager_;
+    double nextStimulusUpdateTime_s_ = 0.0;  ///< Next time to update stimulus batch
+    double stimulusBatchPeriod_s_ = 10e-6;   ///< Period for stimulus updates
+    bool stimulusEnabled_ = false;           ///< True if stimulus source exists
 };
 
 } // namespace NexRx::Twin

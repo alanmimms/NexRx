@@ -138,6 +138,21 @@ public:
     [[nodiscard]] std::vector<std::string> getAllDeviceNames() const;
 
     /**
+     * @brief Update time-voltage pairs for an external data source
+     * @param sourceName Name of the voltage source (e.g., "V_STIM")
+     * @param times Vector of time points in seconds
+     * @param voltages Vector of voltage values
+     * @return true if successful
+     *
+     * Used for injecting external stimulus data into the simulation.
+     * The voltage source must be configured with appropriate options
+     * in the netlist to accept external data.
+     */
+    bool updateTimeVoltagePairs(const std::string& sourceName,
+                                const std::vector<double>& times,
+                                const std::vector<double>& voltages);
+
+    /**
      * @brief Finalize and clean up the simulator
      */
     void finalize();

@@ -12,6 +12,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <map>
+#include <utility>
 
 namespace NexRx::Twin {
 
@@ -178,6 +180,39 @@ std::vector<std::string> XyceWrapper::getAllDeviceNames() const {
 
     simulator_->getAllDeviceNames(names);
     return names;
+}
+
+bool XyceWrapper::updateTimeVoltagePairs(const std::string& sourceName,
+                                         const std::vector<double>& times,
+                                         const std::vector<double>& voltages) {
+    if (!initialized_ || !simulator_) {
+        lastError_ = "Simulator not initialized";
+        return false;
+    }
+
+    if (times.size() != voltages.size() || times.empty()) {
+        lastError_ = "Invalid time-voltage pair data";
+        return false;
+    }
+
+    // Xyce API expects: map<sourceName, vector<pair<time,voltage>>*>
+    std::vector<std::pair<double, double>> tvPairs;
+    tvPairs.reserve(times.size());
+
+    for (size_t i = 0; i < times.size(); ++i) {
+        tvPairs.emplace_back(times[i], voltages[i]);
+    }
+
+    std::map<std::string, std::vector<std::pair<double, double>>*> updateMap;
+    updateMap[sourceName] = &tvPairs;
+
+    bool result = simulator_->updateTimeVoltagePairs(updateMap);
+
+    if (!result) {
+        lastError_ = "Failed to update time-voltage pairs for: " + sourceName;
+    }
+
+    return result;
 }
 
 void XyceWrapper::finalize() {
