@@ -82,12 +82,11 @@ rule {
     }
 }
 
--- Hover states
+-- Button state styles (tag-based, used by immediate-mode UI)
 rule {
-    id = "button-hover",
-    tags = {"Button"},
-    when = function(ctx) return ctx.hovered end,
-    priority = 50,
+    id = "button-hovered",
+    tags = {"Button", "Hovered"},
+    priority = 10,
     apply = {
         background = "#60a5fa",
     }
@@ -95,11 +94,30 @@ rule {
 
 rule {
     id = "button-pressed",
-    tags = {"Button"},
-    when = function(ctx) return ctx.pressed end,
-    priority = 51,
+    tags = {"Button", "Pressed"},
+    priority = 11,
     apply = {
         background = "#1d4ed8",
+    }
+}
+
+rule {
+    id = "button-active",
+    tags = {"Button", "Active"},
+    priority = 5,
+    apply = {
+        background = "#2563eb",
+        border = "#60a5fa",
+    }
+}
+
+rule {
+    id = "button-disabled",
+    tags = {"Button", "Disabled"},
+    priority = 20,
+    apply = {
+        background = "#4a5568",
+        foreground = "#a0aec0",
     }
 }
 
@@ -121,6 +139,151 @@ rule {
         background = "#0f172a",
         borderRadius = 0,
         width = 280,
+    }
+}
+
+-- Slider styles
+rule {
+    id = "slider-base",
+    tags = {"Slider"},
+    apply = {
+        background = "#2d3748",
+        accent = "#3b82f6",
+        border = "#4a5568",
+    }
+}
+
+rule {
+    id = "slider-hovered",
+    tags = {"Slider", "Hovered"},
+    priority = 10,
+    apply = {
+        accent = "#60a5fa",
+    }
+}
+
+rule {
+    id = "slider-active",
+    tags = {"Slider", "Active"},
+    priority = 11,
+    apply = {
+        accent = "#2563eb",
+    }
+}
+
+-- Checkbox styles
+rule {
+    id = "checkbox-base",
+    tags = {"Checkbox"},
+    apply = {
+        background = "#2d3748",
+        foreground = "#e2e8f0",
+        border = "#4a5568",
+        accent = "#3b82f6",
+    }
+}
+
+rule {
+    id = "checkbox-checked",
+    tags = {"Checkbox", "Checked"},
+    priority = 5,
+    apply = {
+        background = "#3b82f6",
+        border = "#60a5fa",
+    }
+}
+
+rule {
+    id = "checkbox-hovered",
+    tags = {"Checkbox", "Hovered"},
+    priority = 10,
+    apply = {
+        border = "#60a5fa",
+    }
+}
+
+-- Input field styles
+rule {
+    id = "input-base",
+    tags = {"Input"},
+    apply = {
+        background = "#1e293b",
+        foreground = "#e2e8f0",
+        border = "#4a5568",
+        borderRadius = 4,
+        accent = "#3b82f6",
+    }
+}
+
+rule {
+    id = "input-hovered",
+    tags = {"Input", "Hovered"},
+    priority = 10,
+    apply = {
+        border = "#60a5fa",
+    }
+}
+
+rule {
+    id = "input-focused",
+    tags = {"Input", "Focused"},
+    priority = 11,
+    apply = {
+        border = "#3b82f6",
+        borderWidth = 2,
+    }
+}
+
+-- Label styles
+rule {
+    id = "label-base",
+    tags = {"Label"},
+    apply = {
+        foreground = "#e2e8f0",
+    }
+}
+
+rule {
+    id = "label-title",
+    tags = {"Label", "Title"},
+    apply = {
+        foreground = "#f1f5f9",
+        fontSize = 16,
+    }
+}
+
+rule {
+    id = "label-muted",
+    tags = {"Label", "Muted"},
+    apply = {
+        foreground = "#94a3b8",
+    }
+}
+
+rule {
+    id = "label-accent",
+    tags = {"Label", "Accent"},
+    apply = {
+        foreground = "#60a5fa",
+    }
+}
+
+-- Progress bar styles
+rule {
+    id = "progressbar-base",
+    tags = {"ProgressBar"},
+    apply = {
+        background = "#2d3748",
+        accent = "#3b82f6",
+    }
+}
+
+-- Separator styles
+rule {
+    id = "separator-base",
+    tags = {"Separator"},
+    apply = {
+        border = "#4a5568",
     }
 }
 

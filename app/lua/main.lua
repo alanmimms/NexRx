@@ -7,23 +7,28 @@
   - draw()   : Called each frame for rendering
 ]]
 
+-- Add lua directory to package path for requires
+local basePath = "lua/"
+package.path = basePath .. "?.lua;" .. basePath .. "?/init.lua;" .. package.path
+
+-- Load UI module
+local ui = require("ui.widgets")
+local theme = require("ui.theme")
+
 -- Global state
 local frameCount = 0
-local mouseX, mouseY = 0, 0
 local fps = 0
 local fpsAccum = 0
 local fpsFrames = 0
 
--- Demo state
-local buttonHovered = false
-local buttonPressed = false
-local sliderValue = 0.5
+-- Application state
+local rxActive = false
 local frequency = 14.200  -- MHz
-
--- Helper: Check if point is inside rectangle
-local function pointInRect(px, py, x, y, w, h)
-    return px >= x and px < x + w and py >= y and py < y + h
-end
+local volume = 0.8
+local agcEnabled = true
+local nrEnabled = false
+local nbEnabled = false
+local selectedMode = "USB"
 
 -- Helper: Parse hex color to RGB (0-1 range)
 local function hexToRgb(hex)
@@ -39,6 +44,18 @@ local function clamp(v, min, max)
     return math.max(min, math.min(max, v))
 end
 
+-- Get band name from frequency
+local function getBand(freq)
+    if freq >= 1.8 and freq <= 2.0 then return "160m"
+    elseif freq >= 3.5 and freq <= 4.0 then return "80m"
+    elseif freq >= 7.0 and freq <= 7.3 then return "40m"
+    elseif freq >= 14.0 and freq <= 14.35 then return "20m"
+    elseif freq >= 21.0 and freq <= 21.45 then return "15m"
+    elseif freq >= 28.0 and freq <= 29.7 then return "10m"
+    else return "OOB"
+    end
+end
+
 -- Called once at startup
 function init()
     print("[Lua] init() called")
@@ -48,13 +65,12 @@ function init()
     local r, g, b = hexToRgb(bg)
     setClearColor(r, g, b)
 
-    print("[Lua] NexRx UI initialized with text rendering")
+    print("[Lua] NexRx UI initialized with immediate-mode widgets")
 end
 
 -- Called each frame
 function update(dt)
     frameCount = frameCount + 1
-    mouseX, mouseY = getMousePos()
 
     -- FPS calculation
     fpsAccum = fpsAccum + dt
@@ -65,27 +81,10 @@ function update(dt)
         fpsFrames = 0
     end
 
-    -- Update button state
-    local btnX, btnY, btnW, btnH = 50, 60, 150, 36
-    buttonHovered = pointInRect(mouseX, mouseY, btnX, btnY, btnW, btnH)
-
-    if buttonHovered and isMouseClicked(0) then
-        buttonPressed = not buttonPressed
-        print("[Lua] Button toggled: " .. tostring(buttonPressed))
-    end
-
-    -- Update slider (frequency control)
-    local sliderX, sliderY, sliderW, sliderH = 50, 140, 200, 8
-    if isMouseDown(0) and pointInRect(mouseX, mouseY, sliderX - 10, sliderY - 10, sliderW + 20, sliderH + 20) then
-        sliderValue = clamp((mouseX - sliderX) / sliderW, 0, 1)
-        frequency = 1.0 + sliderValue * 29.0  -- 1-30 MHz
-    end
-
-    -- Mouse wheel for fine tuning
+    -- Mouse wheel for fine tuning frequency
     local wheel = getMouseWheel()
     if wheel ~= 0 then
         frequency = clamp(frequency + wheel * 0.01, 1.0, 30.0)
-        sliderValue = (frequency - 1.0) / 29.0
     end
 end
 
@@ -93,97 +92,126 @@ end
 function draw()
     local winW, winH = getWindowSize()
     local lineH = getLineHeight()
+    local mouseX, mouseY = getMousePos()
 
-    -- Main panel
-    drawRoundedRect(30, 30, 280, 260, 8, 0.12, 0.12, 0.18, 1.0)
-    drawRectOutline(30, 30, 280, 260, 0.3, 0.3, 0.4, 1.0, 1.0)
+    -- Begin UI frame
+    ui.beginFrame()
 
-    -- Panel title
-    drawText(50, 40, "NexRx Control Panel", 0.9, 0.9, 0.95, 1.0)
+    -- Main control panel
+    local px, py, pw, ph = 30, 30, 300, 380
+    local cx, cy, cw, ch = ui.panelWithTitle(px, py, pw, ph, "NexRx Control Panel")
 
-    -- Button with rounded corners
-    local btnX, btnY, btnW, btnH = 50, 70, 150, 36
-    local btnR, btnG, btnB = 0.23, 0.51, 0.96
+    local y = cy
 
-    if buttonPressed then
-        btnR, btnG, btnB = 0.11, 0.31, 0.85
-    elseif buttonHovered then
-        btnR, btnG, btnB = 0.38, 0.65, 0.98
-    end
-
-    drawRoundedRect(btnX, btnY, btnW, btnH, 6, btnR, btnG, btnB, 1.0)
-
-    -- Button label (centered)
-    local label = buttonPressed and "RX Active" or "RX Off"
-    local labelW = measureText(label)
-    drawText(btnX + (btnW - labelW) / 2, btnY + (btnH - lineH) / 2, label, 1.0, 1.0, 1.0, 1.0)
+    -- RX toggle button
+    local rxLabel = rxActive and "RX Active" or "RX Off"
+    local rxTags = rxActive and {"Primary"} or {"Secondary"}
+    rxActive = ui.toggle("rx_toggle", rxLabel, cx, y, 140, 36, rxActive, rxTags)
+    y = y + 48
 
     -- Frequency display
-    drawText(50, 120, "Frequency:", 0.7, 0.7, 0.75, 1.0)
+    ui.label(cx, y, "Frequency:", {"Muted"})
     local freqStr = string.format("%.3f MHz", frequency)
-    drawText(140, 120, freqStr, 0.2, 0.9, 0.4, 1.0)
+    drawText(cx + 80, y, freqStr, 0.2, 0.9, 0.4, 1.0)
+    y = y + 24
 
-    -- Slider
-    local sliderX, sliderY, sliderW, sliderH = 50, 150, 200, 8
-    drawRoundedRect(sliderX, sliderY, sliderW, sliderH, 4, 0.25, 0.25, 0.3, 1.0)
-
-    -- Slider fill
-    local fillW = sliderW * sliderValue
-    if fillW > 0 then
-        drawRoundedRect(sliderX, sliderY, fillW, sliderH, 4, 0.23, 0.51, 0.96, 1.0)
-    end
-
-    -- Slider handle
-    local handleX = sliderX + fillW - 8
-    local handleY = sliderY - 6
-    drawCircle(sliderX + fillW, sliderY + sliderH/2, 10, 1.0, 1.0, 1.0, 1.0)
-    drawCircleOutline(sliderX + fillW, sliderY + sliderH/2, 10, 0.3, 0.3, 0.4, 1.0, 2.0)
+    -- Frequency slider
+    frequency = ui.slider("freq_slider", cx, y, cw, 1.0, 30.0, frequency)
+    y = y + 30
 
     -- Band indicator
-    drawText(50, 175, "Band:", 0.7, 0.7, 0.75, 1.0)
-    local band = "?"
-    if frequency >= 1.8 and frequency <= 2.0 then band = "160m"
-    elseif frequency >= 3.5 and frequency <= 4.0 then band = "80m"
-    elseif frequency >= 7.0 and frequency <= 7.3 then band = "40m"
-    elseif frequency >= 14.0 and frequency <= 14.35 then band = "20m"
-    elseif frequency >= 21.0 and frequency <= 21.45 then band = "15m"
-    elseif frequency >= 28.0 and frequency <= 29.7 then band = "10m"
-    else band = "Out of band"
+    ui.label(cx, y, "Band: " .. getBand(frequency), {"Accent"})
+    y = y + 28
+
+    ui.separator(cx, y, cw)
+    y = y + 12
+
+    -- Volume control
+    ui.label(cx, y, "Volume:")
+    y = y + 22
+    volume = ui.slider("volume_slider", cx, y, cw, 0, 1, volume)
+    local volPct = string.format("%d%%", math.floor(volume * 100))
+    drawText(cx + cw + 10, y - 6, volPct, 0.6, 0.6, 0.65, 1.0)
+    y = y + 30
+
+    ui.separator(cx, y, cw)
+    y = y + 12
+
+    -- DSP options
+    ui.label(cx, y, "DSP Options:", {"Title"})
+    y = y + 26
+
+    agcEnabled = ui.checkbox("agc_checkbox", "AGC", cx, y, agcEnabled)
+    y = y + 26
+
+    nrEnabled = ui.checkbox("nr_checkbox", "Noise Reduction", cx, y, nrEnabled)
+    y = y + 26
+
+    nbEnabled = ui.checkbox("nb_checkbox", "Noise Blanker", cx, y, nbEnabled)
+    y = y + 30
+
+    ui.separator(cx, y, cw)
+    y = y + 12
+
+    -- Mode buttons (horizontal layout)
+    ui.label(cx, y, "Mode:")
+    y = y + 26
+    local modes = {"USB", "LSB", "CW", "AM"}
+    local btnW = (cw - 12) / 4
+    for i, mode in ipairs(modes) do
+        local bx = cx + (i - 1) * (btnW + 4)
+        local isSelected = selectedMode == mode
+        local tags = isSelected and {"Active"} or {}
+        if ui.button("mode_" .. mode, mode, bx, y, btnW, 28, tags) then
+            selectedMode = mode
+            print("[Lua] Mode changed to: " .. mode)
+        end
     end
-    drawText(100, 175, band, 0.9, 0.7, 0.2, 1.0)
 
-    -- S-Meter placeholder
-    drawText(50, 210, "S-Meter:", 0.7, 0.7, 0.75, 1.0)
-    drawRoundedRect(50, 230, 200, 20, 4, 0.15, 0.15, 0.2, 1.0)
+    -- S-Meter panel
+    local sx, sy, sw, sh = 30, 430, 300, 80
+    ui.panel(sx, sy, sw, sh)
+    ui.label(sx + 12, sy + 8, "S-Meter:")
 
-    -- Fake S-meter bars
+    -- S-Meter bar background
+    drawRoundedRect(sx + 12, sy + 32, sw - 24, 24, 4, 0.15, 0.15, 0.2, 1.0)
+
+    -- Fake S-meter level (animated)
     local sLevel = math.abs(math.sin(frameCount * 0.02)) * 0.7 + 0.2
     for i = 0, 9 do
-        local barX = 54 + i * 19
-        local barH = 12
+        local barX = sx + 16 + i * 26
+        local barH = 16
         local intensity = (i + 1) / 10
         if intensity <= sLevel then
             local r, g, b = 0.2, 0.8, 0.3
             if i >= 7 then r, g, b = 0.9, 0.3, 0.2 end
             if i >= 5 and i < 7 then r, g, b = 0.9, 0.7, 0.2 end
-            drawRect(barX, 234, 15, barH, r, g, b, 1.0)
+            drawRect(barX, sy + 36, 22, barH, r, g, b, 1.0)
         else
-            drawRect(barX, 234, 15, barH, 0.25, 0.25, 0.3, 1.0)
+            drawRect(barX, sy + 36, 22, barH, 0.25, 0.25, 0.3, 1.0)
         end
     end
 
+    -- S-level text
+    local sNum = math.floor(sLevel * 9) + 1
+    local sText = sNum <= 9 and ("S" .. sNum) or ("S9+" .. ((sNum - 9) * 10))
+    drawText(sx + sw - 50, sy + 38, sText, 0.9, 0.9, 0.95, 1.0)
+
     -- Instructions panel
-    drawRoundedRect(30, 310, 280, 80, 8, 0.12, 0.12, 0.18, 1.0)
-    drawText(50, 320, "Controls:", 0.8, 0.8, 0.85, 1.0)
-    drawText(50, 340, "- Click button to toggle RX", 0.6, 0.6, 0.65, 1.0)
-    drawText(50, 358, "- Drag slider or scroll wheel", 0.6, 0.6, 0.65, 1.0)
-    drawText(50, 376, "- ESC to quit", 0.6, 0.6, 0.65, 1.0)
+    local ix, iy, iw, ih = 350, 30, 220, 120
+    ui.panelWithTitle(ix, iy, iw, ih, "Controls")
+    ui.label(ix + 12, iy + 40, "Click toggle for RX", {"Muted"})
+    ui.label(ix + 12, iy + 58, "Drag sliders to adjust", {"Muted"})
+    ui.label(ix + 12, iy + 76, "Scroll wheel for freq", {"Muted"})
+    ui.label(ix + 12, iy + 94, "ESC to quit", {"Muted"})
+
+    -- End UI frame
+    ui.endFrame()
 
     -- Status bar at bottom
     drawRect(0, winH - 28, winW, 28, 0.08, 0.08, 0.1, 1.0)
     drawLine(0, winH - 28, winW, winH - 28, 0.3, 0.3, 0.35, 1.0, 1.0)
 
-    -- Status text
     local statusText = string.format("FPS: %.0f | Mouse: %d, %d | Frame: %d",
                                       fps, mouseX, mouseY, frameCount)
     drawText(10, winH - 22, statusText, 0.6, 0.6, 0.65, 1.0)
