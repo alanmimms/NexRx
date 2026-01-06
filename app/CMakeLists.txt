@@ -93,6 +93,7 @@ add_executable(nexrx_app
     src/main.cpp
     src/FontRenderer.cpp
     src/AudioEngine.cpp
+    src/WaterfallRenderer.cpp
 )
 
 target_include_directories(nexrx_app PRIVATE

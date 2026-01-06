@@ -42,6 +42,12 @@ local activeVFO = "A"
 local filterWidth = 2400
 local filterShift = 0
 
+-- Waterfall state
+local waterfallBins = 512
+local waterfallRows = 256
+local spectrumData = {}
+local selectedColormap = "viridis"
+
 -- Helper functions
 local function hexToRgb(hex)
     hex = hex:gsub("#", "")
@@ -82,7 +88,59 @@ function init()
         print("[Lua] Warning: Audio not initialized")
     end
 
+    -- Initialize waterfall
+    if waterfall.init(waterfallBins, waterfallRows) then
+        waterfall.setRange(-120, -40)
+        waterfall.setColormap(selectedColormap)
+        print("[Lua] Waterfall initialized: " .. waterfallBins .. "x" .. waterfallRows)
+    else
+        print("[Lua] Warning: Waterfall init failed")
+    end
+
+    -- Initialize spectrum data buffer
+    for i = 1, waterfallBins do
+        spectrumData[i] = -100
+    end
+
     print("[Lua] NexRx UI initialized with layout system")
+end
+
+-- Generate simulated spectrum data
+local function generateSpectrum()
+    local centerBin = waterfallBins / 2
+    for i = 1, waterfallBins do
+        -- Base noise floor
+        local noise = -100 + math.random() * 10
+
+        -- Add some simulated signals
+        local bin = i - 1
+
+        -- Main carrier at center
+        local distFromCenter = math.abs(bin - centerBin)
+        if distFromCenter < 5 then
+            noise = noise + 40 * math.exp(-distFromCenter * distFromCenter / 4)
+        end
+
+        -- Some side signals
+        local signal1 = centerBin - 80 + math.sin(frameCount * 0.01) * 20
+        local dist1 = math.abs(bin - signal1)
+        if dist1 < 8 then
+            noise = noise + 25 * math.exp(-dist1 * dist1 / 8) * (0.7 + 0.3 * math.sin(frameCount * 0.05))
+        end
+
+        local signal2 = centerBin + 120
+        local dist2 = math.abs(bin - signal2)
+        if dist2 < 6 then
+            noise = noise + 30 * math.exp(-dist2 * dist2 / 6)
+        end
+
+        -- Occasional burst
+        if math.random() < 0.001 then
+            noise = noise + 20
+        end
+
+        spectrumData[i] = clamp(noise, -120, -20)
+    end
 end
 
 -- Update
@@ -102,6 +160,12 @@ function update(dt)
     if wheel ~= 0 then
         frequency = clamp(frequency + wheel * 0.001, 1.0, 30.0)
         if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+    end
+
+    -- Generate simulated spectrum and update waterfall
+    generateSpectrum()
+    if waterfall.isInitialized() then
+        waterfall.addRow(spectrumData)
     end
 end
 
@@ -397,59 +461,63 @@ function draw()
     layout.endDock()
 
     -- =========================================
-    -- CENTER - Main display area (waterfall placeholder)
+    -- CENTER - Spectrum and Waterfall Display
     -- =========================================
     do
         local x, y, w, h = layout.getRect()
         layout.pad(8)
         local cx, cy, cw, ch = layout.getRect()
 
-        -- Waterfall placeholder
+        -- Panel background
         ui.panel(cx, cy, cw, ch)
         layout.pad(8)
 
         local px, py, pw, ph = layout.getRect()
 
-        -- Title
-        drawText(px, py, "Spectrum / Waterfall Display", 0.7, 0.7, 0.75, 1.0)
+        -- Title bar with frequency info
+        local freqStr = string.format("%.6f MHz", frequency)
+        drawText(px, py, freqStr, 0.2, 0.9, 0.4, 1.0)
 
-        -- Placeholder visualization
-        local vizY = py + 30
-        local vizH = ph - 40
-        drawRoundedRect(px, vizY, pw, vizH, 4, 0.08, 0.08, 0.1, 1.0)
-
-        -- Fake spectrum
-        local specH = vizH * 0.4
-        for i = 0, pw - 1, 2 do
-            local noise = math.sin(i * 0.05 + frameCount * 0.1) * 0.3
-            local signal = math.exp(-((i - pw/2)^2) / 2000) * 0.6
-            local level = math.abs(noise + signal + math.random() * 0.1)
-            local barH = level * specH
-            local r, g, b = 0.2, 0.6, 0.3
-            if level > 0.5 then r, g, b = 0.9, 0.7, 0.2 end
-            if level > 0.7 then r, g, b = 0.9, 0.3, 0.2 end
-            drawRect(px + i, vizY + specH - barH, 2, barH, r, g, b, 0.8)
+        -- Colormap selector (right side of title)
+        local colormaps = {"viridis", "plasma", "inferno", "green", "blue"}
+        local cmapX = px + pw - 280
+        for i, cmap in ipairs(colormaps) do
+            local btnX = cmapX + (i - 1) * 55
+            local tags = selectedColormap == cmap and {"Active"} or {}
+            if ui.button("cmap_" .. cmap, cmap, btnX, py - 2, 52, 20, tags) then
+                selectedColormap = cmap
+                waterfall.setColormap(cmap)
+            end
         end
 
-        -- Waterfall gradient placeholder
+        -- Display area
+        local vizY = py + 24
+        local vizH = ph - 30
+
+        -- Spectrum (top 35%)
+        local specH = math.floor(vizH * 0.35)
+        if waterfall.isInitialized() then
+            waterfall.renderSpectrum(spectrumData, px, vizY, pw, specH)
+        end
+
+        -- Separator line
+        drawLine(px, vizY + specH + 2, px + pw, vizY + specH + 2, 0.3, 0.3, 0.4, 1.0, 1.0)
+
+        -- Waterfall (bottom 65%)
         local wfY = vizY + specH + 4
         local wfH = vizH - specH - 8
-        for row = 0, wfH - 1, 4 do
-            local rowY = wfY + row
-            for col = 0, pw - 1, 4 do
-                local noise = math.sin(col * 0.03 + (frameCount - row) * 0.05) * 0.3
-                local signal = math.exp(-((col - pw/2)^2) / 3000) * 0.5
-                local level = math.abs(noise + signal)
-                local r = level * 0.8
-                local g = level * 0.4
-                local b = 0.2 + level * 0.3
-                drawRect(px + col, rowY, 4, 4, r, g, b, 1.0)
-            end
+        if waterfall.isInitialized() then
+            waterfall.render(px, wfY, pw, wfH)
         end
 
         -- Center frequency marker
         local centerX = px + pw / 2
         drawLine(centerX, vizY, centerX, vizY + vizH, 0.9, 0.3, 0.3, 0.5, 1.0)
+
+        -- Frequency scale labels (simplified)
+        local spanKHz = 100  -- Simulated span
+        drawText(px + 5, vizY + vizH - 16, string.format("-%.0f kHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
+        drawText(px + pw - 55, vizY + vizH - 16, string.format("+%.0f kHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
     end
 
     layout.finish()

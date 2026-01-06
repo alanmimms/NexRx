@@ -6,6 +6,7 @@
 #include "setbox/SetBox.hpp"
 #include "FontRenderer.hpp"
 #include "AudioEngine.hpp"
+#include "WaterfallRenderer.hpp"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -485,6 +486,61 @@ private:
             return audio_.isInitialized();
         };
 
+        // Expose waterfall renderer to Lua
+        lua_["waterfall"] = lua_.create_table();
+
+        lua_["waterfall"]["init"] = [this](int width, int height) {
+            return waterfall_.init(width, height);
+        };
+
+        lua_["waterfall"]["addRow"] = [this](sol::table data) {
+            std::vector<float> rowData;
+            rowData.reserve(data.size());
+            for (size_t i = 1; i <= data.size(); ++i) {
+                rowData.push_back(data[i].get_or(waterfall_.getMinDb()));
+            }
+            waterfall_.addRow(rowData.data(), static_cast<int>(rowData.size()));
+        };
+
+        lua_["waterfall"]["render"] = [this](float x, float y, float w, float h) {
+            waterfall_.render(x, y, w, h);
+        };
+
+        lua_["waterfall"]["renderSpectrum"] = [this](sol::table data, float x, float y, float w, float h) {
+            std::vector<float> specData;
+            specData.reserve(data.size());
+            for (size_t i = 1; i <= data.size(); ++i) {
+                specData.push_back(data[i].get_or(waterfall_.getMinDb()));
+            }
+            waterfall_.renderSpectrum(specData.data(), static_cast<int>(specData.size()), x, y, w, h);
+        };
+
+        lua_["waterfall"]["setColormap"] = [this](const std::string& name) {
+            if (name == "viridis") waterfall_.setColormap(WaterfallColormap::Viridis);
+            else if (name == "plasma") waterfall_.setColormap(WaterfallColormap::Plasma);
+            else if (name == "inferno") waterfall_.setColormap(WaterfallColormap::Inferno);
+            else if (name == "magma") waterfall_.setColormap(WaterfallColormap::Magma);
+            else if (name == "green") waterfall_.setColormap(WaterfallColormap::GreenPhosphor);
+            else if (name == "blue") waterfall_.setColormap(WaterfallColormap::BlueHot);
+            else if (name == "grayscale") waterfall_.setColormap(WaterfallColormap::Grayscale);
+        };
+
+        lua_["waterfall"]["setRange"] = [this](float minDb, float maxDb) {
+            waterfall_.setRange(minDb, maxDb);
+        };
+
+        lua_["waterfall"]["isInitialized"] = [this]() {
+            return waterfall_.isInitialized();
+        };
+
+        lua_["waterfall"]["getWidth"] = [this]() {
+            return waterfall_.getWidth();
+        };
+
+        lua_["waterfall"]["getHeight"] = [this]() {
+            return waterfall_.getHeight();
+        };
+
         // Load SetBox base config
         if (!setbox_.loadFile("config/base/defaults.lua")) {
             std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
@@ -616,6 +672,7 @@ private:
     NexRx::SetBox::SetBoxEngine setbox_;
     FontRenderer font_;
     AudioEngine audio_;
+    WaterfallRenderer waterfall_;
 
     int windowWidth_ = 0;
     int windowHeight_ = 0;
