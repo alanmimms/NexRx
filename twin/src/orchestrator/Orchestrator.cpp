@@ -7,6 +7,7 @@
 
 #include "orchestrator/Orchestrator.hpp"
 #include <iostream>
+#include <iomanip>
 #include <chrono>
 #include <thread>
 
@@ -76,6 +77,7 @@ bool Orchestrator::runFor(double duration_s) {
     stopRequested_ = false;
 
     auto wallStart = std::chrono::steady_clock::now();
+    auto lastProgressTime = wallStart;
     double simStartTime = *currentTime;
 
     // Main simulation loop
@@ -98,6 +100,27 @@ bool Orchestrator::runFor(double duration_s) {
         // Check for ADC sample trigger
         checkAdcSample(reached);
 
+        // Progress reporting (every 2 seconds of wall time)
+        if (config_.verbose) {
+            auto wallNow = std::chrono::steady_clock::now();
+            double sinceLast = std::chrono::duration<double>(wallNow - lastProgressTime).count();
+            if (sinceLast >= 2.0) {
+                double progress = (reached - simStartTime) / duration_s * 100.0;
+                double wallElapsed = std::chrono::duration<double>(wallNow - wallStart).count();
+                double simElapsed = reached - simStartTime;
+                double speed = simElapsed / wallElapsed;
+                double eta = (duration_s - simElapsed) / speed;
+
+                std::cout << "\r[Orchestrator] Progress: " << std::fixed << std::setprecision(1)
+                          << progress << "% | "
+                          << simElapsed * 1e6 << " us simulated | "
+                          << stats_.adcSamplesGenerated << " samples | "
+                          << speed << "x speed | "
+                          << "ETA: " << eta << "s     " << std::flush;
+                lastProgressTime = wallNow;
+            }
+        }
+
         // Real-time mode: throttle if running too fast
         if (config_.realTimeMode) {
             auto wallNow = std::chrono::steady_clock::now();
@@ -110,6 +133,11 @@ bool Orchestrator::runFor(double duration_s) {
                 std::this_thread::sleep_for(sleepTime);
             }
         }
+    }
+
+    // Clear progress line
+    if (config_.verbose) {
+        std::cout << "\r" << std::string(80, ' ') << "\r" << std::flush;
     }
 
     // Update statistics
