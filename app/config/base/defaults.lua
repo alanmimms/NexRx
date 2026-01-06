@@ -1,0 +1,320 @@
+--[[
+  NexRx Base Configuration
+
+  This file defines the default SetBox rules shipped with the application.
+  Users can override any of these settings in their own config files.
+
+  Priority levels:
+    -100 to -1: Base defaults (easily overridden)
+       0 to 50: Normal user rules
+      51 to 99: User overrides
+     100+     : Experimental/debug overrides
+]]
+
+-- =============================================================================
+-- Global Defaults (applies when no other rules match)
+-- =============================================================================
+
+rule {
+    id = "global-defaults",
+    tags = {},
+    priority = -100,
+    apply = {
+        -- Colors
+        background = "#1a1a2e",
+        foreground = "#e2e8f0",
+        accent = "#3b82f6",
+
+        -- Typography
+        fontSize = 14,
+        fontFamily = "system-ui",
+
+        -- Spacing
+        padding = 8,
+        margin = 4,
+        borderRadius = 4,
+
+        -- Audio
+        rxVolume = 0.8,
+        muted = false,
+    }
+}
+
+-- =============================================================================
+-- UI Component Styles
+-- =============================================================================
+
+-- Button base
+rule {
+    id = "button-base",
+    tags = {"Button"},
+    apply = {
+        background = "#3b82f6",
+        foreground = "#ffffff",
+        padding = 8,
+        borderRadius = 6,
+        cursor = "pointer",
+    }
+}
+
+rule {
+    id = "button-primary",
+    tags = {"Button", "Primary"},
+    apply = {
+        background = "#2563eb",
+        fontWeight = "bold",
+    }
+}
+
+rule {
+    id = "button-secondary",
+    tags = {"Button", "Secondary"},
+    apply = {
+        background = "#64748b",
+    }
+}
+
+rule {
+    id = "button-danger",
+    tags = {"Button", "Danger"},
+    apply = {
+        background = "#dc2626",
+    }
+}
+
+-- Hover states
+rule {
+    id = "button-hover",
+    tags = {"Button"},
+    when = function(ctx) return ctx.hovered end,
+    priority = 50,
+    apply = {
+        background = "#60a5fa",
+    }
+}
+
+rule {
+    id = "button-pressed",
+    tags = {"Button"},
+    when = function(ctx) return ctx.pressed end,
+    priority = 51,
+    apply = {
+        background = "#1d4ed8",
+    }
+}
+
+-- Panel styles
+rule {
+    id = "panel-base",
+    tags = {"Panel"},
+    apply = {
+        background = "#1e293b",
+        borderRadius = 8,
+        padding = 12,
+    }
+}
+
+rule {
+    id = "panel-sidebar",
+    tags = {"Panel", "Sidebar"},
+    apply = {
+        background = "#0f172a",
+        borderRadius = 0,
+        width = 280,
+    }
+}
+
+-- =============================================================================
+-- Radio Configuration Defaults
+-- =============================================================================
+
+-- Band defaults
+rule {
+    id = "radio-160m",
+    tags = {"Radio", "160m"},
+    apply = {
+        frequency = 1.9e6,
+        antenna = "wire",
+    }
+}
+
+rule {
+    id = "radio-80m",
+    tags = {"Radio", "80m"},
+    apply = {
+        frequency = 3.5e6,
+        antenna = "dipole",
+    }
+}
+
+rule {
+    id = "radio-40m",
+    tags = {"Radio", "40m"},
+    apply = {
+        frequency = 7.0e6,
+        antenna = "dipole",
+    }
+}
+
+rule {
+    id = "radio-20m",
+    tags = {"Radio", "20m"},
+    apply = {
+        frequency = 14.0e6,
+        antenna = "beam",
+    }
+}
+
+rule {
+    id = "radio-15m",
+    tags = {"Radio", "15m"},
+    apply = {
+        frequency = 21.0e6,
+        antenna = "beam",
+    }
+}
+
+rule {
+    id = "radio-10m",
+    tags = {"Radio", "10m"},
+    apply = {
+        frequency = 28.0e6,
+        antenna = "beam",
+    }
+}
+
+-- Mode defaults
+rule {
+    id = "radio-cw",
+    tags = {"Radio", "CW"},
+    apply = {
+        mode = "CW",
+        filterWidth = 500,
+        sidetoneFreq = 600,
+        agcMode = "fast",
+    }
+}
+
+rule {
+    id = "radio-ssb",
+    tags = {"Radio", "SSB"},
+    apply = {
+        mode = "USB",
+        filterWidth = 2400,
+        agcMode = "medium",
+    }
+}
+
+rule {
+    id = "radio-lsb",
+    tags = {"Radio", "LSB"},
+    apply = {
+        mode = "LSB",
+    }
+}
+
+rule {
+    id = "radio-usb",
+    tags = {"Radio", "USB"},
+    apply = {
+        mode = "USB",
+    }
+}
+
+rule {
+    id = "radio-am",
+    tags = {"Radio", "AM"},
+    apply = {
+        mode = "AM",
+        filterWidth = 6000,
+        agcMode = "slow",
+    }
+}
+
+-- Band + Mode combinations (more specific)
+rule {
+    id = "radio-40m-ssb",
+    tags = {"Radio", "40m", "SSB"},
+    apply = {
+        frequency = 7.2e6,
+        mode = "LSB",  -- 40m and below use LSB
+    }
+}
+
+rule {
+    id = "radio-20m-cw",
+    tags = {"Radio", "20m", "CW"},
+    apply = {
+        frequency = 14.035e6,
+    }
+}
+
+rule {
+    id = "radio-20m-ssb",
+    tags = {"Radio", "20m", "SSB"},
+    apply = {
+        frequency = 14.2e6,
+        mode = "USB",
+    }
+}
+
+-- =============================================================================
+-- Waterfall Display
+-- =============================================================================
+
+rule {
+    id = "waterfall-base",
+    tags = {"Waterfall"},
+    apply = {
+        colormap = "viridis",
+        speed = 50,
+        gain = 0,
+        minDb = -120,
+        maxDb = -40,
+    }
+}
+
+rule {
+    id = "waterfall-cw",
+    tags = {"Waterfall", "CW"},
+    apply = {
+        colormap = "green_phosphor",
+        span = 3000,
+    }
+}
+
+rule {
+    id = "waterfall-ssb",
+    tags = {"Waterfall", "SSB"},
+    apply = {
+        span = 6000,
+    }
+}
+
+-- =============================================================================
+-- Contest Mode
+-- =============================================================================
+
+rule {
+    id = "contest-base",
+    tags = {"Contest"},
+    apply = {
+        -- Compact UI
+        fontSize = 12,
+        padding = 4,
+
+        -- Quick AGC
+        agcMode = "fast",
+    }
+}
+
+rule {
+    id = "contest-cw",
+    tags = {"Contest", "CW"},
+    apply = {
+        filterWidth = 400,
+        sidetoneFreq = 550,
+    }
+}
+
+print("[defaults.lua] Base configuration loaded")
