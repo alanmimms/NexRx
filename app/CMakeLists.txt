@@ -49,6 +49,14 @@ FetchContent_MakeAvailable(sol2)
 find_package(Threads REQUIRED)
 
 # -----------------------------------------------------------------------------
+# Twin libraries (transport and host DSP)
+# -----------------------------------------------------------------------------
+set(TWIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../twin")
+
+# Only build the libraries we need from twin (not the full simulator)
+add_subdirectory(${TWIN_DIR} ${CMAKE_BINARY_DIR}/twin EXCLUDE_FROM_ALL)
+
+# -----------------------------------------------------------------------------
 # SetBox library - tag-based configuration engine
 # -----------------------------------------------------------------------------
 add_library(setbox STATIC
@@ -100,6 +108,7 @@ target_include_directories(nexrx_app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/extern
     ${SDL2_INCLUDE_DIRS}
+    ${TWIN_DIR}/src
 )
 
 # Platform-specific audio libraries for miniaudio
@@ -116,6 +125,8 @@ endif()
 
 target_link_libraries(nexrx_app PRIVATE
     setbox
+    twin_transport
+    twin_host
     ${SDL2_LIBRARIES}
     OpenGL::GL
     Threads::Threads

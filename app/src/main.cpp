@@ -8,6 +8,10 @@
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
 
+// Twin integration
+#include "host/HostApp.hpp"
+#include "transport/IQFrame.hpp"
+
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -17,6 +21,8 @@
 #include <string>
 #include <cstdlib>
 #include <cmath>
+#include <complex>
+#include <mutex>
 
 // Forward declarations
 class App;
@@ -143,7 +149,14 @@ public:
     }
 
     void shutdown() {
-        // Shutdown audio first
+        // Shutdown twin connection
+        if (twinConnected_) {
+            twinHost_.stopReceiving();
+            twinHost_.shutdown();
+            twinConnected_ = false;
+        }
+
+        // Shutdown audio
         audio_.shutdown();
 
         if (glContext_) {
@@ -541,6 +554,70 @@ private:
             return waterfall_.getHeight();
         };
 
+        // Expose twin connection to Lua
+        lua_["twin"] = lua_.create_table();
+
+        lua_["twin"]["connect"] = [this](sol::optional<std::string> shmName) {
+            nexrx::HostConfig config;
+            if (shmName) {
+                config.shmName = *shmName;
+            }
+            config.verbose = true;
+
+            if (twinHost_.initialize(config)) {
+                // Set callback to process incoming frames
+                twinHost_.setFrameCallback([this](const nexrx::IQFrame& frame) {
+                    processIQFrame(frame);
+                });
+
+                if (twinHost_.startReceiving()) {
+                    twinConnected_ = true;
+                    std::cout << "[Twin] Connected to " << config.shmName << std::endl;
+                    return true;
+                }
+            }
+            std::cerr << "[Twin] Failed to connect" << std::endl;
+            return false;
+        };
+
+        lua_["twin"]["disconnect"] = [this]() {
+            twinHost_.stopReceiving();
+            twinHost_.shutdown();
+            twinConnected_ = false;
+            std::cout << "[Twin] Disconnected" << std::endl;
+        };
+
+        lua_["twin"]["isConnected"] = [this]() {
+            return twinConnected_ && twinHost_.isConnected();
+        };
+
+        lua_["twin"]["getFramesReceived"] = [this]() {
+            return static_cast<double>(twinHost_.framesReceived());
+        };
+
+        lua_["twin"]["getFramesDropped"] = [this]() {
+            return static_cast<double>(twinHost_.framesDropped());
+        };
+
+        lua_["twin"]["getSpectrum"] = [this](sol::this_state s) {
+            // Compute spectrum from accumulated I/Q data
+            computeSpectrum();
+
+            sol::state_view lua(s);
+            sol::table result = lua.create_table();
+
+            std::lock_guard<std::mutex> lock(spectrumMutex_);
+            for (size_t i = 0; i < spectrumData_.size(); ++i) {
+                result[i + 1] = spectrumData_[i];
+            }
+            return result;
+        };
+
+        lua_["twin"]["poll"] = [this]() {
+            // Poll for frames if not using background thread
+            return twinHost_.pollFrames(100);
+        };
+
         // Load SetBox base config
         if (!setbox_.loadFile("config/base/defaults.lua")) {
             std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
@@ -674,12 +751,76 @@ private:
     AudioEngine audio_;
     WaterfallRenderer waterfall_;
 
+    // Twin integration
+    nexrx::HostApp twinHost_;
+    std::mutex spectrumMutex_;
+    std::vector<float> spectrumData_;      // Latest spectrum (dB values)
+    std::vector<float> iqBuffer_;          // Ring buffer for FFT
+    size_t iqBufferWritePos_ = 0;
+    static constexpr size_t FFT_SIZE = 1024;
+    bool twinConnected_ = false;
+
     int windowWidth_ = 0;
     int windowHeight_ = 0;
     bool running_ = false;
     uint32_t lastFrameTime_ = 0;
 
     InputState input_;
+
+    // Twin I/Q processing
+    void processIQFrame(const nexrx::IQFrame& frame) {
+        // Extract I/Q from QSD0 (first channel) and convert to float
+        float i_f, q_f;
+        frame.qsd[0].toFloat(i_f, q_f);
+
+        // Add to ring buffer
+        std::lock_guard<std::mutex> lock(spectrumMutex_);
+        if (iqBuffer_.size() < FFT_SIZE * 2) {
+            iqBuffer_.resize(FFT_SIZE * 2, 0.0f);
+        }
+
+        iqBuffer_[iqBufferWritePos_ * 2] = i_f;
+        iqBuffer_[iqBufferWritePos_ * 2 + 1] = q_f;
+        iqBufferWritePos_ = (iqBufferWritePos_ + 1) % FFT_SIZE;
+    }
+
+    // Simple DFT for spectrum (replace with FFT library for performance)
+    void computeSpectrum() {
+        std::lock_guard<std::mutex> lock(spectrumMutex_);
+
+        if (iqBuffer_.size() < FFT_SIZE * 2) return;
+
+        spectrumData_.resize(FFT_SIZE);
+
+        // Simple magnitude spectrum via DFT
+        // For real performance, use FFTW or similar
+        for (size_t k = 0; k < FFT_SIZE; ++k) {
+            float re = 0.0f, im = 0.0f;
+
+            for (size_t n = 0; n < FFT_SIZE; ++n) {
+                size_t idx = (iqBufferWritePos_ + n) % FFT_SIZE;
+                float i_val = iqBuffer_[idx * 2];
+                float q_val = iqBuffer_[idx * 2 + 1];
+
+                // Complex input: i + j*q
+                float angle = -2.0f * 3.14159265f * k * n / FFT_SIZE;
+                float cos_a = std::cos(angle);
+                float sin_a = std::sin(angle);
+
+                // (i + jq) * (cos - j*sin) = i*cos + q*sin + j(q*cos - i*sin)
+                re += i_val * cos_a + q_val * sin_a;
+                im += q_val * cos_a - i_val * sin_a;
+            }
+
+            // Magnitude in dB
+            float mag = std::sqrt(re * re + im * im) / FFT_SIZE;
+            float db = (mag > 1e-10f) ? 20.0f * std::log10(mag) : -100.0f;
+
+            // FFT shift: put DC in center
+            size_t outIdx = (k + FFT_SIZE / 2) % FFT_SIZE;
+            spectrumData_[outIdx] = db;
+        }
+    }
 };
 
 int main(int argc, char* argv[]) {
