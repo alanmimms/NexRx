@@ -48,6 +48,42 @@ local waterfallRows = 256
 local spectrumData = {}
 local selectedColormap = "viridis"
 
+-- Twin connection state (can be modified before calling connectTwin())
+local twinSettings = {
+    host = "127.0.0.1",
+    controlPort = 5000,
+    streamPort = 5001,
+}
+
+-- Connect to twin with current settings
+local function connectTwin()
+    if twin.isConnected() then
+        twin.disconnect()
+    end
+
+    print("[Lua] Connecting to twin at " .. twinSettings.host ..
+          " (TCP:" .. twinSettings.controlPort .. ", UDP:" .. twinSettings.streamPort .. ")...")
+
+    if twin.connect(twinSettings.host, twinSettings.controlPort, twinSettings.streamPort) then
+        twinConnected = true
+        print("[Lua] Connected to digital twin!")
+        return true
+    else
+        twinConnected = false
+        print("[Lua] Failed to connect to twin")
+        return false
+    end
+end
+
+-- Disconnect from twin
+local function disconnectTwin()
+    if twin.isConnected() then
+        twin.disconnect()
+        twinConnected = false
+        print("[Lua] Disconnected from twin")
+    end
+end
+
 -- Twin connection state
 local twinConnected = false
 local twinFramesReceived = 0
@@ -113,14 +149,20 @@ function init()
         spectrumData[i] = -100
     end
 
+    -- Load twin connection settings from config
+    twinSettings.host = setbox.getString("twinHost", "127.0.0.1")
+    twinSettings.controlPort = math.floor(setbox.getNumber("twinControlPort", 5000))
+    twinSettings.streamPort = math.floor(setbox.getNumber("twinStreamPort", 5001))
+
     -- Try to connect to twin (digital twin simulation)
-    print("[Lua] Attempting to connect to digital twin...")
-    if twin.connect() then
-        twinConnected = true
-        print("[Lua] Connected to digital twin!")
+    local autoConnect = setbox.getBool("twinAutoConnect", true)
+    if autoConnect then
+        if not connectTwin() then
+            print("[Lua] Twin not available - using simulated spectrum")
+        end
     else
         twinConnected = false
-        print("[Lua] Twin not available - using simulated spectrum")
+        print("[Lua] Twin auto-connect disabled")
     end
 
     print("[Lua] NexRx UI initialized with layout system")

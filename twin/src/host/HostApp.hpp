@@ -1,13 +1,15 @@
 // NexRx Digital Twin - Host Application
 //
-// Minimal host-side application to receive and process I/Q data
-// from the digital twin simulation via shared memory.
+// Host-side application to receive and process I/Q data
+// from the digital twin simulation via UDP streaming.
+// Control commands sent via TCP.
 //
 // Copyright 2026 NexRx Project - MIT License
 
 #pragma once
 
-#include "transport/SharedMemTransport.hpp"
+#include "transport/TcpControlTransport.hpp"
+#include "transport/UdpStreamTransport.hpp"
 #include "transport/IQFrame.hpp"
 
 #include <atomic>
@@ -23,15 +25,18 @@ namespace nexrx {
 // Host Application Configuration
 //======================================================================
 struct HostConfig {
-    std::string shmName = "/nexrx_iq";   // Shared memory name
-    size_t frameBufferSize = 1024;        // Internal frame buffer
+    std::string host = "127.0.0.1";       // Twin address
+    uint16_t controlPort = 5000;           // TCP control port
+    uint16_t streamPort = 5001;            // UDP stream port
+    size_t frameBufferSize = 1024;         // Internal frame buffer
+    size_t receiveBufferSize = 8192;       // UDP receive buffer
     bool verbose = false;
 };
 
 //======================================================================
 // Host Application
 //
-// Connects to the digital twin's shared memory transport and
+// Connects to the digital twin's network transport and
 // receives I/Q frames for processing.
 //======================================================================
 class HostApp {
@@ -46,7 +51,7 @@ public:
     HostApp(const HostApp&) = delete;
     HostApp& operator=(const HostApp&) = delete;
 
-    // Initialize and connect to shared memory
+    // Initialize and connect to twin
     bool initialize(const HostConfig& config = HostConfig{});
 
     // Shutdown and disconnect
@@ -77,10 +82,31 @@ public:
     // Poll for frames (non-blocking, returns number received)
     size_t pollFrames(size_t maxFrames = 100);
 
-    // Get statistics
+    //------------------------------------------------------------------
+    // Control Commands (via TCP)
+    //------------------------------------------------------------------
+
+    // Set local oscillator frequency
+    bool setLO(double freq_hz);
+
+    // Get twin status
+    bool getStatus(double& lo_freq_hz, bool& streaming);
+
+    // Start/stop streaming (usually auto-started)
+    bool startStream();
+    bool stopStream();
+
+    // Send raw command (returns response)
+    std::string sendCommand(const std::string& cmd);
+
+    //------------------------------------------------------------------
+    // Statistics
+    //------------------------------------------------------------------
+
     [[nodiscard]] uint64_t framesReceived() const { return framesReceived_; }
-    [[nodiscard]] uint64_t framesDropped() const { return framesDropped_; }
+    [[nodiscard]] uint64_t framesDropped() const;
     [[nodiscard]] uint64_t lastSequence() const { return lastSequence_; }
+    [[nodiscard]] uint64_t packetsReceived() const;
 
     // Get last received frame (for inspection)
     [[nodiscard]] const IQFrame& lastFrame() const { return lastFrame_; }
@@ -92,7 +118,8 @@ private:
     void receiveLoop();
 
     HostConfig config_;
-    std::unique_ptr<SharedMemTransport> transport_;
+    std::unique_ptr<TcpControlTransport> control_;
+    std::unique_ptr<UdpStreamTransport> stream_;
     bool connected_ = false;
 
     FrameCallback frameCallback_;
@@ -103,7 +130,6 @@ private:
     std::atomic<bool> stopRequested_{false};
 
     std::atomic<uint64_t> framesReceived_{0};
-    std::atomic<uint64_t> framesDropped_{0};
     std::atomic<uint64_t> lastSequence_{0};
 
     IQFrame lastFrame_{};

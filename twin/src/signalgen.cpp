@@ -11,7 +11,8 @@
 #include "sampler/AdcSampler.hpp"
 #include "sampler/RxControls.hpp"
 #include "transport/IQFrame.hpp"
-#include "transport/SharedMemTransport.hpp"
+#include "transport/TcpControlTransport.hpp"
+#include "transport/UdpStreamTransport.hpp"
 #include "stimulus/ToneGenerator.hpp"
 #include "stimulus/StimulusLua.hpp"
 
@@ -35,13 +36,16 @@ struct Options {
     bool functional = false;      // Use fast C++ model instead of Xyce
     bool help = false;
     bool verbose = true;
-    bool stream = false;          // Stream to shared memory for app display
+    bool stream = false;          // Stream I/Q to network for app display
     double duration_ms = 0.0;     // Simulation duration in ms (0 = run forever)
     double rf_freq_mhz = 14.201;  // RF signal frequency (1kHz above LO for USB)
     double lo_freq_mhz = 14.200;  // LO frequency (matches app default VFO)
     double rf_amplitude_mv = 1.0; // RF amplitude in mV
     std::string netlist = "netlists/pipeline_test.cir";
     std::string stimulus = "";    // Stimulus script (empty = use simple tone)
+    std::string bindAddr = "0.0.0.0";  // Address to bind (0.0.0.0 = all interfaces)
+    uint16_t controlPort = 5000;  // TCP control port
+    uint16_t streamPort = 5001;   // UDP stream port
 };
 
 void printUsage(const char* prog) {
@@ -52,7 +56,10 @@ void printUsage(const char* prog) {
               << "  (default)       Full Xyce SPICE physics simulation (slow but accurate)\n"
               << "\n"
               << "Options:\n"
-              << "  --stream        Stream I/Q to shared memory for app display\n"
+              << "  --stream        Stream I/Q to network for app display\n"
+              << "  --bind ADDR     Bind address (default: 0.0.0.0 = all interfaces)\n"
+              << "  --control-port  TCP control port (default: 5000)\n"
+              << "  --stream-port   UDP stream port (default: 5001)\n"
               << "  --stimulus FILE Lua stimulus script (default: config/stimuli/default.lua)\n"
               << "  --duration MS   Simulation duration in milliseconds (0 = forever, default)\n"
               << "  --netlist FILE  Xyce netlist path (physics mode only)\n"
@@ -98,6 +105,12 @@ Options parseArgs(int argc, char* argv[]) {
             opts.rf_amplitude_mv = std::atof(argv[++i]);
         } else if (strcmp(argv[i], "--stimulus") == 0 && i + 1 < argc) {
             opts.stimulus = argv[++i];
+        } else if (strcmp(argv[i], "--bind") == 0 && i + 1 < argc) {
+            opts.bindAddr = argv[++i];
+        } else if (strcmp(argv[i], "--control-port") == 0 && i + 1 < argc) {
+            opts.controlPort = static_cast<uint16_t>(std::atoi(argv[++i]));
+        } else if (strcmp(argv[i], "--stream-port") == 0 && i + 1 < argc) {
+            opts.streamPort = static_cast<uint16_t>(std::atoi(argv[++i]));
         } else {
             std::cerr << "Unknown option: " << argv[i] << "\n";
             opts.help = true;
@@ -173,22 +186,91 @@ void analyzeFrames(const std::vector<IQFrame>& frames) {
 }
 
 //=============================================================================
-// Control file reader - check for LO frequency updates from app
+// TCP Control Handler - runs in separate thread
 //=============================================================================
-bool readControlFile(double& lo_freq_hz) {
-    std::ifstream ctl("/tmp/nexrx_control");
-    if (!ctl) return false;
+class ControlHandler {
+public:
+    ControlHandler(double initial_lo_hz)
+        : lo_freq_hz_(initial_lo_hz), streaming_(false), running_(false) {}
 
-    std::string cmd;
-    double freq;
-    if (ctl >> cmd >> freq) {
-        if (cmd == "LO" && freq > 0) {
-            lo_freq_hz = freq;
-            return true;
+    void start(TcpControlTransport* control, bool verbose) {
+        control_ = control;
+        verbose_ = verbose;
+        running_ = true;
+        thread_ = std::thread(&ControlHandler::run, this);
+    }
+
+    void stop() {
+        running_ = false;
+        if (thread_.joinable()) {
+            thread_.join();
         }
     }
-    return false;
-}
+
+    double getLO() const { return lo_freq_hz_.load(std::memory_order_relaxed); }
+    void setLO(double freq) { lo_freq_hz_.store(freq, std::memory_order_relaxed); }
+    bool isStreaming() const { return streaming_.load(std::memory_order_relaxed); }
+    void setStreaming(bool s) { streaming_.store(s, std::memory_order_relaxed); }
+
+private:
+    void run() {
+        while (running_) {
+            auto result = control_->receiveRequest(std::chrono::milliseconds(100));
+            if (!result.ok()) {
+                continue;  // Timeout or error, keep trying
+            }
+
+            std::string request(result.value.begin(), result.value.end());
+            std::string response = handleCommand(request);
+
+            std::vector<uint8_t> resp(response.begin(), response.end());
+            control_->sendResponse(resp);
+        }
+    }
+
+    std::string handleCommand(const std::string& cmd) {
+        // Parse command
+        std::istringstream iss(cmd);
+        std::string verb;
+        iss >> verb;
+
+        if (verb == "SET_LO") {
+            double freq;
+            if (iss >> freq) {
+                lo_freq_hz_.store(freq, std::memory_order_relaxed);
+                if (verbose_) {
+                    std::cout << "\n[Control] LO set to " << std::fixed << std::setprecision(6)
+                              << freq / 1e6 << " MHz" << std::endl;
+                }
+                return "OK\n";
+            }
+            return "ERROR invalid frequency\n";
+        }
+        else if (verb == "GET_STATUS") {
+            std::ostringstream oss;
+            oss << "STATUS lo=" << std::fixed << std::setprecision(1) << lo_freq_hz_.load()
+                << " streaming=" << (streaming_.load() ? "true" : "false") << "\n";
+            return oss.str();
+        }
+        else if (verb == "START_STREAM") {
+            streaming_.store(true, std::memory_order_relaxed);
+            return "OK\n";
+        }
+        else if (verb == "STOP_STREAM") {
+            streaming_.store(false, std::memory_order_relaxed);
+            return "OK\n";
+        }
+
+        return "ERROR unknown command\n";
+    }
+
+    TcpControlTransport* control_ = nullptr;
+    bool verbose_ = false;
+    std::atomic<double> lo_freq_hz_;
+    std::atomic<bool> streaming_;
+    std::atomic<bool> running_;
+    std::thread thread_;
+};
 
 //=============================================================================
 // Functional mode - Pure C++ QSD model (FAST)
@@ -249,19 +331,19 @@ int runFunctionalMode(const Options& opts) {
         std::cout << "Baseband: " << std::abs(opts.rf_freq_mhz - opts.lo_freq_mhz) * 1000 << " kHz" << std::endl;
     }
 
-    std::cout << "LO: " << opts.lo_freq_mhz << " MHz (tunable via /tmp/nexrx_control)" << std::endl;
+    std::cout << "LO: " << opts.lo_freq_mhz << " MHz (tunable via TCP control)" << std::endl;
     if (runForever) {
         std::cout << "Duration: forever (Ctrl+C to stop)" << std::endl;
     } else {
         std::cout << "Duration: " << opts.duration_ms << " ms" << std::endl;
     }
     if (opts.stream) {
-        std::cout << "Streaming: /nexrx_iq (run nexrx_app to view)" << std::endl;
+        std::cout << "Streaming: TCP:" << opts.controlPort << " UDP:" << opts.streamPort << std::endl;
     }
     std::cout << std::endl;
 
     const double rf_freq = opts.rf_freq_mhz * 1e6;
-    double lo_freq = opts.lo_freq_mhz * 1e6;  // Mutable - can be updated via control file
+    double lo_freq = opts.lo_freq_mhz * 1e6;  // Initial LO - updated via TCP control
     const double rf_amp = opts.rf_amplitude_mv * 1e-3;  // Convert to volts
 
     constexpr double sampleRate = 96000.0;
@@ -269,20 +351,58 @@ int runFunctionalMode(const Options& opts) {
     const double duration_s = runForever ? 1e9 : opts.duration_ms / 1000.0;  // ~31 years if forever
     const size_t numSamples = runForever ? SIZE_MAX : static_cast<size_t>(duration_s * sampleRate);
 
-    // Set up shared memory transport if streaming
-    std::unique_ptr<SharedMemTransport> transport;
-    if (opts.stream) {
-        SharedMemConfig shmConfig;
-        shmConfig.name = "/nexrx_iq";
-        shmConfig.capacity = 8192;
-        shmConfig.create = true;  // We're the producer
+    // Set up network transports if streaming
+    std::unique_ptr<TcpControlTransport> control;
+    std::unique_ptr<UdpStreamTransport> stream;
+    std::unique_ptr<ControlHandler> controlHandler;
 
-        transport = std::make_unique<SharedMemTransport>(shmConfig);
-        if (!transport->connect()) {
-            std::cerr << "Failed to create shared memory transport" << std::endl;
+    if (opts.stream) {
+        // Create TCP control transport (server mode)
+        TcpControlConfig ctlConfig;
+        ctlConfig.host = opts.bindAddr;
+        ctlConfig.port = opts.controlPort;
+        ctlConfig.server = true;
+
+        control = std::make_unique<TcpControlTransport>(ctlConfig);
+        if (!control->connect()) {
+            std::cerr << "Failed to bind TCP control on " << opts.bindAddr
+                      << ":" << opts.controlPort << std::endl;
             return 1;
         }
-        std::cout << "[Stream] Created shared memory: " << shmConfig.name << std::endl;
+        std::cout << "[Control] Listening on " << opts.bindAddr
+                  << ":" << opts.controlPort << std::endl;
+
+        // Wait for client connection
+        std::cout << "[Control] Waiting for client connection..." << std::endl;
+        if (!control->acceptClient(std::chrono::milliseconds(0))) {  // 0 = wait forever
+            std::cerr << "Failed to accept client connection" << std::endl;
+            return 1;
+        }
+
+        // Get client IP for UDP streaming
+        std::string clientIP = control->peerIP();
+        std::cout << "[Control] Client connected from " << control->peerAddress() << std::endl;
+
+        // Create UDP stream transport (sender mode)
+        // Send to the same IP that connected via TCP
+        UdpStreamConfig streamConfig;
+        streamConfig.host = clientIP;
+        streamConfig.port = opts.streamPort;
+        streamConfig.server = true;  // Sender mode
+        streamConfig.framesPerPacket = 32;
+
+        stream = std::make_unique<UdpStreamTransport>(streamConfig);
+        if (!stream->connect()) {
+            std::cerr << "Failed to create UDP stream" << std::endl;
+            return 1;
+        }
+        std::cout << "[Stream] Sending UDP to " << clientIP
+                  << ":" << opts.streamPort << std::endl;
+
+        // Start control handler thread
+        controlHandler = std::make_unique<ControlHandler>(lo_freq);
+        controlHandler->start(control.get(), opts.verbose);
+        controlHandler->setStreaming(true);
     }
 
     std::vector<IQFrame> frames;
@@ -355,8 +475,8 @@ int runFunctionalMode(const Options& opts) {
         }
 
         // Write to transport or collect locally
-        if (opts.stream && transport) {
-            auto err = transport->write(frame);
+        if (opts.stream && stream) {
+            auto err = stream->write(frame);
             if (err != TransportError::None && err != TransportError::BufferFull) {
                 std::cerr << "Transport write error" << std::endl;
             }
@@ -372,12 +492,12 @@ int runFunctionalMode(const Options& opts) {
             double simTime = i * samplePeriod;
             double speed = simTime / elapsed;
 
-            if (opts.stream) {
+            if (opts.stream && stream) {
                 std::cout << "\r[Stream] " << std::fixed << std::setprecision(1)
                           << progress << "% | "
                           << simTime * 1000 << " ms | "
                           << i << " samples | "
-                          << transport->writeCount() << " written     " << std::flush;
+                          << stream->framesSent() << " sent     " << std::flush;
             } else {
                 std::cout << "\r[Functional] " << std::fixed << std::setprecision(1)
                           << progress << "% | "
@@ -398,13 +518,11 @@ int runFunctionalMode(const Options& opts) {
                     std::chrono::microseconds(static_cast<int>((simTime - elapsed) * 1e6)));
             }
 
-            // Check for LO frequency updates from app
-            double new_lo;
-            if (readControlFile(new_lo) && std::abs(new_lo - lo_freq) > 1.0) {  // >1Hz change
-                lo_freq = new_lo;
-                if (opts.verbose) {
-                    std::cout << "\n[Control] LO changed to " << std::fixed << std::setprecision(6)
-                              << lo_freq / 1e6 << " MHz" << std::endl;
+            // Check for LO frequency updates from TCP control
+            if (controlHandler) {
+                double new_lo = controlHandler->getLO();
+                if (std::abs(new_lo - lo_freq) > 1.0) {  // >1Hz change
+                    lo_freq = new_lo;
                 }
             }
         }
@@ -418,9 +536,9 @@ int runFunctionalMode(const Options& opts) {
     }
 
     std::cout << "\n--- Results ---" << std::endl;
-    if (opts.stream && transport) {
-        std::cout << "Samples written: " << transport->writeCount() << std::endl;
-        std::cout << "Overruns: " << transport->overruns() << std::endl;
+    if (opts.stream && stream) {
+        std::cout << "Frames sent: " << stream->framesSent() << std::endl;
+        std::cout << "Packets sent: " << stream->packetsSent() << std::endl;
     } else {
         std::cout << "Samples: " << frames.size() << std::endl;
     }
@@ -431,9 +549,16 @@ int runFunctionalMode(const Options& opts) {
         analyzeFrames(frames);
     }
 
-    // Clean up transport
-    if (transport) {
-        transport->disconnect();
+    // Clean up transports
+    if (controlHandler) {
+        controlHandler->stop();
+    }
+    if (stream) {
+        stream->flush();  // Send any remaining frames
+        stream->disconnect();
+    }
+    if (control) {
+        control->disconnect();
     }
 
     return 0;

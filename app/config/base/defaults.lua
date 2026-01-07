@@ -37,6 +37,12 @@ rule {
         -- Audio
         rxVolume = 0.8,
         muted = false,
+
+        -- Twin connection settings
+        twinHost = "192.168.0.215",       -- Twin server address
+        twinControlPort = 5000,        -- TCP control port
+        twinStreamPort = 5001,         -- UDP stream port
+        twinAutoConnect = true,        -- Auto-connect on startup
     }
 }
 

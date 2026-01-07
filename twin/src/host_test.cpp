@@ -4,8 +4,9 @@
 // Can run with synthetic data or connect to running twin.
 //
 // Usage:
-//   ./host_test              - Run with synthetic test signal
-//   ./host_test --shm NAME   - Connect to shared memory (from twin)
+//   ./host_test                    - Run with synthetic test signal
+//   ./host_test --host IP          - Connect to twin via network
+//   ./host_test --port CTRL STREAM - Specify ports (default: 5000 5001)
 //
 // Copyright 2026 NexRx Project - MIT License
 
@@ -17,6 +18,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
@@ -135,18 +137,20 @@ void runSyntheticTest() {
     std::cout << "S-meter: S" << viz.sUnits() << std::endl;
 }
 
-void runSharedMemTest(const std::string& shmName) {
-    std::cout << "=== NexRx Host Test - Shared Memory ===" << std::endl;
-    std::cout << "Connecting to: " << shmName << std::endl;
+void runNetworkTest(const std::string& host, uint16_t controlPort, uint16_t streamPort) {
+    std::cout << "=== NexRx Host Test - Network ===" << std::endl;
+    std::cout << "Connecting to: " << host << " (TCP:" << controlPort << ", UDP:" << streamPort << ")" << std::endl;
 
-    HostApp host;
+    HostApp hostApp;
     HostConfig config;
-    config.shmName = shmName;
+    config.host = host;
+    config.controlPort = controlPort;
+    config.streamPort = streamPort;
     config.verbose = true;
 
-    if (!host.initialize(config)) {
-        std::cerr << "Failed to connect to shared memory" << std::endl;
-        std::cerr << "Make sure the twin is running with the same shm name" << std::endl;
+    if (!hostApp.initialize(config)) {
+        std::cerr << "Failed to connect to twin" << std::endl;
+        std::cerr << "Make sure the twin is running with --stream" << std::endl;
         return;
     }
 
@@ -158,7 +162,7 @@ void runSharedMemTest(const std::string& shmName) {
     Visualizer viz;
 
     // Set up frame callback
-    host.setFrameCallback([&](const IQFrame& frame) {
+    hostApp.setFrameCallback([&](const IQFrame& frame) {
         Complex output = dsp.process(frame);
         viz.update(output);
     });
@@ -170,7 +174,7 @@ void runSharedMemTest(const std::string& shmName) {
     auto lastDisplay = std::chrono::steady_clock::now();
 
     while (true) {
-        host.pollFrames(100);
+        hostApp.pollFrames(100);
 
         auto now = std::chrono::steady_clock::now();
         if (std::chrono::duration<double>(now - lastDisplay).count() > 0.1) {
@@ -186,25 +190,36 @@ void printUsage(const char* prog) {
     std::cout << "Usage: " << prog << " [options]" << std::endl;
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
-    std::cout << "  --shm NAME    Connect to shared memory NAME" << std::endl;
+    std::cout << "  --host IP     Connect to twin at IP (default: 127.0.0.1)" << std::endl;
+    std::cout << "  --port C S    TCP control port C, UDP stream port S (default: 5000 5001)" << std::endl;
     std::cout << "  --help        Show this help" << std::endl;
     std::cout << std::endl;
-    std::cout << "Without options, runs with synthetic test signal." << std::endl;
+    std::cout << "Without --host, runs with synthetic test signal." << std::endl;
 }
 
 int main(int argc, char* argv[]) {
     // Parse arguments
-    std::string shmName;
+    std::string host;
+    uint16_t controlPort = 5000;
+    uint16_t streamPort = 5001;
 
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--help") == 0 || std::strcmp(argv[i], "-h") == 0) {
             printUsage(argv[0]);
             return 0;
-        } else if (std::strcmp(argv[i], "--shm") == 0) {
+        } else if (std::strcmp(argv[i], "--host") == 0) {
             if (i + 1 < argc) {
-                shmName = argv[++i];
+                host = argv[++i];
             } else {
-                std::cerr << "Error: --shm requires a name argument" << std::endl;
+                std::cerr << "Error: --host requires an IP address" << std::endl;
+                return 1;
+            }
+        } else if (std::strcmp(argv[i], "--port") == 0) {
+            if (i + 2 < argc) {
+                controlPort = static_cast<uint16_t>(std::atoi(argv[++i]));
+                streamPort = static_cast<uint16_t>(std::atoi(argv[++i]));
+            } else {
+                std::cerr << "Error: --port requires two port numbers" << std::endl;
                 return 1;
             }
         } else {
@@ -214,10 +229,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (shmName.empty()) {
+    if (host.empty()) {
         runSyntheticTest();
     } else {
-        runSharedMemTest(shmName);
+        runNetworkTest(host, controlPort, streamPort);
     }
 
     return 0;

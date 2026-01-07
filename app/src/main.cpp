@@ -650,12 +650,20 @@ private:
         // Expose twin connection to Lua
         lua_["twin"] = lua_.create_table();
 
-        lua_["twin"]["connect"] = [this](sol::optional<std::string> shmName) {
+        lua_["twin"]["connect"] = [this](
+            sol::optional<std::string> host,
+            sol::optional<int> controlPort,
+            sol::optional<int> streamPort)
+        {
             nexrx::HostConfig config;
-            if (shmName) {
-                config.shmName = *shmName;
-            }
+            config.host = host.value_or("127.0.0.1");
+            config.controlPort = static_cast<uint16_t>(controlPort.value_or(5000));
+            config.streamPort = static_cast<uint16_t>(streamPort.value_or(5001));
             config.verbose = true;
+
+            std::cout << "[Twin] Connecting to " << config.host
+                      << " (TCP:" << config.controlPort
+                      << ", UDP:" << config.streamPort << ")..." << std::endl;
 
             if (twinHost_.initialize(config)) {
                 // Set callback to process incoming frames
@@ -665,7 +673,7 @@ private:
 
                 if (twinHost_.startReceiving()) {
                     twinConnected_ = true;
-                    std::cout << "[Twin] Connected to " << config.shmName << std::endl;
+                    std::cout << "[Twin] Connected" << std::endl;
                     return true;
                 }
             }
@@ -753,10 +761,9 @@ private:
         };
 
         lua_["rx"]["setVfo"] = [this](double freq_hz) {
-            // Write VFO frequency to control file for twin to read
-            std::ofstream ctl("/tmp/nexrx_control");
-            if (ctl) {
-                ctl << "LO " << std::fixed << std::setprecision(0) << freq_hz << "\n";
+            // Send VFO frequency via TCP control to twin
+            if (twinConnected_) {
+                twinHost_.setLO(freq_hz);
             }
         };
 

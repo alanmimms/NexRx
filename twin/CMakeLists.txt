@@ -202,6 +202,8 @@ target_compile_options(twin_core PRIVATE
 add_library(twin_transport STATIC
     src/transport/SharedMemTransport.cpp
     src/transport/UnixSocketTransport.cpp
+    src/transport/TcpControlTransport.cpp
+    src/transport/UdpStreamTransport.cpp
 )
 
 target_include_directories(twin_transport PUBLIC
