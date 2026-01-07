@@ -72,6 +72,41 @@ void TtsEngine::setPitch(int pitch) {
     }
 }
 
+void TtsEngine::setVoiceName(const std::string& name) {
+    if (name != voiceName_) {
+        voiceName_ = name;
+        needsSynthesize_ = true;
+    }
+}
+
+void TtsEngine::setRange(int range) {
+    if (range != range_) {
+        range_ = std::clamp(range, 0, 100);
+        needsSynthesize_ = true;
+    }
+}
+
+void TtsEngine::setVolume(int volume) {
+    if (volume != volume_) {
+        volume_ = std::clamp(volume, 0, 200);
+        needsSynthesize_ = true;
+    }
+}
+
+void TtsEngine::setWordGap(int gap) {
+    if (gap != wordGap_) {
+        wordGap_ = std::max(0, gap);
+        needsSynthesize_ = true;
+    }
+}
+
+void TtsEngine::setCapitals(int mode) {
+    if (mode != capitals_) {
+        capitals_ = std::clamp(mode, 0, 3);
+        needsSynthesize_ = true;
+    }
+}
+
 #if HAS_ESPEAK_NG
 // Callback for espeak synthesis
 static std::vector<float>* g_sampleBuffer = nullptr;
@@ -96,10 +131,18 @@ void TtsEngine::synthesizeInternal() {
 
 #if HAS_ESPEAK_NG
     if (initialized_) {
-        // Configure espeak
+        // Set voice by name
+        if (!voiceName_.empty()) {
+            espeak_SetVoiceByName(voiceName_.c_str());
+        }
+
+        // Configure espeak parameters
         espeak_SetParameter(espeakRATE, rate_, 0);
         espeak_SetParameter(espeakPITCH, pitch_, 0);
-        espeak_SetParameter(espeakVOLUME, 100, 0);
+        espeak_SetParameter(espeakRANGE, range_, 0);
+        espeak_SetParameter(espeakVOLUME, volume_, 0);
+        espeak_SetParameter(espeakWORDGAP, wordGap_, 0);
+        espeak_SetParameter(espeakCAPITALS, capitals_, 0);
 
         // Set up callback
         g_sampleBuffer = &samples_;

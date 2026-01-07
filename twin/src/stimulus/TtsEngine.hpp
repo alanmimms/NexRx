@@ -34,11 +34,26 @@ public:
     // Set the text to synthesize
     void setText(const std::string& text);
 
-    // Set speech rate in words per minute (default ~175)
+    // Set voice by name (e.g., "en", "en-us", "de", "es")
+    void setVoiceName(const std::string& name);
+
+    // Set speech rate in words per minute (default 175, range 80-450)
     void setRate(int wpm);
 
     // Set pitch (0-100, default 50)
     void setPitch(int pitch);
+
+    // Set pitch range (0-100, default 50)
+    void setRange(int range);
+
+    // Set volume (0-200, default 100)
+    void setVolume(int volume);
+
+    // Set word gap in 10ms units (default 0)
+    void setWordGap(int gap);
+
+    // Set capitals mode (0=none, 1=sound icon, 2=pitch, 3=both)
+    void setCapitals(int mode);
 
     // Set whether to repeat (default true)
     void setRepeat(bool repeat) { repeat_ = repeat; }
@@ -74,8 +89,13 @@ private:
     void synthesizeInternal();
 
     std::string text_;
-    int rate_ = 175;      // Words per minute
+    std::string voiceName_ = "en";  // espeak voice name
+    int rate_ = 175;      // Words per minute (80-450)
     int pitch_ = 50;      // 0-100
+    int range_ = 50;      // Pitch range 0-100
+    int volume_ = 100;    // 0-200
+    int wordGap_ = 0;     // Gap between words in 10ms units
+    int capitals_ = 0;    // 0=none, 1=icon, 2=pitch, 3=both
     bool repeat_ = true;
 
     std::vector<float> samples_;

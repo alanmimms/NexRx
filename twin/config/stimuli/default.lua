@@ -58,13 +58,28 @@ stimulus.addSsb("ssb_tone", {
     tones = {1000}
 })
 
-stimulus.addSsb("voice_id", {
-    freq = 14.175e6,         -- Within ±48kHz of 14.200 LO
-    amplitude = 50e-6,       -- S9
-    mode = "usb",
-    voice = "CQ CQ CQ this is November Echo X-ray Romeo X-ray calling CQ and standing by.",
-    ["repeat"] = true
-})
+  stimulus.addSsb("voice-id", {
+      freq = 14.200e6,
+      mode = "usb",
+      audioFile = "CQ-WB7NAB-gb-fem-8k.wav",
+      loop = true  -- optional, default true
+  })
+
+-- stimulus.addSsb("voice_id", {
+--     freq = 14.200e6,
+--     amplitude = 30e-3,
+--     mode = "usb",
+--     voice = "CQ CQ CQ this is November Echo X-ray Romeo X-ray calling CQ and standing by.",
+--     ["repeat"] = true,
+--     -- espeak-ng voice parameters:
+--     voiceName = "en-gb",     -- Voice: en, en-us, en-gb, de, es, fr, etc.
+--     rate = 150,              -- Words per minute (80-450, default 175)
+--     pitch = 40,              -- Pitch (0-100, default 50)
+--     -- pitchRange = 50,      -- Pitch range (0-100, default 50)
+--     -- volume = 100,         -- Volume (0-200, default 100)
+--     wordGap = 3,		-- Gap between words in 10ms units
+--     -- capitals = 0,         -- 0=none, 1=sound icon, 2=pitch, 3=both
+-- })
 
 print("[Stimulus] Loaded " .. stimulus.count() .. " stimuli")
 

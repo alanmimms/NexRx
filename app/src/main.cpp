@@ -160,8 +160,11 @@ public:
         audio_.setCallback([this](float* output, uint32_t frameCount, uint32_t channels) {
             // Audio gain - RF signals are µV level relative to 1.65V ADC full scale
             // S9 = 50µV → 50e-6 / 1.65 = 3e-5 normalized
-            // Need ~20000x gain for comfortable listening at S9
-            constexpr float audioGain = 20000.0f;
+            // High base gain allows volume slider to have range both up and down
+            constexpr float audioGain = 500000.0f;
+
+            // Get volume once per callback (atomic read)
+            const float volume = audioVolume_.load(std::memory_order_relaxed);
 
             for (uint32_t i = 0; i < frameCount; ++i) {
                 float sample = 0.0f;
@@ -170,13 +173,13 @@ public:
                 size_t writePos = audioWritePos_.load(std::memory_order_acquire);
 
                 if (readPos != writePos) {
-                    sample = audioRingBuffer_[readPos] * audioGain;
+                    sample = audioRingBuffer_[readPos] * audioGain * volume;
                     audioReadPos_.store((readPos + 1) % AUDIO_BUFFER_SIZE,
                                        std::memory_order_release);
                     audioSamplesRead_.fetch_add(1, std::memory_order_relaxed);
                 }
 
-                // Soft clip
+                // Soft clip (only activates on very loud signals)
                 sample = std::tanh(sample);
 
                 // Output to both channels (mono to stereo)
@@ -558,11 +561,11 @@ private:
         };
 
         lua_["audio"]["setVolume"] = [this](float volume) {
-            audio_.setVolume(volume);
+            audioVolume_.store(volume, std::memory_order_relaxed);
         };
 
         lua_["audio"]["getVolume"] = [this]() {
-            return audio_.getVolume();
+            return audioVolume_.load(std::memory_order_relaxed);
         };
 
         lua_["audio"]["setMuted"] = [this](bool muted) {
@@ -939,6 +942,7 @@ private:
     std::vector<float> audioRingBuffer_;
     std::atomic<size_t> audioWritePos_{0};
     std::atomic<size_t> audioReadPos_{0};
+    std::atomic<float> audioVolume_{0.0316f};  // Volume applied before soft-clip
     static constexpr size_t AUDIO_BUFFER_SIZE = 8192;
     bool audioDecimateSkip_ = false;  // For 96kHz→48kHz decimation
     std::atomic<uint64_t> audioSamplesWritten_{0};

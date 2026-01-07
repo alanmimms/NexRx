@@ -10,6 +10,7 @@
 #include "ToneGenerator.hpp"
 #include "NoiseGenerator.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <fstream>
 
@@ -33,7 +34,7 @@ void StimulusLua::registerBindings(sol::state& lua) {
         double amplitude = config.get_or("amplitude", 50e-6);  // ~S9 default
         std::string text = config.get_or<std::string>("text", "CQ");
         double wpm = config.get_or("wpm", 20.0);
-        bool repeat = config.get_or("repeat", true);
+        bool repeat = config.get_or("loop", true);
 
         auto morse = std::make_shared<MorseGenerator>(freq, amplitude, text, wpm);
         morse->setRepeat(repeat);
@@ -75,18 +76,134 @@ void StimulusLua::registerBindings(sol::state& lua) {
             return;
         }
 
-        // Check for voice
+        // Check for voice (espeak-ng TTS)
         sol::optional<std::string> voiceOpt = config["voice"];
         if (voiceOpt) {
+            bool repeat = config.get_or("loop", true);
+
             auto tts = std::make_shared<TtsEngine>();
             tts->setText(*voiceOpt);
-            tts->setRepeat(config.get_or("repeat", true));
-            ssb->setVoice(tts, config.get_or("repeat", true));
+            tts->setRepeat(repeat);
+
+            // espeak-ng voice parameters
+            if (auto v = config.get<sol::optional<std::string>>("voiceName")) {
+                tts->setVoiceName(*v);
+            }
+            if (auto v = config.get<sol::optional<int>>("rate")) {
+                tts->setRate(*v);
+            }
+            if (auto v = config.get<sol::optional<int>>("pitch")) {
+                tts->setPitch(*v);
+            }
+            if (auto v = config.get<sol::optional<int>>("pitchRange")) {
+                tts->setRange(*v);
+            }
+            if (auto v = config.get<sol::optional<int>>("volume")) {
+                tts->setVolume(*v);
+            }
+            if (auto v = config.get<sol::optional<int>>("wordGap")) {
+                tts->setWordGap(*v);
+            }
+            if (auto v = config.get<sol::optional<int>>("capitals")) {
+                tts->setCapitals(*v);
+            }
+
+            ssb->setVoice(tts, repeat);
 
             manager_->addStimulus(name, ssb, "ssb", freq, amplitude);
 
-            std::cout << "[Stimulus] Added SSB voice '" << name << "': "
+            std::cout << "[Stimulus] Added SSB espeak voice '" << name << "': "
                       << freq / 1e6 << " MHz " << modeStr << std::endl;
+            return;
+        }
+
+        // Check for audio file (WAV)
+        sol::optional<std::string> audioFileOpt = config["audioFile"];
+        if (audioFileOpt) {
+            bool repeat = config.get_or("loop", true);
+            const std::string& path = *audioFileOpt;
+
+            // Simple WAV file loader
+            std::ifstream file(path, std::ios::binary);
+            if (!file.is_open()) {
+                std::cerr << "[Stimulus] Failed to open WAV file: " << path << std::endl;
+                return;
+            }
+
+            // Read RIFF header
+            char riff[4];
+            file.read(riff, 4);
+            if (std::strncmp(riff, "RIFF", 4) != 0) {
+                std::cerr << "[Stimulus] Invalid WAV file (not RIFF): " << path << std::endl;
+                return;
+            }
+
+            file.seekg(8);  // Skip file size
+            char wave[4];
+            file.read(wave, 4);
+            if (std::strncmp(wave, "WAVE", 4) != 0) {
+                std::cerr << "[Stimulus] Invalid WAV file (not WAVE): " << path << std::endl;
+                return;
+            }
+
+            // Find fmt chunk
+            uint16_t audioFormat = 0, numChannels = 0, bitsPerSample = 0;
+            uint32_t sampleRate = 0;
+
+            while (file.good()) {
+                char chunkId[4];
+                uint32_t chunkSize;
+                file.read(chunkId, 4);
+                file.read(reinterpret_cast<char*>(&chunkSize), 4);
+
+                if (std::strncmp(chunkId, "fmt ", 4) == 0) {
+                    file.read(reinterpret_cast<char*>(&audioFormat), 2);
+                    file.read(reinterpret_cast<char*>(&numChannels), 2);
+                    file.read(reinterpret_cast<char*>(&sampleRate), 4);
+                    file.seekg(6, std::ios::cur);  // Skip byte rate, block align
+                    file.read(reinterpret_cast<char*>(&bitsPerSample), 2);
+                    file.seekg(chunkSize - 16, std::ios::cur);  // Skip rest of fmt
+                } else if (std::strncmp(chunkId, "data", 4) == 0) {
+                    // Found data chunk
+                    size_t numSamples = chunkSize / (bitsPerSample / 8) / numChannels;
+                    std::vector<float> samples(numSamples);
+
+                    for (size_t i = 0; i < numSamples; ++i) {
+                        float sample = 0.0f;
+                        if (bitsPerSample == 16) {
+                            int16_t s;
+                            file.read(reinterpret_cast<char*>(&s), 2);
+                            sample = s / 32768.0f;
+                            // Skip extra channels
+                            for (int c = 1; c < numChannels; ++c) {
+                                file.seekg(2, std::ios::cur);
+                            }
+                        } else if (bitsPerSample == 8) {
+                            uint8_t s;
+                            file.read(reinterpret_cast<char*>(&s), 1);
+                            sample = (s - 128) / 128.0f;
+                            for (int c = 1; c < numChannels; ++c) {
+                                file.seekg(1, std::ios::cur);
+                            }
+                        }
+                        samples[i] = sample;
+                    }
+
+                    ssb->setAudioSamples(std::move(samples), sampleRate, repeat);
+
+                    manager_->addStimulus(name, ssb, "ssb", freq, amplitude);
+
+                    std::cout << "[Stimulus] Added SSB audio file '" << name << "': "
+                              << freq / 1e6 << " MHz " << modeStr << ", "
+                              << path << " (" << numSamples << " samples @ "
+                              << sampleRate << " Hz)" << std::endl;
+                    return;
+                } else {
+                    file.seekg(chunkSize, std::ios::cur);  // Skip unknown chunk
+                }
+            }
+
+            std::cerr << "[Stimulus] No data chunk found in WAV file: " << path << std::endl;
             return;
         }
 

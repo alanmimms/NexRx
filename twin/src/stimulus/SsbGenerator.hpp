@@ -49,7 +49,7 @@ public:
     // Set audio as multiple tones (frequencies in Hz, typically 300-3000 Hz)
     void setTones(const std::vector<double>& audio_freqs_hz);
 
-    // Set audio from TTS engine (takes ownership)
+    // Set audio from espeak-ng TTS engine
     void setVoice(std::shared_ptr<TtsEngine> tts, bool repeat = true);
 
     // Set audio from raw samples (sample rate must be specified)
@@ -99,7 +99,7 @@ private:
     };
     std::vector<ToneInfo> tones_;
 
-    // Voice mode
+    // Voice mode (espeak-ng)
     std::shared_ptr<TtsEngine> tts_;
     bool voiceRepeat_ = true;
 

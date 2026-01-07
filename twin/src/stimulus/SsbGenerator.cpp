@@ -97,7 +97,7 @@ void SsbGenerator::getAudioIQ(double time_s, double& i, double& q) const {
 
         case AudioSource::Voice: {
             if (tts_) {
-                // Get audio from TTS engine
+                // Get audio from espeak-ng TTS engine
                 i = tts_->getSample(time_s);
                 // Use FIR Hilbert filter for voice
                 q = hilbertFilter(time_s);
@@ -178,7 +178,7 @@ double SsbGenerator::hilbertFilter(double time_s) const {
         return result;
     }
 
-    // For voice/TTS, get samples and filter
+    // For espeak voice/TTS, get samples and filter
     if (audioSource_ == AudioSource::Voice && tts_) {
         // Approximate sample rate for TTS
         constexpr double TTS_SAMPLE_RATE = 22050.0;
@@ -234,7 +234,7 @@ std::string SsbGenerator::description() const {
             oss << tones_.size() << " tone(s)";
             break;
         case AudioSource::Voice:
-            oss << "voice";
+            oss << "espeak";
             break;
         case AudioSource::Samples:
             oss << "samples";
