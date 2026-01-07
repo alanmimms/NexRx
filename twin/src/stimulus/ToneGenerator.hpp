@@ -72,6 +72,24 @@ public:
         return sum;
     }
 
+    // Get baseband I/Q for functional simulation (avoids RF aliasing)
+    void getBasebandIQ(double time_s, double lo_freq_hz,
+                       double& out_i, double& out_q) const override {
+        out_i = out_q = 0.0;
+        for (const auto& tone : tones_) {
+            double baseband_freq = tone.frequency_hz - lo_freq_hz;
+            double phase_rad = tone.phase_deg * M_PI / 180.0;
+            double phase = 2.0 * M_PI * baseband_freq * time_s + phase_rad;
+            out_i += tone.amplitude_v * std::cos(phase);
+            out_q += tone.amplitude_v * std::sin(phase);
+        }
+    }
+
+    [[nodiscard]] double carrierFrequency() const override {
+        // Return first tone frequency as primary carrier
+        return tones_.empty() ? 0.0 : tones_[0].frequency_hz;
+    }
+
     [[nodiscard]] std::string description() const override {
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(3);

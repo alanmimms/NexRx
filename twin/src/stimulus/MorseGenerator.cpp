@@ -261,4 +261,50 @@ bool MorseGenerator::hasMore(double time_s) const {
     return time_s < totalDuration_s_;
 }
 
+double MorseGenerator::getEnvelope(double time_s) const {
+    if (sequence_.empty()) {
+        return 0.0;
+    }
+
+    // Handle repeat mode
+    double effectiveTime = time_s;
+    if (repeat_ && totalDuration_s_ > 0) {
+        double cycleTime = totalDuration_s_ + 7.0 * ditDuration_s_;
+        effectiveTime = std::fmod(time_s, cycleTime);
+    }
+
+    // Find which element we're in
+    for (const auto& event : sequence_) {
+        if (effectiveTime >= event.startTime &&
+            effectiveTime < event.startTime + event.duration) {
+
+            if (event.keyDown) {
+                double posInElement = effectiveTime - event.startTime;
+                return getEnvelope(posInElement, event.duration);
+            } else {
+                return 0.0;
+            }
+        }
+    }
+
+    return 0.0;
+}
+
+void MorseGenerator::getBasebandIQ(double time_s, double lo_freq_hz,
+                                    double& out_i, double& out_q) const {
+    double env = getEnvelope(time_s) * amplitude_v_;
+    if (env < 1e-12) {
+        out_i = out_q = 0.0;
+        return;
+    }
+
+    // Baseband frequency = carrier - LO
+    double baseband_freq = freq_hz_ - lo_freq_hz;
+
+    // Generate baseband I/Q analytically (no RF aliasing!)
+    double phase = 2.0 * M_PI * baseband_freq * time_s;
+    out_i = env * std::cos(phase);
+    out_q = env * std::sin(phase);
+}
+
 } // namespace nexrx

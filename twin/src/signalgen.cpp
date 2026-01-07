@@ -292,53 +292,66 @@ int runFunctionalMode(const Options& opts) {
 
     auto startTime = std::chrono::steady_clock::now();
 
-    // QSD model parameters
-    // Real QSD integrates over switch-on time, here we model as ideal mixer + LPF
-    constexpr double lpfAlpha = 0.1;  // Simple IIR LPF coefficient
-    double lpf_i[3] = {0, 0, 0};
-    double lpf_q[3] = {0, 0, 0};
+    // Anti-alias LPF: 2nd-order Butterworth at 48kHz (Nyquist for 96kHz)
+    // Coefficients for fs=96kHz, fc=48kHz (actually use ~40kHz for margin)
+    // Using biquad: y[n] = b0*x[n] + b1*x[n-1] + b2*x[n-2] - a1*y[n-1] - a2*y[n-2]
+    // For Butterworth fc=40kHz at fs=96kHz:
+    constexpr double lpf_b0 = 0.292893;
+    constexpr double lpf_b1 = 0.585786;
+    constexpr double lpf_b2 = 0.292893;
+    constexpr double lpf_a1 = -0.0;
+    constexpr double lpf_a2 = 0.171573;
+
+    // Filter state for each QSD channel (I and Q)
+    double lpf_xi[3][2] = {{0,0}, {0,0}, {0,0}};  // x[n-1], x[n-2]
+    double lpf_yi[3][2] = {{0,0}, {0,0}, {0,0}};  // y[n-1], y[n-2]
+    double lpf_xq[3][2] = {{0,0}, {0,0}, {0,0}};
+    double lpf_yq[3][2] = {{0,0}, {0,0}, {0,0}};
+
+    auto applyLpf = [&](double x, double* xi, double* yi) -> double {
+        double y = lpf_b0 * x + lpf_b1 * xi[0] + lpf_b2 * xi[1]
+                   - lpf_a1 * yi[0] - lpf_a2 * yi[1];
+        xi[1] = xi[0]; xi[0] = x;
+        yi[1] = yi[0]; yi[0] = y;
+        return y;
+    };
 
     for (size_t i = 0; i < numSamples; ++i) {
         double t = i * samplePeriod;
 
-        // Get RF signal from stimulus manager or simple tone
-        double rf;
+        // Get baseband I/Q directly from stimulus manager (avoids RF aliasing!)
+        double bb_i = 0.0, bb_q = 0.0;
         if (stimulusManager) {
-            rf = stimulusManager->getSample(t);
+            stimulusManager->getBasebandIQ(t, lo_freq, bb_i, bb_q);
         } else {
-            rf = rf_amp * std::sin(2.0 * M_PI * rf_freq * t);
+            // Simple tone: baseband = amp * exp(j * 2π * (rf-lo) * t)
+            double baseband_freq = rf_freq - lo_freq;
+            double phase = 2.0 * M_PI * baseband_freq * t;
+            bb_i = rf_amp * std::cos(phase);
+            bb_q = rf_amp * std::sin(phase);
         }
 
         // Add some noise for realism
-        double noise = (rand() / (double)RAND_MAX - 0.5) * 1e-6;  // 1uV noise
-        rf += noise;
+        double noise_i = (rand() / (double)RAND_MAX - 0.5) * 1e-6;
+        double noise_q = (rand() / (double)RAND_MAX - 0.5) * 1e-6;
+        bb_i += noise_i;
+        bb_q += noise_q;
 
         IQFrame frame;
         frame.timestamp_ns = static_cast<uint64_t>(t * 1e9);
         frame.sequence = static_cast<uint32_t>(i);
         frame.flags = 0;
 
-        // Model each QSD channel
+        // Model each QSD channel (all same for functional model)
         for (int ch = 0; ch < 3; ++ch) {
-            // Phase offset per channel (could model different LO phases)
-            double phase_offset = ch * 0.0;  // All same for now
-
-            // Ideal quadrature mixer: multiply by LO
-            double lo_i = std::cos(2.0 * M_PI * lo_freq * t + phase_offset);
-            double lo_q = std::sin(2.0 * M_PI * lo_freq * t + phase_offset);
-
-            double mixed_i = rf * lo_i;
-            double mixed_q = rf * lo_q;
-
-            // Simple LPF to remove 2*LO component (real QSD does this via integration)
-            lpf_i[ch] = lpf_i[ch] * (1.0 - lpfAlpha) + mixed_i * lpfAlpha;
-            lpf_q[ch] = lpf_q[ch] * (1.0 - lpfAlpha) + mixed_q * lpfAlpha;
+            // Apply anti-alias LPF to baseband I/Q
+            double filtered_i = applyLpf(bb_i, lpf_xi[ch], lpf_yi[ch]);
+            double filtered_q = applyLpf(bb_q, lpf_xq[ch], lpf_yq[ch]);
 
             // Scale to ADC range (24-bit, +/-1.65V full scale)
-            // The mixer output is roughly rf_amp/2 after LPF
             constexpr double adcScale = 8388607.0 / 1.65;
-            frame.qsd[ch].i = static_cast<int32_t>(std::clamp(lpf_i[ch] * adcScale, -8388608.0, 8388607.0));
-            frame.qsd[ch].q = static_cast<int32_t>(std::clamp(lpf_q[ch] * adcScale, -8388608.0, 8388607.0));
+            frame.qsd[ch].i = static_cast<int32_t>(std::clamp(filtered_i * adcScale, -8388608.0, 8388607.0));
+            frame.qsd[ch].q = static_cast<int32_t>(std::clamp(filtered_q * adcScale, -8388608.0, 8388607.0));
         }
 
         // Write to transport or collect locally

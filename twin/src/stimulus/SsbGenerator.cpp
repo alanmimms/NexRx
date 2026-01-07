@@ -257,4 +257,37 @@ void SsbGenerator::reset() {
     }
 }
 
+void SsbGenerator::getBasebandIQ(double time_s, double lo_freq_hz,
+                                  double& out_i, double& out_q) const {
+    if (audioSource_ == AudioSource::None) {
+        out_i = out_q = 0.0;
+        return;
+    }
+
+    // Get audio I/Q (I = audio, Q = Hilbert(audio))
+    double audioI, audioQ;
+    getAudioIQ(time_s, audioI, audioQ);
+
+    // Baseband frequency = carrier - LO
+    double baseband_freq = carrier_hz_ - lo_freq_hz;
+    double phase = 2.0 * M_PI * baseband_freq * time_s;
+    double cosPhase = std::cos(phase);
+    double sinPhase = std::sin(phase);
+
+    // SSB shifts audio to baseband:
+    // USB: baseband = (audioI - j*audioQ) * exp(j*phase)
+    // LSB: baseband = (audioI + j*audioQ) * exp(j*phase)
+    if (mode_ == Mode::USB) {
+        // (audioI - j*audioQ) * (cos + j*sin) =
+        // (audioI*cos + audioQ*sin) + j*(audioI*sin - audioQ*cos)
+        out_i = amplitude_v_ * (audioI * cosPhase + audioQ * sinPhase);
+        out_q = amplitude_v_ * (audioI * sinPhase - audioQ * cosPhase);
+    } else {
+        // (audioI + j*audioQ) * (cos + j*sin) =
+        // (audioI*cos - audioQ*sin) + j*(audioI*sin + audioQ*cos)
+        out_i = amplitude_v_ * (audioI * cosPhase - audioQ * sinPhase);
+        out_q = amplitude_v_ * (audioI * sinPhase + audioQ * cosPhase);
+    }
+}
+
 } // namespace nexrx

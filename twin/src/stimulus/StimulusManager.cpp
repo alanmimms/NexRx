@@ -77,6 +77,21 @@ double StimulusManager::getSample(double time_s) const {
     return sum;
 }
 
+void StimulusManager::getBasebandIQ(double time_s, double lo_freq_hz,
+                                     double& out_i, double& out_q) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    out_i = out_q = 0.0;
+    for (const auto& [name, entry] : stimuli_) {
+        if (entry.enabled && entry.stimulus) {
+            double i, q;
+            entry.stimulus->getBasebandIQ(time_s, lo_freq_hz, i, q);
+            out_i += i;
+            out_q += q;
+        }
+    }
+}
+
 void StimulusManager::setEnabled(const std::string& name, bool enabled) {
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = stimuli_.find(name);

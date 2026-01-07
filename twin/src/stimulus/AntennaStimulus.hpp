@@ -39,6 +39,24 @@ public:
         (void)time_s;
         return true;
     }
+
+    // Get baseband I/Q samples given LO frequency (for functional simulation)
+    // Default returns zero - override for carrier-based signals
+    // This avoids RF aliasing when sampling at audio rates
+    virtual void getBasebandIQ(double time_s, double lo_freq_hz,
+                               double& out_i, double& out_q) const {
+        (void)time_s; (void)lo_freq_hz;
+        out_i = out_q = 0.0;
+    }
+
+    // Get carrier frequency (0 if no carrier, e.g., noise)
+    [[nodiscard]] virtual double carrierFrequency() const { return 0.0; }
+
+    // Get current envelope/amplitude (for keyed signals like CW)
+    [[nodiscard]] virtual double getEnvelope(double time_s) const {
+        (void)time_s;
+        return 1.0;  // Default: constant envelope
+    }
 };
 
 //======================================================================
