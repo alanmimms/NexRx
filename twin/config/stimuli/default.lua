@@ -58,14 +58,13 @@ stimulus.addSsb("ssb_tone", {
     tones = {1000}
 })
 
--- Uncomment to add TTS voice:
--- stimulus.addSsb("voice_id", {
---     freq = 14.300e6,
---     amplitude = 50e-6,
---     mode = "usb",
---     voice = "This is a test of the NexRx digital twin system.",
---     ["repeat"] = true
--- })
+stimulus.addSsb("voice_id", {
+    freq = 14.175e6,         -- Within ±48kHz of 14.200 LO
+    amplitude = 50e-6,       -- S9
+    mode = "usb",
+    voice = "CQ CQ CQ this is November Echo X-ray Romeo X-ray calling CQ and standing by.",
+    ["repeat"] = true
+})
 
 print("[Stimulus] Loaded " .. stimulus.count() .. " stimuli")
 

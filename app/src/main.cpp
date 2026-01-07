@@ -158,9 +158,10 @@ public:
         demod_.setBfoOffset(700.0f);
 
         audio_.setCallback([this](float* output, uint32_t frameCount, uint32_t channels) {
-            // Audio gain - the RF signal is very small relative to ADC full scale
-            // A 1mV signal at 1.65V FS = 0.0006, so we need ~1000x gain
-            constexpr float audioGain = 2000.0f;
+            // Audio gain - RF signals are µV level relative to 1.65V ADC full scale
+            // S9 = 50µV → 50e-6 / 1.65 = 3e-5 normalized
+            // Need ~20000x gain for comfortable listening at S9
+            constexpr float audioGain = 20000.0f;
 
             for (uint32_t i = 0; i < frameCount; ++i) {
                 float sample = 0.0f;
@@ -1013,6 +1014,15 @@ private:
 
         spectrumData_.resize(FFT_SIZE);
 
+        // Pre-compute Hann window (reduces spectral leakage)
+        static std::vector<float> window;
+        if (window.size() != FFT_SIZE) {
+            window.resize(FFT_SIZE);
+            for (size_t n = 0; n < FFT_SIZE; ++n) {
+                window[n] = 0.5f * (1.0f - std::cos(2.0f * 3.14159265f * n / (FFT_SIZE - 1)));
+            }
+        }
+
         // Simple magnitude spectrum via DFT
         // For real performance, use FFTW or similar
         for (size_t k = 0; k < FFT_SIZE; ++k) {
@@ -1020,8 +1030,8 @@ private:
 
             for (size_t n = 0; n < FFT_SIZE; ++n) {
                 size_t idx = (iqBufferWritePos_ + n) % FFT_SIZE;
-                float i_val = iqBuffer_[idx * 2];
-                float q_val = iqBuffer_[idx * 2 + 1];
+                float i_val = iqBuffer_[idx * 2] * window[n];
+                float q_val = iqBuffer_[idx * 2 + 1] * window[n];
 
                 // Complex input: i + j*q
                 float angle = -2.0f * 3.14159265f * k * n / FFT_SIZE;
@@ -1033,8 +1043,8 @@ private:
                 im += q_val * cos_a - i_val * sin_a;
             }
 
-            // Magnitude in dB
-            float mag = std::sqrt(re * re + im * im) / FFT_SIZE;
+            // Magnitude in dB (compensate for Hann window coherent gain of 0.5)
+            float mag = std::sqrt(re * re + im * im) / FFT_SIZE * 2.0f;
             float db = (mag > 1e-10f) ? 20.0f * std::log10(mag) : -100.0f;
 
             // FFT shift: put DC in center

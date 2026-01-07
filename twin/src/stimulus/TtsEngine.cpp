@@ -11,6 +11,7 @@
 #if __has_include(<espeak-ng/speak_lib.h>)
 #define HAS_ESPEAK_NG 1
 #include <espeak-ng/speak_lib.h>
+#include <espeak-ng/espeak_ng.h>
 #else
 #define HAS_ESPEAK_NG 0
 #endif
