@@ -471,13 +471,26 @@ function draw()
 
         lx, ly = layout.getCursor()
         ui.label(lx, ly, "Vol:")
-        local newVolume = ui.slider("volume", lx + 40, ly, w - 70, 0, 1, volume)
-        if newVolume ~= volume then
-            volume = newVolume
+        -- Logarithmic volume: slider position 0-1 maps to -60dB to 0dB
+        -- volume = 10^(dB/20), so position p: dB = -60 + 60*p, gain = 10^((-60+60*p)/20)
+        local function linearToLog(pos)
+            if pos <= 0 then return 0 end
+            local db = -60 + 60 * pos  -- -60dB to 0dB
+            return math.pow(10, db / 20)
+        end
+        local function logToLinear(gain)
+            if gain <= 0.001 then return 0 end  -- Below -60dB, show as 0
+            local db = 20 * math.log10(gain)
+            return clamp((db + 60) / 60, 0, 1)
+        end
+        local sliderPos = logToLinear(volume)
+        local newSliderPos = ui.slider("volume", lx + 40, ly, w - 70, 0, 1, sliderPos)
+        if newSliderPos ~= sliderPos then
+            volume = linearToLog(newSliderPos)
             audio.setVolume(volume)
         end
-        local volPct = string.format("%d%%", math.floor(volume * 100))
-        drawText(lx + w - 60, ly - 2, volPct, 0.5, 0.5, 0.55, 1.0)
+        local volDb = volume > 0.001 and string.format("%.0fdB", 20 * math.log10(volume)) or "-inf"
+        drawText(lx + w - 60, ly - 2, volDb, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
         lx, ly = layout.getCursor()

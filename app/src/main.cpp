@@ -327,38 +327,64 @@ public:
 
         // Clamp radius
         radius = std::min(radius, std::min(w, h) / 2.0f);
+        if (radius < 0.5f) {
+            // No rounding, just draw a simple rect
+            glBegin(GL_QUADS);
+            glVertex2f(x, y);
+            glVertex2f(x + w, y);
+            glVertex2f(x + w, y + h);
+            glVertex2f(x, y + h);
+            glEnd();
+            return;
+        }
+
         const int cornerSegments = 8;
+        constexpr float PI = 3.14159265f;
 
         glBegin(GL_TRIANGLE_FAN);
         // Center
         glVertex2f(x + w/2, y + h/2);
 
-        // Top-left corner
-        for (int i = cornerSegments; i >= 0; --i) {
-            float angle = 3.14159265f/2.0f + (3.14159265f/2.0f) * i / cornerSegments;
-            glVertex2f(x + radius + std::cos(angle) * radius, y + radius + std::sin(angle) * radius);
-        }
+        // Start at top-left of top edge, go clockwise
+        // Top edge (left to right)
+        glVertex2f(x + radius, y);
+        glVertex2f(x + w - radius, y);
 
         // Top-right corner
-        for (int i = cornerSegments; i >= 0; --i) {
-            float angle = (3.14159265f/2.0f) * i / cornerSegments;
+        for (int i = 0; i <= cornerSegments; ++i) {
+            float angle = -PI/2.0f + (PI/2.0f) * i / cornerSegments;
             glVertex2f(x + w - radius + std::cos(angle) * radius, y + radius + std::sin(angle) * radius);
         }
 
+        // Right edge (top to bottom)
+        glVertex2f(x + w, y + h - radius);
+
         // Bottom-right corner
-        for (int i = cornerSegments; i >= 0; --i) {
-            float angle = -((3.14159265f/2.0f) * i / cornerSegments);
+        for (int i = 0; i <= cornerSegments; ++i) {
+            float angle = 0.0f + (PI/2.0f) * i / cornerSegments;
             glVertex2f(x + w - radius + std::cos(angle) * radius, y + h - radius + std::sin(angle) * radius);
         }
 
+        // Bottom edge (right to left)
+        glVertex2f(x + radius, y + h);
+
         // Bottom-left corner
-        for (int i = cornerSegments; i >= 0; --i) {
-            float angle = 3.14159265f + (3.14159265f/2.0f) * i / cornerSegments;
+        for (int i = 0; i <= cornerSegments; ++i) {
+            float angle = PI/2.0f + (PI/2.0f) * i / cornerSegments;
             glVertex2f(x + radius + std::cos(angle) * radius, y + h - radius + std::sin(angle) * radius);
         }
 
-        // Close back to top-left
+        // Left edge (bottom to top)
         glVertex2f(x, y + radius);
+
+        // Top-left corner
+        for (int i = 0; i <= cornerSegments; ++i) {
+            float angle = PI + (PI/2.0f) * i / cornerSegments;
+            glVertex2f(x + radius + std::cos(angle) * radius, y + radius + std::sin(angle) * radius);
+        }
+
+        // Close back to start
+        glVertex2f(x + radius, y);
 
         glEnd();
     }

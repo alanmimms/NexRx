@@ -1,4 +1,4 @@
-// NexRx Digital Twin - Pipeline Test
+// NexRx Digital Twin - Signal Generator
 //
 // End-to-end test of the RF simulation pipeline.
 // Two modes:

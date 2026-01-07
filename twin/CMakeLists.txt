@@ -265,10 +265,10 @@ if(WITH_PROTOBUF)
 endif()
 
 # -----------------------------------------------------------------------------
-# Pipeline test executable
+# Signal generator executable (was pipeline_test)
 # -----------------------------------------------------------------------------
-add_executable(pipeline_test src/pipeline_test.cpp)
-target_link_libraries(pipeline_test PRIVATE twin_core twin_transport twin_sampler)
+add_executable(signalgen src/signalgen.cpp)
+target_link_libraries(signalgen PRIVATE twin_core twin_transport twin_sampler)
 
 # -----------------------------------------------------------------------------
 # Stimulus library - signal generation for antenna input
