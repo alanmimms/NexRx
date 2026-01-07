@@ -117,7 +117,9 @@ struct Rule {
             }
         }
 
-        return tags.size();
+        // Return at least 1 for rules with empty tags (global defaults)
+        // so they're included in resolve()
+        return tags.size() > 0 ? tags.size() : 1;
     }
 
     /**
