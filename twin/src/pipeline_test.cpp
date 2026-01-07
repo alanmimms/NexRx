@@ -16,11 +16,13 @@
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <cmath>
 #include <cstring>
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <memory>
 
 using namespace NexRx::Twin;
 using namespace nexrx;
@@ -32,9 +34,10 @@ struct Options {
     bool functional = false;      // Use fast C++ model instead of Xyce
     bool help = false;
     bool verbose = true;
-    double duration_ms = 1.0;     // Simulation duration in ms
-    double rf_freq_mhz = 14.010;  // RF signal frequency
-    double lo_freq_mhz = 14.000;  // LO frequency
+    bool stream = false;          // Stream to shared memory for app display
+    double duration_ms = 0.0;     // Simulation duration in ms (0 = run forever)
+    double rf_freq_mhz = 14.201;  // RF signal frequency (1kHz above LO for USB)
+    double lo_freq_mhz = 14.200;  // LO frequency (matches app default VFO)
     double rf_amplitude_mv = 1.0; // RF amplitude in mV
     std::string netlist = "netlists/pipeline_test.cir";
 };
@@ -47,7 +50,8 @@ void printUsage(const char* prog) {
               << "  (default)       Full Xyce SPICE physics simulation (slow but accurate)\n"
               << "\n"
               << "Options:\n"
-              << "  --duration MS   Simulation duration in milliseconds (default: 1.0)\n"
+              << "  --stream        Stream I/Q to shared memory for app display\n"
+              << "  --duration MS   Simulation duration in milliseconds (0 = forever, default)\n"
               << "  --netlist FILE  Xyce netlist path (physics mode only)\n"
               << "  --rf FREQ       RF frequency in MHz (default: 14.010)\n"
               << "  --lo FREQ       LO frequency in MHz (default: 14.000)\n"
@@ -56,6 +60,9 @@ void printUsage(const char* prog) {
               << "  --help          Show this help\n"
               << "\n"
               << "Examples:\n"
+              << "  " << prog << " --functional --stream --duration 10000\n"
+              << "      Run 10s functional simulation, streaming to app\n"
+              << "\n"
               << "  " << prog << " --functional --duration 100\n"
               << "      Run 100ms functional simulation (fast)\n"
               << "\n"
@@ -72,6 +79,8 @@ Options parseArgs(int argc, char* argv[]) {
             opts.help = true;
         } else if (strcmp(argv[i], "--functional") == 0 || strcmp(argv[i], "-f") == 0) {
             opts.functional = true;
+        } else if (strcmp(argv[i], "--stream") == 0 || strcmp(argv[i], "-s") == 0) {
+            opts.stream = true;
         } else if (strcmp(argv[i], "--quiet") == 0 || strcmp(argv[i], "-q") == 0) {
             opts.verbose = false;
         } else if (strcmp(argv[i], "--duration") == 0 && i + 1 < argc) {
@@ -159,27 +168,73 @@ void analyzeFrames(const std::vector<IQFrame>& frames) {
 }
 
 //=============================================================================
+// Control file reader - check for LO frequency updates from app
+//=============================================================================
+bool readControlFile(double& lo_freq_hz) {
+    std::ifstream ctl("/tmp/nexrx_control");
+    if (!ctl) return false;
+
+    std::string cmd;
+    double freq;
+    if (ctl >> cmd >> freq) {
+        if (cmd == "LO" && freq > 0) {
+            lo_freq_hz = freq;
+            return true;
+        }
+    }
+    return false;
+}
+
+//=============================================================================
 // Functional mode - Pure C++ QSD model (FAST)
 //=============================================================================
 int runFunctionalMode(const Options& opts) {
+    const bool runForever = (opts.duration_ms <= 0);
+
     std::cout << "=== NexRx Pipeline Test - FUNCTIONAL MODE ===" << std::endl;
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << "RF: " << opts.rf_freq_mhz << " MHz, " << opts.rf_amplitude_mv << " mV" << std::endl;
-    std::cout << "LO: " << opts.lo_freq_mhz << " MHz" << std::endl;
+    std::cout << "LO: " << opts.lo_freq_mhz << " MHz (tunable via /tmp/nexrx_control)" << std::endl;
     std::cout << "Baseband: " << std::abs(opts.rf_freq_mhz - opts.lo_freq_mhz) * 1000 << " kHz" << std::endl;
-    std::cout << "Duration: " << opts.duration_ms << " ms" << std::endl;
+    if (runForever) {
+        std::cout << "Duration: forever (Ctrl+C to stop)" << std::endl;
+    } else {
+        std::cout << "Duration: " << opts.duration_ms << " ms" << std::endl;
+    }
+    if (opts.stream) {
+        std::cout << "Streaming: /nexrx_iq (run nexrx_app to view)" << std::endl;
+    }
     std::cout << std::endl;
 
     const double rf_freq = opts.rf_freq_mhz * 1e6;
-    const double lo_freq = opts.lo_freq_mhz * 1e6;
+    double lo_freq = opts.lo_freq_mhz * 1e6;  // Mutable - can be updated via control file
     const double rf_amp = opts.rf_amplitude_mv * 1e-3;  // Convert to volts
 
     constexpr double sampleRate = 96000.0;
     constexpr double samplePeriod = 1.0 / sampleRate;
-    const double duration_s = opts.duration_ms / 1000.0;
-    const size_t numSamples = static_cast<size_t>(duration_s * sampleRate);
+    const double duration_s = runForever ? 1e9 : opts.duration_ms / 1000.0;  // ~31 years if forever
+    const size_t numSamples = runForever ? SIZE_MAX : static_cast<size_t>(duration_s * sampleRate);
+
+    // Set up shared memory transport if streaming
+    std::unique_ptr<SharedMemTransport> transport;
+    if (opts.stream) {
+        SharedMemConfig shmConfig;
+        shmConfig.name = "/nexrx_iq";
+        shmConfig.capacity = 8192;
+        shmConfig.create = true;  // We're the producer
+
+        transport = std::make_unique<SharedMemTransport>(shmConfig);
+        if (!transport->connect()) {
+            std::cerr << "Failed to create shared memory transport" << std::endl;
+            return 1;
+        }
+        std::cout << "[Stream] Created shared memory: " << shmConfig.name << std::endl;
+    }
 
     std::vector<IQFrame> frames;
-    frames.reserve(numSamples);
+    if (!opts.stream) {
+        frames.reserve(numSamples);
+    }
 
     auto startTime = std::chrono::steady_clock::now();
 
@@ -227,7 +282,15 @@ int runFunctionalMode(const Options& opts) {
             frame.qsd[ch].q = static_cast<int32_t>(std::clamp(lpf_q[ch] * adcScale, -8388608.0, 8388607.0));
         }
 
-        frames.push_back(frame);
+        // Write to transport or collect locally
+        if (opts.stream && transport) {
+            auto err = transport->write(frame);
+            if (err != TransportError::None && err != TransportError::BufferFull) {
+                std::cerr << "Transport write error" << std::endl;
+            }
+        } else {
+            frames.push_back(frame);
+        }
 
         // Progress reporting
         if (opts.verbose && i % 9600 == 0 && i > 0) {
@@ -237,11 +300,41 @@ int runFunctionalMode(const Options& opts) {
             double simTime = i * samplePeriod;
             double speed = simTime / elapsed;
 
-            std::cout << "\r[Functional] " << std::fixed << std::setprecision(1)
-                      << progress << "% | "
-                      << simTime * 1000 << " ms | "
-                      << i << " samples | "
-                      << speed << "x realtime     " << std::flush;
+            if (opts.stream) {
+                std::cout << "\r[Stream] " << std::fixed << std::setprecision(1)
+                          << progress << "% | "
+                          << simTime * 1000 << " ms | "
+                          << i << " samples | "
+                          << transport->writeCount() << " written     " << std::flush;
+            } else {
+                std::cout << "\r[Functional] " << std::fixed << std::setprecision(1)
+                          << progress << "% | "
+                          << simTime * 1000 << " ms | "
+                          << i << " samples | "
+                          << speed << "x realtime     " << std::flush;
+            }
+        }
+
+        // Real-time pacing when streaming (to not overwhelm buffer)
+        if (opts.stream && i % 960 == 0) {  // Every 10ms of samples
+            auto now = std::chrono::steady_clock::now();
+            double elapsed = std::chrono::duration<double>(now - startTime).count();
+            double simTime = i * samplePeriod;
+
+            if (simTime > elapsed) {
+                std::this_thread::sleep_for(
+                    std::chrono::microseconds(static_cast<int>((simTime - elapsed) * 1e6)));
+            }
+
+            // Check for LO frequency updates from app
+            double new_lo;
+            if (readControlFile(new_lo) && std::abs(new_lo - lo_freq) > 1.0) {  // >1Hz change
+                lo_freq = new_lo;
+                if (opts.verbose) {
+                    std::cout << "\n[Control] LO changed to " << std::fixed << std::setprecision(6)
+                              << lo_freq / 1e6 << " MHz" << std::endl;
+                }
+            }
         }
     }
 
@@ -253,11 +346,23 @@ int runFunctionalMode(const Options& opts) {
     }
 
     std::cout << "\n--- Results ---" << std::endl;
-    std::cout << "Samples: " << frames.size() << std::endl;
+    if (opts.stream && transport) {
+        std::cout << "Samples written: " << transport->writeCount() << std::endl;
+        std::cout << "Overruns: " << transport->overruns() << std::endl;
+    } else {
+        std::cout << "Samples: " << frames.size() << std::endl;
+    }
     std::cout << "Wall time: " << elapsed * 1000 << " ms" << std::endl;
     std::cout << "Speed: " << (opts.duration_ms / 1000.0) / elapsed << "x realtime" << std::endl;
 
-    analyzeFrames(frames);
+    if (!opts.stream) {
+        analyzeFrames(frames);
+    }
+
+    // Clean up transport
+    if (transport) {
+        transport->disconnect();
+    }
 
     return 0;
 }

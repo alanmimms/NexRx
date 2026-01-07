@@ -48,6 +48,17 @@ local waterfallRows = 256
 local spectrumData = {}
 local selectedColormap = "viridis"
 
+-- Twin connection state
+local twinConnected = false
+local twinFramesReceived = 0
+local useTwinSpectrum = true  -- Try to use twin data when available
+local lastVfoFreq = 0  -- Track VFO changes for twin control
+
+-- Frequency entry state
+local freqEntryMode = false
+local freqEntryText = ""
+local freqEntryBlink = 0
+
 -- Helper functions
 local function hexToRgb(hex)
     hex = hex:gsub("#", "")
@@ -100,6 +111,16 @@ function init()
     -- Initialize spectrum data buffer
     for i = 1, waterfallBins do
         spectrumData[i] = -100
+    end
+
+    -- Try to connect to twin (digital twin simulation)
+    print("[Lua] Attempting to connect to digital twin...")
+    if twin.connect() then
+        twinConnected = true
+        print("[Lua] Connected to digital twin!")
+    else
+        twinConnected = false
+        print("[Lua] Twin not available - using simulated spectrum")
     end
 
     print("[Lua] NexRx UI initialized with layout system")
@@ -155,17 +176,116 @@ function update(dt)
         fpsFrames = 0
     end
 
-    -- Mouse wheel for fine tuning
+    -- Frequency entry mode handling
+    freqEntryBlink = freqEntryBlink + dt
+    if freqEntryBlink > 1.0 then freqEntryBlink = 0 end
+
+    -- SDL Scancodes
+    local SC_F = 9
+    local SC_RETURN = 40
+    local SC_ESCAPE = 41
+    local SC_BACKSPACE = 42
+
+    if freqEntryMode then
+        -- Get text input from SDL (handles all typing correctly)
+        local textIn = getTextInput()
+        for i = 1, #textIn do
+            local ch = textIn:sub(i, i)
+            -- Only allow digits and decimal point
+            if ch:match("[0-9]") or (ch == "." and not freqEntryText:find("%.")) then
+                freqEntryText = freqEntryText .. ch
+            end
+        end
+
+        -- Backspace
+        if isKeyPressed(SC_BACKSPACE) and #freqEntryText > 0 then
+            freqEntryText = freqEntryText:sub(1, -2)
+        end
+        -- Enter - apply frequency
+        if isKeyPressed(SC_RETURN) then
+            local newFreq = tonumber(freqEntryText)
+            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
+                frequency = newFreq
+                if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+            end
+            freqEntryMode = false
+            freqEntryText = ""
+        end
+        -- Escape - cancel
+        if isKeyPressed(SC_ESCAPE) then
+            freqEntryMode = false
+            freqEntryText = ""
+        end
+    else
+        -- 'F' key to start frequency entry
+        if isKeyPressed(SC_F) then
+            freqEntryMode = true
+            freqEntryText = ""
+        end
+    end
+
+    -- Mouse wheel for tuning with modifier support
+    -- Shift+scroll = 100 kHz steps
+    -- Ctrl+scroll = 100 Hz steps
+    -- Plain scroll = 1 kHz steps
     local wheel = getMouseWheel()
-    if wheel ~= 0 then
-        frequency = clamp(frequency + wheel * 0.001, 1.0, 30.0)
+    if wheel ~= 0 and not freqEntryMode then
+        local step
+        if isShiftDown() then
+            step = 0.1  -- 100 kHz
+        elseif isCtrlDown() then
+            step = 0.0001  -- 100 Hz
+        else
+            step = 0.001  -- 1 kHz default
+        end
+        frequency = clamp(frequency + wheel * step, 0.1, 30.0)
         if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
     end
 
-    -- Generate simulated spectrum and update waterfall
-    generateSpectrum()
+    -- ESC to quit (when not in frequency entry mode)
+    if isKeyPressed(SC_ESCAPE) and not freqEntryMode then
+        quit()
+    end
+
+    -- Get spectrum data from twin or generate simulated
+    local gotTwinData = false
+    if useTwinSpectrum and twin.isConnected() then
+        local twinSpectrum = twin.getSpectrum()
+        if #twinSpectrum > 0 then
+            -- Resample twin spectrum to our bin count if needed
+            if #twinSpectrum == waterfallBins then
+                spectrumData = twinSpectrum
+            else
+                -- Simple resampling
+                local ratio = #twinSpectrum / waterfallBins
+                for i = 1, waterfallBins do
+                    local srcIdx = math.floor((i - 1) * ratio) + 1
+                    spectrumData[i] = twinSpectrum[srcIdx] or -100
+                end
+            end
+            gotTwinData = true
+            twinFramesReceived = twin.getFramesReceived()
+        end
+        twinConnected = true
+    else
+        twinConnected = twin.isConnected()
+    end
+
+    -- Fall back to simulated spectrum if no twin data
+    if not gotTwinData then
+        generateSpectrum()
+    end
+
+    -- Update waterfall
     if waterfall.isInitialized() then
         waterfall.addRow(spectrumData)
+    end
+
+    -- Send VFO changes to twin (frequency is in MHz, convert to Hz)
+    local currentVfoHz = frequency * 1e6
+    if currentVfoHz ~= lastVfoFreq then
+        rx.setVfo(currentVfoHz)
+        lastVfoFreq = currentVfoHz
     end
 end
 
@@ -188,6 +308,20 @@ function draw()
 
         -- Branding
         drawText(x + 10, y + 8, "NexRx SDR Receiver", 0.6, 0.7, 0.9, 1.0)
+
+        -- Twin connection status
+        local twinStatus = twinConnected and "TWIN" or "SIM"
+        local twinColor = twinConnected and {0.2, 0.9, 0.4} or {0.6, 0.6, 0.6}
+        drawText(x + 200, y + 8, twinStatus, twinColor[1], twinColor[2], twinColor[3], 1.0)
+        if twinConnected then
+            local framesText = string.format(" (%d frames)", twinFramesReceived)
+            drawText(x + 200 + measureText(twinStatus) + 4, y + 8, framesText, 0.5, 0.5, 0.55, 1.0)
+
+            -- Audio stats for debugging
+            local audioWritten, audioRead = rx.getAudioStats()
+            local audioText = string.format("Audio: W=%d R=%d", audioWritten, audioRead)
+            drawText(x + 400, y + 8, audioText, 0.5, 0.7, 0.5, 1.0)
+        end
 
         -- Status
         local statusText = string.format("FPS: %.0f", fps)
@@ -278,6 +412,7 @@ function draw()
             local tags = selectedMode == mode and {"Active"} or {}
             if ui.button("mode_" .. mode, mode, mx, my, 50, 26, tags) then
                 selectedMode = mode
+                rx.setMode(mode)  -- Update demodulator mode
             end
         end
         layout.endHorizontal()
@@ -474,9 +609,18 @@ function draw()
 
         local px, py, pw, ph = layout.getRect()
 
-        -- Title bar with frequency info
-        local freqStr = string.format("%.6f MHz", frequency)
-        drawText(px, py, freqStr, 0.2, 0.9, 0.4, 1.0)
+        -- Title bar with frequency info (or entry field)
+        local freqStr
+        local freqColor = {0.2, 0.9, 0.4}
+        if freqEntryMode then
+            -- Show entry text with blinking cursor
+            local cursor = freqEntryBlink < 0.5 and "_" or ""
+            freqStr = freqEntryText .. cursor .. " MHz [Enter=OK, Esc=Cancel]"
+            freqColor = {1.0, 0.9, 0.2}  -- Yellow when editing
+        else
+            freqStr = string.format("%.6f MHz", frequency)
+        end
+        drawText(px, py, freqStr, freqColor[1], freqColor[2], freqColor[3], 1.0)
 
         -- Colormap selector (right side of title)
         local colormaps = {"viridis", "plasma", "inferno", "green", "blue"}

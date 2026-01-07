@@ -11,6 +11,7 @@
 // Twin integration
 #include "host/HostApp.hpp"
 #include "transport/IQFrame.hpp"
+#include "Demodulator.hpp"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -18,6 +19,8 @@
 #include <sol/sol.hpp>
 
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <string>
 #include <cstdlib>
 #include <cmath>
@@ -44,6 +47,14 @@ struct InputState {
     bool keyPressed[512] = {false};
     bool keyReleased[512] = {false};
 
+    // Modifiers
+    bool shiftDown = false;
+    bool ctrlDown = false;
+    bool altDown = false;
+
+    // Text input buffer for current frame
+    std::string textInput;
+
     void beginFrame() {
         for (int i = 0; i < 3; ++i) {
             mouseClicked[i] = false;
@@ -54,6 +65,7 @@ struct InputState {
             keyReleased[i] = false;
         }
         mouseWheel = 0;
+        textInput.clear();
     }
 };
 
@@ -138,6 +150,41 @@ public:
         if (!audio_.init(48000, 2)) {
             std::cerr << "Warning: Could not initialize audio" << std::endl;
         }
+
+        // Initialize audio ring buffer and set RX audio callback
+        audioRingBuffer_.resize(AUDIO_BUFFER_SIZE, 0.0f);
+        demod_.setSampleRate(96000.0f);  // Input sample rate
+        demod_.setMode(Demodulator::Mode::USB);
+        demod_.setBfoOffset(700.0f);
+
+        audio_.setCallback([this](float* output, uint32_t frameCount, uint32_t channels) {
+            // Audio gain - the RF signal is very small relative to ADC full scale
+            // A 1mV signal at 1.65V FS = 0.0006, so we need ~1000x gain
+            constexpr float audioGain = 2000.0f;
+
+            for (uint32_t i = 0; i < frameCount; ++i) {
+                float sample = 0.0f;
+
+                size_t readPos = audioReadPos_.load(std::memory_order_acquire);
+                size_t writePos = audioWritePos_.load(std::memory_order_acquire);
+
+                if (readPos != writePos) {
+                    sample = audioRingBuffer_[readPos] * audioGain;
+                    audioReadPos_.store((readPos + 1) % AUDIO_BUFFER_SIZE,
+                                       std::memory_order_release);
+                    audioSamplesRead_.fetch_add(1, std::memory_order_relaxed);
+                }
+
+                // Soft clip
+                sample = std::tanh(sample);
+
+                // Output to both channels (mono to stereo)
+                output[i * channels] = sample;
+                if (channels > 1) {
+                    output[i * channels + 1] = sample;
+                }
+            }
+        });
 
         // Initialize Lua
         if (!initLua()) {
@@ -368,6 +415,22 @@ private:
 
         lua_.set_function("getMouseWheel", [this]() {
             return input_.mouseWheel;
+        });
+
+        lua_.set_function("isShiftDown", [this]() {
+            return input_.shiftDown;
+        });
+
+        lua_.set_function("isCtrlDown", [this]() {
+            return input_.ctrlDown;
+        });
+
+        lua_.set_function("isAltDown", [this]() {
+            return input_.altDown;
+        });
+
+        lua_.set_function("getTextInput", [this]() {
+            return input_.textInput;
         });
 
         // Drawing primitives
@@ -618,6 +681,55 @@ private:
             return twinHost_.pollFrames(100);
         };
 
+        // Expose receiver controls to Lua
+        lua_["rx"] = lua_.create_table();
+
+        lua_["rx"]["setMode"] = [this](const std::string& mode) {
+            if (mode == "usb" || mode == "USB") {
+                demod_.setMode(Demodulator::Mode::USB);
+            } else if (mode == "lsb" || mode == "LSB") {
+                demod_.setMode(Demodulator::Mode::LSB);
+            } else if (mode == "am" || mode == "AM") {
+                demod_.setMode(Demodulator::Mode::AM);
+            } else if (mode == "cw" || mode == "CW") {
+                demod_.setMode(Demodulator::Mode::CW);
+            }
+        };
+
+        lua_["rx"]["getMode"] = [this]() {
+            switch (demod_.getMode()) {
+                case Demodulator::Mode::USB: return std::string("USB");
+                case Demodulator::Mode::LSB: return std::string("LSB");
+                case Demodulator::Mode::AM:  return std::string("AM");
+                case Demodulator::Mode::CW:  return std::string("CW");
+                default: return std::string("USB");
+            }
+        };
+
+        lua_["rx"]["setBfo"] = [this](float hz) {
+            demod_.setBfoOffset(hz);
+        };
+
+        lua_["rx"]["getBfo"] = [this]() {
+            return demod_.getBfoOffset();
+        };
+
+        lua_["rx"]["getAudioStats"] = [this]() {
+            // Return audio buffer stats for debugging
+            return std::make_tuple(
+                static_cast<double>(audioSamplesWritten_.load()),
+                static_cast<double>(audioSamplesRead_.load())
+            );
+        };
+
+        lua_["rx"]["setVfo"] = [this](double freq_hz) {
+            // Write VFO frequency to control file for twin to read
+            std::ofstream ctl("/tmp/nexrx_control");
+            if (ctl) {
+                ctl << "LO " << std::fixed << std::setprecision(0) << freq_hz << "\n";
+            }
+        };
+
         // Load SetBox base config
         if (!setbox_.loadFile("config/base/defaults.lua")) {
             std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
@@ -697,10 +809,14 @@ private:
                             input_.keyPressed[event.key.keysym.scancode] = true;
                         }
                     }
-                    // ESC to quit
-                    if (event.key.keysym.sym == SDLK_ESCAPE) {
-                        running_ = false;
-                    }
+                    // Update modifiers
+                    input_.shiftDown = (event.key.keysym.mod & KMOD_SHIFT) != 0;
+                    input_.ctrlDown = (event.key.keysym.mod & KMOD_CTRL) != 0;
+                    input_.altDown = (event.key.keysym.mod & KMOD_ALT) != 0;
+                    // ESC to quit (only if not in text entry - let Lua handle it)
+                    // if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    //     running_ = false;
+                    // }
                     break;
 
                 case SDL_KEYUP:
@@ -708,6 +824,14 @@ private:
                         input_.keyDown[event.key.keysym.scancode] = false;
                         input_.keyReleased[event.key.keysym.scancode] = true;
                     }
+                    // Update modifiers
+                    input_.shiftDown = (event.key.keysym.mod & KMOD_SHIFT) != 0;
+                    input_.ctrlDown = (event.key.keysym.mod & KMOD_CTRL) != 0;
+                    input_.altDown = (event.key.keysym.mod & KMOD_ALT) != 0;
+                    break;
+
+                case SDL_TEXTINPUT:
+                    input_.textInput += event.text.text;
                     break;
             }
         }
@@ -760,6 +884,16 @@ private:
     static constexpr size_t FFT_SIZE = 1024;
     bool twinConnected_ = false;
 
+    // Demodulator and audio output
+    Demodulator demod_;
+    std::vector<float> audioRingBuffer_;
+    std::atomic<size_t> audioWritePos_{0};
+    std::atomic<size_t> audioReadPos_{0};
+    static constexpr size_t AUDIO_BUFFER_SIZE = 8192;
+    bool audioDecimateSkip_ = false;  // For 96kHz→48kHz decimation
+    std::atomic<uint64_t> audioSamplesWritten_{0};
+    std::atomic<uint64_t> audioSamplesRead_{0};
+
     int windowWidth_ = 0;
     int windowHeight_ = 0;
     bool running_ = false;
@@ -773,15 +907,36 @@ private:
         float i_f, q_f;
         frame.qsd[0].toFloat(i_f, q_f);
 
-        // Add to ring buffer
-        std::lock_guard<std::mutex> lock(spectrumMutex_);
-        if (iqBuffer_.size() < FFT_SIZE * 2) {
-            iqBuffer_.resize(FFT_SIZE * 2, 0.0f);
+        // Add to spectrum ring buffer (with lock)
+        {
+            std::lock_guard<std::mutex> lock(spectrumMutex_);
+            if (iqBuffer_.size() < FFT_SIZE * 2) {
+                iqBuffer_.resize(FFT_SIZE * 2, 0.0f);
+            }
+
+            iqBuffer_[iqBufferWritePos_ * 2] = i_f;
+            iqBuffer_[iqBufferWritePos_ * 2 + 1] = q_f;
+            iqBufferWritePos_ = (iqBufferWritePos_ + 1) % FFT_SIZE;
         }
 
-        iqBuffer_[iqBufferWritePos_ * 2] = i_f;
-        iqBuffer_[iqBufferWritePos_ * 2 + 1] = q_f;
-        iqBufferWritePos_ = (iqBufferWritePos_ + 1) % FFT_SIZE;
+        // Demodulate and write to audio buffer (lock-free)
+        // Decimate from 96kHz to 48kHz (every other sample)
+        if (!audioDecimateSkip_) {
+            float audio = demod_.process(i_f, q_f);
+
+            // Write to audio ring buffer
+            size_t writePos = audioWritePos_.load(std::memory_order_relaxed);
+            size_t nextPos = (writePos + 1) % AUDIO_BUFFER_SIZE;
+            size_t readPos = audioReadPos_.load(std::memory_order_acquire);
+
+            // Only write if buffer not full
+            if (nextPos != readPos) {
+                audioRingBuffer_[writePos] = audio;
+                audioWritePos_.store(nextPos, std::memory_order_release);
+                audioSamplesWritten_.fetch_add(1, std::memory_order_relaxed);
+            }
+        }
+        audioDecimateSkip_ = !audioDecimateSkip_;
     }
 
     // Simple DFT for spectrum (replace with FFT library for performance)
