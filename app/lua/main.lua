@@ -534,10 +534,10 @@ function draw()
         layout.pad(12)
 
         -- RX Toggle
-        local rx, ry = layout.getCursor()
+        local toggleX, toggleY = layout.getCursor()
         local rxLabel = rxActive and "RX ON" or "RX OFF"
         local rxTags = rxActive and {"Primary"} or {"Danger"}
-        rxActive = ui.toggle("rx_toggle", rxLabel, rx, ry, w - 24, 40, rxActive, rxTags)
+        rxActive = ui.toggle("rx_toggle", rxLabel, toggleX, toggleY, w - 24, 40, rxActive, rxTags)
         layout.newLine(52)
 
         local sepX, sepY = layout.getCursor()
@@ -553,17 +553,26 @@ function draw()
         local mw = w - 24
         drawRoundedRect(mx, my, mw, 28, 4, 0.12, 0.12, 0.15, 1.0)
 
-        -- Animated S-level
-        local sLevel = math.abs(math.sin(frameCount * 0.02)) * 0.7 + 0.2
-        local barCount = 10
+        -- Get real signal level from rx
+        local rms, dBm, sUnits, dBoverS9 = rx.getSignalLevel()
+
+        -- Map S-units to bar display (0-9 = bars 0-8, 9+ = bars 9+)
+        -- Bar 0-8 = S1-S9, bar 9 = S9+10, etc
+        local barCount = 12  -- S1-S9 + S9+10, +20, +30
         local barW = (mw - 8) / barCount - 2
         for i = 0, barCount - 1 do
             local barX = mx + 4 + i * (barW + 2)
-            local intensity = (i + 1) / barCount
-            if intensity <= sLevel then
-                local r, g, b = 0.2, 0.8, 0.3
-                if i >= 7 then r, g, b = 0.9, 0.3, 0.2 end
-                if i >= 5 and i < 7 then r, g, b = 0.9, 0.7, 0.2 end
+            local barThreshold
+            if i < 9 then
+                barThreshold = i + 1  -- S1 through S9
+            else
+                barThreshold = 9 + (i - 8) * (10/6)  -- S9+10, +20, +30
+            end
+
+            if sUnits >= barThreshold then
+                local r, g, b = 0.2, 0.8, 0.3  -- Green for S1-S5
+                if i >= 9 then r, g, b = 0.9, 0.3, 0.2 end  -- Red for S9+
+                if i >= 6 and i < 9 then r, g, b = 0.9, 0.7, 0.2 end  -- Yellow for S6-S9
                 drawRect(barX, my + 4, barW, 20, r, g, b, 1.0)
             else
                 drawRect(barX, my + 4, barW, 20, 0.2, 0.2, 0.25, 1.0)
@@ -571,10 +580,17 @@ function draw()
         end
         layout.newLine(40)
 
-        local sNum = math.floor(sLevel * 9) + 1
-        local sText = sNum <= 9 and ("S" .. sNum) or ("S9+" .. ((sNum - 9) * 10))
+        -- Display S-meter reading
+        local sText
+        if sUnits < 9 then
+            sText = string.format("S%.0f", math.max(1, math.floor(sUnits + 0.5)))
+        else
+            sText = string.format("S9+%.0f", math.max(0, dBoverS9))
+        end
+        local dBmText = string.format("%.0f dBm", dBm)
         local sx, sy = layout.center(measureText(sText), 16)
-        drawText(sx, layout.getCursor() - 8, sText, 0.9, 0.9, 0.95, 1.0)
+        drawText(sx - 20, layout.getCursor() - 8, sText, 0.9, 0.9, 0.95, 1.0)
+        drawText(sx + 30, layout.getCursor() - 8, dBmText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(16)
 
         sepX, sepY = layout.getCursor()

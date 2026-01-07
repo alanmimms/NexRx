@@ -756,6 +756,29 @@ private:
             }
         };
 
+        lua_["rx"]["getSignalLevel"] = [this]() {
+            // Return signal level: RMS voltage, dBm, S-units
+            float rms = signalLevelRms_.load(std::memory_order_relaxed);
+
+            // Convert to dBm (assuming 50 ohm reference)
+            // P = V^2 / R, dBm = 10*log10(P / 1mW)
+            // dBm = 10*log10(V^2 / 50 / 0.001) = 20*log10(V) + 10*log10(1/0.05) = 20*log10(V) + 13
+            float dBm = -120.0f;  // Floor
+            if (rms > 1e-9f) {
+                dBm = 20.0f * std::log10(rms) + 13.0f;
+            }
+
+            // S-meter: S9 = -73 dBm, each S-unit = 6 dB
+            // S = (dBm + 73) / 6 + 9, clamped to 0-9+
+            float sUnits = (dBm + 73.0f) / 6.0f + 9.0f;
+            sUnits = std::max(0.0f, sUnits);
+
+            // Also return dB over S9 for readings above S9
+            float dBoverS9 = dBm + 73.0f;
+
+            return std::make_tuple(rms, dBm, sUnits, dBoverS9);
+        };
+
         // Load SetBox base config
         if (!setbox_.loadFile("config/base/defaults.lua")) {
             std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
@@ -920,6 +943,12 @@ private:
     std::atomic<uint64_t> audioSamplesWritten_{0};
     std::atomic<uint64_t> audioSamplesRead_{0};
 
+    // Signal level metering (S-meter)
+    std::atomic<float> signalLevelRms_{0.0f};    // RMS voltage level
+    float signalAccumulator_ = 0.0f;             // Sum of squared magnitudes
+    size_t signalSampleCount_ = 0;
+    static constexpr size_t SIGNAL_AVG_SAMPLES = 4800;  // ~50ms at 96kHz
+
     int windowWidth_ = 0;
     int windowHeight_ = 0;
     bool running_ = false;
@@ -933,6 +962,17 @@ private:
         float i_f, q_f;
         frame.qsd[0].toFloat(i_f, q_f);
 
+        // Signal level metering (RMS of I/Q magnitude)
+        float mag_sq = i_f * i_f + q_f * q_f;
+        signalAccumulator_ += mag_sq;
+        signalSampleCount_++;
+        if (signalSampleCount_ >= SIGNAL_AVG_SAMPLES) {
+            float rms = std::sqrt(signalAccumulator_ / signalSampleCount_);
+            signalLevelRms_.store(rms, std::memory_order_relaxed);
+            signalAccumulator_ = 0.0f;
+            signalSampleCount_ = 0;
+        }
+
         // Add to spectrum ring buffer (with lock)
         {
             std::lock_guard<std::mutex> lock(spectrumMutex_);
@@ -945,11 +985,11 @@ private:
             iqBufferWritePos_ = (iqBufferWritePos_ + 1) % FFT_SIZE;
         }
 
-        // Demodulate and write to audio buffer (lock-free)
-        // Decimate from 96kHz to 48kHz (every other sample)
-        if (!audioDecimateSkip_) {
-            float audio = demod_.process(i_f, q_f);
+        // Demodulate EVERY sample (filter needs continuous input for proper state)
+        float audio = demod_.process(i_f, q_f);
 
+        // Write to audio buffer, decimating from 96kHz to 48kHz (every other sample)
+        if (!audioDecimateSkip_) {
             // Write to audio ring buffer
             size_t writePos = audioWritePos_.load(std::memory_order_relaxed);
             size_t nextPos = (writePos + 1) % AUDIO_BUFFER_SIZE;

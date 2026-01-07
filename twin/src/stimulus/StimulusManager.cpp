@@ -5,6 +5,7 @@
 #include "StimulusManager.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 namespace nexrx {
 
@@ -81,9 +82,22 @@ void StimulusManager::getBasebandIQ(double time_s, double lo_freq_hz,
                                      double& out_i, double& out_q) const {
     std::lock_guard<std::mutex> lock(mutex_);
 
+    // Nyquist limit for 96kHz sample rate - filter signals outside this band
+    constexpr double SAMPLE_RATE = 96000.0;
+    constexpr double NYQUIST = SAMPLE_RATE / 2.0;  // 48kHz
+
     out_i = out_q = 0.0;
     for (const auto& [name, entry] : stimuli_) {
         if (entry.enabled && entry.stimulus) {
+            // Check if signal is within receiver passband (±48kHz from LO)
+            double carrier = entry.stimulus->carrierFrequency();
+            if (carrier > 0) {  // 0 means wideband (like noise)
+                double baseband_freq = carrier - lo_freq_hz;
+                if (std::abs(baseband_freq) > NYQUIST) {
+                    continue;  // Signal outside passband, filter it out
+                }
+            }
+
             double i, q;
             entry.stimulus->getBasebandIQ(time_s, lo_freq_hz, i, q);
             out_i += i;
