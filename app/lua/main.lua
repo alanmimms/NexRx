@@ -22,7 +22,7 @@ local fpsFrames = 0
 -- Application state
 local rxActive = false
 local frequency = 14.200  -- MHz
-local volume = 0.8
+local volume = 0.00562  -- -45dB
 local squelch = 0.3
 local agcEnabled = true
 local nrEnabled = false

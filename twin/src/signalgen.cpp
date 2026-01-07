@@ -13,6 +13,7 @@
 #include "transport/IQFrame.hpp"
 #include "transport/SharedMemTransport.hpp"
 #include "stimulus/ToneGenerator.hpp"
+#include "stimulus/StimulusLua.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -40,6 +41,7 @@ struct Options {
     double lo_freq_mhz = 14.200;  // LO frequency (matches app default VFO)
     double rf_amplitude_mv = 1.0; // RF amplitude in mV
     std::string netlist = "netlists/pipeline_test.cir";
+    std::string stimulus = "";    // Stimulus script (empty = use simple tone)
 };
 
 void printUsage(const char* prog) {
@@ -51,23 +53,24 @@ void printUsage(const char* prog) {
               << "\n"
               << "Options:\n"
               << "  --stream        Stream I/Q to shared memory for app display\n"
+              << "  --stimulus FILE Lua stimulus script (default: config/stimuli/default.lua)\n"
               << "  --duration MS   Simulation duration in milliseconds (0 = forever, default)\n"
               << "  --netlist FILE  Xyce netlist path (physics mode only)\n"
-              << "  --rf FREQ       RF frequency in MHz (default: 14.010)\n"
-              << "  --lo FREQ       LO frequency in MHz (default: 14.000)\n"
-              << "  --amplitude MV  RF amplitude in mV (default: 1.0)\n"
+              << "  --rf FREQ       RF frequency in MHz (for simple tone, no stimulus script)\n"
+              << "  --lo FREQ       LO frequency in MHz (default: 14.200)\n"
+              << "  --amplitude MV  RF amplitude in mV (for simple tone, default: 1.0)\n"
               << "  --quiet         Suppress progress output\n"
               << "  --help          Show this help\n"
               << "\n"
               << "Examples:\n"
-              << "  " << prog << " --functional --stream --duration 10000\n"
-              << "      Run 10s functional simulation, streaming to app\n"
+              << "  " << prog << " --functional --stream\n"
+              << "      Stream with default stimuli (CW beacons, SSB signals, etc.)\n"
               << "\n"
-              << "  " << prog << " --functional --duration 100\n"
-              << "      Run 100ms functional simulation (fast)\n"
+              << "  " << prog << " --functional --stream --rf 14.025 --lo 14.024\n"
+              << "      Stream simple 1kHz tone (no stimulus script)\n"
               << "\n"
-              << "  " << prog << " --duration 0.1 --netlist netlists/qsd.cir\n"
-              << "      Run 0.1ms Xyce simulation with custom netlist\n"
+              << "  " << prog << " --functional --stimulus config/stimuli/contest.lua\n"
+              << "      Use custom stimulus configuration\n"
               << std::endl;
 }
 
@@ -93,6 +96,8 @@ Options parseArgs(int argc, char* argv[]) {
             opts.lo_freq_mhz = std::atof(argv[++i]);
         } else if (strcmp(argv[i], "--amplitude") == 0 && i + 1 < argc) {
             opts.rf_amplitude_mv = std::atof(argv[++i]);
+        } else if (strcmp(argv[i], "--stimulus") == 0 && i + 1 < argc) {
+            opts.stimulus = argv[++i];
         } else {
             std::cerr << "Unknown option: " << argv[i] << "\n";
             opts.help = true;
@@ -191,11 +196,60 @@ bool readControlFile(double& lo_freq_hz) {
 int runFunctionalMode(const Options& opts) {
     const bool runForever = (opts.duration_ms <= 0);
 
-    std::cout << "=== NexRx Pipeline Test - FUNCTIONAL MODE ===" << std::endl;
+    std::cout << "=== NexRx Signal Generator - FUNCTIONAL MODE ===" << std::endl;
     std::cout << std::fixed << std::setprecision(6);
-    std::cout << "RF: " << opts.rf_freq_mhz << " MHz, " << opts.rf_amplitude_mv << " mV" << std::endl;
+
+    // Determine stimulus source
+    std::string stimulusPath = opts.stimulus;
+    bool useStimulus = true;
+
+    // Default to config/stimuli/default.lua if not specified and --rf not given
+    if (stimulusPath.empty()) {
+        // Check if --rf was explicitly set (different from default)
+        if (opts.rf_freq_mhz != 14.201) {
+            useStimulus = false;  // Use simple tone mode
+        } else {
+            stimulusPath = "config/stimuli/default.lua";
+        }
+    }
+
+    // Set up stimulus system
+    std::shared_ptr<StimulusManager> stimulusManager;
+    std::unique_ptr<sol::state> lua;
+
+    if (useStimulus) {
+        // Check if stimulus file exists
+        std::ifstream check(stimulusPath);
+        if (!check.good()) {
+            std::cerr << "Warning: Stimulus file not found: " << stimulusPath << std::endl;
+            std::cerr << "Falling back to simple tone mode" << std::endl;
+            useStimulus = false;
+        } else {
+            check.close();
+
+            lua = std::make_unique<sol::state>();
+            lua->open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
+
+            StimulusLua stimLua;
+            stimLua.registerBindings(*lua);
+
+            std::cout << "Loading stimulus: " << stimulusPath << std::endl;
+            if (!stimLua.loadScript(*lua, stimulusPath)) {
+                std::cerr << "Failed to load stimulus script" << std::endl;
+                return 1;
+            }
+
+            stimulusManager = stimLua.manager();
+            std::cout << "Loaded " << stimulusManager->count() << " stimuli" << std::endl;
+        }
+    }
+
+    if (!useStimulus) {
+        std::cout << "RF: " << opts.rf_freq_mhz << " MHz, " << opts.rf_amplitude_mv << " mV" << std::endl;
+        std::cout << "Baseband: " << std::abs(opts.rf_freq_mhz - opts.lo_freq_mhz) * 1000 << " kHz" << std::endl;
+    }
+
     std::cout << "LO: " << opts.lo_freq_mhz << " MHz (tunable via /tmp/nexrx_control)" << std::endl;
-    std::cout << "Baseband: " << std::abs(opts.rf_freq_mhz - opts.lo_freq_mhz) * 1000 << " kHz" << std::endl;
     if (runForever) {
         std::cout << "Duration: forever (Ctrl+C to stop)" << std::endl;
     } else {
@@ -247,8 +301,13 @@ int runFunctionalMode(const Options& opts) {
     for (size_t i = 0; i < numSamples; ++i) {
         double t = i * samplePeriod;
 
-        // RF signal (could be extended to use ToneGenerator for complex signals)
-        double rf = rf_amp * std::sin(2.0 * M_PI * rf_freq * t);
+        // Get RF signal from stimulus manager or simple tone
+        double rf;
+        if (stimulusManager) {
+            rf = stimulusManager->getSample(t);
+        } else {
+            rf = rf_amp * std::sin(2.0 * M_PI * rf_freq * t);
+        }
 
         // Add some noise for realism
         double noise = (rand() / (double)RAND_MAX - 0.5) * 1e-6;  // 1uV noise
