@@ -23,8 +23,8 @@ jobs:
 
       - name: Setup vcpkg
         run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          ./vcpkg/bootstrap-vcpkg.sh
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
       - name: Install dependencies via vcpkg
         run: |
@@ -34,7 +34,7 @@ jobs:
         run: |
           cmake -B build-macos \
             -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
-            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/vcpkg/installed/arm64-osx" \
             -DVCPKG_TARGET_TRIPLET=arm64-osx \
             app
 
