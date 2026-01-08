@@ -34,7 +34,7 @@ jobs:
         run: |
           cmake -B build-macos \
             -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
-            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/vcpkg/installed/arm64-osx" \
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
             -DVCPKG_TARGET_TRIPLET=arm64-osx \
             app
 
