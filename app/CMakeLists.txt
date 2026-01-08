@@ -82,12 +82,10 @@ else()
 endif()
 
 # sol2 is header-only, we'll fetch it
-# Fix sol2 optional implementation issue with newer Apple Clang
-# Force use of std::optional instead of sol2's tl::optional implementation
+# LuaJIT is compiled as C, not C++
 add_compile_definitions(
     SOL_ALL_SAFETIES_OFF=1
-    SOL_USE_CXX_LUA=1
-    SOL_USING_CXX_LUA=1
+    SOL_USING_CXX_LUA=0
 )
 
 include(FetchContent)
