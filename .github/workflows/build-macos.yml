@@ -1,0 +1,90 @@
+name: Build macOS App
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
+          - RelWithDebInfo
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgGitCommitId: 'c4af3593e1f3ce229164ae5bfc9c7cb52a07fb81'
+
+      - name: Install dependencies via vcpkg
+        run: |
+          ./vcpkg/vcpkg install --triplet=arm64-osx sdl2 luajit nlohmann-json
+
+      - name: Configure CMake
+        run: |
+          cmake -B build-macos \
+            -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DVCPKG_TARGET_TRIPLET=arm64-osx \
+            app
+
+      - name: Build
+        run: cmake --build build-macos --config ${{ inputs.build_type }} --parallel
+
+      - name: Package
+        run: |
+          mkdir -p dist/NexRx.app/Contents/MacOS
+          mkdir -p dist/NexRx.app/Contents/Resources
+
+          # Copy executable
+          cp build-macos/nexrx_app dist/NexRx.app/Contents/MacOS/NexRx
+
+          # Copy config and lua files to Resources
+          cp -r app/config dist/NexRx.app/Contents/Resources/
+          cp -r app/lua dist/NexRx.app/Contents/Resources/
+
+          # Create Info.plist
+          cat > dist/NexRx.app/Contents/Info.plist << 'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>NexRx</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.nexrx.app</string>
+              <key>CFBundleName</key>
+              <string>NexRx</string>
+              <key>CFBundleVersion</key>
+              <string>0.1.0</string>
+              <key>CFBundleShortVersionString</key>
+              <string>0.1.0</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+          </dict>
+          </plist>
+          PLIST
+
+          # Create zip archive
+          cd dist
+          zip -r ../NexRx-macos-${{ inputs.build_type }}.zip NexRx.app
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexRx-macos-${{ inputs.build_type }}
+          path: NexRx-macos-${{ inputs.build_type }}.zip
+          retention-days: 30

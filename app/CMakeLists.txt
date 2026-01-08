@@ -33,19 +33,24 @@ endif()
 # Dependencies
 # -----------------------------------------------------------------------------
 
-if(NEXRX_WINDOWS)
-    # Windows: use find_package (vcpkg provides these)
+# Check if using vcpkg (set automatically by vcpkg toolchain)
+if(DEFINED VCPKG_TARGET_TRIPLET OR NEXRX_WINDOWS)
+    # vcpkg mode: use find_package (works on Windows, macOS, Linux)
     find_package(SDL2 CONFIG REQUIRED)
     find_package(unofficial-luajit CONFIG REQUIRED)
     find_package(OpenGL REQUIRED)
 
     # Set variables for compatibility
     set(SDL2_INCLUDE_DIRS "")  # SDL2::SDL2 handles includes
-    set(SDL2_LIBRARIES SDL2::SDL2 SDL2::SDL2main)
+    if(WIN32)
+        set(SDL2_LIBRARIES SDL2::SDL2 SDL2::SDL2main)
+    else()
+        set(SDL2_LIBRARIES SDL2::SDL2)
+    endif()
     set(LUAJIT_INCLUDE_DIRS "")
     set(LUAJIT_LIBRARIES unofficial::luajit::luajit)
 else()
-    # Linux/POSIX: use pkg-config
+    # Native build: use pkg-config (Linux, macOS without vcpkg)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LUAJIT REQUIRED luajit)
     pkg_check_modules(SDL2 REQUIRED sdl2)
