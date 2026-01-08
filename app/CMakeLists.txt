@@ -82,6 +82,10 @@ else()
 endif()
 
 # sol2 is header-only, we'll fetch it
+# Fix sol2 optional implementation issue with newer Apple Clang
+# Must be defined BEFORE including sol2 headers
+add_compile_definitions(SOL_ALL_SAFETIES_OFF=1)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -119,11 +123,6 @@ target_include_directories(setbox PUBLIC
 target_link_libraries(setbox PUBLIC
     ${LUAJIT_LIBRARIES}
     sol2::sol2
-)
-
-# Fix sol2 optional implementation issue with newer Apple Clang
-target_compile_definitions(setbox PUBLIC
-    SOL_ALL_SAFETIES_OFF=1
 )
 
 if(MSVC)
