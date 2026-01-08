@@ -29,6 +29,10 @@ jobs:
       - name: Install dependencies via vcpkg
         run: |
           ./vcpkg/vcpkg install --triplet=x64-windows sdl2 luajit nlohmann-json
+          echo "=== Installed packages ==="
+          ./vcpkg/vcpkg list
+          echo "=== Checking for luajit files ==="
+          Get-ChildItem -Recurse vcpkg/installed -Filter "*luajit*" | Select-Object FullName
 
       - name: Configure CMake
         run: |
