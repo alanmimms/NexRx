@@ -16,3 +16,4 @@ doc/NexRig/.obsidian/
 hw/*.pdf
 sim-stuff/txsim/
 app/build/
+build/
