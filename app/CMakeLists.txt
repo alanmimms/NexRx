@@ -21,19 +21,36 @@ endif()
 # Export compile commands for IDE integration
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Detect Windows cross-compile
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(NEXRX_WINDOWS TRUE)
+    message(STATUS "Cross-compiling for Windows")
+else()
+    set(NEXRX_WINDOWS FALSE)
+endif()
+
 # -----------------------------------------------------------------------------
 # Dependencies
 # -----------------------------------------------------------------------------
 
-# LuaJIT - high performance Lua implementation
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LUAJIT REQUIRED luajit)
+if(NEXRX_WINDOWS)
+    # Windows: use find_package (vcpkg provides these)
+    find_package(SDL2 CONFIG REQUIRED)
+    find_package(unofficial-luajit CONFIG REQUIRED)
+    find_package(OpenGL REQUIRED)
 
-# SDL2 - windowing and input
-pkg_check_modules(SDL2 REQUIRED sdl2)
-
-# OpenGL
-find_package(OpenGL REQUIRED)
+    # Set variables for compatibility
+    set(SDL2_INCLUDE_DIRS "")  # SDL2::SDL2 handles includes
+    set(SDL2_LIBRARIES SDL2::SDL2 SDL2::SDL2main)
+    set(LUAJIT_INCLUDE_DIRS "")
+    set(LUAJIT_LIBRARIES unofficial::luajit::luajit)
+else()
+    # Linux/POSIX: use pkg-config
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LUAJIT REQUIRED luajit)
+    pkg_check_modules(SDL2 REQUIRED sdl2)
+    find_package(OpenGL REQUIRED)
+endif()
 
 # sol2 is header-only, we'll fetch it
 include(FetchContent)
@@ -53,8 +70,10 @@ find_package(Threads REQUIRED)
 # -----------------------------------------------------------------------------
 set(TWIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../twin")
 
-# Only build the libraries we need from twin (not the full simulator)
-add_subdirectory(${TWIN_DIR} ${CMAKE_BINARY_DIR}/twin EXCLUDE_FROM_ALL)
+if(NOT NEXRX_WINDOWS)
+    # Linux: build twin libraries directly (shares code with twin server)
+    add_subdirectory(${TWIN_DIR} ${CMAKE_BINARY_DIR}/twin EXCLUDE_FROM_ALL)
+endif()
 
 # -----------------------------------------------------------------------------
 # SetBox library - tag-based configuration engine
@@ -73,12 +92,16 @@ target_link_libraries(setbox PUBLIC
     sol2::sol2
 )
 
-target_compile_options(setbox PRIVATE
-    -Wall -Wextra -Wpedantic
-    $<$<CONFIG:Debug>:-g -O0>
-    $<$<CONFIG:Release>:-O3>
-    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
-)
+if(MSVC)
+    target_compile_options(setbox PRIVATE /W4)
+else()
+    target_compile_options(setbox PRIVATE
+        -Wall -Wextra -Wpedantic
+        $<$<CONFIG:Debug>:-g -O0>
+        $<$<CONFIG:Release>:-O3>
+        $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+    )
+endif()
 
 # -----------------------------------------------------------------------------
 # Test executable for SetBox engine
@@ -90,19 +113,35 @@ target_link_libraries(setbox_test PRIVATE
     Threads::Threads
 )
 
-target_compile_options(setbox_test PRIVATE
-    -Wall -Wextra -Wpedantic
-)
+if(MSVC)
+    target_compile_options(setbox_test PRIVATE /W4)
+else()
+    target_compile_options(setbox_test PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 # -----------------------------------------------------------------------------
 # Main application executable
 # -----------------------------------------------------------------------------
-add_executable(nexrx_app
+
+# Core sources (all platforms)
+set(NEXRX_APP_SOURCES
     src/main.cpp
     src/FontRenderer.cpp
     src/AudioEngine.cpp
     src/WaterfallRenderer.cpp
 )
+
+if(NEXRX_WINDOWS)
+    # Windows: use cross-platform socket abstraction and client transports
+    list(APPEND NEXRX_APP_SOURCES
+        src/net/Socket.cpp
+        src/twin/TcpControlClient.cpp
+        src/twin/UdpStreamClient.cpp
+        src/twin/HostApp.cpp
+    )
+endif()
+
+add_executable(nexrx_app ${NEXRX_APP_SOURCES})
 
 target_include_directories(nexrx_app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -123,22 +162,40 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(AUDIO_LIBS winmm)
 endif()
 
-target_link_libraries(nexrx_app PRIVATE
-    setbox
-    twin_transport
-    twin_host
-    ${SDL2_LIBRARIES}
-    OpenGL::GL
-    Threads::Threads
-    ${AUDIO_LIBS}
-)
+# Platform-specific link libraries
+if(NEXRX_WINDOWS)
+    target_link_libraries(nexrx_app PRIVATE
+        setbox
+        ${SDL2_LIBRARIES}
+        OpenGL::GL
+        Threads::Threads
+        ${AUDIO_LIBS}
+        ws2_32       # Winsock2
+    )
+    target_compile_definitions(nexrx_app PRIVATE NEXRX_WINDOWS)
+else()
+    target_link_libraries(nexrx_app PRIVATE
+        setbox
+        twin_transport
+        twin_host
+        ${SDL2_LIBRARIES}
+        OpenGL::GL
+        Threads::Threads
+        ${AUDIO_LIBS}
+    )
+endif()
 
-target_compile_options(nexrx_app PRIVATE
-    -Wall -Wextra -Wpedantic
-    $<$<CONFIG:Debug>:-g -O0>
-    $<$<CONFIG:Release>:-O3>
-    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
-)
+# Compiler-specific warning flags
+if(MSVC)
+    target_compile_options(nexrx_app PRIVATE /W4)
+else()
+    target_compile_options(nexrx_app PRIVATE
+        -Wall -Wextra -Wpedantic
+        $<$<CONFIG:Debug>:-g -O0>
+        $<$<CONFIG:Release>:-O3>
+        $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+    )
+endif()
 
 # -----------------------------------------------------------------------------
 # Copy config and lua files to build directory
@@ -163,8 +220,12 @@ endif()
 message(STATUS "")
 message(STATUS "NexRx App Configuration:")
 message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Target system: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "  C++ compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "  LuaJIT: ${LUAJIT_LIBRARIES}")
 message(STATUS "  SDL2: ${SDL2_LIBRARIES}")
 message(STATUS "  OpenGL: ${OPENGL_LIBRARIES}")
+if(NEXRX_WINDOWS)
+    message(STATUS "  Windows build: ON (cross-platform transport)")
+endif()
 message(STATUS "")

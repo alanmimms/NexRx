@@ -9,7 +9,12 @@
 #include "WaterfallRenderer.hpp"
 
 // Twin integration
-#include "host/HostApp.hpp"
+#ifdef NEXRX_WINDOWS
+    #include "net/Socket.hpp"
+    #include "twin/HostApp.hpp"
+#else
+    #include "host/HostApp.hpp"
+#endif
 #include "transport/IQFrame.hpp"
 #include "Demodulator.hpp"
 
@@ -126,11 +131,17 @@ public:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Initialize font renderer
-        // Try common font paths
+        // Try common font paths (platform-specific)
         const char* fontPaths[] = {
+#ifdef _WIN32
+            "C:/Windows/Fonts/segoeui.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/tahoma.ttf",
+#else
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
             "/usr/share/fonts/TTF/DejaVuSans.ttf",
+#endif
             "fonts/DejaVuSans.ttf",
             nullptr
         };
@@ -1070,6 +1081,15 @@ int main(int argc, char* argv[]) {
     (void)argv;
 
     std::cout << "NexRx Application Starting..." << std::endl;
+
+#ifdef NEXRX_WINDOWS
+    // Initialize Winsock on Windows
+    nexrx::net::WinsockInit winsock;
+    if (!winsock.ok()) {
+        std::cerr << "Failed to initialize Winsock" << std::endl;
+        return 1;
+    }
+#endif
 
     App app;
     gApp = &app;

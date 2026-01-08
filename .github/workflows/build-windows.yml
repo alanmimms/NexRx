@@ -1,0 +1,70 @@
+name: Build Windows App
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
+          - RelWithDebInfo
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgGitCommitId: 'c4af3593e1f3ce229164ae5bfc9c7cb52a07fb81'
+
+      - name: Install dependencies via vcpkg
+        run: |
+          ./vcpkg/vcpkg install --triplet=x64-windows sdl2 luajit nlohmann-json
+
+      - name: Configure CMake
+        run: |
+          cmake -B build-windows -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} `
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows `
+            app
+
+      - name: Build
+        run: cmake --build build-windows --config ${{ inputs.build_type }} --parallel
+
+      - name: Package
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/NexRx
+
+          # Copy executable
+          Copy-Item build-windows/${{ inputs.build_type }}/nexrx_app.exe dist/NexRx/NexRx.exe -ErrorAction SilentlyContinue
+          if (-not (Test-Path dist/NexRx/NexRx.exe)) {
+            Get-ChildItem -Recurse build-windows -Filter "*.exe" | Select-Object -First 1 | Copy-Item -Destination dist/NexRx/NexRx.exe
+          }
+
+          # Copy config and lua files
+          Copy-Item -Recurse app/config dist/NexRx/
+          Copy-Item -Recurse app/lua dist/NexRx/
+
+          # Copy DLLs from vcpkg
+          Get-ChildItem -Recurse vcpkg/installed/x64-windows/bin -Filter "*.dll" | Copy-Item -Destination dist/NexRx/ -ErrorAction SilentlyContinue
+
+          # Create zip archive
+          Compress-Archive -Path dist/NexRx -DestinationPath NexRx-windows-${{ inputs.build_type }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexRx-windows-${{ inputs.build_type }}
+          path: NexRx-windows-${{ inputs.build_type }}.zip
+          retention-days: 30
