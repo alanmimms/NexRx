@@ -121,6 +121,11 @@ target_link_libraries(setbox PUBLIC
     sol2::sol2
 )
 
+# Fix sol2 optional implementation issue with newer Apple Clang
+target_compile_definitions(setbox PUBLIC
+    SOL_ALL_SAFETIES_OFF=1
+)
+
 if(MSVC)
     target_compile_options(setbox PRIVATE /W4)
 else()
