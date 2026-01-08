@@ -178,6 +178,34 @@ void UdpStreamClient::clear() {
                    std::memory_order_release);
 }
 
+bool UdpStreamClient::sendHolePunch() {
+    if (socket_ == SOCKET_INVALID || config_.serverHost.empty()) {
+        return false;
+    }
+
+    // Set up server address
+    sockaddr_in serverAddr;
+    std::memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(config_.serverPort);
+
+    if (inet_pton(AF_INET, config_.serverHost.c_str(), &serverAddr.sin_addr) != 1) {
+        return false;
+    }
+
+    // Send a small "hello" packet to punch through NAT
+    // This creates the NAT mapping so incoming packets can reach us
+    const char holePunch[] = "NXRQ_HOLE_PUNCH";
+    int sent = sendto(socket_,
+                      holePunch,
+                      sizeof(holePunch),
+                      0,
+                      reinterpret_cast<struct sockaddr*>(&serverAddr),
+                      sizeof(serverAddr));
+
+    return sent > 0;
+}
+
 void UdpStreamClient::receiveLoop() {
     constexpr size_t MAX_FRAMES_PER_PACKET = 64;
     std::vector<uint8_t> buffer(sizeof(UdpPacketHeader) + MAX_FRAMES_PER_PACKET * sizeof(IQFrame));

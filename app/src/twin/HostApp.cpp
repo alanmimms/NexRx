@@ -47,6 +47,8 @@ bool HostApp::initialize(const HostConfig& config) {
     UdpStreamClientConfig streamConfig;
     streamConfig.port = config.streamPort;
     streamConfig.receiveBufferSize = config.receiveBufferSize;
+    streamConfig.serverHost = config.host;      // For NAT hole punch
+    streamConfig.serverPort = config.streamPort; // Server listens on same port
 
     stream_ = std::make_unique<UdpStreamClient>(streamConfig);
 
@@ -59,6 +61,14 @@ bool HostApp::initialize(const HostConfig& config) {
         control_.reset();
         stream_.reset();
         return false;
+    }
+
+    // Send NAT hole punch to establish return path for UDP
+    if (stream_->sendHolePunch()) {
+        if (config.verbose) {
+            std::cout << "[HostApp] Sent UDP hole punch to "
+                      << config.host << ":" << config.streamPort << std::endl;
+        }
     }
 
     if (config.verbose) {

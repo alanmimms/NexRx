@@ -47,6 +47,8 @@ static_assert(sizeof(UdpPacketHeader) == 8, "UdpPacketHeader must be 8 bytes");
 struct UdpStreamClientConfig {
     uint16_t port = 5001;               // UDP port to listen on
     size_t receiveBufferSize = 8192;    // Ring buffer capacity (frames)
+    std::string serverHost = "";        // Server address for NAT hole punch
+    uint16_t serverPort = 5001;         // Server port for NAT hole punch
 };
 
 //======================================================================
@@ -90,6 +92,9 @@ public:
     uint64_t framesReceived() const { return framesReceived_.load(std::memory_order_relaxed); }
     uint64_t framesDropped() const { return framesDropped_.load(std::memory_order_relaxed); }
     uint64_t bufferOverruns() const { return bufferOverruns_.load(std::memory_order_relaxed); }
+
+    // Send NAT hole punch packet to server
+    bool sendHolePunch();
 
 private:
     void receiveLoop();
