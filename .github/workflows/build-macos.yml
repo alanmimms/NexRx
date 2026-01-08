@@ -28,14 +28,15 @@ jobs:
 
       - name: Install dependencies via vcpkg
         run: |
-          ./vcpkg/vcpkg install --triplet=arm64-osx sdl2 luajit nlohmann-json
+          ./vcpkg/vcpkg install --triplet=x64-osx sdl2 luajit nlohmann-json
 
       - name: Configure CMake
         run: |
           cmake -B build-macos \
             -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
             -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-            -DVCPKG_TARGET_TRIPLET=arm64-osx \
+            -DVCPKG_TARGET_TRIPLET=x64-osx \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
             app
 
       - name: Build
