@@ -35,20 +35,36 @@ endif()
 
 # Check if using vcpkg (set automatically by vcpkg toolchain)
 if(DEFINED VCPKG_TARGET_TRIPLET OR NEXRX_WINDOWS)
-    # vcpkg mode: use find_package (works on Windows, macOS, Linux)
+    # vcpkg mode
     find_package(SDL2 CONFIG REQUIRED)
-    find_package(unofficial-luajit CONFIG REQUIRED)
     find_package(OpenGL REQUIRED)
 
-    # Set variables for compatibility
+    # SDL2 libraries
     set(SDL2_INCLUDE_DIRS "")  # SDL2::SDL2 handles includes
     if(WIN32)
         set(SDL2_LIBRARIES SDL2::SDL2 SDL2::SDL2main)
     else()
         set(SDL2_LIBRARIES SDL2::SDL2)
     endif()
-    set(LUAJIT_INCLUDE_DIRS "")
-    set(LUAJIT_LIBRARIES unofficial::luajit::luajit)
+
+    # LuaJIT: try unofficial-luajit first, fall back to manual search
+    find_package(unofficial-luajit CONFIG QUIET)
+    if(unofficial-luajit_FOUND)
+        set(LUAJIT_INCLUDE_DIRS "")
+        set(LUAJIT_LIBRARIES unofficial::luajit::luajit)
+    else()
+        # Manual search for LuaJIT (vcpkg installs without cmake config)
+        find_path(LUAJIT_INCLUDE_DIRS luajit.h
+            PATH_SUFFIXES luajit luajit-2.1 luajit-2.0
+            HINTS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+        find_library(LUAJIT_LIBRARIES
+            NAMES lua51 luajit luajit-5.1
+            HINTS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
+        if(NOT LUAJIT_INCLUDE_DIRS OR NOT LUAJIT_LIBRARIES)
+            message(FATAL_ERROR "Could not find LuaJIT. Include: ${LUAJIT_INCLUDE_DIRS}, Lib: ${LUAJIT_LIBRARIES}")
+        endif()
+        message(STATUS "Found LuaJIT: ${LUAJIT_LIBRARIES}")
+    endif()
 else()
     # Native build: use pkg-config (Linux, macOS without vcpkg)
     find_package(PkgConfig REQUIRED)
