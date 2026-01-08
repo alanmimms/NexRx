@@ -21,12 +21,15 @@ endif()
 # Export compile commands for IDE integration
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Detect Windows cross-compile
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(NEXRX_WINDOWS TRUE)
-    message(STATUS "Cross-compiling for Windows")
+# Platform detection
+# Twin (circuit simulation) only runs on Linux. Windows/macOS connect over network.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(NEXRX_LOCAL_TWIN TRUE)
+    set(NEXRX_REMOTE_TWIN FALSE)
 else()
-    set(NEXRX_WINDOWS FALSE)
+    set(NEXRX_LOCAL_TWIN FALSE)
+    set(NEXRX_REMOTE_TWIN TRUE)
+    message(STATUS "Building for ${CMAKE_SYSTEM_NAME} - will use network transport to twin")
 endif()
 
 # -----------------------------------------------------------------------------
@@ -91,7 +94,7 @@ find_package(Threads REQUIRED)
 # -----------------------------------------------------------------------------
 set(TWIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../twin")
 
-if(NOT NEXRX_WINDOWS)
+if(NEXRX_LOCAL_TWIN)
     # Linux: build twin libraries directly (shares code with twin server)
     add_subdirectory(${TWIN_DIR} ${CMAKE_BINARY_DIR}/twin EXCLUDE_FROM_ALL)
 endif()
@@ -152,8 +155,8 @@ set(NEXRX_APP_SOURCES
     src/WaterfallRenderer.cpp
 )
 
-if(NEXRX_WINDOWS)
-    # Windows: use cross-platform socket abstraction and client transports
+if(NEXRX_REMOTE_TWIN)
+    # Windows/macOS: use cross-platform socket abstraction and client transports
     list(APPEND NEXRX_APP_SOURCES
         src/net/Socket.cpp
         src/twin/TcpControlClient.cpp
@@ -184,17 +187,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 # Platform-specific link libraries
-if(NEXRX_WINDOWS)
-    target_link_libraries(nexrx_app PRIVATE
-        setbox
-        ${SDL2_LIBRARIES}
-        OpenGL::GL
-        Threads::Threads
-        ${AUDIO_LIBS}
-        ws2_32       # Winsock2
-    )
-    target_compile_definitions(nexrx_app PRIVATE NEXRX_WINDOWS)
-else()
+if(NEXRX_LOCAL_TWIN)
+    # Linux: link twin libraries directly
     target_link_libraries(nexrx_app PRIVATE
         setbox
         twin_transport
@@ -204,6 +198,21 @@ else()
         Threads::Threads
         ${AUDIO_LIBS}
     )
+else()
+    # Windows/macOS: network transport to remote twin
+    target_link_libraries(nexrx_app PRIVATE
+        setbox
+        ${SDL2_LIBRARIES}
+        OpenGL::GL
+        Threads::Threads
+        ${AUDIO_LIBS}
+    )
+    target_compile_definitions(nexrx_app PRIVATE NEXRX_REMOTE_TWIN)
+
+    # Windows needs Winsock2
+    if(WIN32)
+        target_link_libraries(nexrx_app PRIVATE ws2_32)
+    endif()
 endif()
 
 # Compiler-specific warning flags

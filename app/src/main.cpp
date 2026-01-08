@@ -9,10 +9,12 @@
 #include "WaterfallRenderer.hpp"
 
 // Twin integration
-#ifdef NEXRX_WINDOWS
+#ifdef NEXRX_REMOTE_TWIN
+    // Windows/macOS: connect to twin over network
     #include "net/Socket.hpp"
     #include "twin/HostApp.hpp"
 #else
+    // Linux: twin runs locally
     #include "host/HostApp.hpp"
 #endif
 #include "transport/IQFrame.hpp"
@@ -1086,7 +1088,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "NexRx Application Starting..." << std::endl;
 
-#ifdef NEXRX_WINDOWS
+#ifdef _WIN32
     // Initialize Winsock on Windows
     nexrx::net::WinsockInit winsock;
     if (!winsock.ok()) {
