@@ -44,6 +44,7 @@ struct Options {
     std::string netlist = "netlists/pipeline_test.cir";
     std::string stimulus = "";    // Stimulus script (empty = use simple tone)
     std::string bindAddr = "0.0.0.0";  // Address to bind (0.0.0.0 = all interfaces)
+    std::string udpHost = "";         // Override UDP destination (empty = use TCP peer IP)
     uint16_t controlPort = 5000;  // TCP control port
     uint16_t streamPort = 5001;   // UDP stream port
 };
@@ -58,6 +59,7 @@ void printUsage(const char* prog) {
               << "Options:\n"
               << "  --stream        Stream I/Q to network for app display\n"
               << "  --bind ADDR     Bind address (default: 0.0.0.0 = all interfaces)\n"
+              << "  --udp-host ADDR Override UDP destination (default: TCP peer IP)\n"
               << "  --control-port  TCP control port (default: 5000)\n"
               << "  --stream-port   UDP stream port (default: 5001)\n"
               << "  --stimulus FILE Lua stimulus script (default: config/stimuli/default.lua)\n"
@@ -107,6 +109,8 @@ Options parseArgs(int argc, char* argv[]) {
             opts.stimulus = argv[++i];
         } else if (strcmp(argv[i], "--bind") == 0 && i + 1 < argc) {
             opts.bindAddr = argv[++i];
+        } else if (strcmp(argv[i], "--udp-host") == 0 && i + 1 < argc) {
+            opts.udpHost = argv[++i];
         } else if (strcmp(argv[i], "--control-port") == 0 && i + 1 < argc) {
             opts.controlPort = static_cast<uint16_t>(std::atoi(argv[++i]));
         } else if (strcmp(argv[i], "--stream-port") == 0 && i + 1 < argc) {
@@ -383,10 +387,15 @@ int runFunctionalMode(const Options& opts) {
         std::string clientIP = control->peerIP();
         std::cout << "[Control] Client connected from " << control->peerAddress() << std::endl;
 
+        // Determine UDP destination: override if specified, else use TCP peer IP
+        std::string udpDest = opts.udpHost.empty() ? clientIP : opts.udpHost;
+        if (!opts.udpHost.empty()) {
+            std::cout << "[Stream] UDP destination override: " << opts.udpHost << std::endl;
+        }
+
         // Create UDP stream transport (sender mode)
-        // Send to the same IP that connected via TCP
         UdpStreamConfig streamConfig;
-        streamConfig.host = clientIP;
+        streamConfig.host = udpDest;
         streamConfig.port = opts.streamPort;
         streamConfig.server = true;  // Sender mode
         streamConfig.framesPerPacket = 32;
@@ -396,7 +405,7 @@ int runFunctionalMode(const Options& opts) {
             std::cerr << "Failed to create UDP stream" << std::endl;
             return 1;
         }
-        std::cout << "[Stream] Sending UDP to " << clientIP
+        std::cout << "[Stream] Sending UDP to " << udpDest
                   << ":" << opts.streamPort << std::endl;
 
         // Start control handler thread
