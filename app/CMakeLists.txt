@@ -83,15 +83,19 @@ endif()
 
 # sol2 is header-only, we'll fetch it
 # Fix sol2 optional implementation issue with newer Apple Clang
-# Must be defined BEFORE including sol2 headers
-add_compile_definitions(SOL_ALL_SAFETIES_OFF=1)
+# Force use of std::optional instead of sol2's tl::optional implementation
+add_compile_definitions(
+    SOL_ALL_SAFETIES_OFF=1
+    SOL_USE_CXX_LUA=1
+    SOL_USING_CXX_LUA=1
+)
 
 include(FetchContent)
 
 FetchContent_Declare(
     sol2
     GIT_REPOSITORY https://github.com/ThePhD/sol2.git
-    GIT_TAG v3.3.0
+    GIT_TAG develop
 )
 FetchContent_MakeAvailable(sol2)
 
