@@ -43,7 +43,7 @@ endif()
 
 # Check if using vcpkg (set automatically by vcpkg toolchain)
 if(DEFINED VCPKG_TARGET_TRIPLET OR NEXRX_WINDOWS)
-    # vcpkg mode
+    # vcpkg mode (Windows/macOS)
     find_package(SDL2 CONFIG REQUIRED)
     find_package(OpenGL REQUIRED)
 
@@ -55,32 +55,32 @@ if(DEFINED VCPKG_TARGET_TRIPLET OR NEXRX_WINDOWS)
         set(SDL2_LIBRARIES SDL2::SDL2)
     endif()
 
-    # Use regular Lua 5.4 from vcpkg (simpler, better maintained than LuaJIT)
+    # Lua 5.4 from vcpkg
     find_package(Lua REQUIRED)
     set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
     set(LUA_LIBS ${LUA_LIBRARIES})
-    message(STATUS "Using Lua: ${LUA_LIBRARIES}")
+    message(STATUS "Using Lua (vcpkg): ${LUA_LIBRARIES}")
 else()
-    # Native build: use pkg-config (Linux)
-    # Keep LuaJIT for local dev (it works on Linux), use consistent var names
+    # Native build (Linux): use pkg-config
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(LUAJIT REQUIRED luajit)
-    set(LUA_INCLUDE_DIRS ${LUAJIT_INCLUDE_DIRS})
-    set(LUA_LIBS ${LUAJIT_LIBRARIES})
+
+    # Use regular Lua 5.4 everywhere (simpler, consistent across platforms)
+    pkg_check_modules(LUA54 REQUIRED lua5.4)
+    set(LUA_INCLUDE_DIRS ${LUA54_INCLUDE_DIRS})
+    set(LUA_LIBS ${LUA54_LIBRARIES})
+    message(STATUS "Using Lua (pkg-config): ${LUA_LIBS}")
+
     pkg_check_modules(SDL2 REQUIRED sdl2)
     find_package(OpenGL REQUIRED)
 endif()
 
 # sol2 is header-only, we'll fetch it
-# Lua/LuaJIT is compiled as C, not C++
+# Lua is compiled as C, not C++
 add_compile_definitions(
     SOL_ALL_SAFETIES_OFF=1
     SOL_USING_CXX_LUA=0
+    SOL_LUAJIT=0
 )
-# vcpkg builds use plain Lua; native Linux uses LuaJIT
-if(DEFINED VCPKG_TARGET_TRIPLET)
-    add_compile_definitions(SOL_LUAJIT=0)
-endif()
 
 include(FetchContent)
 

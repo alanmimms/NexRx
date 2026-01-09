@@ -24,11 +24,19 @@ bool UdpStreamClient::connect() {
         return true;
     }
 
+    fprintf(stderr, "[UDP] Creating UDP socket for port %d...\n", config_.port);
+    fflush(stderr);
+
     // Create UDP socket
     socket_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_ == SOCKET_INVALID) {
+        fprintf(stderr, "[UDP] Failed to create socket\n");
+        fflush(stderr);
         return false;
     }
+
+    fprintf(stderr, "[UDP] Socket created: fd=%d\n", (int)socket_);
+    fflush(stderr);
 
     // Allow address reuse
     net::setReuseAddr(socket_, true);
@@ -40,10 +48,25 @@ bool UdpStreamClient::connect() {
     addr.sin_port = htons(config_.port);
     addr.sin_addr.s_addr = INADDR_ANY;
 
+    fprintf(stderr, "[UDP] Binding to 0.0.0.0:%d...\n", config_.port);
+    fflush(stderr);
+
     if (bind(socket_, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) != 0) {
+        fprintf(stderr, "[UDP] Bind failed! errno=%d\n", errno);
+        fflush(stderr);
         socket_close(socket_);
         socket_ = SOCKET_INVALID;
         return false;
+    }
+
+    // Get actual bound address for logging
+    sockaddr_in boundAddr;
+    socklen_t boundLen = sizeof(boundAddr);
+    if (getsockname(socket_, reinterpret_cast<struct sockaddr*>(&boundAddr), &boundLen) == 0) {
+        char boundIp[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &boundAddr.sin_addr, boundIp, sizeof(boundIp));
+        fprintf(stderr, "[UDP] Successfully bound to %s:%d\n", boundIp, ntohs(boundAddr.sin_port));
+        fflush(stderr);
     }
 
     // Reset state
@@ -210,6 +233,14 @@ void UdpStreamClient::receiveLoop() {
     constexpr size_t MAX_FRAMES_PER_PACKET = 64;
     std::vector<uint8_t> buffer(sizeof(UdpPacketHeader) + MAX_FRAMES_PER_PACKET * sizeof(IQFrame));
 
+    // Debug: log that receive loop has started
+    fprintf(stderr, "[UDP] Receive loop started, listening on port %d\n", config_.port);
+    fflush(stderr);
+
+    uint64_t pollCount = 0;
+    uint64_t pollTimeouts = 0;
+    uint64_t pollErrors = 0;
+
     while (running_.load(std::memory_order_acquire)) {
         // Poll for data with timeout
         pollfd_t pfd;
@@ -218,8 +249,26 @@ void UdpStreamClient::receiveLoop() {
         pfd.revents = 0;
 
         int ret = socket_poll(&pfd, 1, 100);  // 100ms timeout
-        if (ret <= 0) {
-            continue;  // Timeout or error
+        pollCount++;
+
+        // Periodic debug output every 50 polls (~5 seconds)
+        if (pollCount % 50 == 0) {
+            fprintf(stderr, "[UDP] Poll stats: count=%llu timeouts=%llu errors=%llu packets=%llu frames=%llu\n",
+                    (unsigned long long)pollCount,
+                    (unsigned long long)pollTimeouts,
+                    (unsigned long long)pollErrors,
+                    (unsigned long long)packetsReceived_.load(),
+                    (unsigned long long)framesReceived_.load());
+            fflush(stderr);
+        }
+
+        if (ret < 0) {
+            pollErrors++;
+            continue;
+        }
+        if (ret == 0) {
+            pollTimeouts++;
+            continue;  // Timeout
         }
 
         // Receive packet
@@ -233,7 +282,16 @@ void UdpStreamClient::receiveLoop() {
                          reinterpret_cast<struct sockaddr*>(&fromAddr),
                          &fromLen);
 
+        // Debug: log received packet
+        char fromIp[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &fromAddr.sin_addr, fromIp, sizeof(fromIp));
+        fprintf(stderr, "[UDP] recvfrom returned %d bytes from %s:%d\n",
+                n, fromIp, ntohs(fromAddr.sin_port));
+        fflush(stderr);
+
         if (n < static_cast<int>(sizeof(UdpPacketHeader))) {
+            fprintf(stderr, "[UDP] Packet too small: %d < %zu\n", n, sizeof(UdpPacketHeader));
+            fflush(stderr);
             continue;  // Too small or error
         }
 
@@ -241,7 +299,15 @@ void UdpStreamClient::receiveLoop() {
         UdpPacketHeader header;
         std::memcpy(&header, buffer.data(), sizeof(header));
 
+        // Debug: log header details
+        fprintf(stderr, "[UDP] Header: magic=0x%08X version=%d flags=%d frame_count=%d\n",
+                header.magic, header.version, header.flags, header.frame_count);
+        fflush(stderr);
+
         if (!header.isValid()) {
+            fprintf(stderr, "[UDP] Invalid header! Expected magic=0x%08X version=%d\n",
+                    UdpPacketHeader::MAGIC, UdpPacketHeader::VERSION);
+            fflush(stderr);
             continue;  // Invalid packet
         }
 

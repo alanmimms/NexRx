@@ -35,8 +35,8 @@ set(TRILINOS_INCLUDE_DIR "/home/alan/ham/XyceLibs/Serial/include" CACHE PATH "Tr
 find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 
-# LuaJIT for stimulus scripting
-pkg_check_modules(LUAJIT REQUIRED luajit)
+# Lua 5.4 for stimulus scripting (consistent across all platforms)
+pkg_check_modules(LUA54 REQUIRED lua5.4)
 
 # sol2 header-only Lua binding library
 include(FetchContent)
@@ -46,6 +46,13 @@ FetchContent_Declare(
     GIT_TAG v3.3.0
 )
 FetchContent_MakeAvailable(sol2)
+
+# Tell sol2 we're using plain Lua, not LuaJIT
+add_compile_definitions(
+    SOL_ALL_SAFETIES_OFF=1
+    SOL_USING_CXX_LUA=0
+    SOL_LUAJIT=0
+)
 
 # FFTW3
 find_library(FFTW3_LIBRARY fftw3 HINTS /usr/lib/x86_64-linux-gnu)
@@ -286,7 +293,7 @@ add_library(twin_stimulus STATIC
 
 target_include_directories(twin_stimulus PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${LUAJIT_INCLUDE_DIRS}
+    ${LUA54_INCLUDE_DIRS}
 )
 
 # Optional espeak-ng for TTS
@@ -294,7 +301,7 @@ find_library(ESPEAK_NG_LIBRARY espeak-ng)
 find_path(ESPEAK_NG_INCLUDE_DIR espeak-ng/speak_lib.h)
 
 target_link_libraries(twin_stimulus PUBLIC
-    ${LUAJIT_LIBRARIES}
+    ${LUA54_LIBRARIES}
     sol2::sol2
     Threads::Threads
 )
