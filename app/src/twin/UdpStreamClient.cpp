@@ -305,7 +305,16 @@ void UdpStreamClient::receiveLoop() {
 
         // Validate packet structure
         if (!packet.is_array() || packet.size() < 4) {
-            fprintf(stderr, "[UDP] Invalid packet structure\n");
+            fprintf(stderr, "[UDP] Invalid packet structure: is_array=%d size=%zu type=%s\n",
+                    packet.is_array() ? 1 : 0,
+                    packet.is_array() ? packet.size() : 0,
+                    packet.type_name());
+            // Dump first few bytes as hex for debugging
+            fprintf(stderr, "[UDP] First 32 bytes: ");
+            for (int i = 0; i < std::min(n, 32); i++) {
+                fprintf(stderr, "%02X ", buffer[i]);
+            }
+            fprintf(stderr, "\n");
             fflush(stderr);
             continue;
         }
