@@ -137,4 +137,7 @@ private:
     std::atomic<bool> testToneEnabled_{false};
     std::atomic<float> testToneFrequency_{440.0f};
     float testTonePhase_ = 0.0f;
+
+    // Pre-allocated buffer for callback (avoid allocation in audio thread)
+    std::vector<float> callbackBuffer_;
 };

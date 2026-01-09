@@ -44,6 +44,11 @@ bool AudioEngine::init(uint32_t sampleRate, uint32_t channels) {
     }
 
     initialized_ = true;
+
+    // Pre-allocate callback buffer (generous size to avoid reallocation)
+    // miniaudio typically requests 256-1024 frames, we allocate for 4096 to be safe
+    callbackBuffer_.resize(4096 * channels, 0.0f);
+
     std::cout << "Audio initialized: " << sampleRate << " Hz, " << channels << " channels" << std::endl;
 
     return true;
@@ -143,13 +148,23 @@ void AudioEngine::processAudio(float* output, uint32_t frameCount) {
 
     // Call user callback if set
     if (callback_) {
-        // Create temporary buffer for callback
-        std::vector<float> callbackBuffer(totalSamples, 0.0f);
-        callback_(callbackBuffer.data(), frameCount, channels);
+        // Ensure pre-allocated buffer is large enough (should always be true)
+        if (callbackBuffer_.size() < totalSamples) {
+            // This should not happen in normal operation, but handle gracefully
+            // by skipping the callback rather than allocating in audio thread
+            return;
+        }
+
+        // Clear the portion we'll use
+        for (uint32_t i = 0; i < totalSamples; ++i) {
+            callbackBuffer_[i] = 0.0f;
+        }
+
+        callback_(callbackBuffer_.data(), frameCount, channels);
 
         // Mix callback output with existing output
         for (uint32_t i = 0; i < totalSamples; ++i) {
-            output[i] += callbackBuffer[i];
+            output[i] += callbackBuffer_[i];
         }
     }
 
