@@ -222,12 +222,20 @@ bool UdpStreamClient::sendHolePunch() {
         return false;
     }
 
-    // Send a small "hello" packet to punch through NAT
+    // Send a valid CBOR hole punch packet to punch through NAT
     // This creates the NAT mapping so incoming packets can reach us
-    const char holePunch[] = "NXRQ_HOLE_PUNCH";
+    // Format: ["NXRQ", version, TYPE_HOLE_PUNCH, []] (empty frames)
+    json packet = json::array({
+        UdpProtocol::MAGIC,
+        UdpProtocol::VERSION,
+        UdpProtocol::TYPE_HOLE_PUNCH,
+        json::array()  // Empty frames
+    });
+    std::vector<uint8_t> cbor = json::to_cbor(packet);
+
     int sent = sendto(socket_,
-                      holePunch,
-                      sizeof(holePunch),
+                      reinterpret_cast<const char*>(cbor.data()),
+                      static_cast<int>(cbor.size()),
                       0,
                       reinterpret_cast<struct sockaddr*>(&serverAddr),
                       sizeof(serverAddr));

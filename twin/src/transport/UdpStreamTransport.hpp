@@ -38,7 +38,8 @@ namespace UdpProtocol {
     constexpr const char* MAGIC = "NXRQ";
     constexpr int VERSION = 1;
     constexpr int TYPE_IQ_DATA = 0;
-    constexpr int TYPE_TX_AUDIO = 1;  // Future: NexRig TX audio
+    constexpr int TYPE_TX_AUDIO = 1;   // Future: NexRig TX audio
+    constexpr int TYPE_HOLE_PUNCH = 2; // NAT hole punch (ignored)
 
     // Array indices in CBOR packet
     constexpr size_t IDX_MAGIC = 0;
