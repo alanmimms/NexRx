@@ -295,16 +295,20 @@ void UdpStreamClient::receiveLoop() {
             continue;  // Too small or error
         }
 
-        // Parse header
+        // Parse header (convert from network byte order)
         UdpPacketHeader header;
         std::memcpy(&header, buffer.data(), sizeof(header));
 
+        // Convert from network byte order
+        uint32_t magic = ntohl(header.magic);
+        uint16_t frameCount = ntohs(header.frame_count);
+
         // Debug: log header details
         fprintf(stderr, "[UDP] Header: magic=0x%08X version=%d flags=%d frame_count=%d\n",
-                header.magic, header.version, header.flags, header.frame_count);
+                magic, header.version, header.flags, frameCount);
         fflush(stderr);
 
-        if (!header.isValid()) {
+        if (magic != UdpPacketHeader::MAGIC || header.version != UdpPacketHeader::VERSION) {
             fprintf(stderr, "[UDP] Invalid header! Expected magic=0x%08X version=%d\n",
                     UdpPacketHeader::MAGIC, UdpPacketHeader::VERSION);
             fflush(stderr);
@@ -312,7 +316,7 @@ void UdpStreamClient::receiveLoop() {
         }
 
         size_t expectedSize = sizeof(UdpPacketHeader) +
-                              header.frame_count * sizeof(IQFrame);
+                              frameCount * sizeof(IQFrame);
         if (static_cast<size_t>(n) < expectedSize) {
             continue;  // Truncated packet
         }
@@ -323,7 +327,7 @@ void UdpStreamClient::receiveLoop() {
         const IQFrame* frames = reinterpret_cast<const IQFrame*>(
             buffer.data() + sizeof(UdpPacketHeader));
 
-        for (uint16_t i = 0; i < header.frame_count; i++) {
+        for (uint16_t i = 0; i < frameCount; i++) {
             const IQFrame& frame = frames[i];
 
             // Check for dropped frames via sequence number

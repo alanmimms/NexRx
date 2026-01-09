@@ -176,12 +176,12 @@ bool UdpStreamTransport::sendPacket() {
     size_t packetSize = sizeof(UdpPacketHeader) + frameCount * sizeof(IQFrame);
     std::vector<uint8_t> packet(packetSize);
 
-    // Fill header
+    // Fill header (network byte order for multi-byte fields)
     UdpPacketHeader* header = reinterpret_cast<UdpPacketHeader*>(packet.data());
-    header->magic = UdpPacketHeader::MAGIC;
+    header->magic = htonl(UdpPacketHeader::MAGIC);
     header->version = UdpPacketHeader::VERSION;
     header->flags = UdpPacketHeader::FLAG_IQ_DATA;
-    header->frame_count = static_cast<uint16_t>(frameCount);
+    header->frame_count = htons(static_cast<uint16_t>(frameCount));
 
     // Copy frames
     std::memcpy(packet.data() + sizeof(UdpPacketHeader),
@@ -230,9 +230,10 @@ void UdpStreamTransport::receiveLoop() {
             continue;  // Too small
         }
 
-        // Parse header
+        // Parse header (convert from network byte order)
         const UdpPacketHeader* header = reinterpret_cast<const UdpPacketHeader*>(buffer.data());
-        if (!header->isValid()) {
+        if (ntohl(header->magic) != UdpPacketHeader::MAGIC ||
+            header->version != UdpPacketHeader::VERSION) {
             continue;  // Invalid packet
         }
 
@@ -240,7 +241,7 @@ void UdpStreamTransport::receiveLoop() {
             continue;  // Not I/Q data (future: handle TX audio)
         }
 
-        size_t frameCount = header->frame_count;
+        size_t frameCount = ntohs(header->frame_count);
         size_t expectedSize = sizeof(UdpPacketHeader) + frameCount * sizeof(IQFrame);
         if (static_cast<size_t>(received) < expectedSize) {
             continue;  // Truncated packet
