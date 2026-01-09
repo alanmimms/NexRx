@@ -61,6 +61,11 @@ jobs:
           Copy-Item -Recurse app/config dist/NexRx/
           Copy-Item -Recurse app/lua dist/NexRx/
 
+          # Override twin ports for QEMU testing (7000/7001 instead of 5000/5001)
+          $configFile = "dist/NexRx/config/base/defaults.lua"
+          (Get-Content $configFile) -replace 'twinControlPort = 5000', 'twinControlPort = 7000' | Set-Content $configFile
+          (Get-Content $configFile) -replace 'twinStreamPort = 5001', 'twinStreamPort = 7001' | Set-Content $configFile
+
           # Create zip archive
           Compress-Archive -Path dist/NexRx -DestinationPath NexRx-windows-${{ inputs.build_type }}.zip
 

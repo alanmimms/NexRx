@@ -56,6 +56,10 @@ jobs:
           cp -r app/config dist/NexRx.app/Contents/Resources/
           cp -r app/lua dist/NexRx.app/Contents/Resources/
 
+          # Override twin ports for QEMU testing (7000/7001 instead of 5000/5001)
+          sed -i '' 's/twinControlPort = 5000/twinControlPort = 7000/' dist/NexRx.app/Contents/Resources/config/base/defaults.lua
+          sed -i '' 's/twinStreamPort = 5001/twinStreamPort = 7001/' dist/NexRx.app/Contents/Resources/config/base/defaults.lua
+
           # Create Info.plist
           cat > dist/NexRx.app/Contents/Info.plist << 'PLIST'
           <?xml version="1.0" encoding="UTF-8"?>
