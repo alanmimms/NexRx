@@ -1,7 +1,18 @@
 // NexRx App - UDP Stream Client (Cross-platform)
 //
 // Client-side UDP transport for receiving I/Q frames from the twin.
-// Uses cross-platform socket abstraction.
+// Uses CBOR encoding for cross-platform compatibility.
+//
+// CBOR packet format (array-based for compactness):
+// [
+//   "NXRQ",                              // magic string (index 0)
+//   1,                                   // version (index 1)
+//   0,                                   // type: 0=IQ, 1=TX audio (index 2)
+//   [                                    // frames array (index 3)
+//     [seq, ts_ns, i0, q0, i1, q1, i2, q2],  // frame as flat array
+//     ...
+//   ]
+// ]
 //
 // Copyright 2026 NexRx Project - MIT License
 
@@ -22,24 +33,30 @@
 namespace nexrx {
 
 //======================================================================
-// UDP Packet Header (must match twin's UdpPacketHeader)
+// UDP Protocol Constants (CBOR-encoded packets)
 //======================================================================
-struct UdpPacketHeader {
-    uint32_t magic;         // 0x4E585251 ("NXRQ")
-    uint8_t version;        // Protocol version (1)
-    uint8_t flags;          // Reserved (0 = I/Q data)
-    uint16_t frame_count;   // Number of IQFrames in this packet
+namespace UdpProtocol {
+    constexpr const char* MAGIC = "NXRQ";
+    constexpr int VERSION = 1;
+    constexpr int TYPE_IQ_DATA = 0;
+    constexpr int TYPE_TX_AUDIO = 1;  // Future: NexRig TX audio
 
-    static constexpr uint32_t MAGIC = 0x4E585251;
-    static constexpr uint8_t VERSION = 1;
-    static constexpr uint8_t FLAG_IQ_DATA = 0;
+    // Array indices in CBOR packet
+    constexpr size_t IDX_MAGIC = 0;
+    constexpr size_t IDX_VERSION = 1;
+    constexpr size_t IDX_TYPE = 2;
+    constexpr size_t IDX_FRAMES = 3;
 
-    bool isValid() const {
-        return magic == MAGIC && version == VERSION;
-    }
-};
-
-static_assert(sizeof(UdpPacketHeader) == 8, "UdpPacketHeader must be 8 bytes");
+    // Array indices within each frame
+    constexpr size_t FRAME_IDX_SEQ = 0;
+    constexpr size_t FRAME_IDX_TS = 1;
+    constexpr size_t FRAME_IDX_I0 = 2;
+    constexpr size_t FRAME_IDX_Q0 = 3;
+    constexpr size_t FRAME_IDX_I1 = 4;
+    constexpr size_t FRAME_IDX_Q1 = 5;
+    constexpr size_t FRAME_IDX_I2 = 6;
+    constexpr size_t FRAME_IDX_Q2 = 7;
+}
 
 //======================================================================
 // UDP Stream Client Configuration

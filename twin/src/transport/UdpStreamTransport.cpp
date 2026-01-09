@@ -1,8 +1,12 @@
 // NexRx Digital Twin - UDP Stream Transport Implementation
 //
+// Uses CBOR encoding for cross-platform compatibility.
+//
 // Copyright 2026 NexRx Project - MIT License
 
 #include "UdpStreamTransport.hpp"
+
+#include <nlohmann/json.hpp>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -13,6 +17,8 @@
 
 #include <cstring>
 #include <algorithm>
+
+using json = nlohmann::json;
 
 namespace nexrx {
 
@@ -171,28 +177,34 @@ bool UdpStreamTransport::sendPacket() {
         return true;
     }
 
-    // Build packet: header + frames
-    size_t frameCount = sendBuffer_.size();
-    size_t packetSize = sizeof(UdpPacketHeader) + frameCount * sizeof(IQFrame);
-    std::vector<uint8_t> packet(packetSize);
+    // Build CBOR packet: [magic, version, type, [[frame0], [frame1], ...]]
+    json packet = json::array();
+    packet.push_back(UdpProtocol::MAGIC);
+    packet.push_back(UdpProtocol::VERSION);
+    packet.push_back(UdpProtocol::TYPE_IQ_DATA);
 
-    // Fill header (network byte order for multi-byte fields)
-    UdpPacketHeader* header = reinterpret_cast<UdpPacketHeader*>(packet.data());
-    header->magic = htonl(UdpPacketHeader::MAGIC);
-    header->version = UdpPacketHeader::VERSION;
-    header->flags = UdpPacketHeader::FLAG_IQ_DATA;
-    header->frame_count = htons(static_cast<uint16_t>(frameCount));
+    // Build frames array
+    json frames = json::array();
+    for (const auto& f : sendBuffer_) {
+        // Each frame: [seq, ts_ns, i0, q0, i1, q1, i2, q2]
+        frames.push_back(json::array({
+            f.sequence,
+            f.timestamp_ns,
+            f.qsd[0].i, f.qsd[0].q,
+            f.qsd[1].i, f.qsd[1].q,
+            f.qsd[2].i, f.qsd[2].q
+        }));
+    }
+    packet.push_back(frames);
 
-    // Copy frames
-    std::memcpy(packet.data() + sizeof(UdpPacketHeader),
-                sendBuffer_.data(),
-                frameCount * sizeof(IQFrame));
+    // Encode to CBOR
+    std::vector<uint8_t> cbor = json::to_cbor(packet);
 
     // Send
     ssize_t sent;
     {
         std::lock_guard<std::mutex> lock(destMutex_);
-        sent = sendto(socket_fd_, packet.data(), packetSize, 0,
+        sent = sendto(socket_fd_, cbor.data(), cbor.size(), 0,
                       reinterpret_cast<sockaddr*>(&destAddr_),
                       sizeof(destAddr_));
     }
@@ -201,7 +213,7 @@ bool UdpStreamTransport::sendPacket() {
         return false;
     }
 
-    framesSent_.fetch_add(frameCount, std::memory_order_relaxed);
+    framesSent_.fetch_add(sendBuffer_.size(), std::memory_order_relaxed);
     packetsSent_.fetch_add(1, std::memory_order_relaxed);
     sendBuffer_.clear();
 
@@ -209,9 +221,8 @@ bool UdpStreamTransport::sendPacket() {
 }
 
 void UdpStreamTransport::receiveLoop() {
-    // Max packet size: header + max frames
-    constexpr size_t MAX_FRAMES_PER_PACKET = 64;
-    constexpr size_t MAX_PACKET_SIZE = sizeof(UdpPacketHeader) + MAX_FRAMES_PER_PACKET * sizeof(IQFrame);
+    // CBOR packets can vary in size, allocate generous buffer
+    constexpr size_t MAX_PACKET_SIZE = 64 * 1024;  // 64KB should be plenty
     std::vector<uint8_t> buffer(MAX_PACKET_SIZE);
 
     while (running_) {
@@ -226,34 +237,60 @@ void UdpStreamTransport::receiveLoop() {
         }
 
         ssize_t received = recvfrom(socket_fd_, buffer.data(), buffer.size(), 0, nullptr, nullptr);
-        if (received < static_cast<ssize_t>(sizeof(UdpPacketHeader))) {
-            continue;  // Too small
+        if (received <= 0) {
+            continue;
         }
 
-        // Parse header (convert from network byte order)
-        const UdpPacketHeader* header = reinterpret_cast<const UdpPacketHeader*>(buffer.data());
-        if (ntohl(header->magic) != UdpPacketHeader::MAGIC ||
-            header->version != UdpPacketHeader::VERSION) {
-            continue;  // Invalid packet
+        // Decode CBOR packet
+        json packet;
+        try {
+            packet = json::from_cbor(buffer.begin(), buffer.begin() + received);
+        } catch (const json::exception&) {
+            continue;  // Invalid CBOR
         }
 
-        if (header->flags != UdpPacketHeader::FLAG_IQ_DATA) {
-            continue;  // Not I/Q data (future: handle TX audio)
+        // Validate packet structure
+        if (!packet.is_array() || packet.size() < 4) {
+            continue;
         }
 
-        size_t frameCount = ntohs(header->frame_count);
-        size_t expectedSize = sizeof(UdpPacketHeader) + frameCount * sizeof(IQFrame);
-        if (static_cast<size_t>(received) < expectedSize) {
-            continue;  // Truncated packet
+        // Check magic and version
+        if (!packet[UdpProtocol::IDX_MAGIC].is_string() ||
+            packet[UdpProtocol::IDX_MAGIC].get<std::string>() != UdpProtocol::MAGIC) {
+            continue;
+        }
+        if (!packet[UdpProtocol::IDX_VERSION].is_number_integer() ||
+            packet[UdpProtocol::IDX_VERSION].get<int>() != UdpProtocol::VERSION) {
+            continue;
+        }
+        if (!packet[UdpProtocol::IDX_TYPE].is_number_integer() ||
+            packet[UdpProtocol::IDX_TYPE].get<int>() != UdpProtocol::TYPE_IQ_DATA) {
+            continue;  // Not I/Q data
+        }
+
+        const auto& frames = packet[UdpProtocol::IDX_FRAMES];
+        if (!frames.is_array()) {
+            continue;
         }
 
         packetsReceived_.fetch_add(1, std::memory_order_relaxed);
 
-        // Copy frames to ring buffer
-        const IQFrame* frames = reinterpret_cast<const IQFrame*>(buffer.data() + sizeof(UdpPacketHeader));
+        // Process frames
+        for (const auto& frameData : frames) {
+            if (!frameData.is_array() || frameData.size() < 8) {
+                continue;
+            }
 
-        for (size_t i = 0; i < frameCount; ++i) {
-            const IQFrame& frame = frames[i];
+            IQFrame frame;
+            frame.sequence = frameData[UdpProtocol::FRAME_IDX_SEQ].get<uint32_t>();
+            frame.timestamp_ns = frameData[UdpProtocol::FRAME_IDX_TS].get<uint64_t>();
+            frame.qsd[0].i = frameData[UdpProtocol::FRAME_IDX_I0].get<int32_t>();
+            frame.qsd[0].q = frameData[UdpProtocol::FRAME_IDX_Q0].get<int32_t>();
+            frame.qsd[1].i = frameData[UdpProtocol::FRAME_IDX_I1].get<int32_t>();
+            frame.qsd[1].q = frameData[UdpProtocol::FRAME_IDX_Q1].get<int32_t>();
+            frame.qsd[2].i = frameData[UdpProtocol::FRAME_IDX_I2].get<int32_t>();
+            frame.qsd[2].q = frameData[UdpProtocol::FRAME_IDX_Q2].get<int32_t>();
+            frame.flags = 0;
 
             // Check for dropped frames via sequence number
             if (!firstFrame_.load(std::memory_order_relaxed)) {

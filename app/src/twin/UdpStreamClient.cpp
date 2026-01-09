@@ -1,11 +1,17 @@
 // NexRx App - UDP Stream Client Implementation
 //
+// Uses CBOR encoding for cross-platform compatibility.
+//
 // Copyright 2026 NexRx Project - MIT License
 
 #include "UdpStreamClient.hpp"
 
+#include <nlohmann/json.hpp>
+
 #include <cstring>
 #include <algorithm>
+
+using json = nlohmann::json;
 
 namespace nexrx {
 
@@ -230,11 +236,12 @@ bool UdpStreamClient::sendHolePunch() {
 }
 
 void UdpStreamClient::receiveLoop() {
-    constexpr size_t MAX_FRAMES_PER_PACKET = 64;
-    std::vector<uint8_t> buffer(sizeof(UdpPacketHeader) + MAX_FRAMES_PER_PACKET * sizeof(IQFrame));
+    // CBOR packets can vary in size, allocate generous buffer
+    constexpr size_t MAX_PACKET_SIZE = 64 * 1024;  // 64KB should be plenty
+    std::vector<uint8_t> buffer(MAX_PACKET_SIZE);
 
     // Debug: log that receive loop has started
-    fprintf(stderr, "[UDP] Receive loop started, listening on port %d\n", config_.port);
+    fprintf(stderr, "[UDP] Receive loop started (CBOR), listening on port %d\n", config_.port);
     fflush(stderr);
 
     uint64_t pollCount = 0;
@@ -282,53 +289,68 @@ void UdpStreamClient::receiveLoop() {
                          reinterpret_cast<struct sockaddr*>(&fromAddr),
                          &fromLen);
 
-        // Debug: log received packet
-        char fromIp[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &fromAddr.sin_addr, fromIp, sizeof(fromIp));
-        fprintf(stderr, "[UDP] recvfrom returned %d bytes from %s:%d\n",
-                n, fromIp, ntohs(fromAddr.sin_port));
-        fflush(stderr);
-
-        if (n < static_cast<int>(sizeof(UdpPacketHeader))) {
-            fprintf(stderr, "[UDP] Packet too small: %d < %zu\n", n, sizeof(UdpPacketHeader));
-            fflush(stderr);
-            continue;  // Too small or error
+        if (n <= 0) {
+            continue;
         }
 
-        // Parse header (convert from network byte order)
-        UdpPacketHeader header;
-        std::memcpy(&header, buffer.data(), sizeof(header));
-
-        // Convert from network byte order
-        uint32_t magic = ntohl(header.magic);
-        uint16_t frameCount = ntohs(header.frame_count);
-
-        // Debug: log header details
-        fprintf(stderr, "[UDP] Header: magic=0x%08X version=%d flags=%d frame_count=%d\n",
-                magic, header.version, header.flags, frameCount);
-        fflush(stderr);
-
-        if (magic != UdpPacketHeader::MAGIC || header.version != UdpPacketHeader::VERSION) {
-            fprintf(stderr, "[UDP] Invalid header! Expected magic=0x%08X version=%d\n",
-                    UdpPacketHeader::MAGIC, UdpPacketHeader::VERSION);
+        // Decode CBOR packet
+        json packet;
+        try {
+            packet = json::from_cbor(buffer.begin(), buffer.begin() + n);
+        } catch (const json::exception& e) {
+            fprintf(stderr, "[UDP] CBOR decode error: %s\n", e.what());
             fflush(stderr);
-            continue;  // Invalid packet
+            continue;
         }
 
-        size_t expectedSize = sizeof(UdpPacketHeader) +
-                              frameCount * sizeof(IQFrame);
-        if (static_cast<size_t>(n) < expectedSize) {
-            continue;  // Truncated packet
+        // Validate packet structure
+        if (!packet.is_array() || packet.size() < 4) {
+            fprintf(stderr, "[UDP] Invalid packet structure\n");
+            fflush(stderr);
+            continue;
+        }
+
+        // Check magic and version
+        if (!packet[UdpProtocol::IDX_MAGIC].is_string() ||
+            packet[UdpProtocol::IDX_MAGIC].get<std::string>() != UdpProtocol::MAGIC) {
+            fprintf(stderr, "[UDP] Invalid magic\n");
+            fflush(stderr);
+            continue;
+        }
+        if (!packet[UdpProtocol::IDX_VERSION].is_number_integer() ||
+            packet[UdpProtocol::IDX_VERSION].get<int>() != UdpProtocol::VERSION) {
+            fprintf(stderr, "[UDP] Invalid version\n");
+            fflush(stderr);
+            continue;
+        }
+        if (!packet[UdpProtocol::IDX_TYPE].is_number_integer() ||
+            packet[UdpProtocol::IDX_TYPE].get<int>() != UdpProtocol::TYPE_IQ_DATA) {
+            continue;  // Not I/Q data
+        }
+
+        const auto& frames = packet[UdpProtocol::IDX_FRAMES];
+        if (!frames.is_array()) {
+            continue;
         }
 
         packetsReceived_.fetch_add(1, std::memory_order_relaxed);
 
         // Process frames
-        const IQFrame* frames = reinterpret_cast<const IQFrame*>(
-            buffer.data() + sizeof(UdpPacketHeader));
+        for (const auto& frameData : frames) {
+            if (!frameData.is_array() || frameData.size() < 8) {
+                continue;
+            }
 
-        for (uint16_t i = 0; i < frameCount; i++) {
-            const IQFrame& frame = frames[i];
+            IQFrame frame;
+            frame.sequence = frameData[UdpProtocol::FRAME_IDX_SEQ].get<uint32_t>();
+            frame.timestamp_ns = frameData[UdpProtocol::FRAME_IDX_TS].get<uint64_t>();
+            frame.qsd[0].i = frameData[UdpProtocol::FRAME_IDX_I0].get<int32_t>();
+            frame.qsd[0].q = frameData[UdpProtocol::FRAME_IDX_Q0].get<int32_t>();
+            frame.qsd[1].i = frameData[UdpProtocol::FRAME_IDX_I1].get<int32_t>();
+            frame.qsd[1].q = frameData[UdpProtocol::FRAME_IDX_Q1].get<int32_t>();
+            frame.qsd[2].i = frameData[UdpProtocol::FRAME_IDX_I2].get<int32_t>();
+            frame.qsd[2].q = frameData[UdpProtocol::FRAME_IDX_Q2].get<int32_t>();
+            frame.flags = 0;
 
             // Check for dropped frames via sequence number
             if (firstFrame_.load(std::memory_order_relaxed)) {

@@ -38,14 +38,24 @@ find_package(PkgConfig REQUIRED)
 # Lua 5.4 for stimulus scripting (consistent across all platforms)
 pkg_check_modules(LUA54 REQUIRED lua5.4)
 
-# sol2 header-only Lua binding library
+# External dependencies via FetchContent
 include(FetchContent)
+
+# sol2 header-only Lua binding library
 FetchContent_Declare(
     sol2
     GIT_REPOSITORY https://github.com/ThePhD/sol2.git
     GIT_TAG v3.3.0
 )
-FetchContent_MakeAvailable(sol2)
+
+# nlohmann/json for CBOR encoding in UDP transport
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+
+FetchContent_MakeAvailable(sol2 nlohmann_json)
 
 # Tell sol2 we're using plain Lua, not LuaJIT
 add_compile_definitions(
@@ -220,6 +230,7 @@ target_include_directories(twin_transport PUBLIC
 target_link_libraries(twin_transport PUBLIC
     rt          # POSIX shared memory
     Threads::Threads
+    nlohmann_json::nlohmann_json
 )
 
 target_compile_options(twin_transport PRIVATE
