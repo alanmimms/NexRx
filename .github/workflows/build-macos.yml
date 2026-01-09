@@ -28,7 +28,8 @@ jobs:
 
       - name: Install dependencies via vcpkg
         run: |
-          ./vcpkg/vcpkg install --triplet=x64-osx sdl2 luajit nlohmann-json
+          # Use regular Lua instead of LuaJIT - vcpkg LuaJIT is broken on x64-osx
+          ./vcpkg/vcpkg install --triplet=x64-osx sdl2 lua nlohmann-json
 
       - name: Configure CMake
         run: |

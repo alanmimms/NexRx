@@ -55,23 +55,33 @@ if(DEFINED VCPKG_TARGET_TRIPLET OR NEXRX_WINDOWS)
         set(SDL2_LIBRARIES SDL2::SDL2)
     endif()
 
-    # LuaJIT: try unofficial-luajit first, fall back to manual search
-    find_package(unofficial-luajit CONFIG QUIET)
-    if(unofficial-luajit_FOUND)
-        set(LUAJIT_INCLUDE_DIRS "")
-        set(LUAJIT_LIBRARIES unofficial::luajit::luajit)
+    # Lua: On macOS use regular Lua (vcpkg LuaJIT is broken), elsewhere use LuaJIT
+    if(APPLE)
+        # macOS: use regular Lua 5.4 from vcpkg
+        find_package(Lua REQUIRED)
+        set(LUAJIT_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
+        set(LUAJIT_LIBRARIES ${LUA_LIBRARIES})
+        set(NEXRX_USE_PLAIN_LUA TRUE)
+        message(STATUS "Using plain Lua: ${LUA_LIBRARIES}")
     else()
-        # Manual search for LuaJIT (vcpkg installs without cmake config)
-        find_path(LUAJIT_INCLUDE_DIRS luajit.h
-            PATH_SUFFIXES luajit luajit-2.1 luajit-2.0
-            HINTS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
-        find_library(LUAJIT_LIBRARIES
-            NAMES lua51 luajit luajit-5.1
-            HINTS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
-        if(NOT LUAJIT_INCLUDE_DIRS OR NOT LUAJIT_LIBRARIES)
-            message(FATAL_ERROR "Could not find LuaJIT. Include: ${LUAJIT_INCLUDE_DIRS}, Lib: ${LUAJIT_LIBRARIES}")
+        # Windows: use LuaJIT
+        find_package(unofficial-luajit CONFIG QUIET)
+        if(unofficial-luajit_FOUND)
+            set(LUAJIT_INCLUDE_DIRS "")
+            set(LUAJIT_LIBRARIES unofficial::luajit::luajit)
+        else()
+            # Manual search for LuaJIT (vcpkg installs without cmake config)
+            find_path(LUAJIT_INCLUDE_DIRS luajit.h
+                PATH_SUFFIXES luajit luajit-2.1 luajit-2.0
+                HINTS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+            find_library(LUAJIT_LIBRARIES
+                NAMES lua51 luajit luajit-5.1
+                HINTS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
+            if(NOT LUAJIT_INCLUDE_DIRS OR NOT LUAJIT_LIBRARIES)
+                message(FATAL_ERROR "Could not find LuaJIT. Include: ${LUAJIT_INCLUDE_DIRS}, Lib: ${LUAJIT_LIBRARIES}")
+            endif()
+            message(STATUS "Found LuaJIT: ${LUAJIT_LIBRARIES}")
         endif()
-        message(STATUS "Found LuaJIT: ${LUAJIT_LIBRARIES}")
     endif()
 else()
     # Native build: use pkg-config (Linux, macOS without vcpkg)
@@ -82,11 +92,15 @@ else()
 endif()
 
 # sol2 is header-only, we'll fetch it
-# LuaJIT is compiled as C, not C++
+# Both LuaJIT and vcpkg Lua are compiled as C, not C++
 add_compile_definitions(
     SOL_ALL_SAFETIES_OFF=1
     SOL_USING_CXX_LUA=0
 )
+# Plain Lua needs different sol2 settings
+if(NEXRX_USE_PLAIN_LUA)
+    add_compile_definitions(SOL_LUAJIT=0)
+endif()
 
 include(FetchContent)
 
