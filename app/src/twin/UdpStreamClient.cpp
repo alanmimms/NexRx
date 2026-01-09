@@ -301,12 +301,21 @@ void UdpStreamClient::receiveLoop() {
             continue;
         }
 
+        // Log every received packet for debugging
+        fprintf(stderr, "[UDP] Received %d bytes\n", n);
+        fflush(stderr);
+
         // Decode CBOR packet (strict=false to ignore any trailing bytes)
         json packet;
         try {
             packet = json::from_cbor(buffer.begin(), buffer.begin() + n, /*strict=*/false);
         } catch (const json::exception& e) {
             fprintf(stderr, "[UDP] CBOR decode error: %s\n", e.what());
+            fprintf(stderr, "[UDP] First 32 bytes: ");
+            for (int i = 0; i < std::min(n, 32); i++) {
+                fprintf(stderr, "%02X ", buffer[i]);
+            }
+            fprintf(stderr, "\n");
             fflush(stderr);
             continue;
         }
@@ -317,12 +326,6 @@ void UdpStreamClient::receiveLoop() {
                     packet.is_array() ? 1 : 0,
                     packet.is_array() ? packet.size() : 0,
                     packet.type_name());
-            // Dump first few bytes as hex for debugging
-            fprintf(stderr, "[UDP] First 32 bytes: ");
-            for (int i = 0; i < std::min(n, 32); i++) {
-                fprintf(stderr, "%02X ", buffer[i]);
-            }
-            fprintf(stderr, "\n");
             fflush(stderr);
             continue;
         }
@@ -330,19 +333,22 @@ void UdpStreamClient::receiveLoop() {
         // Check magic and version
         if (!packet[UdpProtocol::IDX_MAGIC].is_string() ||
             packet[UdpProtocol::IDX_MAGIC].get<std::string>() != UdpProtocol::MAGIC) {
-            fprintf(stderr, "[UDP] Invalid magic\n");
+            fprintf(stderr, "[UDP] Invalid magic: %s\n", packet[UdpProtocol::IDX_MAGIC].dump().c_str());
             fflush(stderr);
             continue;
         }
         if (!packet[UdpProtocol::IDX_VERSION].is_number_integer() ||
             packet[UdpProtocol::IDX_VERSION].get<int>() != UdpProtocol::VERSION) {
-            fprintf(stderr, "[UDP] Invalid version\n");
+            fprintf(stderr, "[UDP] Invalid version: %s\n", packet[UdpProtocol::IDX_VERSION].dump().c_str());
             fflush(stderr);
             continue;
         }
-        if (!packet[UdpProtocol::IDX_TYPE].is_number_integer() ||
-            packet[UdpProtocol::IDX_TYPE].get<int>() != UdpProtocol::TYPE_IQ_DATA) {
-            continue;  // Not I/Q data
+
+        int packetType = packet[UdpProtocol::IDX_TYPE].get<int>();
+        if (packetType != UdpProtocol::TYPE_IQ_DATA) {
+            fprintf(stderr, "[UDP] Ignoring packet type %d (not IQ data)\n", packetType);
+            fflush(stderr);
+            continue;
         }
 
         const auto& frames = packet[UdpProtocol::IDX_FRAMES];
