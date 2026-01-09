@@ -241,10 +241,10 @@ void UdpStreamTransport::receiveLoop() {
             continue;
         }
 
-        // Decode CBOR packet
+        // Decode CBOR packet (strict=false to ignore any trailing bytes)
         json packet;
         try {
-            packet = json::from_cbor(buffer.begin(), buffer.begin() + received);
+            packet = json::from_cbor(buffer.begin(), buffer.begin() + received, /*strict=*/false);
         } catch (const json::exception&) {
             continue;  // Invalid CBOR
         }

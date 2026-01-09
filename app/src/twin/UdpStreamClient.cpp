@@ -293,10 +293,10 @@ void UdpStreamClient::receiveLoop() {
             continue;
         }
 
-        // Decode CBOR packet
+        // Decode CBOR packet (strict=false to ignore any trailing bytes)
         json packet;
         try {
-            packet = json::from_cbor(buffer.begin(), buffer.begin() + n);
+            packet = json::from_cbor(buffer.begin(), buffer.begin() + n, /*strict=*/false);
         } catch (const json::exception& e) {
             fprintf(stderr, "[UDP] CBOR decode error: %s\n", e.what());
             fflush(stderr);
