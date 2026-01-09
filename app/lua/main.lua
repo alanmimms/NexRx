@@ -522,7 +522,7 @@ function draw()
         end
         local function logToLinear(gain)
             if gain <= 0.001 then return 0 end  -- Below -60dB, show as 0
-            local db = 20 * math.log10(gain)
+            local db = 20 * math.log(gain, 10)
             return clamp((db + 60) / 60, 0, 1)
         end
         local sliderPos = logToLinear(volume)
@@ -531,7 +531,7 @@ function draw()
             volume = linearToLog(newSliderPos)
             audio.setVolume(volume)
         end
-        local volDb = volume > 0.001 and string.format("%.0fdB", 20 * math.log10(volume)) or "-inf"
+        local volDb = volume > 0.001 and string.format("%.0fdB", 20 * math.log(volume, 10)) or "-inf"
         drawText(lx + w - 60, ly - 2, volDb, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
