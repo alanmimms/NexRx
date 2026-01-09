@@ -81,6 +81,10 @@ static_assert(alignof(IQFrame) <= 8, "IQFrame alignment must be <= 8");
 // Ring buffer header for shared memory
 // Placed at the start of the shared memory region
 //======================================================================
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4324)  // structure was padded due to alignment (intentional)
+#endif
 struct IQRingBufferHeader {
     uint32_t magic;             // Magic number for validation (0x4E585251 = "NXRQ")
     uint32_t version;           // Protocol version
@@ -108,6 +112,9 @@ struct IQRingBufferHeader {
                frame_size == sizeof(IQFrame);
     }
 };
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 // Cache line alignment for lock-free operation
 static_assert(offsetof(IQRingBufferHeader, write_pos) % 64 == 0, "write_pos must be cache-aligned");
