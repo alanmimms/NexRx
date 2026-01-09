@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies via vcpkg
         run: |
-          ./vcpkg/vcpkg install --triplet=x64-windows-static sdl2 luajit nlohmann-json
+          ./vcpkg/vcpkg install --triplet=x64-windows-static sdl2 lua nlohmann-json
           echo "=== Installed packages ==="
           ./vcpkg/vcpkg list
 
