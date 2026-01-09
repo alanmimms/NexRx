@@ -28,9 +28,11 @@ jobs:
 
       - name: Install dependencies via vcpkg
         run: |
-          ./vcpkg/vcpkg install --triplet=x64-windows-static sdl2 lua nlohmann-json
+          # Use manifest mode - vcpkg.json pins Lua to 5.4.x (5.5 not supported by sol2)
+          cd app
+          ../vcpkg/vcpkg install --triplet=x64-windows-static
           echo "=== Installed packages ==="
-          ./vcpkg/vcpkg list
+          ../vcpkg/vcpkg list
 
       - name: Configure CMake
         run: |
