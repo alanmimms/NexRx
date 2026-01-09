@@ -61,7 +61,7 @@ stimulus.addSsb("ssb_tone", {
   stimulus.addSsb("voice-id", {
       freq = 14.200e6,
       mode = "usb",
-      audioFile = "CQ-WB7NAB-gb-fem2-8k.wav",
+      audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
       loop = true  -- optional, default true
   })
 
