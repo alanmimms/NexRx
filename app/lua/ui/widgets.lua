@@ -94,7 +94,7 @@ function ui.toggle(id, label, x, y, w, h, checked, tags)
     end
 
     -- Modify tags based on state
-    local allTags = tags and {unpack(tags)} or {}
+    local allTags = tags and {table.unpack(tags)} or {}
     if checked then
         table.insert(allTags, "Active")
     end
