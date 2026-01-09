@@ -9,7 +9,6 @@
 #include <nlohmann/json.hpp>
 
 #include <cstring>
-#include <algorithm>
 
 using json = nlohmann::json;
 
@@ -30,19 +29,11 @@ bool UdpStreamClient::connect() {
         return true;
     }
 
-    fprintf(stderr, "[UDP] Creating UDP socket for port %d...\n", config_.port);
-    fflush(stderr);
-
     // Create UDP socket
     socket_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_ == SOCKET_INVALID) {
-        fprintf(stderr, "[UDP] Failed to create socket\n");
-        fflush(stderr);
         return false;
     }
-
-    fprintf(stderr, "[UDP] Socket created: fd=%d\n", (int)socket_);
-    fflush(stderr);
 
     // Allow address reuse
     net::setReuseAddr(socket_, true);
@@ -54,25 +45,10 @@ bool UdpStreamClient::connect() {
     addr.sin_port = htons(config_.port);
     addr.sin_addr.s_addr = INADDR_ANY;
 
-    fprintf(stderr, "[UDP] Binding to 0.0.0.0:%d...\n", config_.port);
-    fflush(stderr);
-
     if (bind(socket_, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) != 0) {
-        fprintf(stderr, "[UDP] Bind failed! errno=%d\n", errno);
-        fflush(stderr);
         socket_close(socket_);
         socket_ = SOCKET_INVALID;
         return false;
-    }
-
-    // Get actual bound address for logging
-    sockaddr_in boundAddr;
-    socklen_t boundLen = sizeof(boundAddr);
-    if (getsockname(socket_, reinterpret_cast<struct sockaddr*>(&boundAddr), &boundLen) == 0) {
-        char boundIp[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &boundAddr.sin_addr, boundIp, sizeof(boundIp));
-        fprintf(stderr, "[UDP] Successfully bound to %s:%d\n", boundIp, ntohs(boundAddr.sin_port));
-        fflush(stderr);
     }
 
     // Reset state
@@ -248,14 +224,6 @@ void UdpStreamClient::receiveLoop() {
     constexpr size_t MAX_PACKET_SIZE = 64 * 1024;  // 64KB should be plenty
     std::vector<uint8_t> buffer(MAX_PACKET_SIZE);
 
-    // Debug: log that receive loop has started
-    fprintf(stderr, "[UDP] Receive loop started (CBOR), listening on port %d\n", config_.port);
-    fflush(stderr);
-
-    uint64_t pollCount = 0;
-    uint64_t pollTimeouts = 0;
-    uint64_t pollErrors = 0;
-
     while (running_.load(std::memory_order_acquire)) {
         // Poll for data with timeout
         pollfd_t pfd;
@@ -264,26 +232,8 @@ void UdpStreamClient::receiveLoop() {
         pfd.revents = 0;
 
         int ret = socket_poll(&pfd, 1, 100);  // 100ms timeout
-        pollCount++;
-
-        // Periodic debug output every 50 polls (~5 seconds)
-        if (pollCount % 50 == 0) {
-            fprintf(stderr, "[UDP] Poll stats: count=%llu timeouts=%llu errors=%llu packets=%llu frames=%llu\n",
-                    (unsigned long long)pollCount,
-                    (unsigned long long)pollTimeouts,
-                    (unsigned long long)pollErrors,
-                    (unsigned long long)packetsReceived_.load(),
-                    (unsigned long long)framesReceived_.load());
-            fflush(stderr);
-        }
-
-        if (ret < 0) {
-            pollErrors++;
-            continue;
-        }
-        if (ret == 0) {
-            pollTimeouts++;
-            continue;  // Timeout
+        if (ret <= 0) {
+            continue;  // Error or timeout
         }
 
         // Receive packet
@@ -301,53 +251,31 @@ void UdpStreamClient::receiveLoop() {
             continue;
         }
 
-        // Log every received packet for debugging
-        fprintf(stderr, "[UDP] Received %d bytes\n", n);
-        fflush(stderr);
-
         // Decode CBOR packet (strict=false to ignore any trailing bytes)
         json packet;
         try {
             packet = json::from_cbor(buffer.begin(), buffer.begin() + n, /*strict=*/false);
-        } catch (const json::exception& e) {
-            fprintf(stderr, "[UDP] CBOR decode error: %s\n", e.what());
-            fprintf(stderr, "[UDP] First 32 bytes: ");
-            for (int i = 0; i < std::min(n, 32); i++) {
-                fprintf(stderr, "%02X ", buffer[i]);
-            }
-            fprintf(stderr, "\n");
-            fflush(stderr);
+        } catch (const json::exception&) {
             continue;
         }
 
         // Validate packet structure
         if (!packet.is_array() || packet.size() < 4) {
-            fprintf(stderr, "[UDP] Invalid packet structure: is_array=%d size=%zu type=%s\n",
-                    packet.is_array() ? 1 : 0,
-                    packet.is_array() ? packet.size() : 0,
-                    packet.type_name());
-            fflush(stderr);
             continue;
         }
 
         // Check magic and version
         if (!packet[UdpProtocol::IDX_MAGIC].is_string() ||
             packet[UdpProtocol::IDX_MAGIC].get<std::string>() != UdpProtocol::MAGIC) {
-            fprintf(stderr, "[UDP] Invalid magic: %s\n", packet[UdpProtocol::IDX_MAGIC].dump().c_str());
-            fflush(stderr);
             continue;
         }
         if (!packet[UdpProtocol::IDX_VERSION].is_number_integer() ||
             packet[UdpProtocol::IDX_VERSION].get<int>() != UdpProtocol::VERSION) {
-            fprintf(stderr, "[UDP] Invalid version: %s\n", packet[UdpProtocol::IDX_VERSION].dump().c_str());
-            fflush(stderr);
             continue;
         }
 
         int packetType = packet[UdpProtocol::IDX_TYPE].get<int>();
         if (packetType != UdpProtocol::TYPE_IQ_DATA) {
-            fprintf(stderr, "[UDP] Ignoring packet type %d (not IQ data)\n", packetType);
-            fflush(stderr);
             continue;
         }
 
