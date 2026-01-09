@@ -23,7 +23,8 @@ jobs:
 
       - name: Setup vcpkg
         run: |
-          git clone --depth 1 https://github.com/microsoft/vcpkg.git
+          # Full clone needed for version pinning (baseline requires git history)
+          git clone https://github.com/microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
       - name: Install dependencies via vcpkg
