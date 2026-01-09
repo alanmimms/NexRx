@@ -34,6 +34,10 @@
 #include <complex>
 #include <mutex>
 
+#ifdef __APPLE__
+#include <unistd.h>  // for chdir()
+#endif
+
 // Forward declarations
 class App;
 static App* gApp = nullptr;
@@ -1084,9 +1088,26 @@ private:
 
 int main(int argc, char* argv[]) {
     (void)argc;
+#ifndef __APPLE__
     (void)argv;
+#endif
 
     std::cout << "NexRx Application Starting..." << std::endl;
+
+#ifdef __APPLE__
+    // On macOS, if running from an app bundle, change to Resources directory
+    // so relative paths to config/ and lua/ work correctly
+    if (argv[0]) {
+        std::string exePath(argv[0]);
+        auto pos = exePath.find(".app/Contents/MacOS/");
+        if (pos != std::string::npos) {
+            std::string resourcesPath = exePath.substr(0, pos) + ".app/Contents/Resources";
+            if (chdir(resourcesPath.c_str()) == 0) {
+                std::cout << "Changed to Resources directory: " << resourcesPath << std::endl;
+            }
+        }
+    }
+#endif
 
 #ifdef _WIN32
     // Initialize Winsock on Windows
