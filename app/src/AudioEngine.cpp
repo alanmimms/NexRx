@@ -37,8 +37,9 @@ bool AudioEngine::init(uint32_t sampleRate, uint32_t channels) {
 
     // Increase period size for better VM/Windows compatibility
     // Higher latency but more tolerance for jitter
-    config.periodSizeInMilliseconds = 40;  // 40ms periods (default is often 10-20ms)
-    config.periods = 3;                     // Triple buffering
+    // Windows VMs especially need large buffers due to audio virtualization
+    config.periodSizeInMilliseconds = 100;  // 100ms periods
+    config.periods = 4;                      // Quadruple buffering
 
     ma_result result = ma_device_init(nullptr, &config, device_);
     if (result != MA_SUCCESS) {
@@ -51,10 +52,12 @@ bool AudioEngine::init(uint32_t sampleRate, uint32_t channels) {
     initialized_ = true;
 
     // Pre-allocate callback buffer (generous size to avoid reallocation)
-    // miniaudio typically requests 256-1024 frames, we allocate for 4096 to be safe
-    callbackBuffer_.resize(4096 * channels, 0.0f);
+    // With 100ms periods at 48kHz = 4800 frames, allocate 8192 to be safe
+    callbackBuffer_.resize(8192 * channels, 0.0f);
 
     std::cout << "Audio initialized: " << sampleRate << " Hz, " << channels << " channels" << std::endl;
+    std::cout << "  Actual period: " << device_->playback.internalPeriodSizeInFrames << " frames" << std::endl;
+    std::cout << "  Actual periods: " << device_->playback.internalPeriods << std::endl;
 
     return true;
 }

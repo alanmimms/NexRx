@@ -187,17 +187,20 @@ public:
             // Get volume once per callback (atomic read)
             const float volume = audioVolume_.load(std::memory_order_relaxed);
 
+            // Get current buffer state once (more efficient than per-sample atomics)
+            size_t readPos = audioReadPos_.load(std::memory_order_acquire);
+            size_t writePos = audioWritePos_.load(std::memory_order_acquire);
+
             for (uint32_t i = 0; i < frameCount; ++i) {
                 float sample = 0.0f;
 
-                size_t readPos = audioReadPos_.load(std::memory_order_acquire);
-                size_t writePos = audioWritePos_.load(std::memory_order_acquire);
-
                 if (readPos != writePos) {
                     sample = audioRingBuffer_[readPos] * audioGain * volume;
-                    audioReadPos_.store((readPos + 1) % AUDIO_BUFFER_SIZE,
-                                       std::memory_order_release);
+                    readPos = (readPos + 1) % AUDIO_BUFFER_SIZE;
                     audioSamplesRead_.fetch_add(1, std::memory_order_relaxed);
+                } else {
+                    // Buffer underrun - count it
+                    audioUnderruns_.fetch_add(1, std::memory_order_relaxed);
                 }
 
                 // Soft clip (only activates on very loud signals)
@@ -209,6 +212,9 @@ public:
                     output[i * channels + 1] = sample;
                 }
             }
+
+            // Update read position once at end
+            audioReadPos_.store(readPos, std::memory_order_release);
         });
 
         // Initialize Lua
@@ -775,9 +781,11 @@ private:
 
         lua_["rx"]["getAudioStats"] = [this]() {
             // Return audio buffer stats for debugging
+            // Returns: written, read, underruns
             return std::make_tuple(
                 static_cast<double>(audioSamplesWritten_.load()),
-                static_cast<double>(audioSamplesRead_.load())
+                static_cast<double>(audioSamplesRead_.load()),
+                static_cast<double>(audioUnderruns_.load())
             );
         };
 
@@ -975,6 +983,7 @@ private:
     bool audioDecimateSkip_ = false;  // For 96kHz→48kHz decimation
     std::atomic<uint64_t> audioSamplesWritten_{0};
     std::atomic<uint64_t> audioSamplesRead_{0};
+    std::atomic<uint64_t> audioUnderruns_{0};
 
     // Signal level metering (S-meter)
     std::atomic<float> signalLevelRms_{0.0f};    // RMS voltage level
