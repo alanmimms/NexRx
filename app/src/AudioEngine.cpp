@@ -35,6 +35,11 @@ bool AudioEngine::init(uint32_t sampleRate, uint32_t channels) {
     config.dataCallback = &AudioEngine::dataCallback;
     config.pUserData = this;
 
+    // Increase period size for better VM/Windows compatibility
+    // Higher latency but more tolerance for jitter
+    config.periodSizeInMilliseconds = 40;  // 40ms periods (default is often 10-20ms)
+    config.periods = 3;                     // Triple buffering
+
     ma_result result = ma_device_init(nullptr, &config, device_);
     if (result != MA_SUCCESS) {
         std::cerr << "Failed to initialize audio device: " << result << std::endl;

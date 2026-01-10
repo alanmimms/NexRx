@@ -971,7 +971,7 @@ private:
     std::atomic<size_t> audioWritePos_{0};
     std::atomic<size_t> audioReadPos_{0};
     std::atomic<float> audioVolume_{0.0316f};  // Volume applied before soft-clip
-    static constexpr size_t AUDIO_BUFFER_SIZE = 8192;
+    static constexpr size_t AUDIO_BUFFER_SIZE = 16384;  // ~340ms at 48kHz
     bool audioDecimateSkip_ = false;  // For 96kHz→48kHz decimation
     std::atomic<uint64_t> audioSamplesWritten_{0};
     std::atomic<uint64_t> audioSamplesRead_{0};
