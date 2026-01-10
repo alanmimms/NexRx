@@ -1,12 +1,12 @@
 // NexRx Digital Twin - UDP Stream Transport Implementation
 //
-// Uses CBOR encoding for cross-platform compatibility.
+// Uses tinycbor for efficient CBOR encoding/decoding.
 //
 // Copyright 2026 NexRx Project - MIT License
 
 #include "UdpStreamTransport.hpp"
 
-#include <nlohmann/json.hpp>
+#include <cbor.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -16,9 +16,6 @@
 #include <poll.h>
 
 #include <cstring>
-#include <algorithm>
-
-using json = nlohmann::json;
 
 namespace nexrx {
 
@@ -177,34 +174,56 @@ bool UdpStreamTransport::sendPacket() {
         return true;
     }
 
-    // Build CBOR packet: [magic, version, type, [[frame0], [frame1], ...]]
-    json packet = json::array();
-    packet.push_back(UdpProtocol::MAGIC);
-    packet.push_back(UdpProtocol::VERSION);
-    packet.push_back(UdpProtocol::TYPE_IQ_DATA);
+    // CBOR packet format: [magic, version, type, [[frame0], [frame1], ...]]
+    // Max size: header (~20 bytes) + frames (32 * ~50 bytes) = ~1700 bytes
+    uint8_t buffer[2048];
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
 
-    // Build frames array
-    json frames = json::array();
+    // Create outer array [magic, version, type, frames]
+    CborEncoder packetArray;
+    cbor_encoder_create_array(&encoder, &packetArray, 4);
+
+    // Magic string
+    cbor_encode_text_stringz(&packetArray, UdpProtocol::MAGIC);
+
+    // Version
+    cbor_encode_uint(&packetArray, UdpProtocol::VERSION);
+
+    // Type
+    cbor_encode_uint(&packetArray, UdpProtocol::TYPE_IQ_DATA);
+
+    // Frames array
+    CborEncoder framesArray;
+    cbor_encoder_create_array(&packetArray, &framesArray, sendBuffer_.size());
+
     for (const auto& f : sendBuffer_) {
         // Each frame: [seq, ts_ns, i0, q0, i1, q1, i2, q2]
-        frames.push_back(json::array({
-            f.sequence,
-            f.timestamp_ns,
-            f.qsd[0].i, f.qsd[0].q,
-            f.qsd[1].i, f.qsd[1].q,
-            f.qsd[2].i, f.qsd[2].q
-        }));
-    }
-    packet.push_back(frames);
+        CborEncoder frameArray;
+        cbor_encoder_create_array(&framesArray, &frameArray, 8);
 
-    // Encode to CBOR
-    std::vector<uint8_t> cbor = json::to_cbor(packet);
+        cbor_encode_uint(&frameArray, f.sequence);
+        cbor_encode_uint(&frameArray, f.timestamp_ns);
+        cbor_encode_int(&frameArray, f.qsd[0].i);
+        cbor_encode_int(&frameArray, f.qsd[0].q);
+        cbor_encode_int(&frameArray, f.qsd[1].i);
+        cbor_encode_int(&frameArray, f.qsd[1].q);
+        cbor_encode_int(&frameArray, f.qsd[2].i);
+        cbor_encode_int(&frameArray, f.qsd[2].q);
+
+        cbor_encoder_close_container(&framesArray, &frameArray);
+    }
+
+    cbor_encoder_close_container(&packetArray, &framesArray);
+    cbor_encoder_close_container(&encoder, &packetArray);
+
+    size_t len = cbor_encoder_get_buffer_size(&encoder, buffer);
 
     // Send
     ssize_t sent;
     {
         std::lock_guard<std::mutex> lock(destMutex_);
-        sent = sendto(socket_fd_, cbor.data(), cbor.size(), 0,
+        sent = sendto(socket_fd_, buffer, len, 0,
                       reinterpret_cast<sockaddr*>(&destAddr_),
                       sizeof(destAddr_));
     }
@@ -221,9 +240,8 @@ bool UdpStreamTransport::sendPacket() {
 }
 
 void UdpStreamTransport::receiveLoop() {
-    // CBOR packets can vary in size, allocate generous buffer
-    constexpr size_t MAX_PACKET_SIZE = 64 * 1024;  // 64KB should be plenty
-    std::vector<uint8_t> buffer(MAX_PACKET_SIZE);
+    constexpr size_t MAX_PACKET_SIZE = 4096;
+    uint8_t buffer[MAX_PACKET_SIZE];
 
     while (running_) {
         // Poll with timeout so we can check running_ flag
@@ -236,60 +254,119 @@ void UdpStreamTransport::receiveLoop() {
             continue;
         }
 
-        ssize_t received = recvfrom(socket_fd_, buffer.data(), buffer.size(), 0, nullptr, nullptr);
+        ssize_t received = recvfrom(socket_fd_, buffer, sizeof(buffer), 0, nullptr, nullptr);
         if (received <= 0) {
             continue;
         }
 
-        // Decode CBOR packet (strict=false to ignore any trailing bytes)
-        json packet;
-        try {
-            packet = json::from_cbor(buffer.begin(), buffer.begin() + received, /*strict=*/false);
-        } catch (const json::exception&) {
-            continue;  // Invalid CBOR
-        }
-
-        // Validate packet structure
-        if (!packet.is_array() || packet.size() < 4) {
+        // Parse CBOR packet
+        CborParser parser;
+        CborValue it;
+        if (cbor_parser_init(buffer, received, 0, &parser, &it) != CborNoError) {
             continue;
         }
 
-        // Check magic and version
-        if (!packet[UdpProtocol::IDX_MAGIC].is_string() ||
-            packet[UdpProtocol::IDX_MAGIC].get<std::string>() != UdpProtocol::MAGIC) {
+        // Expect outer array
+        if (!cbor_value_is_array(&it)) {
             continue;
-        }
-        if (!packet[UdpProtocol::IDX_VERSION].is_number_integer() ||
-            packet[UdpProtocol::IDX_VERSION].get<int>() != UdpProtocol::VERSION) {
-            continue;
-        }
-        if (!packet[UdpProtocol::IDX_TYPE].is_number_integer() ||
-            packet[UdpProtocol::IDX_TYPE].get<int>() != UdpProtocol::TYPE_IQ_DATA) {
-            continue;  // Not I/Q data
         }
 
-        const auto& frames = packet[UdpProtocol::IDX_FRAMES];
-        if (!frames.is_array()) {
+        CborValue packetArray;
+        if (cbor_value_enter_container(&it, &packetArray) != CborNoError) {
+            continue;
+        }
+
+        // Magic string
+        if (!cbor_value_is_text_string(&packetArray)) {
+            continue;
+        }
+        char magic[8];
+        size_t magic_len = sizeof(magic);
+        if (cbor_value_copy_text_string(&packetArray, magic, &magic_len, &packetArray) != CborNoError) {
+            continue;
+        }
+        if (strcmp(magic, UdpProtocol::MAGIC) != 0) {
+            continue;
+        }
+
+        // Version
+        if (!cbor_value_is_unsigned_integer(&packetArray)) {
+            continue;
+        }
+        uint64_t version;
+        cbor_value_get_uint64(&packetArray, &version);
+        cbor_value_advance(&packetArray);
+        if (version != UdpProtocol::VERSION) {
+            continue;
+        }
+
+        // Type
+        if (!cbor_value_is_unsigned_integer(&packetArray)) {
+            continue;
+        }
+        uint64_t type;
+        cbor_value_get_uint64(&packetArray, &type);
+        cbor_value_advance(&packetArray);
+        if (type != UdpProtocol::TYPE_IQ_DATA) {
+            continue;  // Not I/Q data (might be hole punch)
+        }
+
+        // Frames array
+        if (!cbor_value_is_array(&packetArray)) {
+            continue;
+        }
+
+        CborValue framesArray;
+        if (cbor_value_enter_container(&packetArray, &framesArray) != CborNoError) {
             continue;
         }
 
         packetsReceived_.fetch_add(1, std::memory_order_relaxed);
 
         // Process frames
-        for (const auto& frameData : frames) {
-            if (!frameData.is_array() || frameData.size() < 8) {
+        while (!cbor_value_at_end(&framesArray)) {
+            if (!cbor_value_is_array(&framesArray)) {
+                cbor_value_advance(&framesArray);
+                continue;
+            }
+
+            CborValue frameArray;
+            if (cbor_value_enter_container(&framesArray, &frameArray) != CborNoError) {
+                cbor_value_advance(&framesArray);
                 continue;
             }
 
             IQFrame frame;
-            frame.sequence = frameData[UdpProtocol::FRAME_IDX_SEQ].get<uint32_t>();
-            frame.timestamp_ns = frameData[UdpProtocol::FRAME_IDX_TS].get<uint64_t>();
-            frame.qsd[0].i = frameData[UdpProtocol::FRAME_IDX_I0].get<int32_t>();
-            frame.qsd[0].q = frameData[UdpProtocol::FRAME_IDX_Q0].get<int32_t>();
-            frame.qsd[1].i = frameData[UdpProtocol::FRAME_IDX_I1].get<int32_t>();
-            frame.qsd[1].q = frameData[UdpProtocol::FRAME_IDX_Q1].get<int32_t>();
-            frame.qsd[2].i = frameData[UdpProtocol::FRAME_IDX_I2].get<int32_t>();
-            frame.qsd[2].q = frameData[UdpProtocol::FRAME_IDX_Q2].get<int32_t>();
+            uint64_t u64val;
+            int64_t i64val;
+
+            // sequence
+            if (!cbor_value_is_unsigned_integer(&frameArray)) goto next_frame;
+            cbor_value_get_uint64(&frameArray, &u64val);
+            frame.sequence = static_cast<uint32_t>(u64val);
+            cbor_value_advance(&frameArray);
+
+            // timestamp_ns
+            if (!cbor_value_is_unsigned_integer(&frameArray)) goto next_frame;
+            cbor_value_get_uint64(&frameArray, &u64val);
+            frame.timestamp_ns = u64val;
+            cbor_value_advance(&frameArray);
+
+            // i0, q0, i1, q1, i2, q2
+            for (int ch = 0; ch < 3; ++ch) {
+                // i
+                if (!cbor_value_is_integer(&frameArray)) goto next_frame;
+                cbor_value_get_int64(&frameArray, &i64val);
+                frame.qsd[ch].i = static_cast<int32_t>(i64val);
+                cbor_value_advance(&frameArray);
+
+                // q
+                if (!cbor_value_is_integer(&frameArray)) goto next_frame;
+                cbor_value_get_int64(&frameArray, &i64val);
+                frame.qsd[ch].q = static_cast<int32_t>(i64val);
+                cbor_value_advance(&frameArray);
+            }
+
             frame.flags = 0;
 
             // Check for dropped frames via sequence number
@@ -305,20 +382,27 @@ void UdpStreamTransport::receiveLoop() {
             lastSequence_.store(frame.sequence, std::memory_order_relaxed);
 
             // Write to ring buffer
-            size_t writePos = writePos_.load(std::memory_order_relaxed);
-            size_t readPos = readPos_.load(std::memory_order_acquire);
+            {
+                size_t writePos = writePos_.load(std::memory_order_relaxed);
+                size_t readPos = readPos_.load(std::memory_order_acquire);
 
-            // Check for buffer full
-            size_t nextWrite = (writePos + 1) % config_.receiveBufferSize;
-            if (nextWrite == readPos) {
-                bufferOverruns_.fetch_add(1, std::memory_order_relaxed);
-                continue;  // Drop this frame
+                // Check for buffer full
+                size_t nextWrite = (writePos + 1) % config_.receiveBufferSize;
+                if (nextWrite == readPos) {
+                    bufferOverruns_.fetch_add(1, std::memory_order_relaxed);
+                    goto next_frame;
+                }
+
+                receiveBuffer_[writePos] = frame;
+                writePos_.store(nextWrite, std::memory_order_release);
+                framesReceived_.fetch_add(1, std::memory_order_relaxed);
             }
 
-            receiveBuffer_[writePos] = frame;
-            writePos_.store(nextWrite, std::memory_order_release);
-            framesReceived_.fetch_add(1, std::memory_order_relaxed);
+        next_frame:
+            cbor_value_leave_container(&framesArray, &frameArray);
         }
+
+        cbor_value_leave_container(&packetArray, &framesArray);
     }
 }
 

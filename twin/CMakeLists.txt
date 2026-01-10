@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 project(NexRxTwin
     VERSION 0.1.0
     DESCRIPTION "NexRx Digital Twin - Software-in-the-Loop Simulation"
-    LANGUAGES CXX
+    LANGUAGES C CXX
 )
 
 # C++20 required
@@ -48,14 +48,27 @@ FetchContent_Declare(
     GIT_TAG v3.3.0
 )
 
-# nlohmann/json for CBOR encoding in UDP transport
+# tinycbor - lightweight CBOR encoder/decoder for UDP transport
 FetchContent_Declare(
-    nlohmann_json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.3
+    tinycbor
+    GIT_REPOSITORY https://github.com/intel/tinycbor.git
+    GIT_TAG v0.6.0
 )
 
-FetchContent_MakeAvailable(sol2 nlohmann_json)
+FetchContent_MakeAvailable(sol2)
+FetchContent_GetProperties(tinycbor)
+if(NOT tinycbor_POPULATED)
+    FetchContent_Populate(tinycbor)
+endif()
+
+# Build tinycbor as a static library (it doesn't have CMake support)
+add_library(tinycbor STATIC
+    ${tinycbor_SOURCE_DIR}/src/cborencoder.c
+    ${tinycbor_SOURCE_DIR}/src/cborparser.c
+    ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
+    ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
+)
+target_include_directories(tinycbor PUBLIC ${tinycbor_SOURCE_DIR}/src)
 
 # Tell sol2 we're using plain Lua, not LuaJIT
 add_compile_definitions(
@@ -230,7 +243,7 @@ target_include_directories(twin_transport PUBLIC
 target_link_libraries(twin_transport PUBLIC
     rt          # POSIX shared memory
     Threads::Threads
-    nlohmann_json::nlohmann_json
+    tinycbor
 )
 
 target_compile_options(twin_transport PRIVATE

@@ -89,7 +89,33 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/ThePhD/sol2.git
     GIT_TAG develop
 )
+
+# tinycbor - lightweight CBOR encoder/decoder for UDP transport
+FetchContent_Declare(
+    tinycbor
+    GIT_REPOSITORY https://github.com/intel/tinycbor.git
+    GIT_TAG v0.6.0
+)
+
 FetchContent_MakeAvailable(sol2)
+
+# Only build tinycbor for remote twin (Windows/macOS)
+# For local twin (Linux), the twin subdirectory provides it
+if(NOT NEXRX_LOCAL_TWIN)
+    FetchContent_GetProperties(tinycbor)
+    if(NOT tinycbor_POPULATED)
+        FetchContent_Populate(tinycbor)
+    endif()
+
+    # Build tinycbor as a static library (it doesn't have CMake support)
+    add_library(tinycbor STATIC
+        ${tinycbor_SOURCE_DIR}/src/cborencoder.c
+        ${tinycbor_SOURCE_DIR}/src/cborparser.c
+        ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
+        ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
+    )
+    target_include_directories(tinycbor PUBLIC ${tinycbor_SOURCE_DIR}/src)
+endif()
 
 # Threads
 find_package(Threads REQUIRED)
@@ -207,6 +233,7 @@ else()
     # Windows/macOS: network transport to remote twin
     target_link_libraries(nexrx_app PRIVATE
         setbox
+        tinycbor
         ${SDL2_LIBRARIES}
         OpenGL::GL
         Threads::Threads
