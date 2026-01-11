@@ -264,6 +264,13 @@ private:
             streaming_.store(false, std::memory_order_relaxed);
             return "OK\n";
         }
+        else if (verb == "GET_STREAM_CONFIG") {
+            // Return stream configuration for rate negotiation
+            // IQ rate is fixed at 96kHz, 3 QSD channels
+            std::ostringstream oss;
+            oss << "STREAM_CONFIG iq_rate=96000 channels=3 format=cbor\n";
+            return oss.str();
+        }
 
         return "ERROR unknown command\n";
     }

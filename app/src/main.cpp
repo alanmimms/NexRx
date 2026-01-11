@@ -7,6 +7,7 @@
 #include "FontRenderer.hpp"
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
+#include "buffer/RateAdaptiveBuffer.hpp"
 
 // Twin integration
 #ifdef NEXRX_REMOTE_TWIN
@@ -179,8 +180,16 @@ public:
             std::cerr << "Warning: Could not initialize audio" << std::endl;
         }
 
-        // Initialize audio ring buffer and set RX audio callback
-        audioRingBuffer_.resize(AUDIO_BUFFER_SIZE, 0.0f);
+        // Initialize audio buffer with rate adaptation config
+        // Buffer size: ~340ms at 48kHz for jitter absorption
+        nexrx::BufferConfig audioConfig;
+        audioConfig.capacity = 16384;
+        audioConfig.targetFillRatio = 0.5f;
+        audioConfig.lowThreshold = 0.25f;
+        audioConfig.highThreshold = 0.75f;
+        audioConfig.enableAdaptation = true;
+        audioBuffer_.configure(audioConfig);
+
         demod_.setSampleRate(96000.0f);  // Input sample rate
         demod_.setMode(Demodulator::Mode::USB);
         demod_.setBfoOffset(700.0f);
@@ -194,21 +203,16 @@ public:
             // Get volume once per callback (atomic read)
             const float volume = audioVolume_.load(std::memory_order_relaxed);
 
-            // Get current buffer state once (more efficient than per-sample atomics)
-            size_t readPos = audioReadPos_.load(std::memory_order_acquire);
-            size_t writePos = audioWritePos_.load(std::memory_order_acquire);
+            // Read from rate-adaptive buffer (handles underruns gracefully)
+            // Use thread-local temp buffer to avoid allocation
+            thread_local std::vector<float> tempBuffer;
+            tempBuffer.resize(frameCount);
+
+            // Read with rate adaptation (stretches if buffer low, skips if high)
+            audioBuffer_.read(std::span<float>(tempBuffer.data(), frameCount));
 
             for (uint32_t i = 0; i < frameCount; ++i) {
-                float sample = 0.0f;
-
-                if (readPos != writePos) {
-                    sample = audioRingBuffer_[readPos] * audioGain * volume;
-                    readPos = (readPos + 1) % AUDIO_BUFFER_SIZE;
-                    audioSamplesRead_.fetch_add(1, std::memory_order_relaxed);
-                } else {
-                    // Buffer underrun - count it
-                    audioUnderruns_.fetch_add(1, std::memory_order_relaxed);
-                }
+                float sample = tempBuffer[i] * audioGain * volume;
 
                 // Soft clip (only activates on very loud signals)
                 sample = std::tanh(sample);
@@ -219,9 +223,6 @@ public:
                     output[i * channels + 1] = sample;
                 }
             }
-
-            // Update read position once at end
-            audioReadPos_.store(readPos, std::memory_order_release);
         });
 
         // Initialize Lua
@@ -268,6 +269,15 @@ public:
             uint32_t now = SDL_GetTicks();
             float dt = (now - lastFrameTime_) / 1000.0f;
             lastFrameTime_ = now;
+
+            // Update drop rate trackers (once per second)
+            float currentTime = now / 1000.0f;
+            audioDropTracker_.update(
+                audioBuffer_.stats().dropsOverflow.load(std::memory_order_relaxed),
+                currentTime);
+            iqDropTracker_.update(
+                twinHost_.framesDropped(),
+                currentTime);
 
             // Call Lua update
             callLuaUpdate(dt);
@@ -746,6 +756,11 @@ private:
             return static_cast<double>(twinHost_.framesDropped());
         };
 
+        lua_["twin"]["getIqDropRate"] = [this]() {
+            // Return IQ frame drops per second
+            return static_cast<double>(iqDropTracker_.dropsPerSecond());
+        };
+
         lua_["twin"]["getSpectrum"] = [this](sol::this_state s) {
             // Compute spectrum from accumulated I/Q data
             computeSpectrum();
@@ -800,12 +815,25 @@ private:
 
         lua_["rx"]["getAudioStats"] = [this]() {
             // Return audio buffer stats for debugging
-            // Returns: written, read, underruns
+            // Returns: written, read, underruns, drops, fill_ratio
+            const auto& stats = audioBuffer_.stats();
             return std::make_tuple(
-                static_cast<double>(audioSamplesWritten_.load()),
-                static_cast<double>(audioSamplesRead_.load()),
-                static_cast<double>(audioUnderruns_.load())
+                static_cast<double>(stats.samplesWritten.load()),
+                static_cast<double>(stats.samplesRead.load()),
+                static_cast<double>(stats.underruns.load()),
+                static_cast<double>(stats.dropsOverflow.load()),
+                static_cast<double>(audioBuffer_.getFillRatio())
             );
+        };
+
+        lua_["rx"]["getAudioDropRate"] = [this]() {
+            // Return audio drops per second
+            return static_cast<double>(audioDropTracker_.dropsPerSecond());
+        };
+
+        lua_["rx"]["getAudioBufferFill"] = [this]() {
+            // Return buffer fill ratio (0.0 - 1.0)
+            return static_cast<double>(audioBuffer_.getFillRatio());
         };
 
         lua_["rx"]["setVfo"] = [this](double freq_hz) {
@@ -994,15 +1022,14 @@ private:
 
     // Demodulator and audio output
     Demodulator demod_;
-    std::vector<float> audioRingBuffer_;
-    std::atomic<size_t> audioWritePos_{0};
-    std::atomic<size_t> audioReadPos_{0};
+    nexrx::RateAdaptiveBuffer<float> audioBuffer_;
     std::atomic<float> audioVolume_{0.0316f};  // Volume applied before soft-clip
-    static constexpr size_t AUDIO_BUFFER_SIZE = 16384;  // ~340ms at 48kHz
     bool audioDecimateSkip_ = false;  // For 96kHz→48kHz decimation
-    std::atomic<uint64_t> audioSamplesWritten_{0};
-    std::atomic<uint64_t> audioSamplesRead_{0};
-    std::atomic<uint64_t> audioUnderruns_{0};
+
+    // Drop rate tracking (computed once per second)
+    nexrx::DropRateTracker audioDropTracker_;
+    nexrx::DropRateTracker iqDropTracker_;
+    float statsUpdateTime_ = 0.0f;
 
     // Signal level metering (S-meter)
     std::atomic<float> signalLevelRms_{0.0f};    // RMS voltage level
@@ -1051,18 +1078,9 @@ private:
         float audio = demod_.process(i_f, q_f);
 
         // Write to audio buffer, decimating from 96kHz to 48kHz (every other sample)
+        // RateAdaptiveBuffer handles overflow gracefully (drops evenly)
         if (!audioDecimateSkip_) {
-            // Write to audio ring buffer
-            size_t writePos = audioWritePos_.load(std::memory_order_relaxed);
-            size_t nextPos = (writePos + 1) % AUDIO_BUFFER_SIZE;
-            size_t readPos = audioReadPos_.load(std::memory_order_acquire);
-
-            // Only write if buffer not full
-            if (nextPos != readPos) {
-                audioRingBuffer_[writePos] = audio;
-                audioWritePos_.store(nextPos, std::memory_order_release);
-                audioSamplesWritten_.fetch_add(1, std::memory_order_relaxed);
-            }
+            audioBuffer_.write(audio);
         }
         audioDecimateSkip_ = !audioDecimateSkip_;
     }

@@ -359,10 +359,19 @@ function draw()
             local framesText = string.format(" (%d frames)", twinFramesReceived)
             drawText(x + 200 + measureText(twinStatus) + 4, y + 8, framesText, 0.5, 0.5, 0.55, 1.0)
 
-            -- Audio stats for debugging
-            local audioWritten, audioRead = rx.getAudioStats()
-            local audioText = string.format("Audio: W=%d R=%d", audioWritten, audioRead)
+            -- Audio stats for debugging (now includes drops and fill ratio)
+            local audioWritten, audioRead, underruns, drops, fillRatio = rx.getAudioStats()
+            local audioText = string.format("Buf: %.0f%%", fillRatio * 100)
             drawText(x + 400, y + 8, audioText, 0.5, 0.7, 0.5, 1.0)
+
+            -- Drop rates (IQ and Audio)
+            local iqDropRate = twin.getIqDropRate()
+            local audioDropRate = rx.getAudioDropRate()
+            local dropText = string.format("Drop: IQ=%.0f/s A=%.0f/s", iqDropRate, audioDropRate)
+            -- Color red if drops > 0
+            local dropR = (iqDropRate > 0 or audioDropRate > 0) and 1.0 or 0.5
+            local dropG = (iqDropRate > 0 or audioDropRate > 0) and 0.3 or 0.7
+            drawText(x + 500, y + 8, dropText, dropR, dropG, 0.5, 1.0)
         end
 
         -- Status
