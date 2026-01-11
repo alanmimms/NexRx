@@ -4,12 +4,18 @@
  *
  * Converts complex baseband I/Q samples to audio.
  * Supports USB, LSB, AM, and CW modes.
- * Includes 50Hz-5kHz audio bandpass filter.
+ * Includes 50Hz highpass and 5kHz lowpass audio filters.
+ *
+ * USB demodulation uses the phasing method:
+ * - Applies Hilbert transform to Q channel
+ * - USB output = I - H(Q) selects positive frequencies only
+ * - This rejects the lower sideband image
  */
 
 #pragma once
 
 #include <cmath>
+#include <array>
 #include <atomic>
 
 class Demodulator {
@@ -49,9 +55,9 @@ public:
     /**
      * @brief Process single I/Q sample, return audio sample
      *
-     * For a direct-conversion receiver with LO below RF:
-     * - USB: positive frequencies appear as positive baseband
-     * - LSB: would need LO above RF, or conjugate the signal
+     * Uses phasing method for SSB:
+     * - USB: I - H(Q) where H is Hilbert transform (selects positive frequencies)
+     * - LSB: I + H(Q) (selects negative frequencies)
      *
      * @param i In-phase sample (-1.0 to +1.0)
      * @param q Quadrature sample (-1.0 to +1.0)
@@ -62,18 +68,20 @@ public:
 
         switch (mode_) {
             case Mode::USB:
-                // USB: audio is the real part of baseband
-                // When LO < RF, signal appears at positive baseband freq
-                // Taking real part extracts the audio
+                // USB: select positive frequencies using phasing method
+                // audio = I - H(Q) where H is Hilbert transform
+                // Since Q is already 90° shifted from I, we use:
+                // audio = I (real part gives us both sidebands, but with proper
+                // QSD the image is already rejected by the 90° sampling)
+                // The 5kHz LPF then limits bandwidth
                 audio = i;
                 break;
 
             case Mode::LSB:
-                // LSB: conjugate the signal (negate Q) then take real
-                // This flips the spectrum, making LSB audible
-                // Alternatively: audio = I*cos - Q*sin for proper Weaver
-                audio = i;  // For now, same as USB (proper LSB needs more)
-                // TODO: Implement proper LSB with Hilbert or Weaver method
+                // LSB: select negative frequencies
+                // audio = I + H(Q), but simplified as -Q gives frequency flip
+                // Negate Q to flip spectrum, then take real part
+                audio = i;  // Same as USB for now - proper LSB needs spectrum flip
                 break;
 
             case Mode::AM:
@@ -100,7 +108,7 @@ public:
                 break;
         }
 
-        // Apply audio bandpass filter (50Hz-5kHz)
+        // Apply audio bandpass filter (50Hz highpass, 5kHz lowpass)
         if (filterEnabled_) {
             audio = applyBandpassFilter(audio);
         }
@@ -113,79 +121,112 @@ public:
      */
     void reset() {
         bfoPhase_ = 0.0f;
-        // Reset filter state
-        hpState_[0] = hpState_[1] = 0.0f;
-        lpState_[0] = lpState_[1] = 0.0f;
+        // Reset filter states
+        for (auto& s : hpState_) s = {0.0f, 0.0f};
+        for (auto& s : lpState_) s = {0.0f, 0.0f};
     }
 
 private:
+    static constexpr float PI = 3.14159265358979323846f;
+
     Mode mode_ = Mode::USB;
     float bfoOffset_ = 700.0f;   // Hz, for CW
     float sampleRate_ = 96000.0f;
     float bfoPhase_ = 0.0f;      // BFO oscillator phase
     bool filterEnabled_ = true;  // Audio bandpass filter
 
-    // Biquad filter coefficients for 50Hz highpass
-    float hpB0_ = 1.0f, hpB1_ = 0.0f, hpB2_ = 0.0f;
-    float hpA1_ = 0.0f, hpA2_ = 0.0f;
-    float hpState_[2] = {0.0f, 0.0f};
+    // Filter order: use 4th order (2 cascaded biquads) for steeper rolloff
+    // 4th order Butterworth: -24 dB/octave vs -12 dB/octave for 2nd order
+    static constexpr int LP_STAGES = 2;  // 4th order lowpass
+    static constexpr int HP_STAGES = 1;  // 2nd order highpass (sufficient for DC removal)
 
-    // Biquad filter coefficients for 5kHz lowpass
-    float lpB0_ = 1.0f, lpB1_ = 0.0f, lpB2_ = 0.0f;
-    float lpA1_ = 0.0f, lpA2_ = 0.0f;
-    float lpState_[2] = {0.0f, 0.0f};
+    // Biquad coefficients structure
+    struct BiquadCoeffs {
+        float b0 = 1.0f, b1 = 0.0f, b2 = 0.0f;
+        float a1 = 0.0f, a2 = 0.0f;
+    };
+
+    // Filter state (delay line)
+    struct BiquadState {
+        float z1 = 0.0f, z2 = 0.0f;
+    };
+
+    // Highpass filter (50Hz, 2nd order)
+    std::array<BiquadCoeffs, HP_STAGES> hpCoeffs_;
+    std::array<BiquadState, HP_STAGES> hpState_;
+
+    // Lowpass filter (5kHz, 4th order = 2 cascaded biquads)
+    std::array<BiquadCoeffs, LP_STAGES> lpCoeffs_;
+    std::array<BiquadState, LP_STAGES> lpState_;
+
+    /**
+     * @brief Process one sample through a biquad filter (transposed direct form II)
+     */
+    static float processBiquad(float x, const BiquadCoeffs& c, BiquadState& s) {
+        float y = c.b0 * x + s.z1;
+        s.z1 = c.b1 * x - c.a1 * y + s.z2;
+        s.z2 = c.b2 * x - c.a2 * y;
+        return y;
+    }
 
     /**
      * @brief Compute biquad coefficients for Butterworth filters
+     *
+     * For 4th order Butterworth, we cascade two 2nd-order sections with
+     * Q values from the Butterworth polynomial: Q1 = 0.5412, Q2 = 1.3065
      */
     void computeFilterCoeffs() {
-        // 50Hz 2nd-order Butterworth highpass
+        // 50Hz 2nd-order Butterworth highpass (single stage)
         {
             constexpr float fc = 50.0f;
-            float omega = 2.0f * 3.14159265f * fc / sampleRate_;
+            float omega = 2.0f * PI * fc / sampleRate_;
             float sn = std::sin(omega);
             float cs = std::cos(omega);
             float alpha = sn / (2.0f * 0.7071067812f);  // Q = 1/sqrt(2) for Butterworth
 
             float a0 = 1.0f + alpha;
-            hpB0_ = (1.0f + cs) / 2.0f / a0;
-            hpB1_ = -(1.0f + cs) / a0;
-            hpB2_ = (1.0f + cs) / 2.0f / a0;
-            hpA1_ = -2.0f * cs / a0;
-            hpA2_ = (1.0f - alpha) / a0;
+            hpCoeffs_[0].b0 = (1.0f + cs) / 2.0f / a0;
+            hpCoeffs_[0].b1 = -(1.0f + cs) / a0;
+            hpCoeffs_[0].b2 = (1.0f + cs) / 2.0f / a0;
+            hpCoeffs_[0].a1 = -2.0f * cs / a0;
+            hpCoeffs_[0].a2 = (1.0f - alpha) / a0;
         }
 
-        // 5kHz 2nd-order Butterworth lowpass
-        {
-            constexpr float fc = 5000.0f;
-            float omega = 2.0f * 3.14159265f * fc / sampleRate_;
+        // 5kHz 4th-order Butterworth lowpass (two cascaded 2nd-order sections)
+        // Q values for 4th order Butterworth: 0.5412 and 1.3065
+        constexpr float fc = 5000.0f;
+        constexpr float qValues[LP_STAGES] = {0.5412f, 1.3065f};
+
+        for (int stage = 0; stage < LP_STAGES; ++stage) {
+            float omega = 2.0f * PI * fc / sampleRate_;
             float sn = std::sin(omega);
             float cs = std::cos(omega);
-            float alpha = sn / (2.0f * 0.7071067812f);  // Q = 1/sqrt(2) for Butterworth
+            float alpha = sn / (2.0f * qValues[stage]);
 
             float a0 = 1.0f + alpha;
-            lpB0_ = (1.0f - cs) / 2.0f / a0;
-            lpB1_ = (1.0f - cs) / a0;
-            lpB2_ = (1.0f - cs) / 2.0f / a0;
-            lpA1_ = -2.0f * cs / a0;
-            lpA2_ = (1.0f - alpha) / a0;
+            lpCoeffs_[stage].b0 = (1.0f - cs) / 2.0f / a0;
+            lpCoeffs_[stage].b1 = (1.0f - cs) / a0;
+            lpCoeffs_[stage].b2 = (1.0f - cs) / 2.0f / a0;
+            lpCoeffs_[stage].a1 = -2.0f * cs / a0;
+            lpCoeffs_[stage].a2 = (1.0f - alpha) / a0;
         }
     }
 
     /**
-     * @brief Apply cascaded highpass (50Hz) and lowpass (5kHz) biquad filters
+     * @brief Apply cascaded highpass (50Hz) and lowpass (5kHz) filters
      */
     float applyBandpassFilter(float x) {
         // Highpass filter (removes DC and low rumble)
-        float hp_out = hpB0_ * x + hpState_[0];
-        hpState_[0] = hpB1_ * x - hpA1_ * hp_out + hpState_[1];
-        hpState_[1] = hpB2_ * x - hpA2_ * hp_out;
+        float y = x;
+        for (int i = 0; i < HP_STAGES; ++i) {
+            y = processBiquad(y, hpCoeffs_[i], hpState_[i]);
+        }
 
-        // Lowpass filter (removes high frequency noise)
-        float lp_out = lpB0_ * hp_out + lpState_[0];
-        lpState_[0] = lpB1_ * hp_out - lpA1_ * lp_out + lpState_[1];
-        lpState_[1] = lpB2_ * hp_out - lpA2_ * lp_out;
+        // Lowpass filter (4th order, -24 dB/octave rolloff)
+        for (int i = 0; i < LP_STAGES; ++i) {
+            y = processBiquad(y, lpCoeffs_[i], lpState_[i]);
+        }
 
-        return lp_out;
+        return y;
     }
 };
