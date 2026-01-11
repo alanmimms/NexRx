@@ -40,12 +40,13 @@ public:
         return true;
     }
 
-    // Get baseband I/Q samples given LO frequency (for functional simulation)
-    // Default returns zero - override for carrier-based signals
-    // This avoids RF aliasing when sampling at audio rates
-    virtual void getBasebandIQ(double time_s, double lo_freq_hz,
-                               double& out_i, double& out_q) const {
-        (void)time_s; (void)lo_freq_hz;
+    // Get analytic RF signal (complex envelope at carrier frequency)
+    // Returns I/Q components of: signal(t) = I*cos(2π*fc*t) - Q*sin(2π*fc*t)
+    // This represents the RF signal WITHOUT any knowledge of receiver LO.
+    // The QSD simulation layer will mix this with LO to produce baseband.
+    // Default returns zero - override for carrier-based signals.
+    virtual void getRfIQ(double time_s, double& out_i, double& out_q) const {
+        (void)time_s;
         out_i = out_q = 0.0;
     }
 

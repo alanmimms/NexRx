@@ -257,8 +257,7 @@ void SsbGenerator::reset() {
     }
 }
 
-void SsbGenerator::getBasebandIQ(double time_s, double lo_freq_hz,
-                                  double& out_i, double& out_q) const {
+void SsbGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
     if (audioSource_ == AudioSource::None) {
         out_i = out_q = 0.0;
         return;
@@ -268,15 +267,14 @@ void SsbGenerator::getBasebandIQ(double time_s, double lo_freq_hz,
     double audioI, audioQ;
     getAudioIQ(time_s, audioI, audioQ);
 
-    // Baseband frequency = carrier - LO
-    double baseband_freq = carrier_hz_ - lo_freq_hz;
-    double phase = 2.0 * M_PI * baseband_freq * time_s;
+    // Generate RF at carrier frequency - QSD layer will mix with LO
+    double phase = 2.0 * M_PI * carrier_hz_ * time_s;
     double cosPhase = std::cos(phase);
     double sinPhase = std::sin(phase);
 
-    // SSB shifts audio to baseband:
-    // USB: baseband = (audioI - j*audioQ) * exp(j*phase)
-    // LSB: baseband = (audioI + j*audioQ) * exp(j*phase)
+    // SSB modulates audio onto carrier:
+    // USB: RF = (audioI - j*audioQ) * exp(j * 2π * fc * t)
+    // LSB: RF = (audioI + j*audioQ) * exp(j * 2π * fc * t)
     if (mode_ == Mode::USB) {
         // (audioI - j*audioQ) * (cos + j*sin) =
         // (audioI*cos + audioQ*sin) + j*(audioI*sin - audioQ*cos)

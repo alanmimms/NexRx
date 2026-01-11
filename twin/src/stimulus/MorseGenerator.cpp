@@ -290,19 +290,16 @@ double MorseGenerator::getEnvelope(double time_s) const {
     return 0.0;
 }
 
-void MorseGenerator::getBasebandIQ(double time_s, double lo_freq_hz,
-                                    double& out_i, double& out_q) const {
+void MorseGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
     double env = getEnvelope(time_s) * amplitude_v_;
     if (env < 1e-12) {
         out_i = out_q = 0.0;
         return;
     }
 
-    // Baseband frequency = carrier - LO
-    double baseband_freq = freq_hz_ - lo_freq_hz;
-
-    // Generate baseband I/Q analytically (no RF aliasing!)
-    double phase = 2.0 * M_PI * baseband_freq * time_s;
+    // Generate analytic RF signal at carrier frequency
+    // QSD layer will mix with LO to produce baseband
+    double phase = 2.0 * M_PI * freq_hz_ * time_s;
     out_i = env * std::cos(phase);
     out_q = env * std::sin(phase);
 }

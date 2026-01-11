@@ -53,9 +53,8 @@ public:
     void reset() override;
     [[nodiscard]] bool hasMore(double time_s) const override;
 
-    // Baseband I/Q for functional simulation (avoids RF aliasing)
-    void getBasebandIQ(double time_s, double lo_freq_hz,
-                       double& out_i, double& out_q) const override;
+    // Analytic RF signal (complex envelope at carrier)
+    void getRfIQ(double time_s, double& out_i, double& out_q) const override;
     [[nodiscard]] double carrierFrequency() const override { return freq_hz_; }
     [[nodiscard]] double getEnvelope(double time_s) const override;
 

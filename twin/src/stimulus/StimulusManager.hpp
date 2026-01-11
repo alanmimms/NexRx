@@ -84,10 +84,10 @@ public:
     // This is the main callback for Xyce behavioral source
     double getSample(double time_s) const;
 
-    // Get combined baseband I/Q from all stimuli (for functional simulation)
-    // Computes baseband analytically to avoid RF aliasing at audio sample rates
-    void getBasebandIQ(double time_s, double lo_freq_hz,
-                       double& out_i, double& out_q) const;
+    // Get combined analytic RF I/Q from all stimuli (for functional simulation)
+    // Returns complex envelope of RF signal - LO-independent.
+    // The QSD simulation layer mixes this with LO to produce baseband.
+    void getRfIQ(double time_s, double& out_i, double& out_q) const;
 
     //------------------------------------------------------------------
     // Control

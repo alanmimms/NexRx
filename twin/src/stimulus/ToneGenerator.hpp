@@ -72,14 +72,13 @@ public:
         return sum;
     }
 
-    // Get baseband I/Q for functional simulation (avoids RF aliasing)
-    void getBasebandIQ(double time_s, double lo_freq_hz,
-                       double& out_i, double& out_q) const override {
+    // Get analytic RF signal (complex envelope at carrier)
+    // Returns RF I/Q without any LO knowledge - QSD layer does mixing
+    void getRfIQ(double time_s, double& out_i, double& out_q) const override {
         out_i = out_q = 0.0;
         for (const auto& tone : tones_) {
-            double baseband_freq = tone.frequency_hz - lo_freq_hz;
             double phase_rad = tone.phase_deg * M_PI / 180.0;
-            double phase = 2.0 * M_PI * baseband_freq * time_s + phase_rad;
+            double phase = 2.0 * M_PI * tone.frequency_hz * time_s + phase_rad;
             out_i += tone.amplitude_v * std::cos(phase);
             out_q += tone.amplitude_v * std::sin(phase);
         }

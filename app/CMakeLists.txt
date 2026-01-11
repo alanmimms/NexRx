@@ -26,16 +26,8 @@ endif()
 # Export compile commands for IDE integration
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Platform detection
-# Twin (circuit simulation) only runs on Linux. Windows/macOS connect over network.
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(NEXRX_LOCAL_TWIN TRUE)
-    set(NEXRX_REMOTE_TWIN FALSE)
-else()
-    set(NEXRX_LOCAL_TWIN FALSE)
-    set(NEXRX_REMOTE_TWIN TRUE)
-    message(STATUS "Building for ${CMAKE_SYSTEM_NAME} - will use network transport to twin")
-endif()
+# All platforms use TCP/UDP to connect to twin (signalgen or STM32)
+set(NEXRX_REMOTE_TWIN TRUE)
 
 # -----------------------------------------------------------------------------
 # Dependencies
@@ -99,36 +91,26 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(sol2)
 
-# Only build tinycbor for remote twin (Windows/macOS)
-# For local twin (Linux), the twin subdirectory provides it
-if(NOT NEXRX_LOCAL_TWIN)
-    FetchContent_GetProperties(tinycbor)
-    if(NOT tinycbor_POPULATED)
-        FetchContent_Populate(tinycbor)
-    endif()
-
-    # Build tinycbor as a static library (it doesn't have CMake support)
-    add_library(tinycbor STATIC
-        ${tinycbor_SOURCE_DIR}/src/cborencoder.c
-        ${tinycbor_SOURCE_DIR}/src/cborparser.c
-        ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
-        ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
-    )
-    target_include_directories(tinycbor PUBLIC ${tinycbor_SOURCE_DIR}/src)
+# Build tinycbor for CBOR encoding/decoding
+FetchContent_GetProperties(tinycbor)
+if(NOT tinycbor_POPULATED)
+    FetchContent_Populate(tinycbor)
 endif()
+
+# Build tinycbor as a static library (it doesn't have CMake support)
+add_library(tinycbor STATIC
+    ${tinycbor_SOURCE_DIR}/src/cborencoder.c
+    ${tinycbor_SOURCE_DIR}/src/cborparser.c
+    ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
+    ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
+)
+target_include_directories(tinycbor PUBLIC ${tinycbor_SOURCE_DIR}/src)
 
 # Threads
 find_package(Threads REQUIRED)
 
-# -----------------------------------------------------------------------------
-# Twin libraries (transport and host DSP)
-# -----------------------------------------------------------------------------
+# Twin transport headers (for IQFrame, etc.)
 set(TWIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../twin")
-
-if(NEXRX_LOCAL_TWIN)
-    # Linux: build twin libraries directly (shares code with twin server)
-    add_subdirectory(${TWIN_DIR} ${CMAKE_BINARY_DIR}/twin EXCLUDE_FROM_ALL)
-endif()
 
 # -----------------------------------------------------------------------------
 # SetBox library - tag-based configuration engine
@@ -217,34 +199,20 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(AUDIO_LIBS winmm)
 endif()
 
-# Platform-specific link libraries
-if(NEXRX_LOCAL_TWIN)
-    # Linux: link twin libraries directly
-    target_link_libraries(nexrx_app PRIVATE
-        setbox
-        twin_transport
-        twin_host
-        ${SDL2_LIBRARIES}
-        OpenGL::GL
-        Threads::Threads
-        ${AUDIO_LIBS}
-    )
-else()
-    # Windows/macOS: network transport to remote twin
-    target_link_libraries(nexrx_app PRIVATE
-        setbox
-        tinycbor
-        ${SDL2_LIBRARIES}
-        OpenGL::GL
-        Threads::Threads
-        ${AUDIO_LIBS}
-    )
-    target_compile_definitions(nexrx_app PRIVATE NEXRX_REMOTE_TWIN)
+# Link libraries - all platforms use TCP/UDP to twin
+target_link_libraries(nexrx_app PRIVATE
+    setbox
+    tinycbor
+    ${SDL2_LIBRARIES}
+    OpenGL::GL
+    Threads::Threads
+    ${AUDIO_LIBS}
+)
+target_compile_definitions(nexrx_app PRIVATE NEXRX_REMOTE_TWIN)
 
-    # Windows needs Winsock2
-    if(WIN32)
-        target_link_libraries(nexrx_app PRIVATE ws2_32)
-    endif()
+# Windows needs Winsock2
+if(WIN32)
+    target_link_libraries(nexrx_app PRIVATE ws2_32)
 endif()
 
 # Compiler-specific warning flags

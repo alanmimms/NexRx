@@ -258,7 +258,14 @@ std::optional<std::vector<uint8_t>> TcpControlTransport::receiveMessage(
     size_t received = 0;
     while (received < 4) {
         ssize_t n = recv(fd, header + received, 4 - received, 0);
-        if (n <= 0) {
+        if (n < 0) {
+            // Error - could be timeout (EAGAIN/EWOULDBLOCK) or real error
+            // Return nullopt but don't close connection for timeout
+            return std::nullopt;
+        }
+        if (n == 0) {
+            // Client closed connection - signal with special marker
+            // We'll handle this differently in receiveRequest
             return std::nullopt;
         }
         received += n;
@@ -328,7 +335,12 @@ Result<std::vector<uint8_t>> TcpControlTransport::receiveRequest(
 
     auto request = receiveMessage(conn_fd_, timeout);
     if (!request) {
-        // Client may have disconnected
+        // Check if it was a timeout (EAGAIN/EWOULDBLOCK) vs real disconnect
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // Just a timeout - keep connection open
+            return {{}, TransportError::Timeout};
+        }
+        // Client disconnected or error - close connection
         close(conn_fd_);
         conn_fd_ = -1;
         peerAddr_.clear();

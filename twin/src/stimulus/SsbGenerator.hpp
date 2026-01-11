@@ -63,9 +63,8 @@ public:
     [[nodiscard]] std::string description() const override;
     void reset() override;
 
-    // Baseband I/Q for functional simulation
-    void getBasebandIQ(double time_s, double lo_freq_hz,
-                       double& out_i, double& out_q) const override;
+    // Analytic RF signal (complex envelope at carrier)
+    void getRfIQ(double time_s, double& out_i, double& out_q) const override;
     [[nodiscard]] double carrierFrequency() const override { return carrier_hz_; }
 
     //------------------------------------------------------------------

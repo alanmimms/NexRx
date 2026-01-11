@@ -9,15 +9,9 @@
 #include "WaterfallRenderer.hpp"
 #include "buffer/RateAdaptiveBuffer.hpp"
 
-// Twin integration
-#ifdef NEXRX_REMOTE_TWIN
-    // Windows/macOS: connect to twin over network
-    #include "net/Socket.hpp"
-    #include "twin/HostApp.hpp"
-#else
-    // Linux: twin runs locally
-    #include "host/HostApp.hpp"
-#endif
+// Twin integration (TCP/UDP to signalgen or STM32)
+#include "net/Socket.hpp"
+#include "twin/HostApp.hpp"
 #include "transport/IQFrame.hpp"
 #include "Demodulator.hpp"
 

@@ -47,10 +47,10 @@ public:
         return rms_v_ * dist_(gen_);
     }
 
-    // Baseband I/Q for noise: independent Gaussian samples on I and Q
-    void getBasebandIQ(double time_s, double lo_freq_hz,
-                       double& out_i, double& out_q) const override {
-        (void)time_s; (void)lo_freq_hz;
+    // RF I/Q for noise: independent Gaussian samples on I and Q
+    // Noise is broadband - no carrier, mixing doesn't change its character
+    void getRfIQ(double time_s, double& out_i, double& out_q) const override {
+        (void)time_s;
         // Noise is broadband - equal contribution to I and Q
         // Divide by sqrt(2) to maintain total power
         double scale = rms_v_ / std::sqrt(2.0);

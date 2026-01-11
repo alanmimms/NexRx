@@ -5,6 +5,8 @@
 #include "TcpControlClient.hpp"
 
 #include <algorithm>
+#include <cerrno>
+#include <iostream>
 
 namespace nexrx {
 
@@ -69,7 +71,12 @@ std::string TcpControlClient::name() const {
 }
 
 bool TcpControlClient::sendMessage(std::span<const uint8_t> data) {
-    if (socket_ == SOCKET_INVALID || data.size() > config_.maxMessageSize) {
+    if (socket_ == SOCKET_INVALID) {
+        std::cerr << "[TcpClient] sendMessage: socket invalid" << std::endl;
+        return false;
+    }
+    if (data.size() > config_.maxMessageSize) {
+        std::cerr << "[TcpClient] sendMessage: data too large" << std::endl;
         return false;
     }
 
@@ -87,6 +94,8 @@ bool TcpControlClient::sendMessage(std::span<const uint8_t> data) {
         int n = send(socket_, reinterpret_cast<const char*>(header + sent),
                      static_cast<int>(4 - sent), MSG_NOSIGNAL);
         if (n <= 0) {
+            std::cerr << "[TcpClient] sendMessage: header send failed, n=" << n
+                      << " errno=" << errno << std::endl;
             return false;
         }
         sent += static_cast<size_t>(n);
@@ -98,6 +107,8 @@ bool TcpControlClient::sendMessage(std::span<const uint8_t> data) {
         int n = send(socket_, reinterpret_cast<const char*>(data.data() + sent),
                      static_cast<int>(data.size() - sent), MSG_NOSIGNAL);
         if (n <= 0) {
+            std::cerr << "[TcpClient] sendMessage: payload send failed, n=" << n
+                      << " errno=" << errno << std::endl;
             return false;
         }
         sent += static_cast<size_t>(n);

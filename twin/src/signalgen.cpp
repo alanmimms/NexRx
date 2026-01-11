@@ -455,17 +455,26 @@ int runFunctionalMode(const Options& opts) {
     for (size_t i = 0; i < numSamples; ++i) {
         double t = i * samplePeriod;
 
-        // Get baseband I/Q directly from stimulus manager (avoids RF aliasing!)
-        double bb_i = 0.0, bb_q = 0.0;
+        // Get RF I/Q from stimulus (antenna signal - knows nothing about LO)
+        double rf_i = 0.0, rf_q = 0.0;
         if (stimulusManager) {
-            stimulusManager->getBasebandIQ(t, lo_freq, bb_i, bb_q);
+            stimulusManager->getRfIQ(t, rf_i, rf_q);
         } else {
-            // Simple tone: baseband = amp * exp(j * 2π * (rf-lo) * t)
-            double baseband_freq = rf_freq - lo_freq;
-            double phase = 2.0 * M_PI * baseband_freq * t;
-            bb_i = rf_amp * std::cos(phase);
-            bb_q = rf_amp * std::sin(phase);
+            // Simple tone at RF frequency
+            double phase = 2.0 * M_PI * rf_freq * t;
+            rf_i = rf_amp * std::cos(phase);
+            rf_q = rf_amp * std::sin(phase);
         }
+
+        // QSD mixing: baseband = RF * exp(-j * 2π * lo * t)
+        // This is where the LO frequency matters - the receiver front-end
+        double lo_phase = 2.0 * M_PI * lo_freq * t;
+        double cos_lo = std::cos(lo_phase);
+        double sin_lo = std::sin(lo_phase);
+
+        // Complex multiply: (rf_i + j*rf_q) * (cos_lo - j*sin_lo)
+        double bb_i = rf_i * cos_lo + rf_q * sin_lo;
+        double bb_q = rf_q * cos_lo - rf_i * sin_lo;
 
         // Add some noise for realism
         double noise_i = (rand() / (double)RAND_MAX - 0.5) * 1e-6;
