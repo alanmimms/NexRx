@@ -88,7 +88,7 @@ public:
     App() = default;
     ~App() { shutdown(); }
 
-    bool init(int width, int height, const std::string& title) {
+    bool init(int width, int height, const std::string& title, bool vsyncEnabled = true) {
         // Initialize SDL
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
             std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
@@ -122,8 +122,15 @@ public:
             return false;
         }
 
-        // VSync
-        SDL_GL_SetSwapInterval(1);
+        // VSync - can be disabled for VMs where vsync causes scheduling issues
+        if (vsyncEnabled) {
+            SDL_GL_SetSwapInterval(1);
+            std::cout << "VSync: enabled" << std::endl;
+        } else {
+            SDL_GL_SetSwapInterval(0);
+            std::cout << "VSync: disabled (--no-vsync)" << std::endl;
+        }
+        vsyncEnabled_ = vsyncEnabled;
 
         // Get actual window size
         SDL_GetWindowSize(window_, &windowWidth_, &windowHeight_);
@@ -249,7 +256,11 @@ public:
     }
 
     void run() {
+        constexpr uint32_t TARGET_FRAME_TIME_MS = 16;  // ~60 FPS cap when vsync disabled
+
         while (running_) {
+            uint32_t frameStart = SDL_GetTicks();
+
             input_.beginFrame();
             pollEvents();
 
@@ -271,6 +282,14 @@ public:
             callLuaDraw();
 
             SDL_GL_SwapWindow(window_);
+
+            // When vsync disabled, manually cap frame rate to avoid spinning CPU
+            if (!vsyncEnabled_) {
+                uint32_t frameTime = SDL_GetTicks() - frameStart;
+                if (frameTime < TARGET_FRAME_TIME_MS) {
+                    SDL_Delay(TARGET_FRAME_TIME_MS - frameTime);
+                }
+            }
         }
     }
 
@@ -994,6 +1013,7 @@ private:
     int windowWidth_ = 0;
     int windowHeight_ = 0;
     bool running_ = false;
+    bool vsyncEnabled_ = true;
     uint32_t lastFrameTime_ = 0;
 
     InputState input_;
@@ -1096,7 +1116,21 @@ private:
 };
 
 int main(int argc, char* argv[]) {
-    (void)argc;
+    // Parse command-line arguments
+    bool disableVsync = false;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--no-vsync" || arg == "-n") {
+            disableVsync = true;
+        } else if (arg == "--help" || arg == "-h") {
+            std::cout << "Usage: nexrx_app [options]\n"
+                      << "Options:\n"
+                      << "  --no-vsync, -n   Disable VSync (reduces input latency, may improve VM audio)\n"
+                      << "  --help, -h       Show this help\n";
+            return 0;
+        }
+    }
+
 #ifndef __APPLE__
     (void)argv;
 #endif
@@ -1130,7 +1164,7 @@ int main(int argc, char* argv[]) {
     App app;
     gApp = &app;
 
-    if (!app.init(1280, 720, "NexRx")) {
+    if (!app.init(1280, 720, "NexRx", !disableVsync)) {
         std::cerr << "Failed to initialize application" << std::endl;
         return 1;
     }

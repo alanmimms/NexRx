@@ -10,6 +10,31 @@
 
 #include <cstring>
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <pthread.h>
+#endif
+
+namespace {
+
+// Boost thread priority for real-time audio processing
+void boostThreadPriority() {
+#ifdef _WIN32
+    // Windows: set thread to high priority
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+#else
+    // POSIX: try to set real-time scheduling (may require privileges)
+    struct sched_param param;
+    param.sched_priority = sched_get_priority_max(SCHED_FIFO) / 2;
+    if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &param) != 0) {
+        // Fall back - requires root or CAP_SYS_NICE
+    }
+#endif
+}
+
+} // anonymous namespace
+
 namespace nexrx {
 
 UdpStreamClient::UdpStreamClient(const UdpStreamClientConfig& config)
@@ -229,6 +254,9 @@ bool UdpStreamClient::sendHolePunch() {
 }
 
 void UdpStreamClient::receiveLoop() {
+    // Boost thread priority for real-time audio processing
+    boostThreadPriority();
+
     constexpr size_t MAX_PACKET_SIZE = 4096;
     uint8_t buffer[MAX_PACKET_SIZE];
 
