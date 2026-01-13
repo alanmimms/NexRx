@@ -27,7 +27,7 @@ stimulus.addNoise("band_noise", {
 -- CW beacon on 14.100 MHz (S7 level)
 stimulus.addMorse("nist_beacon", {
     freq = 14.0750e6,
-    amplitude = 12e-6,  -- ~S7
+    amplitude = 12e-6,
     text = "VVV DE NIST FORT COLLINS COLORADO",
     wpm = 18,
     ["repeat"] = true
@@ -36,7 +36,7 @@ stimulus.addMorse("nist_beacon", {
 -- CW station calling CQ on 14.025 MHz (S9 level)
 stimulus.addMorse("cq_station", {
     freq = 14.025e6,
-    amplitude = 50e-6,  -- S9
+    amplitude = 12e-6,
     text = "CQ CQ CQ DE W1AW W1AW K",
     wpm = 22,
     ["repeat"] = true
@@ -45,7 +45,7 @@ stimulus.addMorse("cq_station", {
 -- SSB two-tone test signal on 14.120 MHz (S9+10)
 stimulus.addSsb("two_tone", {
     freq = 14.120e6,
-    amplitude = 150e-6,  -- S9+10
+    amplitude = 5e-6,
     mode = "usb",
     tones = {700, 1900}  -- Standard two-tone IMD test
 })
@@ -53,14 +53,14 @@ stimulus.addSsb("two_tone", {
 -- SSB single tone on 14.150 MHz (S5)
 stimulus.addSsb("ssb_tone", {
     freq = 14.150e6,
-    amplitude = 3e-6,    -- S5
+    amplitude = 3e-6,
     mode = "usb",
     tones = {1000}
 })
 
 stimulus.addSsb("voice-id", {
     freq = 14.200e6,
-    amplitude = 50e-6,   -- S9 level
+    amplitude = 150e-6,
     mode = "usb",
     audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
     loop = true
