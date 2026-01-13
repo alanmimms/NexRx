@@ -1241,9 +1241,15 @@ private:
         clampWeight(lmsW0_r_, lmsW0_i_);
         clampWeight(lmsW1_r_, lmsW1_i_);
 
-        // Use the LMS-cleaned output
-        float i_f = out_i;
-        float q_f = out_q;
+        // Use QSD2 (sextature) for display - it has inherent image rejection
+        // from 6-phase sampling that works at all frequency offsets.
+        // The LMS output is used for audio demodulation where it matters most.
+        float i_f = i2;  // QSD2 for waterfall/spectrum (consistent image rejection)
+        float q_f = q2;
+
+        // Use LMS output for audio demodulation (best SNR near DC)
+        float audio_i = out_i;
+        float audio_q = out_q;
 
         // Signal level metering (RMS of I/Q magnitude)
         float mag_sq = i_f * i_f + q_f * q_f;
@@ -1272,8 +1278,8 @@ private:
         iqBuffer_[pos * 2 + 1] = q_f;
         iqBufferWritePos_.store((pos + 1) % FFT_SIZE, std::memory_order_release);
 
-        // Demodulate EVERY sample (filter needs continuous input for proper state)
-        float audio = demod_.process(i_f, q_f);
+        // Demodulate using LMS output (best image rejection for audio)
+        float audio = demod_.process(audio_i, audio_q);
 
         // Write to audio buffer, decimating from 96kHz to 48kHz (every other sample)
         // RateAdaptiveBuffer handles overflow gracefully (drops evenly)
@@ -1488,10 +1494,16 @@ private:
             std::lock_guard<std::mutex> lock(spectrumMutex_);
             if (iqBuffer_.size() < FFT_SIZE * 2) return;
 
-            // Apply window while copying
+            // Skip ahead a few samples from write position to avoid race condition.
+            // The producer writes at writePos without holding the lock, so we need
+            // to avoid reading samples that might be getting updated.
+            // Skip 8 samples (~83µs at 96kHz) - enough margin for timing jitter.
+            constexpr size_t SKIP_SAMPLES = 8;
             size_t writePos = iqBufferWritePos_.load(std::memory_order_acquire);
+            size_t readStart = (writePos + SKIP_SAMPLES) % FFT_SIZE;
+
             for (size_t n = 0; n < FFT_SIZE; ++n) {
-                size_t idx = (writePos + n) % FFT_SIZE;
+                size_t idx = (readStart + n) % FFT_SIZE;
                 fftRe[n] = iqBuffer_[idx * 2] * window[n];
                 fftIm[n] = iqBuffer_[idx * 2 + 1] * window[n];
             }

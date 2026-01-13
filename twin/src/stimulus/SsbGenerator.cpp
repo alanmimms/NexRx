@@ -88,6 +88,12 @@ void SsbGenerator::setAudioSamples(std::vector<float> samples, double sample_rat
     // Pre-compute Hilbert transform on the resampled audio
     precomputeHilbert();
 
+    // Apply crossfade at loop point to prevent transients when audio repeats
+    // This smooths any discontinuity between end and start of the buffer
+    if (samplesRepeat_ && !audioSamples_.empty()) {
+        applyLoopCrossfade();
+    }
+
     // Reset Hilbert filter state (still used for voice)
     std::fill(hilbertHistory_.begin(), hilbertHistory_.end(), 0.0);
     hilbertIndex_ = 0;
@@ -218,6 +224,55 @@ void SsbGenerator::resampleToInternalRate(const std::vector<float>& input, doubl
         }
 
         audioSamples_[out] = static_cast<float>(weightSum > 0 ? sum / weightSum : 0.0);
+    }
+}
+
+void SsbGenerator::applyLoopCrossfade() {
+    // Apply crossfade at loop boundary to eliminate discontinuity transients.
+    // Without this, the jump from end-of-buffer to start-of-buffer creates
+    // broadband impulse noise that appears as spikes near Nyquist.
+    //
+    // We blend the last N samples with the first N samples using a raised
+    // cosine fade curve, applied to both I and Q channels.
+
+    if (audioSamples_.empty()) return;
+
+    // Crossfade length: ~20ms at 48kHz = 960 samples
+    // Long enough to avoid creating new transients, short enough to preserve audio
+    constexpr size_t CROSSFADE_SAMPLES = 960;
+    size_t fadeLen = std::min(CROSSFADE_SAMPLES, audioSamples_.size() / 4);
+
+    if (fadeLen < 2) return;
+
+    size_t n = audioSamples_.size();
+
+    // Apply crossfade to I channel (audioSamples_)
+    // The last fadeLen samples fade from their original values toward sample[0].
+    // This ensures audioSamples_[N-1] ≈ audioSamples_[0] for seamless wrap.
+    float target_i = audioSamples_[0];  // Target: first sample
+    for (size_t i = 0; i < fadeLen; ++i) {
+        double t = static_cast<double>(i) / (fadeLen - 1);  // 0 → 1
+        double blend = 0.5 * (1.0 - std::cos(M_PI * t));    // 0 → 1 (raised cosine)
+
+        size_t endIdx = n - fadeLen + i;
+        float endVal = audioSamples_[endIdx];
+
+        // Blend from original toward target (sample 0)
+        audioSamples_[endIdx] = static_cast<float>(endVal * (1.0 - blend) + target_i * blend);
+    }
+
+    // Apply same crossfade to Q channel (audioSamplesQ_)
+    if (audioSamplesQ_.size() == n) {
+        float target_q = audioSamplesQ_[0];
+        for (size_t i = 0; i < fadeLen; ++i) {
+            double t = static_cast<double>(i) / (fadeLen - 1);
+            double blend = 0.5 * (1.0 - std::cos(M_PI * t));
+
+            size_t endIdx = n - fadeLen + i;
+            float endVal = audioSamplesQ_[endIdx];
+
+            audioSamplesQ_[endIdx] = static_cast<float>(endVal * (1.0 - blend) + target_q * blend);
+        }
     }
 }
 

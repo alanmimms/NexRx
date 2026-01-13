@@ -118,6 +118,7 @@ private:
     void initHilbertFilter();
     void precomputeHilbert();  // Pre-compute Q channel for samples
     void resampleToInternalRate(const std::vector<float>& input, double inputRate);
+    void applyLoopCrossfade();  // Smooth loop boundary to prevent transients
 
     // Incremental phase tracking for fast carrier generation
     // Precomputed for 480kHz oversample rate

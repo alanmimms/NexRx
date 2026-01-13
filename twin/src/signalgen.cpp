@@ -669,15 +669,6 @@ int runFunctionalMode(const Options& opts) {
     double rf_cos = 1.0, rf_sin = 0.0;
     auto [rf_cos_d, rf_sin_d] = computePhaseInc(rf_freq);
 
-    // Fast xorshift PRNG for noise generation (much faster than rand())
-    uint32_t rng_state = 12345;
-    auto fastRand = [&rng_state]() -> double {
-        rng_state ^= rng_state << 13;
-        rng_state ^= rng_state >> 17;
-        rng_state ^= rng_state << 5;
-        return (rng_state / 4294967296.0) - 0.5;  // -0.5 to +0.5
-    };
-
     for (size_t i = 0; i < numSamples * OVERSAMPLE_RATIO; ++i) {
         double t = i * oversamplePeriod;
 
@@ -701,26 +692,23 @@ int runFunctionalMode(const Options& opts) {
         rf_i *= atten_gain;
         rf_q *= atten_gain;
 
-        // Add some noise for realism (scaled for oversampling)
-        double noise_i = fastRand() * 1e-6;
-        double noise_q = fastRand() * 1e-6;
-
         // Mix and filter all 3 QSD channels at 480 kHz using incremental LO
+        // Note: Noise is added via the NoiseGenerator stimulus (Gaussian, controllable)
         // QSD0: f - k
-        double bb0_i = rf_i * lo0_cos + rf_q * lo0_sin + noise_i;
-        double bb0_q = rf_q * lo0_cos - rf_i * lo0_sin + noise_q;
+        double bb0_i = rf_i * lo0_cos + rf_q * lo0_sin;
+        double bb0_q = rf_q * lo0_cos - rf_i * lo0_sin;
         double filt0_i = applyLpf(bb0_i, lpf_zi[0]);
         double filt0_q = applyLpf(bb0_q, lpf_zq[0]);
 
         // QSD1: f + k
-        double bb1_i = rf_i * lo1_cos + rf_q * lo1_sin + noise_i;
-        double bb1_q = rf_q * lo1_cos - rf_i * lo1_sin + noise_q;
+        double bb1_i = rf_i * lo1_cos + rf_q * lo1_sin;
+        double bb1_q = rf_q * lo1_cos - rf_i * lo1_sin;
         double filt1_i = applyLpf(bb1_i, lpf_zi[1]);
         double filt1_q = applyLpf(bb1_q, lpf_zq[1]);
 
         // QSD2: f (center)
-        double bb2_i = rf_i * lo2_cos + rf_q * lo2_sin + noise_i;
-        double bb2_q = rf_q * lo2_cos - rf_i * lo2_sin + noise_q;
+        double bb2_i = rf_i * lo2_cos + rf_q * lo2_sin;
+        double bb2_q = rf_q * lo2_cos - rf_i * lo2_sin;
         double filt2_i = applyLpf(bb2_i, lpf_zi[2]);
         double filt2_q = applyLpf(bb2_q, lpf_zq[2]);
 
@@ -739,6 +727,18 @@ int runFunctionalMode(const Options& opts) {
             double c = lo2_cos * lo2_cos_d - lo2_sin * lo2_sin_d;
             double s = lo2_sin * lo2_cos_d + lo2_cos * lo2_sin_d;
             lo2_cos = c; lo2_sin = s;
+        }
+
+        // Periodically renormalize LO phases to prevent floating-point drift
+        // Every 480,000 samples (1 second at oversample rate) - negligible overhead
+        if ((i & 0x7FFFF) == 0) {  // Every ~524K samples
+            auto renorm = [](double& c, double& s) {
+                double mag = std::sqrt(c * c + s * s);
+                if (mag > 0) { c /= mag; s /= mag; }
+            };
+            renorm(lo0_cos, lo0_sin);
+            renorm(lo1_cos, lo1_sin);
+            renorm(lo2_cos, lo2_sin);
         }
 
         // Decimate: output every 5th sample (96 kHz output rate)
