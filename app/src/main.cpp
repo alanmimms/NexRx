@@ -615,6 +615,94 @@ private:
             return setbox_.getBool(name, defaultVal);
         };
 
+        lua_["setbox"]["hasTag"] = [this](const std::string& tag) {
+            return setbox_.hasTag(tag);
+        };
+
+        lua_["setbox"]["toggleTag"] = [this](const std::string& tag) {
+            setbox_.toggleTag(tag);
+        };
+
+        lua_["setbox"]["loadFile"] = [this](const std::string& path) {
+            if (!setbox_.loadFile(path)) {
+                std::cerr << "[SetBox] Failed to load " << path << ": "
+                          << setbox_.lastError() << std::endl;
+                return false;
+            }
+            return true;
+        };
+
+        // Register callback for SetBox property changes
+        // Usage: setbox.onPropertyChange(function(name, value) ... end)
+        lua_["setbox"]["onPropertyChange"] = [this](sol::function callback) {
+            setbox_.onPropertyChange([callback](const std::string& name,
+                                                const NexRx::SetBox::PropertyValue& value) {
+                try {
+                    // Convert PropertyValue to Lua value
+                    std::visit([&](auto&& val) {
+                        using T = std::decay_t<decltype(val)>;
+                        if constexpr (std::is_same_v<T, sol::object>) {
+                            callback(name, val);
+                        } else {
+                            callback(name, val);
+                        }
+                    }, value);
+                } catch (const std::exception& e) {
+                    std::cerr << "[SetBox] Callback error for '" << name << "': "
+                              << e.what() << std::endl;
+                }
+            });
+        };
+
+        // Get all resolved properties as a Lua table
+        lua_["setbox"]["resolve"] = [this]() {
+            sol::table result = lua_.create_table();
+            auto props = setbox_.resolve();
+            for (const auto& [name, value] : props) {
+                std::visit([&](auto&& val) {
+                    result[name] = val;
+                }, value);
+            }
+            return result;
+        };
+
+        // Define a rule from app Lua (alternative to loading rule files)
+        // Usage: setbox.rule { tags = {"cw", "80m"}, filterBandwidth = 800 }
+        // Note: 'tags' is optional - omitting it creates a global default rule
+        lua_["setbox"]["rule"] = [this](sol::table ruleTable) {
+            // Forward to SetBox's rule registration via its Lua state
+            sol::function ruleFunc = setbox_.lua()["rule"];
+            if (ruleFunc.valid()) {
+                // Copy the table to SetBox's Lua state
+                sol::table sbTable = setbox_.lua().create_table();
+                for (const auto& [k, v] : ruleTable) {
+                    if (k.is<std::string>()) {
+                        std::string key = k.as<std::string>();
+                        if (v.is<double>()) {
+                            sbTable[key] = v.as<double>();
+                        } else if (v.is<bool>()) {
+                            sbTable[key] = v.as<bool>();
+                        } else if (v.is<std::string>()) {
+                            sbTable[key] = v.as<std::string>();
+                        } else if (v.is<sol::table>()) {
+                            // Copy nested table (for tags)
+                            sol::table nested = setbox_.lua().create_table();
+                            sol::table srcNested = v.as<sol::table>();
+                            for (const auto& [nk, nv] : srcNested) {
+                                if (nv.is<std::string>()) {
+                                    nested[nk] = nv.as<std::string>();
+                                } else if (nv.is<double>()) {
+                                    nested[nk] = nv.as<double>();
+                                }
+                            }
+                            sbTable[key] = nested;
+                        }
+                    }
+                }
+                ruleFunc(sbTable);
+            }
+        };
+
         // Expose audio engine to Lua
         lua_["audio"] = lua_.create_table();
 
