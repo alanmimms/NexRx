@@ -765,9 +765,16 @@ int runFunctionalMode(const Options& opts) {
             //
             // TPDF uses difference of two uniform randoms: triangular distribution
             // with peak at 0, range ±1 LSB. This eliminates quantization distortion.
+            //
+            // Note: Dither amplitude is ±1 LSB ≈ ±1.2e-7 normalized ≈ -138 dBFS.
+            // This is below thermal noise floor of any real receiver.
             static thread_local std::mt19937 rng(std::random_device{}());
             static thread_local std::uniform_real_distribution<double> uniform(-0.5, 0.5);
-            auto tpdfDither = [&]() { return uniform(rng) + uniform(rng); };
+            auto tpdfDither = [&]() -> double {
+                // Return 0.0 to disable dithering for testing
+                // return 0.0;
+                return uniform(rng) + uniform(rng);
+            };
 
             constexpr double adcScale = 8388607.0 / 1.65;
 

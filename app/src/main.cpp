@@ -1434,15 +1434,13 @@ private:
         clampWeight(lmsW0_r_, lmsW0_i_);
         clampWeight(lmsW1_r_, lmsW1_i_);
 
-        // Use QSD2 (sextature) for both display and audio
-        // This bypasses LMS to test if artifacts are from LMS or twin data
-        // TODO: Re-enable LMS once attenuation artifacts are resolved
-        float i_f = i2;  // QSD2 for waterfall/spectrum
-        float q_f = q2;
+        // Use LMS output for display (best image rejection)
+        float i_f = out_i;
+        float q_f = out_q;
 
-        // Use QSD2 directly for audio (bypass LMS)
-        float audio_i = i2;
-        float audio_q = q2;
+        // Use LMS output for audio (image-rejected signal)
+        float audio_i = out_i;
+        float audio_q = out_q;
 
         // Signal level metering (RMS of I/Q magnitude)
         float mag_sq = i_f * i_f + q_f * q_f;
@@ -1666,7 +1664,7 @@ private:
         }
     }
 
-    // Compute spectrum using fast FFT
+    // Compute spectrum using fast FFT with exponential averaging
     void computeSpectrum() {
         // Pre-compute Hann window (reduces spectral leakage)
         static std::vector<float> window;
@@ -1681,6 +1679,11 @@ private:
         static std::vector<float> fftRe, fftIm;
         fftRe.resize(FFT_SIZE);
         fftIm.resize(FFT_SIZE);
+
+        // Averaged spectrum state (persistent across calls)
+        // Exponential moving average reduces noise floor variance from single-frame FFT
+        static std::vector<float> avgSpectrum;
+        static bool avgInitialized = false;
 
         // Copy IQ data under lock
         {
@@ -1716,10 +1719,26 @@ private:
             localSpectrum[outIdx] = db;
         }
 
+        // Apply exponential moving average (EMA) to reduce noise speckle
+        // Single-frame FFT of noise has high variance (chi-squared distribution).
+        // Averaging N frames reduces variance by factor of N.
+        // EMA: avg[k] = alpha * new[k] + (1-alpha) * avg[k]
+        // Alpha = 0.3 gives ~3 frame effective averaging (fast response, moderate smoothing)
+        constexpr float alpha = 0.3f;
+
+        if (!avgInitialized || avgSpectrum.size() != FFT_SIZE) {
+            avgSpectrum = localSpectrum;  // First frame: no averaging
+            avgInitialized = true;
+        } else {
+            for (size_t k = 0; k < FFT_SIZE; ++k) {
+                avgSpectrum[k] = alpha * localSpectrum[k] + (1.0f - alpha) * avgSpectrum[k];
+            }
+        }
+
         // Brief lock to update output
         {
             std::lock_guard<std::mutex> lock(spectrumMutex_);
-            spectrumData_ = std::move(localSpectrum);
+            spectrumData_ = avgSpectrum;
         }
     }
 };
