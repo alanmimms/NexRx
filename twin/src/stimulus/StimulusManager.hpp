@@ -9,6 +9,7 @@
 
 #include "AntennaStimulus.hpp"
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -90,6 +91,26 @@ public:
     void getRfIQ(double time_s, double& out_i, double& out_q) const;
 
     //------------------------------------------------------------------
+    // High-performance batch generation (lock-free after freeze)
+    //------------------------------------------------------------------
+
+    // Freeze the stimulus list for lock-free access during streaming.
+    // After calling freeze(), getRfIQ_fast() can be called without locks.
+    // Call unfreeze() before modifying stimuli.
+    void freeze();
+    void unfreeze();
+    bool isFrozen() const { return frozen_.load(std::memory_order_relaxed); }
+
+    // Lock-free version of getRfIQ - only valid after freeze()
+    void getRfIQ_fast(double time_s, double& out_i, double& out_q) const;
+
+    // Batch generate RF I/Q samples (most efficient for streaming)
+    // Generates 'count' samples starting at 'start_time' with given period.
+    // Writes interleaved I/Q pairs to output buffer (must be 2*count doubles).
+    void generateBatch(double start_time, double sample_period,
+                       size_t count, double* out_iq) const;
+
+    //------------------------------------------------------------------
     // Control
     //------------------------------------------------------------------
 
@@ -111,6 +132,10 @@ private:
 
     mutable std::mutex mutex_;
     std::unordered_map<std::string, Entry> stimuli_;
+
+    // Frozen snapshot for lock-free access during streaming
+    std::atomic<bool> frozen_{false};
+    std::vector<StimulusPtr> frozenStimuli_;  // Enabled stimuli only
 };
 
 } // namespace nexrx

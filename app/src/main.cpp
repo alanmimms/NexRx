@@ -28,6 +28,8 @@
 #include <cmath>
 #include <complex>
 #include <mutex>
+#include <algorithm>
+#include <vector>
 
 #ifdef __APPLE__
 #include <unistd.h>  // for chdir()
@@ -174,14 +176,18 @@ public:
             std::cerr << "Warning: Could not initialize audio" << std::endl;
         }
 
-        // Initialize audio buffer with rate adaptation config
-        // Buffer size: ~340ms at 48kHz for jitter absorption
+        // Audio buffer for network jitter absorption
+        // Rate adaptation is DISABLED because it causes aliasing artifacts:
+        // - readWithSkip() drops samples without anti-alias filtering
+        // - readWithStretch() uses linear interpolation (pitch shift artifacts)
+        // With twin running at 6.6x realtime, buffer stays stable without adaptation.
         nexrx::BufferConfig audioConfig;
-        audioConfig.capacity = 16384;
+        audioConfig.capacity = 32768;        // ~680ms at 48kHz (jitter buffer)
         audioConfig.targetFillRatio = 0.5f;
-        audioConfig.lowThreshold = 0.25f;
-        audioConfig.highThreshold = 0.75f;
-        audioConfig.enableAdaptation = true;
+        audioConfig.lowThreshold = 0.10f;    // Below this would stretch (disabled)
+        audioConfig.highThreshold = 0.90f;   // Above this would skip (disabled)
+        audioConfig.maxStretchRatio = 1.0f;  // No stretching
+        audioConfig.enableAdaptation = false; // Disabled - prevents aliasing
         audioBuffer_.configure(audioConfig);
 
         demod_.setSampleRate(96000.0f);  // Input sample rate
@@ -229,6 +235,9 @@ public:
     }
 
     void shutdown() {
+        // Save captured audio for debugging
+        saveAudioCapture();
+
         // Shutdown twin connection
         if (twinConnected_) {
             twinHost_.stopReceiving();
@@ -642,6 +651,27 @@ private:
             return audio_.isInitialized();
         };
 
+        // WAV recording control
+        lua_["audio"]["startRecording"] = [this](sol::optional<std::string> path) {
+            startWavRecording(path.value_or(""));
+        };
+
+        lua_["audio"]["stopRecording"] = [this]() {
+            stopWavRecording();
+        };
+
+        lua_["audio"]["isRecording"] = [this]() {
+            return isWavRecording();
+        };
+
+        lua_["audio"]["getRecordingSamples"] = [this]() {
+            return getWavSampleCount();
+        };
+
+        lua_["audio"]["getRecordingDuration"] = [this]() {
+            return static_cast<double>(getWavSampleCount()) / 48000.0;
+        };
+
         // Expose waterfall renderer to Lua
         lua_["waterfall"] = lua_.create_table();
 
@@ -772,6 +802,42 @@ private:
         lua_["twin"]["poll"] = [this]() {
             // Poll for frames if not using background thread
             return twinHost_.pollFrames(100);
+        };
+
+        lua_["twin"]["setQsdOffset"] = [this](double k_khz) {
+            // Set QSD offset (k) via TCP control
+            // QSD0 = f-k, QSD1 = f+k, QSD2 = f (sextature)
+            if (twinConnected_) {
+                std::string cmd = "SET_QSD_OFFSET " + std::to_string(k_khz);
+                twinHost_.sendCommand(cmd);
+                qsdOffsetKhz_ = k_khz;
+            }
+        };
+
+        lua_["twin"]["getQsdOffset"] = [this]() {
+            return qsdOffsetKhz_;
+        };
+
+        // Attenuator control (0-45 dB in 3 dB steps)
+        lua_["twin"]["setAttenuation"] = [this](double db) {
+            // Set total attenuation - twin will round to nearest valid value
+            if (twinConnected_) {
+                std::string cmd = "SET_ATTEN_TOTAL " + std::to_string(db);
+                twinHost_.sendCommand(cmd);
+                attenDb_ = db;
+            }
+        };
+
+        lua_["twin"]["setAttenuator"] = [this](int db, bool enabled) {
+            // Set individual attenuator (3, 6, 12, or 24 dB)
+            if (twinConnected_ && (db == 3 || db == 6 || db == 12 || db == 24)) {
+                std::string cmd = "SET_ATTEN " + std::to_string(db) + " " + (enabled ? "1" : "0");
+                twinHost_.sendCommand(cmd);
+            }
+        };
+
+        lua_["twin"]["getAttenuation"] = [this]() {
+            return attenDb_;
         };
 
         // Expose receiver controls to Lua
@@ -1010,15 +1076,37 @@ private:
     std::mutex spectrumMutex_;
     std::vector<float> spectrumData_;      // Latest spectrum (dB values)
     std::vector<float> iqBuffer_;          // Ring buffer for FFT
-    size_t iqBufferWritePos_ = 0;
+    std::atomic<size_t> iqBufferWritePos_{0};
     static constexpr size_t FFT_SIZE = 1024;
     bool twinConnected_ = false;
+    double qsdOffsetKhz_ = 12.0;           // QSD offset k in kHz (default 12kHz)
+    double attenDb_ = 0.0;                 // RF attenuator setting (0-45 dB)
+    // Incremental phase rotation for frequency shifters (avoids trig per sample)
+    float shiftCos0_ = 1.0f, shiftSin0_ = 0.0f;  // Current phasor for QSD0
+    float shiftCos1_ = 1.0f, shiftSin1_ = 0.0f;  // Current phasor for QSD1
+    float shiftCosD_ = 1.0f, shiftSinD_ = 0.0f;  // Phase increment phasor
+    float lastShiftK_ = -1.0f;                    // Last k value (to detect changes, init to invalid)
+
+    // LMS Adaptive Image Rejection weights (complex: w = wr + j*wi)
+    // Trained to make w0*QSD0 + w1*QSD1 ≈ QSD2 (the sextature reference)
+    float lmsW0_r_ = 0.5f;                 // Weight for QSD0, real part
+    float lmsW0_i_ = 0.0f;                 // Weight for QSD0, imaginary part
+    float lmsW1_r_ = 0.5f;                 // Weight for QSD1, real part
+    float lmsW1_i_ = 0.0f;                 // Weight for QSD1, imaginary part
+    float lmsMu_ = 0.001f;                 // LMS learning rate (step size)
 
     // Demodulator and audio output
     Demodulator demod_;
     nexrx::RateAdaptiveBuffer<float> audioBuffer_;
     std::atomic<float> audioVolume_{0.0316f};  // Volume applied before soft-clip
     bool audioDecimateSkip_ = false;  // For 96kHz→48kHz decimation
+    std::vector<float> audioCaptureBuffer_;  // Debug: capture audio samples
+
+    // WAV recording state
+    bool wavRecording_ = false;
+    std::string wavFilePath_ = "/tmp/nexrx_audio.wav";
+    std::vector<float> wavBuffer_;
+    size_t wavMaxSamples_ = 48000 * 60;  // Max 60 seconds at 48kHz
 
     // Drop rate tracking (computed once per second)
     nexrx::DropRateTracker audioDropTracker_;
@@ -1039,11 +1127,123 @@ private:
 
     InputState input_;
 
-    // Twin I/Q processing
+    // Twin I/Q processing with LMS Adaptive Image Rejection
     void processIQFrame(const nexrx::IQFrame& frame) {
-        // Extract I/Q from QSD0 (first channel) and convert to float
-        float i_f, q_f;
-        frame.qsd[0].toFloat(i_f, q_f);
+        // Frame rate monitoring - print every second
+        static uint64_t frameCount = 0;
+        static uint64_t audioWriteCount = 0;
+        static auto lastPrint = std::chrono::steady_clock::now();
+        frameCount++;
+
+        auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration<double>(now - lastPrint).count() >= 1.0) {
+            std::cout << "[Rate] frames/sec: " << frameCount
+                      << ", audio writes/sec: " << audioWriteCount
+                      << ", buffer fill: " << audioBuffer_.getFillRatio()
+                      << ", IQ dropped: " << twinHost_.framesDropped()
+                      << ", IQ overruns: " << twinHost_.bufferOverruns()
+                      << std::endl;
+            frameCount = 0;
+            audioWriteCount = 0;
+            lastPrint = now;
+        }
+
+        // Get all three QSD outputs
+        // QSD0: 4×(f-k) quadrature sampling - baseband shifted UP by k
+        // QSD1: 4×(f+k) quadrature sampling - baseband shifted DOWN by k
+        // QSD2: 6×f sextature sampling - baseband at center (reference)
+        float i0, q0, i1, q1, i2, q2;
+        frame.qsd[0].toFloat(i0, q0);
+        frame.qsd[1].toFloat(i1, q1);
+        frame.qsd[2].toFloat(i2, q2);
+
+        // Frequency-shift QSD0 and QSD1 to align with QSD2
+        // QSD0 is at baseband+k, shift DOWN by k: multiply by exp(-j*2π*k*t)
+        // QSD1 is at baseband-k, shift UP by k: multiply by exp(+j*2π*k*t)
+        //
+        // Using incremental phase rotation to avoid trig per sample:
+        // phasor(n+1) = phasor(n) * phasorDelta
+        constexpr float sampleRate = 96000.0f;
+        float k_hz = static_cast<float>(qsdOffsetKhz_ * 1000.0);
+
+        // Recalculate phase increment if k changed
+        if (k_hz != lastShiftK_) {
+            float phaseInc = 2.0f * 3.14159265f * k_hz / sampleRate;
+            shiftCosD_ = std::cos(phaseInc);
+            shiftSinD_ = std::sin(phaseInc);
+            lastShiftK_ = k_hz;
+        }
+
+        // Shift QSD0 DOWN by k: (i0 + j*q0) * (cos - j*sin)
+        float i0_s = i0 * shiftCos0_ + q0 * shiftSin0_;
+        float q0_s = q0 * shiftCos0_ - i0 * shiftSin0_;
+
+        // Shift QSD1 UP by k: (i1 + j*q1) * (cos + j*sin)
+        float i1_s = i1 * shiftCos1_ - q1 * shiftSin1_;
+        float q1_s = q1 * shiftCos1_ + i1 * shiftSin1_;
+
+        // Advance oscillators via incremental rotation (no trig calls!)
+        // phasor = phasor * delta: (c,s) * (cd,sd) = (c*cd - s*sd, s*cd + c*sd)
+        float c0 = shiftCos0_ * shiftCosD_ - shiftSin0_ * shiftSinD_;
+        float s0 = shiftSin0_ * shiftCosD_ + shiftCos0_ * shiftSinD_;
+        shiftCos0_ = c0;
+        shiftSin0_ = s0;
+
+        float c1 = shiftCos1_ * shiftCosD_ - shiftSin1_ * shiftSinD_;
+        float s1 = shiftSin1_ * shiftCosD_ + shiftCos1_ * shiftSinD_;
+        shiftCos1_ = c1;
+        shiftSin1_ = s1;
+
+        // =====================================================================
+        // LMS Adaptive Image Rejection (from doc/multiple-QSDs.md)
+        //
+        // Real signals align perfectly after digital rotation.
+        // Image signals point in different directions in each mixer.
+        // Use LMS to find complex weights that null the image.
+        //
+        // We use QSD2 (sextature) as reference - it has inherent 3rd harmonic
+        // rejection from 6-phase sampling. Train weights w0, w1 such that:
+        //   output = w0 * QSD0_shifted + w1 * QSD1_shifted ≈ QSD2
+        //
+        // This transfers QSD2's image/harmonic rejection to the output.
+        // =====================================================================
+
+        // Compute weighted output: output = w0 * qsd0 + w1 * qsd1
+        // Complex multiply: (wr + j*wi) * (i + j*q) = (wr*i - wi*q) + j*(wr*q + wi*i)
+        float out_i = (lmsW0_r_ * i0_s - lmsW0_i_ * q0_s) + (lmsW1_r_ * i1_s - lmsW1_i_ * q1_s);
+        float out_q = (lmsW0_r_ * q0_s + lmsW0_i_ * i0_s) + (lmsW1_r_ * q1_s + lmsW1_i_ * i1_s);
+
+        // Error: difference from reference (QSD2)
+        float err_i = i2 - out_i;
+        float err_q = q2 - out_q;
+
+        // LMS weight update: w = w + mu * error * conj(input)
+        // error * conj(input) = (err_i + j*err_q) * (in_i - j*in_q)
+        //                     = (err_i*in_i + err_q*in_q) + j*(err_q*in_i - err_i*in_q)
+        float update0_r = err_i * i0_s + err_q * q0_s;
+        float update0_i = err_q * i0_s - err_i * q0_s;
+        float update1_r = err_i * i1_s + err_q * q1_s;
+        float update1_i = err_q * i1_s - err_i * q1_s;
+
+        lmsW0_r_ += lmsMu_ * update0_r;
+        lmsW0_i_ += lmsMu_ * update0_i;
+        lmsW1_r_ += lmsMu_ * update1_r;
+        lmsW1_i_ += lmsMu_ * update1_i;
+
+        // Clamp weights to prevent runaway (should converge to ~0.5 each)
+        auto clampWeight = [](float& wr, float& wi) {
+            float mag = std::sqrt(wr * wr + wi * wi);
+            if (mag > 2.0f) {
+                wr *= 2.0f / mag;
+                wi *= 2.0f / mag;
+            }
+        };
+        clampWeight(lmsW0_r_, lmsW0_i_);
+        clampWeight(lmsW1_r_, lmsW1_i_);
+
+        // Use the LMS-cleaned output
+        float i_f = out_i;
+        float q_f = out_q;
 
         // Signal level metering (RMS of I/Q magnitude)
         float mag_sq = i_f * i_f + q_f * q_f;
@@ -1056,17 +1256,21 @@ private:
             signalSampleCount_ = 0;
         }
 
-        // Add to spectrum ring buffer (with lock)
-        {
+        // Add to spectrum ring buffer (lock-free for producer)
+        // Only the FFT consumer needs the lock, and it copies data out
+        if (iqBuffer_.size() < FFT_SIZE * 2) {
+            // One-time init (rare path, ok to be slow)
             std::lock_guard<std::mutex> lock(spectrumMutex_);
             if (iqBuffer_.size() < FFT_SIZE * 2) {
                 iqBuffer_.resize(FFT_SIZE * 2, 0.0f);
             }
-
-            iqBuffer_[iqBufferWritePos_ * 2] = i_f;
-            iqBuffer_[iqBufferWritePos_ * 2 + 1] = q_f;
-            iqBufferWritePos_ = (iqBufferWritePos_ + 1) % FFT_SIZE;
         }
+
+        // Lock-free write (single producer, consumer copies under lock)
+        size_t pos = iqBufferWritePos_.load(std::memory_order_relaxed);
+        iqBuffer_[pos * 2] = i_f;
+        iqBuffer_[pos * 2 + 1] = q_f;
+        iqBufferWritePos_.store((pos + 1) % FFT_SIZE, std::memory_order_release);
 
         // Demodulate EVERY sample (filter needs continuous input for proper state)
         float audio = demod_.process(i_f, q_f);
@@ -1075,18 +1279,196 @@ private:
         // RateAdaptiveBuffer handles overflow gracefully (drops evenly)
         if (!audioDecimateSkip_) {
             audioBuffer_.write(audio);
+            audioWriteCount++;  // Count actual writes
+
+            // Capture audio samples for debugging (first 5 seconds at 48kHz)
+            // Apply gain to match what you hear (otherwise values are ~1e-6)
+            if (audioCaptureBuffer_.size() < 48000 * 5) {
+                constexpr float captureGain = 500000.0f;
+                float volume = audioVolume_.load(std::memory_order_relaxed);
+                float scaledAudio = std::tanh(audio * captureGain * volume);
+                audioCaptureBuffer_.push_back(scaledAudio);
+            }
+
+            // WAV recording (controllable, up to 60 seconds)
+            // Apply same gain as playback so recorded audio matches what you hear
+            if (wavRecording_ && wavBuffer_.size() < wavMaxSamples_) {
+                constexpr float recordGain = 500000.0f;  // Match playback gain
+                float volume = audioVolume_.load(std::memory_order_relaxed);
+                float scaledAudio = std::tanh(audio * recordGain * volume);  // With soft clip
+                wavBuffer_.push_back(scaledAudio);
+                // Debug: print first few samples
+                if (wavBuffer_.size() <= 10) {
+                    std::cout << "[WAV] sample " << wavBuffer_.size()
+                              << ": raw=" << audio << " scaled=" << scaledAudio << std::endl;
+                }
+            }
         }
         audioDecimateSkip_ = !audioDecimateSkip_;
     }
 
-    // Simple DFT for spectrum (replace with FFT library for performance)
+    void saveAudioCapture() {
+        if (audioCaptureBuffer_.empty()) return;
+
+        // Write as raw 32-bit float PCM for easy analysis
+        std::ofstream file("/tmp/audio_capture.raw", std::ios::binary);
+        if (file) {
+            file.write(reinterpret_cast<const char*>(audioCaptureBuffer_.data()),
+                       audioCaptureBuffer_.size() * sizeof(float));
+            std::cout << "[Debug] Saved " << audioCaptureBuffer_.size()
+                      << " audio samples to /tmp/audio_capture.raw (48kHz float32)" << std::endl;
+
+            // Also print stats
+            float minVal = *std::min_element(audioCaptureBuffer_.begin(), audioCaptureBuffer_.end());
+            float maxVal = *std::max_element(audioCaptureBuffer_.begin(), audioCaptureBuffer_.end());
+            float sum = 0, sumSq = 0;
+            for (float s : audioCaptureBuffer_) {
+                sum += s;
+                sumSq += s * s;
+            }
+            float mean = sum / audioCaptureBuffer_.size();
+            float rms = std::sqrt(sumSq / audioCaptureBuffer_.size());
+            std::cout << "[Debug] Audio stats: min=" << minVal << " max=" << maxVal
+                      << " mean=" << mean << " rms=" << rms << std::endl;
+        }
+    }
+
+    // WAV recording control
+    void startWavRecording(const std::string& path = "") {
+        if (!path.empty()) {
+            wavFilePath_ = path;
+        }
+        wavBuffer_.clear();
+        wavBuffer_.reserve(wavMaxSamples_);
+        wavRecording_ = true;
+        std::cout << "[Audio] Started WAV recording to " << wavFilePath_ << std::endl;
+    }
+
+    void stopWavRecording() {
+        if (!wavRecording_) return;
+        wavRecording_ = false;
+
+        if (wavBuffer_.empty()) {
+            std::cout << "[Audio] No samples recorded" << std::endl;
+            return;
+        }
+
+        // Write WAV file
+        saveWavFile(wavFilePath_, wavBuffer_, 48000);
+    }
+
+    bool isWavRecording() const { return wavRecording_; }
+    size_t getWavSampleCount() const { return wavBuffer_.size(); }
+
+    void saveWavFile(const std::string& path, const std::vector<float>& samples, int sampleRate) {
+        std::ofstream file(path, std::ios::binary);
+        if (!file) {
+            std::cerr << "[Audio] Failed to open " << path << " for writing" << std::endl;
+            return;
+        }
+
+        // Convert float samples to 16-bit PCM
+        std::vector<int16_t> pcmData(samples.size());
+        for (size_t i = 0; i < samples.size(); ++i) {
+            float s = std::clamp(samples[i], -1.0f, 1.0f);
+            pcmData[i] = static_cast<int16_t>(s * 32767.0f);
+        }
+
+        // WAV header
+        uint32_t dataSize = pcmData.size() * sizeof(int16_t);
+        uint32_t fileSize = 36 + dataSize;
+        uint16_t numChannels = 1;
+        uint16_t bitsPerSample = 16;
+        uint32_t byteRate = sampleRate * numChannels * bitsPerSample / 8;
+        uint16_t blockAlign = numChannels * bitsPerSample / 8;
+
+        // RIFF header
+        file.write("RIFF", 4);
+        file.write(reinterpret_cast<const char*>(&fileSize), 4);
+        file.write("WAVE", 4);
+
+        // fmt chunk
+        file.write("fmt ", 4);
+        uint32_t fmtSize = 16;
+        file.write(reinterpret_cast<const char*>(&fmtSize), 4);
+        uint16_t audioFormat = 1;  // PCM
+        file.write(reinterpret_cast<const char*>(&audioFormat), 2);
+        file.write(reinterpret_cast<const char*>(&numChannels), 2);
+        file.write(reinterpret_cast<const char*>(&sampleRate), 4);
+        file.write(reinterpret_cast<const char*>(&byteRate), 4);
+        file.write(reinterpret_cast<const char*>(&blockAlign), 2);
+        file.write(reinterpret_cast<const char*>(&bitsPerSample), 2);
+
+        // data chunk
+        file.write("data", 4);
+        file.write(reinterpret_cast<const char*>(&dataSize), 4);
+        file.write(reinterpret_cast<const char*>(pcmData.data()), dataSize);
+
+        float duration = static_cast<float>(samples.size()) / sampleRate;
+        std::cout << "[Audio] Saved " << path << " (" << samples.size()
+                  << " samples, " << std::fixed << std::setprecision(2)
+                  << duration << "s)" << std::endl;
+
+        // Print audio stats
+        float minVal = *std::min_element(samples.begin(), samples.end());
+        float maxVal = *std::max_element(samples.begin(), samples.end());
+        float sumSq = 0;
+        for (float s : samples) sumSq += s * s;
+        float rms = std::sqrt(sumSq / samples.size());
+        std::cout << "[Audio] Stats: min=" << minVal << " max=" << maxVal
+                  << " rms=" << rms << std::endl;
+    }
+
+    // In-place radix-2 Cooley-Tukey FFT (O(N log N) instead of O(N²))
+    // Much faster than DFT: ~10,000 ops vs ~1,000,000 ops for N=1024
+    void fftInPlace(float* re, float* im, size_t n) {
+        // Bit-reversal permutation
+        for (size_t i = 1, j = 0; i < n; ++i) {
+            size_t bit = n >> 1;
+            for (; j & bit; bit >>= 1) {
+                j ^= bit;
+            }
+            j ^= bit;
+            if (i < j) {
+                std::swap(re[i], re[j]);
+                std::swap(im[i], im[j]);
+            }
+        }
+
+        // Cooley-Tukey iterative FFT
+        for (size_t len = 2; len <= n; len <<= 1) {
+            float angle = -2.0f * 3.14159265f / len;
+            float wRe = std::cos(angle);
+            float wIm = std::sin(angle);
+
+            for (size_t i = 0; i < n; i += len) {
+                float curRe = 1.0f, curIm = 0.0f;
+
+                for (size_t j = 0; j < len / 2; ++j) {
+                    size_t u = i + j;
+                    size_t v = i + j + len / 2;
+
+                    // Butterfly: (u, v) = (u + w*v, u - w*v)
+                    float tRe = curRe * re[v] - curIm * im[v];
+                    float tIm = curRe * im[v] + curIm * re[v];
+
+                    re[v] = re[u] - tRe;
+                    im[v] = im[u] - tIm;
+                    re[u] = re[u] + tRe;
+                    im[u] = im[u] + tIm;
+
+                    // Advance twiddle: cur *= w
+                    float nextRe = curRe * wRe - curIm * wIm;
+                    float nextIm = curRe * wIm + curIm * wRe;
+                    curRe = nextRe;
+                    curIm = nextIm;
+                }
+            }
+        }
+    }
+
+    // Compute spectrum using fast FFT
     void computeSpectrum() {
-        std::lock_guard<std::mutex> lock(spectrumMutex_);
-
-        if (iqBuffer_.size() < FFT_SIZE * 2) return;
-
-        spectrumData_.resize(FFT_SIZE);
-
         // Pre-compute Hann window (reduces spectral leakage)
         static std::vector<float> window;
         if (window.size() != FFT_SIZE) {
@@ -1096,33 +1478,43 @@ private:
             }
         }
 
-        // Simple magnitude spectrum via DFT
-        // For real performance, use FFTW or similar
-        for (size_t k = 0; k < FFT_SIZE; ++k) {
-            float re = 0.0f, im = 0.0f;
+        // Buffers for FFT (reused across calls)
+        static std::vector<float> fftRe, fftIm;
+        fftRe.resize(FFT_SIZE);
+        fftIm.resize(FFT_SIZE);
 
+        // Copy IQ data under lock
+        {
+            std::lock_guard<std::mutex> lock(spectrumMutex_);
+            if (iqBuffer_.size() < FFT_SIZE * 2) return;
+
+            // Apply window while copying
+            size_t writePos = iqBufferWritePos_.load(std::memory_order_acquire);
             for (size_t n = 0; n < FFT_SIZE; ++n) {
-                size_t idx = (iqBufferWritePos_ + n) % FFT_SIZE;
-                float i_val = iqBuffer_[idx * 2] * window[n];
-                float q_val = iqBuffer_[idx * 2 + 1] * window[n];
-
-                // Complex input: i + j*q
-                float angle = -2.0f * 3.14159265f * k * n / FFT_SIZE;
-                float cos_a = std::cos(angle);
-                float sin_a = std::sin(angle);
-
-                // (i + jq) * (cos - j*sin) = i*cos + q*sin + j(q*cos - i*sin)
-                re += i_val * cos_a + q_val * sin_a;
-                im += q_val * cos_a - i_val * sin_a;
+                size_t idx = (writePos + n) % FFT_SIZE;
+                fftRe[n] = iqBuffer_[idx * 2] * window[n];
+                fftIm[n] = iqBuffer_[idx * 2 + 1] * window[n];
             }
+        }
 
-            // Magnitude in dB (compensate for Hann window coherent gain of 0.5)
-            float mag = std::sqrt(re * re + im * im) / FFT_SIZE * 2.0f;
+        // Fast FFT (O(N log N) ~= 10,000 ops vs O(N²) = 1,000,000 ops)
+        fftInPlace(fftRe.data(), fftIm.data(), FFT_SIZE);
+
+        // Convert to dB magnitude spectrum
+        std::vector<float> localSpectrum(FFT_SIZE);
+        for (size_t k = 0; k < FFT_SIZE; ++k) {
+            float mag = std::sqrt(fftRe[k] * fftRe[k] + fftIm[k] * fftIm[k]) / FFT_SIZE * 2.0f;
             float db = (mag > 1e-10f) ? 20.0f * std::log10(mag) : -100.0f;
 
             // FFT shift: put DC in center
             size_t outIdx = (k + FFT_SIZE / 2) % FFT_SIZE;
-            spectrumData_[outIdx] = db;
+            localSpectrum[outIdx] = db;
+        }
+
+        // Brief lock to update output
+        {
+            std::lock_guard<std::mutex> lock(spectrumMutex_);
+            spectrumData_ = std::move(localSpectrum);
         }
     }
 };

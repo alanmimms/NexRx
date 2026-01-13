@@ -18,6 +18,14 @@ SsbGenerator::SsbGenerator(double carrier_hz, double amplitude_v, Mode mode)
     , mode_(mode)
 {
     initHilbertFilter();
+    initPhaseIncrement();
+}
+
+void SsbGenerator::initPhaseIncrement() {
+    // Precompute phase rotation for 480kHz oversample rate
+    double delta = 2.0 * M_PI * carrier_hz_ / OVERSAMPLE_RATE;
+    phaseDeltaCos_ = std::cos(delta);
+    phaseDeltaSin_ = std::sin(delta);
 }
 
 SsbGenerator::~SsbGenerator() = default;
@@ -71,14 +79,146 @@ void SsbGenerator::setVoice(std::shared_ptr<TtsEngine> tts, bool repeat) {
 
 void SsbGenerator::setAudioSamples(std::vector<float> samples, double sample_rate, bool repeat) {
     audioSource_ = AudioSource::Samples;
-    audioSamples_ = std::move(samples);
-    audioSampleRate_ = sample_rate;
     samplesRepeat_ = repeat;
 
-    // Reset Hilbert filter state
+    // Resample to internal rate (48kHz) at load time with proper anti-alias filtering
+    // This moves all the expensive work out of the real-time path
+    resampleToInternalRate(samples, sample_rate);
+
+    // Pre-compute Hilbert transform on the resampled audio
+    precomputeHilbert();
+
+    // Reset Hilbert filter state (still used for voice)
     std::fill(hilbertHistory_.begin(), hilbertHistory_.end(), 0.0);
     hilbertIndex_ = 0;
     lastSampleTime_ = -1.0;
+}
+
+void SsbGenerator::precomputeHilbert() {
+    if (audioSamples_.empty()) {
+        audioSamplesQ_.clear();
+        return;
+    }
+
+    // Pre-compute Hilbert transform of entire audio buffer
+    // This converts O(65) per sample at runtime to O(1) lookup
+    audioSamplesQ_.resize(audioSamples_.size());
+    int center = HILBERT_TAPS / 2;
+    size_t n = audioSamples_.size();
+
+    for (size_t i = 0; i < n; ++i) {
+        double result = 0.0;
+        for (size_t k = 0; k < HILBERT_TAPS; ++k) {
+            int offset = static_cast<int>(k) - center;
+            // Use CONVOLUTION (i - offset), not correlation (i + offset)
+            // Hilbert transform is h * x, not h ⋆ x
+            int idx = static_cast<int>(i) - offset;
+
+            // Handle wrap-around or zero-pad
+            float sample = 0.0f;
+            if (idx >= 0 && idx < static_cast<int>(n)) {
+                sample = audioSamples_[idx];
+            } else if (samplesRepeat_) {
+                // Wrap around for repeating audio
+                idx = ((idx % static_cast<int>(n)) + static_cast<int>(n)) % static_cast<int>(n);
+                sample = audioSamples_[idx];
+            }
+            result += hilbertCoeffs_[k] * sample;
+        }
+        audioSamplesQ_[i] = static_cast<float>(result);
+    }
+}
+
+void SsbGenerator::resampleToInternalRate(const std::vector<float>& input, double inputRate) {
+    // Resample audio to internal rate (48kHz) using windowed-sinc interpolation
+    // This provides proper anti-alias filtering during rate conversion.
+    //
+    // All resampling is done at load time - runtime just does simple lookups.
+
+    constexpr double INTERNAL_RATE = 48000.0;
+
+    if (input.empty() || inputRate <= 0) {
+        audioSamples_.clear();
+        audioSampleRate_ = INTERNAL_RATE;
+        return;
+    }
+
+    // If already at internal rate, just copy
+    if (std::abs(inputRate - INTERNAL_RATE) < 1.0) {
+        audioSamples_ = input;
+        audioSampleRate_ = INTERNAL_RATE;
+        return;
+    }
+
+    // Calculate output size
+    double ratio = INTERNAL_RATE / inputRate;
+    size_t outputLen = static_cast<size_t>(input.size() * ratio + 0.5);
+    audioSamples_.resize(outputLen);
+    audioSampleRate_ = INTERNAL_RATE;
+
+    // Windowed-sinc interpolation parameters
+    // Filter half-width in input samples (larger = better quality, slower load)
+    constexpr int FILTER_HALF = 16;
+
+    // Cutoff at minimum of input/output Nyquist (with margin)
+    double cutoff = 0.45 * std::min(1.0, 1.0 / ratio);
+
+    // Precompute windowed-sinc coefficients for each output position's fractional offset
+    // Use Kaiser window for good stopband attenuation
+    auto kaiser = [](double n, double N, double beta) {
+        if (N <= 0) return 1.0;
+        double x = 2.0 * n / N - 1.0;
+        if (std::abs(x) > 1.0) return 0.0;
+        // I0(beta * sqrt(1 - x^2)) / I0(beta)
+        auto bessel_i0 = [](double z) {
+            double sum = 1.0, term = 1.0, z2 = z * z / 4.0;
+            for (int k = 1; k < 25; ++k) {
+                term *= z2 / (k * k);
+                sum += term;
+                if (term < 1e-12) break;
+            }
+            return sum;
+        };
+        double arg = beta * std::sqrt(1.0 - x * x);
+        return bessel_i0(arg) / bessel_i0(beta);
+    };
+
+    // Resample each output sample
+    for (size_t out = 0; out < outputLen; ++out) {
+        double inPos = out / ratio;  // Position in input
+        int inIdx = static_cast<int>(inPos);
+        double frac = inPos - inIdx;
+
+        double sum = 0.0;
+        double weightSum = 0.0;
+
+        for (int k = -FILTER_HALF; k <= FILTER_HALF; ++k) {
+            int srcIdx = inIdx + k;
+
+            // Handle boundaries
+            float srcSample;
+            if (srcIdx < 0) {
+                srcSample = samplesRepeat_ ? input[(srcIdx % (int)input.size() + input.size()) % input.size()] : 0.0f;
+            } else if (srcIdx >= (int)input.size()) {
+                srcSample = samplesRepeat_ ? input[srcIdx % input.size()] : 0.0f;
+            } else {
+                srcSample = input[srcIdx];
+            }
+
+            // Sinc value at this offset
+            double t = k - frac;
+            double sinc = (std::abs(t) < 1e-9) ? 1.0 : std::sin(M_PI * t * 2 * cutoff) / (M_PI * t);
+
+            // Kaiser window
+            double window = kaiser(k + FILTER_HALF, 2 * FILTER_HALF, 8.0);
+
+            double weight = sinc * window;
+            sum += srcSample * weight;
+            weightSum += weight;
+        }
+
+        audioSamples_[out] = static_cast<float>(weightSum > 0 ? sum / weightSum : 0.0);
+    }
 }
 
 void SsbGenerator::getAudioIQ(double time_s, double& i, double& q) const {
@@ -125,13 +265,14 @@ void SsbGenerator::getAudioIQ(double time_s, double& i, double& q) const {
                 break;
             }
 
-            // Linear interpolation
+            // Linear interpolation for both I and Q (pre-computed)
             size_t idx0 = static_cast<size_t>(sampleTime);
             size_t idx1 = (idx0 + 1) % audioSamples_.size();
             double frac = sampleTime - idx0;
 
             i = audioSamples_[idx0] * (1.0 - frac) + audioSamples_[idx1] * frac;
-            q = hilbertFilter(time_s);
+            // Use pre-computed Hilbert transform - O(1) instead of O(65)
+            q = audioSamplesQ_[idx0] * (1.0 - frac) + audioSamplesQ_[idx1] * frac;
             break;
         }
 
@@ -211,9 +352,14 @@ double SsbGenerator::getSample(double time_s) const {
     double cosCarrier = std::cos(carrierPhase);
     double sinCarrier = std::sin(carrierPhase);
 
-    // SSB phasing method
-    // USB: output = I*cos(wt) - Q*sin(wt) = upper sideband only
-    // LSB: output = I*cos(wt) + Q*sin(wt) = lower sideband only
+    // SSB phasing method for REAL output signal
+    // With audioI = audio and audioQ = Hilbert(audio):
+    // USB: output = audioI*cos - audioQ*sin → signal at fc + fa
+    // LSB: output = audioI*cos + audioQ*sin → signal at fc - fa
+    //
+    // Note: audioQ in tone mode is -cos(ωa*t), so for USB with audio = sin(ωa*t):
+    //   output = sin(ωa)*cos(ωc) - (-cos(ωa))*sin(ωc)
+    //          = sin(ωa)*cos(ωc) + cos(ωa)*sin(ωc) = sin(ωa + ωc) ✓
     double output;
     if (mode_ == Mode::USB) {
         output = audioI * cosCarrier - audioQ * sinCarrier;
@@ -267,24 +413,42 @@ void SsbGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
     double audioI, audioQ;
     getAudioIQ(time_s, audioI, audioQ);
 
-    // Generate RF at carrier frequency - QSD layer will mix with LO
-    double phase = 2.0 * M_PI * carrier_hz_ * time_s;
-    double cosPhase = std::cos(phase);
-    double sinPhase = std::sin(phase);
-
-    // SSB modulates audio onto carrier:
-    // USB: RF = (audioI - j*audioQ) * exp(j * 2π * fc * t)
-    // LSB: RF = (audioI + j*audioQ) * exp(j * 2π * fc * t)
-    if (mode_ == Mode::USB) {
-        // (audioI - j*audioQ) * (cos + j*sin) =
-        // (audioI*cos + audioQ*sin) + j*(audioI*sin - audioQ*cos)
-        out_i = amplitude_v_ * (audioI * cosPhase + audioQ * sinPhase);
-        out_q = amplitude_v_ * (audioI * sinPhase - audioQ * cosPhase);
+    // Generate RF at carrier frequency using precomputed phase increment
+    // This is O(1) per sample - just 4 muls + 2 adds, no trig calls
+    if (!phaseInitialized_) {
+        // Initialize phase on first call
+        double phase = 2.0 * M_PI * carrier_hz_ * time_s;
+        carrierCos_ = std::cos(phase);
+        carrierSin_ = std::sin(phase);
+        phaseInitialized_ = true;
     } else {
+        // Incremental rotation using precomputed delta
+        double new_cos = carrierCos_ * phaseDeltaCos_ - carrierSin_ * phaseDeltaSin_;
+        double new_sin = carrierSin_ * phaseDeltaCos_ + carrierCos_ * phaseDeltaSin_;
+        carrierCos_ = new_cos;
+        carrierSin_ = new_sin;
+    }
+
+    double cosPhase = carrierCos_;
+    double sinPhase = carrierSin_;
+
+    // SSB modulates audio onto carrier using phasing method:
+    // Audio analytic signal: z = audioI + j*audioQ (where audioQ = Hilbert(audioI))
+    //
+    // USB: RF = z * exp(j*ωc*t) = (audioI + j*audioQ) * exp(j*ωc*t)
+    //      This produces signal at (fc + fa) for audio frequency fa
+    // LSB: RF = z* * exp(j*ωc*t) = (audioI - j*audioQ) * exp(j*ωc*t)
+    //      This produces signal at (fc - fa) for audio frequency fa
+    if (mode_ == Mode::USB) {
         // (audioI + j*audioQ) * (cos + j*sin) =
         // (audioI*cos - audioQ*sin) + j*(audioI*sin + audioQ*cos)
         out_i = amplitude_v_ * (audioI * cosPhase - audioQ * sinPhase);
         out_q = amplitude_v_ * (audioI * sinPhase + audioQ * cosPhase);
+    } else {
+        // (audioI - j*audioQ) * (cos + j*sin) =
+        // (audioI*cos + audioQ*sin) + j*(audioI*sin - audioQ*cos)
+        out_i = amplitude_v_ * (audioI * cosPhase + audioQ * sinPhase);
+        out_q = amplitude_v_ * (audioI * sinPhase - audioQ * cosPhase);
     }
 }
 

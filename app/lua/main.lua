@@ -42,6 +42,12 @@ local activeVFO = "A"
 local filterWidth = 2400
 local filterShift = 0
 
+-- QSD offset k (kHz) for image rejection
+local qsdOffsetK = 12.0  -- Default 12 kHz
+
+-- RF Attenuator (0-45 dB in 3 dB steps)
+local rfAttenDb = 0  -- Default 0 dB (no attenuation)
+
 -- Waterfall state
 local waterfallBins = 512
 local waterfallRows = 256
@@ -67,6 +73,9 @@ local function connectTwin()
     if twin.connect(twinSettings.host, twinSettings.controlPort, twinSettings.streamPort) then
         twinConnected = true
         print("[Lua] Connected to digital twin!")
+        -- Send initial QSD offset k
+        twin.setQsdOffset(qsdOffsetK)
+        print("[Lua] Set QSD offset k = " .. qsdOffsetK .. " kHz")
         return true
     else
         twinConnected = false
@@ -510,6 +519,33 @@ function draw()
         nbEnabled = ui.checkbox("nb", "Noise Blanker", cx, cy, nbEnabled)
         layout.newLine(28)
 
+        -- QSD offset k for image rejection
+        lx, ly = layout.getCursor()
+        ui.label(lx, ly, "QSD k:")
+        local newK = ui.slider("qsd_k", lx + 50, ly, w - 80, 1, 24, qsdOffsetK)
+        if newK ~= qsdOffsetK then
+            qsdOffsetK = newK
+            twin.setQsdOffset(qsdOffsetK)
+        end
+        local kText = string.format("%.1f kHz", qsdOffsetK)
+        drawText(lx + w - 70, ly - 2, kText, 0.5, 0.5, 0.55, 1.0)
+        layout.newLine(24)
+
+        -- RF Attenuator (0-45 dB in 3 dB steps)
+        lx, ly = layout.getCursor()
+        ui.label(lx, ly, "Atten:")
+        -- Slider goes 0-15 (steps), displayed as 0-45 dB
+        local attenSteps = rfAttenDb / 3
+        local newAttenSteps = ui.slider("rf_atten", lx + 50, ly, w - 80, 0, 15, attenSteps)
+        local newAttenDb = math.floor(newAttenSteps + 0.5) * 3  -- Round to nearest 3 dB
+        if newAttenDb ~= rfAttenDb then
+            rfAttenDb = newAttenDb
+            twin.setAttenuation(rfAttenDb)
+        end
+        local attenText = string.format("%d dB", rfAttenDb)
+        drawText(lx + w - 60, ly - 2, attenText, 0.5, 0.5, 0.55, 1.0)
+        layout.newLine(24)
+
         layout.space(8)
         sepX, sepY = layout.getCursor()
         ui.separator(sepX, sepY, w - 24)
@@ -570,6 +606,26 @@ function draw()
             else
                 print("[Lua] Test tone OFF")
             end
+        end
+        layout.newLine(28)
+
+        -- WAV Recording button
+        local isRecording = audio.isRecording()
+        local recTags = isRecording and {"Danger"} or {"Secondary"}
+        local recLabel = isRecording and "REC" or "Record"
+        local rx, ry = layout.getCursor()
+        if ui.button("wav_rec", recLabel, rx, ry, 70, 26, recTags) then
+            if isRecording then
+                audio.stopRecording()
+            else
+                audio.startRecording("/tmp/nexrx_audio.wav")
+            end
+        end
+        -- Show recording duration
+        if isRecording then
+            local duration = audio.getRecordingDuration()
+            local durText = string.format("%.1fs", duration)
+            drawText(rx + 78, ry + 6, durText, 1.0, 0.3, 0.3, 1.0)
         end
         layout.newLine(28)
     end

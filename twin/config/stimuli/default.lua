@@ -58,12 +58,13 @@ stimulus.addSsb("ssb_tone", {
     tones = {1000}
 })
 
-  stimulus.addSsb("voice-id", {
-      freq = 14.200e6,
-      mode = "usb",
-      audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
-      loop = true  -- optional, default true
-  })
+stimulus.addSsb("voice-id", {
+    freq = 14.200e6,
+    amplitude = 50e-6,   -- S9 level
+    mode = "usb",
+    audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
+    loop = true
+})
 
 -- stimulus.addSsb("voice_id", {
 --     freq = 14.200e6,

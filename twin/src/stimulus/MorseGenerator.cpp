@@ -80,6 +80,14 @@ MorseGenerator::MorseGenerator(double freq_hz, double amplitude_v,
 {
     setWpm(wpm);  // Computes dit duration
     buildSequence();
+    initPhaseIncrement();
+}
+
+void MorseGenerator::initPhaseIncrement() {
+    // Precompute phase rotation for 480kHz oversample rate
+    double delta = 2.0 * M_PI * freq_hz_ / OVERSAMPLE_RATE;
+    phaseDeltaCos_ = std::cos(delta);
+    phaseDeltaSin_ = std::sin(delta);
 }
 
 void MorseGenerator::setText(const std::string& text) {
@@ -294,14 +302,31 @@ void MorseGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const 
     double env = getEnvelope(time_s) * amplitude_v_;
     if (env < 1e-12) {
         out_i = out_q = 0.0;
+        // Still advance phase to stay in sync
+        if (phaseInitialized_) {
+            double new_cos = carrierCos_ * phaseDeltaCos_ - carrierSin_ * phaseDeltaSin_;
+            double new_sin = carrierSin_ * phaseDeltaCos_ + carrierCos_ * phaseDeltaSin_;
+            carrierCos_ = new_cos;
+            carrierSin_ = new_sin;
+        }
         return;
     }
 
-    // Generate analytic RF signal at carrier frequency
-    // QSD layer will mix with LO to produce baseband
-    double phase = 2.0 * M_PI * freq_hz_ * time_s;
-    out_i = env * std::cos(phase);
-    out_q = env * std::sin(phase);
+    // Generate analytic RF signal using precomputed phase increment
+    if (!phaseInitialized_) {
+        double phase = 2.0 * M_PI * freq_hz_ * time_s;
+        carrierCos_ = std::cos(phase);
+        carrierSin_ = std::sin(phase);
+        phaseInitialized_ = true;
+    } else {
+        double new_cos = carrierCos_ * phaseDeltaCos_ - carrierSin_ * phaseDeltaSin_;
+        double new_sin = carrierSin_ * phaseDeltaCos_ + carrierCos_ * phaseDeltaSin_;
+        carrierCos_ = new_cos;
+        carrierSin_ = new_sin;
+    }
+
+    out_i = env * carrierCos_;
+    out_q = env * carrierSin_;
 }
 
 } // namespace nexrx

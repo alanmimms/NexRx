@@ -150,13 +150,28 @@ TransportError UdpStreamTransport::write(const IQFrame& frame) {
     return TransportError::None;
 }
 
-TransportError UdpStreamTransport::writeBatch(std::span<const IQFrame> frames) {
-    for (const auto& frame : frames) {
-        auto err = write(frame);
-        if (err != TransportError::None) {
-            return err;
+TransportError UdpStreamTransport::writeBatch(std::span<const IQFrame> frameBatch) {
+    if (!config_.server) {
+        return TransportError::InvalidData;
+    }
+
+    if (socket_fd_ < 0) {
+        return TransportError::NotConnected;
+    }
+
+    // Single lock for entire batch - much faster than per-frame locking
+    std::lock_guard<std::mutex> lock(sendMutex_);
+
+    for (const auto& frame : frameBatch) {
+        sendBuffer_.push_back(frame);
+
+        if (sendBuffer_.size() >= config_.framesPerPacket) {
+            if (!sendPacket()) {
+                return TransportError::IoError;
+            }
         }
     }
+
     return TransportError::None;
 }
 

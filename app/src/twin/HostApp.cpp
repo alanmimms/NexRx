@@ -274,6 +274,10 @@ uint64_t HostApp::framesDropped() const {
     return stream_ ? stream_->framesDropped() : 0;
 }
 
+uint64_t HostApp::bufferOverruns() const {
+    return stream_ ? stream_->bufferOverruns() : 0;
+}
+
 uint64_t HostApp::packetsReceived() const {
     return stream_ ? stream_->packetsReceived() : 0;
 }

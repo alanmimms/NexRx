@@ -107,6 +107,7 @@ public:
 
     [[nodiscard]] uint64_t framesReceived() const { return framesReceived_; }
     [[nodiscard]] uint64_t framesDropped() const;
+    [[nodiscard]] uint64_t bufferOverruns() const;
     [[nodiscard]] uint64_t lastSequence() const { return lastSequence_; }
     [[nodiscard]] uint64_t packetsReceived() const;
 

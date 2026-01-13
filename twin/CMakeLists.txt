@@ -289,19 +289,19 @@ target_compile_options(twin_sampler PRIVATE
 )
 
 # -----------------------------------------------------------------------------
-# Main executable
+# Xyce physics simulator (requires netlist file, slow but accurate)
 # -----------------------------------------------------------------------------
-add_executable(twin src/main.cpp)
-target_link_libraries(twin PRIVATE twin_core twin_transport twin_sampler)
+add_executable(twin_xyce src/main.cpp)
+target_link_libraries(twin_xyce PRIVATE twin_core twin_transport twin_sampler)
 if(WITH_PROTOBUF)
-    target_link_libraries(twin PRIVATE twin_proto)
+    target_link_libraries(twin_xyce PRIVATE twin_proto)
 endif()
 
 # -----------------------------------------------------------------------------
-# Signal generator executable (was pipeline_test)
+# Digital Twin - functional model (fast, real-time capable)
 # -----------------------------------------------------------------------------
-add_executable(signalgen src/signalgen.cpp)
-target_link_libraries(signalgen PRIVATE twin_core twin_transport twin_sampler)
+add_executable(twin src/signalgen.cpp)
+target_link_libraries(twin PRIVATE twin_core twin_transport twin_sampler)
 
 # -----------------------------------------------------------------------------
 # Stimulus library - signal generation for antenna input

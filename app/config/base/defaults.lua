@@ -39,7 +39,7 @@ rule {
         muted = false,
 
         -- Twin connection settings
-        twinHost = "192.168.0.215",       -- Twin server address
+        twinHost = "127.0.0.1",           -- Twin server address (localhost)
         twinControlPort = 5000,        -- TCP control port
         twinStreamPort = 5001,         -- UDP stream port
         twinAutoConnect = true,        -- Auto-connect on startup

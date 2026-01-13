@@ -79,6 +79,12 @@ double StimulusManager::getSample(double time_s) const {
 }
 
 void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q) const {
+    // Use fast path if frozen
+    if (frozen_.load(std::memory_order_relaxed)) {
+        getRfIQ_fast(time_s, out_i, out_q);
+        return;
+    }
+
     std::lock_guard<std::mutex> lock(mutex_);
 
     out_i = out_q = 0.0;
@@ -88,6 +94,57 @@ void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q) const
             entry.stimulus->getRfIQ(time_s, i, q);
             out_i += i;
             out_q += q;
+        }
+    }
+}
+
+void StimulusManager::freeze() {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    // Create snapshot of enabled stimuli
+    frozenStimuli_.clear();
+    frozenStimuli_.reserve(stimuli_.size());
+    for (const auto& [name, entry] : stimuli_) {
+        if (entry.enabled && entry.stimulus) {
+            frozenStimuli_.push_back(entry.stimulus);
+        }
+    }
+
+    frozen_.store(true, std::memory_order_release);
+}
+
+void StimulusManager::unfreeze() {
+    frozen_.store(false, std::memory_order_release);
+    frozenStimuli_.clear();
+}
+
+void StimulusManager::getRfIQ_fast(double time_s, double& out_i, double& out_q) const {
+    // Lock-free access to frozen snapshot
+    out_i = out_q = 0.0;
+    for (const auto& stim : frozenStimuli_) {
+        double i, q;
+        stim->getRfIQ(time_s, i, q);
+        out_i += i;
+        out_q += q;
+    }
+}
+
+void StimulusManager::generateBatch(double start_time, double sample_period,
+                                     size_t count, double* out_iq) const {
+    // Initialize output to zero
+    for (size_t i = 0; i < count * 2; ++i) {
+        out_iq[i] = 0.0;
+    }
+
+    // Sum contributions from all frozen stimuli
+    for (const auto& stim : frozenStimuli_) {
+        double t = start_time;
+        for (size_t i = 0; i < count; ++i) {
+            double rf_i, rf_q;
+            stim->getRfIQ(t, rf_i, rf_q);
+            out_iq[i * 2] += rf_i;
+            out_iq[i * 2 + 1] += rf_q;
+            t += sample_period;
         }
     }
 }
