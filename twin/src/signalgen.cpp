@@ -1,10 +1,11 @@
-// NexRx Digital Twin - Signal Generator
+// NexRx Digital Twin
 //
-// End-to-end test of the RF simulation pipeline.
+// Software-in-the-loop signal generator for the NexRx Triple-QSD SDR.
 // Two modes:
 //   --functional : Pure C++ model, runs at real-time or faster
 //   (default)    : Full Xyce SPICE simulation, accurate but slow
 //
+// Build target: twin
 // Copyright 2026 NexRx Project - MIT License
 
 #include "orchestrator/Orchestrator.hpp"
@@ -25,6 +26,14 @@
 #include <chrono>
 #include <thread>
 #include <memory>
+#include <random>
+
+// Denormal float handling - prevents artifacts with weak signals
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
+#include <xmmintrin.h>  // _MM_SET_FLUSH_ZERO_MODE (SSE)
+#include <pmmintrin.h>  // _MM_SET_DENORMALS_ZERO_MODE (SSE3)
+#define HAVE_SSE_DENORMAL_CONTROL 1
+#endif
 
 using namespace NexRx::Twin;
 using namespace nexrx;
@@ -426,7 +435,7 @@ private:
 int runFunctionalMode(const Options& opts) {
     const bool runForever = (opts.duration_ms <= 0);
 
-    std::cout << "=== NexRx Signal Generator - FUNCTIONAL MODE ===" << std::endl;
+    std::cout << "=== NexRx Digital Twin - FUNCTIONAL MODE ===" << std::endl;
     std::cout << std::fixed << std::setprecision(6);
 
     // Determine stimulus source
@@ -748,13 +757,32 @@ int runFunctionalMode(const Options& opts) {
             frame.sequence = static_cast<uint32_t>(outputSample);
             frame.flags = 0;
 
+            // TPDF (Triangular PDF) dithering before 24-bit quantization
+            // This preserves low-level signals that would otherwise quantize to zero.
+            // Without dithering, at 45 dB attenuation most samples become exactly 0,
+            // causing severe distortion. With TPDF dither, the signal is preserved
+            // as noise-shaped variations around the true value.
+            //
+            // TPDF uses difference of two uniform randoms: triangular distribution
+            // with peak at 0, range ±1 LSB. This eliminates quantization distortion.
+            static thread_local std::mt19937 rng(std::random_device{}());
+            static thread_local std::uniform_real_distribution<double> uniform(-0.5, 0.5);
+            auto tpdfDither = [&]() { return uniform(rng) + uniform(rng); };
+
             constexpr double adcScale = 8388607.0 / 1.65;
-            frame.qsd[0].i = static_cast<int32_t>(std::clamp(filt0_i * adcScale, -8388608.0, 8388607.0));
-            frame.qsd[0].q = static_cast<int32_t>(std::clamp(filt0_q * adcScale, -8388608.0, 8388607.0));
-            frame.qsd[1].i = static_cast<int32_t>(std::clamp(filt1_i * adcScale, -8388608.0, 8388607.0));
-            frame.qsd[1].q = static_cast<int32_t>(std::clamp(filt1_q * adcScale, -8388608.0, 8388607.0));
-            frame.qsd[2].i = static_cast<int32_t>(std::clamp(filt2_i * adcScale, -8388608.0, 8388607.0));
-            frame.qsd[2].q = static_cast<int32_t>(std::clamp(filt2_q * adcScale, -8388608.0, 8388607.0));
+
+            // Quantize with dither: round(value * scale + dither)
+            auto quantize = [&](double value) -> int32_t {
+                double scaled = value * adcScale + tpdfDither();
+                return static_cast<int32_t>(std::clamp(std::round(scaled), -8388608.0, 8388607.0));
+            };
+
+            frame.qsd[0].i = quantize(filt0_i);
+            frame.qsd[0].q = quantize(filt0_q);
+            frame.qsd[1].i = quantize(filt1_i);
+            frame.qsd[1].q = quantize(filt1_q);
+            frame.qsd[2].i = quantize(filt2_i);
+            frame.qsd[2].q = quantize(filt2_q);
 
             // Write to transport or collect locally
             if (opts.stream && stream) {
@@ -1165,6 +1193,16 @@ int runSpectrumAnalysis(const Options& opts) {
 // Main
 //=============================================================================
 int main(int argc, char* argv[]) {
+    // Enable flush-to-zero and denormals-are-zero on x86
+    // This prevents denormalized floats from causing artifacts in IIR filters
+    // when processing weak signals (high attenuation). Denormals can cause:
+    // - Severe CPU performance degradation (100x slower on some CPUs)
+    // - Numerical artifacts appearing as spurious signals in the output
+#ifdef HAVE_SSE_DENORMAL_CONTROL
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
+
     Options opts = parseArgs(argc, argv);
 
     if (opts.help) {

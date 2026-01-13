@@ -9,11 +9,15 @@
 #include "WaterfallRenderer.hpp"
 #include "buffer/RateAdaptiveBuffer.hpp"
 
-// Twin integration (TCP/UDP to signalgen or STM32)
+// Twin integration (TCP/UDP to digital twin or STM32)
 #include "net/Socket.hpp"
 #include "twin/HostApp.hpp"
 #include "transport/IQFrame.hpp"
 #include "Demodulator.hpp"
+
+// Configuration system (generated)
+#include "config/TwinRemoteHandler.hpp"
+#include "RxConfig.hpp"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -33,6 +37,13 @@
 
 #ifdef __APPLE__
 #include <unistd.h>  // for chdir()
+#endif
+
+// Denormal float handling - prevents artifacts with weak signals
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
+#include <xmmintrin.h>  // _MM_SET_FLUSH_ZERO_MODE (SSE)
+#include <pmmintrin.h>  // _MM_SET_DENORMALS_ZERO_MODE (SSE3)
+#define HAVE_SSE_DENORMAL_CONTROL 1
 #endif
 
 // Forward declarations
@@ -926,6 +937,86 @@ private:
             return std::make_tuple(rms, dBm, sUnits, dBoverS9);
         };
 
+        // Initialize configuration system
+        remoteHandler_ = std::make_unique<nexrx::TwinRemoteHandler>(twinHost_);
+        rxConfig_ = std::make_unique<nexrx::RxConfig>(*remoteHandler_);
+
+        // Register action handlers
+        rxConfig_->registerAction("connectTwin", [this]() {
+            // Action triggered from config - connect to twin
+            if (!twinConnected_ && !twinHost_.isConnected()) {
+                nexrx::HostConfig config;
+                config.host = rxConfig_->twinHost();
+                config.controlPort = static_cast<uint16_t>(rxConfig_->twinControlPort());
+                config.streamPort = static_cast<uint16_t>(rxConfig_->twinStreamPort());
+                config.verbose = true;
+
+                if (twinHost_.initialize(config)) {
+                    twinHost_.setFrameCallback([this](const nexrx::IQFrame& frame) {
+                        processIQFrame(frame);
+                    });
+                    if (twinHost_.startReceiving()) {
+                        twinConnected_ = true;
+                        std::cout << "[Config] Connected to twin" << std::endl;
+                    }
+                }
+            }
+        });
+
+        rxConfig_->registerAction("disconnectTwin", [this]() {
+            if (twinConnected_) {
+                twinHost_.stopReceiving();
+                twinHost_.shutdown();
+                twinConnected_ = false;
+                std::cout << "[Config] Disconnected from twin" << std::endl;
+            }
+        });
+
+        rxConfig_->registerAction("resetDefaults", [this]() {
+            rxConfig_->setVolume(0.0316);
+            rxConfig_->setSquelch(0.3);
+            rxConfig_->setMode(nexrx::ModeChoice::USB);
+            rxConfig_->setMuted(false);
+            rxConfig_->setAgcEnabled(true);
+            rxConfig_->setNrEnabled(false);
+            rxConfig_->setNbEnabled(false);
+            std::cout << "[Config] Reset to defaults" << std::endl;
+        });
+
+        // Wire up change notifications
+        rxConfig_->onPropertyChange([this](const std::string& name) {
+            if (name == "volume") {
+                audioVolume_.store(static_cast<float>(rxConfig_->volume()), std::memory_order_relaxed);
+            } else if (name == "muted") {
+                audio_.setMuted(rxConfig_->muted());
+            } else if (name == "mode") {
+                switch (rxConfig_->mode()) {
+                    case nexrx::ModeChoice::USB: demod_.setMode(Demodulator::Mode::USB); break;
+                    case nexrx::ModeChoice::LSB: demod_.setMode(Demodulator::Mode::LSB); break;
+                    case nexrx::ModeChoice::AM:  demod_.setMode(Demodulator::Mode::AM); break;
+                    case nexrx::ModeChoice::CW:  demod_.setMode(Demodulator::Mode::CW); break;
+                }
+            } else if (name == "testToneEnabled" || name == "testToneFreq") {
+                audio_.setTestTone(rxConfig_->testToneEnabled(),
+                                   static_cast<float>(rxConfig_->testToneFreq()));
+            } else if (name == "colormap") {
+                switch (rxConfig_->colormap()) {
+                    case nexrx::ColormapChoice::VIRIDIS: waterfall_.setColormap(WaterfallColormap::Viridis); break;
+                    case nexrx::ColormapChoice::PLASMA:  waterfall_.setColormap(WaterfallColormap::Plasma); break;
+                    case nexrx::ColormapChoice::INFERNO: waterfall_.setColormap(WaterfallColormap::Inferno); break;
+                    case nexrx::ColormapChoice::GREEN:   waterfall_.setColormap(WaterfallColormap::GreenPhosphor); break;
+                    case nexrx::ColormapChoice::BLUE:    waterfall_.setColormap(WaterfallColormap::BlueHot); break;
+                }
+            } else if (name == "qsdOffsetK" && twinConnected_) {
+                qsdOffsetKhz_ = rxConfig_->qsdOffsetK();
+            } else if (name == "rfAttenuation" && twinConnected_) {
+                attenDb_ = rxConfig_->rfAttenuation();
+            }
+        });
+
+        // Register RxConfig Lua bindings
+        nexrx::RxConfig::registerLuaBindings(lua_, *rxConfig_);
+
         // Load SetBox base config
         if (!setbox_.loadFile("config/base/defaults.lua")) {
             std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
@@ -1073,6 +1164,8 @@ private:
 
     // Twin integration
     nexrx::HostApp twinHost_;
+    std::unique_ptr<nexrx::TwinRemoteHandler> remoteHandler_;
+    std::unique_ptr<nexrx::RxConfig> rxConfig_;
     std::mutex spectrumMutex_;
     std::vector<float> spectrumData_;      // Latest spectrum (dB values)
     std::vector<float> iqBuffer_;          // Ring buffer for FFT
@@ -1194,6 +1287,18 @@ private:
         shiftCos1_ = c1;
         shiftSin1_ = s1;
 
+        // Periodically renormalize shift oscillators to prevent drift
+        // Every ~65K samples at 96kHz = ~0.7 seconds
+        static uint32_t renormCounter = 0;
+        if ((++renormCounter & 0xFFFF) == 0) {
+            auto renorm = [](float& c, float& s) {
+                float mag = std::sqrt(c * c + s * s);
+                if (mag > 0) { c /= mag; s /= mag; }
+            };
+            renorm(shiftCos0_, shiftSin0_);
+            renorm(shiftCos1_, shiftSin1_);
+        }
+
         // =====================================================================
         // LMS Adaptive Image Rejection (from doc/multiple-QSDs.md)
         //
@@ -1241,15 +1346,15 @@ private:
         clampWeight(lmsW0_r_, lmsW0_i_);
         clampWeight(lmsW1_r_, lmsW1_i_);
 
-        // Use QSD2 (sextature) for display - it has inherent image rejection
-        // from 6-phase sampling that works at all frequency offsets.
-        // The LMS output is used for audio demodulation where it matters most.
-        float i_f = i2;  // QSD2 for waterfall/spectrum (consistent image rejection)
+        // Use QSD2 (sextature) for both display and audio
+        // This bypasses LMS to test if artifacts are from LMS or twin data
+        // TODO: Re-enable LMS once attenuation artifacts are resolved
+        float i_f = i2;  // QSD2 for waterfall/spectrum
         float q_f = q2;
 
-        // Use LMS output for audio demodulation (best SNR near DC)
-        float audio_i = out_i;
-        float audio_q = out_q;
+        // Use QSD2 directly for audio (bypass LMS)
+        float audio_i = i2;
+        float audio_q = q2;
 
         // Signal level metering (RMS of I/Q magnitude)
         float mag_sq = i_f * i_f + q_f * q_f;
@@ -1532,6 +1637,14 @@ private:
 };
 
 int main(int argc, char* argv[]) {
+    // Enable flush-to-zero and denormals-are-zero on x86
+    // This prevents denormalized floats from causing artifacts in DSP processing
+    // when dealing with weak signals (high attenuation)
+#ifdef HAVE_SSE_DENORMAL_CONTROL
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
+
     // Parse command-line arguments
     bool disableVsync = false;
     for (int i = 1; i < argc; ++i) {

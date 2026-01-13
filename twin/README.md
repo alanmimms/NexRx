@@ -113,19 +113,19 @@ S-meter: S5
   - S-meter shows S0 or S9+60 (indicates scaling bug)
 
 
-### 3. signalgen
+### 3. twin
 
-**Purpose:** Signal generator and end-to-end test of the RF simulation pipeline. Two modes:
+**Purpose:** Digital twin signal generator and end-to-end test of the RF simulation pipeline. Two modes:
 - `--functional`: Fast C++ model, runs real-time, streams I/Q to app
 - Default: Full Xyce SPICE simulation (accurate but slow)
 
 **Run:**
 ```bash
 # Fast functional mode with streaming (for app integration)
-./build/signalgen --functional --stream
+./build/twin --functional --stream
 
 # Full Xyce physics simulation
-./build/signalgen --duration 1 --netlist netlists/pipeline_test.cir
+./build/twin --duration 1 --netlist netlists/pipeline_test.cir
 ```
 
 **What it tests:**
@@ -242,7 +242,7 @@ uart:~$ nexrx freq 0 7000000   # Set VFO0 to 7 MHz
                              │ RF signal
                              ▼
 ┌────────────────────────────────────────────────────────────┐
-│                     Xyce SPICE Simulation                   │ ◄── signalgen
+│                     Xyce SPICE Simulation                   │ ◄── twin
 │  (Preselector → Transformer → Triple-QSD → TIA)            │
 └────────────────────────────┬───────────────────────────────┘
                              │ Node voltages
@@ -280,11 +280,11 @@ cd build
 # 2. Host DSP pipeline (no external deps)
 ./host_test
 
-# 3. Signal generator - functional mode (fast)
-./signalgen --functional --duration 100
+# 3. Digital twin - functional mode (fast)
+./twin --functional --duration 100
 
 # 3b. Or full Xyce simulation (slow, requires Xyce)
-./signalgen --duration 0.1 --netlist netlists/pipeline_test.cir
+./twin --duration 0.1 --netlist netlists/pipeline_test.cir
 
 # 4. Zephyr firmware
 ../zephyr/build/zephyr/zephyr.exe &
@@ -299,7 +299,7 @@ All tests should complete without crashes. Check output against criteria above.
 
 - CMake 3.20+
 - C++20 compiler (GCC 11+ or Clang 14+)
-- Xyce 7.10 (for signalgen physics mode)
+- Xyce 7.10 (for twin physics mode)
 - Trilinos libraries (for Xyce)
 - Zephyr SDK 4.3+ (for firmware)
 - FFTW3, LAPACK, BLAS

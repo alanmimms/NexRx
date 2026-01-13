@@ -2,6 +2,15 @@
   NexRx Application - Main Lua Entry Point
 
   Demonstrates the layout system with a realistic SDR receiver UI.
+
+  Configuration API:
+  The 'config' global provides typed access to receiver settings.
+  Example usage:
+    config.volume = 0.5           -- Set volume (0-1)
+    config.mode = 1               -- USB=0, LSB=1, CW=2, AM=3
+    config.setMode(1)             -- Explicit setter
+    print(config.qsdOffsetK)      -- Get QSD offset
+    config.resetDefaults()        -- Invoke action
 ]]
 
 -- Add lua directory to package path for requires
@@ -20,18 +29,15 @@ local fpsAccum = 0
 local fpsFrames = 0
 
 -- Application state
+-- Note: volume, muted, testTone* now use config.* API (see header comment)
 local rxActive = false
 local frequency = 14.200  -- MHz
-local volume = 0.0316  -- -30dB (mid-range)
 local squelch = 0.3
 local agcEnabled = true
 local nrEnabled = false
 local nbEnabled = false
 local selectedMode = "USB"
 local selectedBand = "20m"
-local audioMuted = false
-local testToneEnabled = false
-local testToneFreq = 440
 
 -- VFO state
 local vfoA = 14.200
@@ -137,7 +143,7 @@ function init()
 
     -- Initialize audio
     if audio.isInitialized() then
-        audio.setVolume(volume)
+        audio.setVolume(config.volume)  -- Use config API
         audio.start()
         print("[Lua] Audio started at " .. audio.getSampleRate() .. " Hz")
     else
@@ -570,13 +576,13 @@ function draw()
             local db = 20 * math.log(gain, 10)
             return clamp((db + 60) / 60, 0, 1)
         end
-        local sliderPos = logToLinear(volume)
+        -- Use config.volume instead of local variable (demonstrates config API)
+        local sliderPos = logToLinear(config.volume)
         local newSliderPos = ui.slider("volume", lx + 40, ly, w - 70, 0, 1, sliderPos)
         if newSliderPos ~= sliderPos then
-            volume = linearToLog(newSliderPos)
-            audio.setVolume(volume)
+            config.volume = linearToLog(newSliderPos)  -- Sets config, triggers C++ callback
         end
-        local volDb = volume > 0.001 and string.format("%.0fdB", 20 * math.log(volume, 10)) or "-inf"
+        local volDb = config.volume > 0.001 and string.format("%.0fdB", 20 * math.log(config.volume, 10)) or "-inf"
         drawText(lx + w - 60, ly - 2, volDb, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
@@ -585,27 +591,20 @@ function draw()
         squelch = ui.slider("squelch", lx + 40, ly, w - 70, 0, 1, squelch)
         layout.newLine(24)
 
-        -- Mute checkbox
+        -- Mute checkbox (using config API)
         cx, cy = layout.getCursor()
-        local newMuted = ui.checkbox("mute", "Mute", cx, cy, audioMuted)
-        if newMuted ~= audioMuted then
-            audioMuted = newMuted
-            audio.setMuted(audioMuted)
+        local newMuted = ui.checkbox("mute", "Mute", cx, cy, config.muted)
+        if newMuted ~= config.muted then
+            config.muted = newMuted  -- Triggers C++ callback
         end
         layout.newLine(24)
 
-        -- Test tone button
-        local toneTags = testToneEnabled and {"Primary"} or {"Secondary"}
-        local toneLabel = testToneEnabled and "Tone ON" or "Test Tone"
+        -- Test tone button (using config API)
+        local toneTags = config.testToneEnabled and {"Primary"} or {"Secondary"}
+        local toneLabel = config.testToneEnabled and "Tone ON" or "Test Tone"
         local tx, ty = layout.getCursor()
         if ui.button("test_tone", toneLabel, tx, ty, 90, 26, toneTags) then
-            testToneEnabled = not testToneEnabled
-            audio.setTestTone(testToneEnabled, testToneFreq)
-            if testToneEnabled then
-                print("[Lua] Test tone ON: " .. testToneFreq .. " Hz")
-            else
-                print("[Lua] Test tone OFF")
-            end
+            config.testToneEnabled = not config.testToneEnabled  -- Triggers C++ callback
         end
         layout.newLine(28)
 
