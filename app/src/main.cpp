@@ -1908,7 +1908,7 @@ int main(int argc, char* argv[]) {
     App app;
     gApp = &app;
 
-    if (!app.init(1280, 720, "NexRx", !disableVsync)) {
+    if (!app.init(1280, 850, "NexRx", !disableVsync)) {
         std::cerr << "Failed to initialize application" << std::endl;
         return 1;
     }
