@@ -14,6 +14,9 @@ where your radio's interface is as flexible and powerful as the
 software on your computer, but still maintains the real-time
 performance demands of RF communication.
 
+This is an overview of the project. There is much more in the `./doc`
+directory.
+
 The entire project uses the MIT License, covering everything from
 hardware designs and PCB layouts to software source code. This isn't
 just another commercial radio with a fancy display - it's a
