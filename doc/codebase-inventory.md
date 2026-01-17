@@ -337,20 +337,16 @@ This document provides a complete inventory of the NexRx repository, explaining 
 | `pinout-with-alt.csv` | MCU pin assignments |
 | `FPGA-SC-02032-2-0-ECP5U-12-Pinout.ods` | FPGA pinout spreadsheet |
 
-### Backup Files
+### Other Files
 
 | File | Purpose |
 |------|---------|
-| `NexRx-backups/*.zip` | KiCad automatic backups |
 | `Library.bak` | Symbol library backup |
 | `replicate_layout.log` | Layout replication log |
-
-### Other
-
-| File | Purpose |
-|------|---------|
 | `LICENSE` | Hardware license |
 | `.gitignore` | Git ignores |
+
+Note: `NexRx-backups/` exists locally but is already in `.gitignore`.
 
 ---
 
@@ -456,8 +452,7 @@ Explicit libraries the codebase depends on (excluding implicit dependencies like
 
 ### Files to Review
 
-1. **`hw/NexRx-backups/`** - Consider if these KiCad backups are needed in git
-2. **`twin/netlists/*.prn`** - Generated simulation outputs, could be gitignored
+1. **`twin/netlists/*.prn`** - Generated simulation outputs, could be gitignored
 
 ### Directory Structure After Cleanup
 
@@ -488,7 +483,6 @@ NexRx/
 1. `rm -rf fw/` - Remove obsolete firmware directory
 2. `rm -rf mock-server/` - Remove obsolete mock server
 3. Add `twin/netlists/*.prn` to `.gitignore`
-4. Consider moving `hw/NexRx-backups/` out of repository
 
 ---
 
