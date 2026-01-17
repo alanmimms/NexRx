@@ -15,7 +15,8 @@ This document provides a complete inventory of the NexRx repository, explaining 
 5. [mock-server/ - Node.js Mock Server (OBSOLETE)](#mock-server---nodejs-mock-server-obsolete)
 6. [hw/ - KiCad Hardware Design](#hw---kicad-hardware-design)
 7. [Build Artifacts Summary](#build-artifacts-summary)
-8. [Recommendations](#recommendations)
+8. [External Library Dependencies](#external-library-dependencies)
+9. [Recommendations](#recommendations)
 
 ---
 
@@ -392,6 +393,50 @@ west build -b native_sim
 1. Start twin: `./twin/build/twin --functional --stream`
 2. Start app: `./app/build/nexrx_app`
 3. App connects to twin via TCP:5000 (control) and UDP:5001 (IQ stream)
+
+---
+
+## External Library Dependencies
+
+Explicit libraries the codebase depends on (excluding implicit dependencies like C++ runtime).
+
+### app/ (nexrx_app, setbox_test)
+
+| Library | Purpose | Source |
+|---------|---------|--------|
+| **SDL2** | Windowing, input, OpenGL context | System (pkg-config or vcpkg) |
+| **OpenGL** | Rendering | System |
+| **Lua 5.4** | Scripting, UI, configuration | System (pkg-config or vcpkg) |
+| **sol2** | C++/Lua binding | FetchContent (GitHub) |
+| **tinycbor** | CBOR encode/decode for IQ frames | FetchContent (GitHub) |
+| **miniaudio** | Audio output | Header-only (extern/) |
+| **stb_truetype** | Font rasterization | Header-only (extern/) |
+
+### twin/ (twin, twin_xyce, stimulus_test, host_test)
+
+| Library | Purpose | Source |
+|---------|---------|--------|
+| **Lua 5.4** | Stimulus scripting | System (pkg-config) |
+| **sol2** | C++/Lua binding | FetchContent (GitHub) |
+| **tinycbor** | CBOR encode/decode | FetchContent (GitHub) |
+| **FFTW3** | FFT for signal processing | System |
+| **espeak-ng** | Text-to-speech for SSB stimulus | System (optional) |
+| **LAPACK/BLAS** | Linear algebra (for Xyce) | System |
+| **AMD (SuiteSparse)** | Sparse matrices (for Xyce) | System |
+| **Xyce** | SPICE simulator | Local build |
+| **Trilinos** | Xyce math backend (~30 sub-libs) | Local build |
+| **Protobuf** | Message serialization | System (optional, -DWITH_PROTOBUF=ON) |
+
+### Summary by Category
+
+**Core (both app and twin):**
+- Lua 5.4, sol2, tinycbor
+
+**App-specific:**
+- SDL2, OpenGL, miniaudio, stb_truetype
+
+**Twin-specific:**
+- FFTW3, espeak-ng, Xyce/Trilinos (for physics simulation)
 
 ---
 
