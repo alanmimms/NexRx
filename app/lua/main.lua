@@ -44,9 +44,8 @@ local vfoA = 14.200
 local vfoB = 7.050
 local activeVFO = "A"
 
--- Filter state
-local filterWidth = 2400
-local filterShift = 0
+-- LMS adaptive filter
+local lmsMu = 0.001  -- Learning rate for image rejection
 
 -- QSD offset k (kHz) for image rejection
 local qsdOffsetK = 12.0  -- Default 12 kHz
@@ -59,6 +58,8 @@ local waterfallBins = 512
 local waterfallRows = 256
 local spectrumData = {}
 local selectedColormap = "viridis"
+local wfMinDb = -120  -- Waterfall min dB (noise floor)
+local wfMaxDb = -40   -- Waterfall max dB (strongest signals)
 
 -- Twin connection state (can be modified before calling connectTwin())
 local twinSettings = {
@@ -405,8 +406,9 @@ function draw()
         drawRect(x, y, w, h, 0.08, 0.08, 0.1, 1.0)
         drawLine(x, y, x + w, y, 0.2, 0.2, 0.25, 1.0, 1.0)
 
-        local info = string.format("Band: %s | Mode: %s | Filter: %d Hz | Mouse: %d, %d",
-                                   getBand(frequency), selectedMode, filterWidth, mouseX, mouseY)
+        local bpInfo = config.bandpassEnabled and string.format("BP: %.0f Hz", config.bandpassWidth) or "BP: Off"
+        local info = string.format("Band: %s | Mode: %s | %s | Mouse: %d, %d",
+                                   getBand(frequency), selectedMode, bpInfo, mouseX, mouseY)
         drawText(x + 10, y + 6, info, 0.5, 0.5, 0.55, 1.0)
     end
     layout.endDock()
@@ -488,20 +490,74 @@ function draw()
         ui.separator(sepX, sepY, w - 24)
         layout.newLine(8)
 
-        -- Filter Controls
+        -- Baseband Filter (FIR)
         lx, ly = layout.getCursor()
-        ui.label(lx, ly, "Filter", {"Title"})
+        ui.label(lx, ly, "Baseband", {"Title"})
         layout.newLine(24)
 
-        local lx, ly = layout.getCursor()
-        ui.label(lx, ly, "Width:")
-        filterWidth = ui.slider("filter_width", lx + 50, ly, w - 80, 100, 6000, filterWidth)
+        -- Bandpass enable
+        local cx, cy = layout.getCursor()
+        local newBpEn = ui.checkbox("bp_en", "Bandpass", cx, cy, config.bandpassEnabled)
+        if newBpEn ~= config.bandpassEnabled then
+            config.bandpassEnabled = newBpEn
+        end
         layout.newLine(24)
 
-        lx, ly = layout.getCursor()
-        ui.label(lx, ly, "Shift:")
-        filterShift = ui.slider("filter_shift", lx + 50, ly, w - 80, -2000, 2000, filterShift)
+        -- Bandpass center (only show if enabled)
+        if config.bandpassEnabled then
+            lx, ly = layout.getCursor()
+            ui.label(lx, ly, "Center:")
+            local newBpCenter = ui.slider("bp_center", lx + 55, ly, w - 85, -5000, 5000, config.bandpassCenter)
+            if newBpCenter ~= config.bandpassCenter then
+                config.bandpassCenter = newBpCenter
+            end
+            local bpCText = string.format("%.0f Hz", config.bandpassCenter)
+            drawText(lx + w - 70, ly - 2, bpCText, 0.5, 0.5, 0.55, 1.0)
+            layout.newLine(24)
+
+            -- Bandpass width
+            lx, ly = layout.getCursor()
+            ui.label(lx, ly, "Width:")
+            local newBpWidth = ui.slider("bp_width", lx + 55, ly, w - 85, 50, 4000, config.bandpassWidth)
+            if newBpWidth ~= config.bandpassWidth then
+                config.bandpassWidth = newBpWidth
+            end
+            local bpWText = string.format("%.0f Hz", config.bandpassWidth)
+            drawText(lx + w - 70, ly - 2, bpWText, 0.5, 0.5, 0.55, 1.0)
+            layout.newLine(24)
+        end
+
+        -- Notch enable
+        cx, cy = layout.getCursor()
+        local newNotchEn = ui.checkbox("notch_en", "Notch", cx, cy, config.notchEnabled)
+        if newNotchEn ~= config.notchEnabled then
+            config.notchEnabled = newNotchEn
+        end
         layout.newLine(24)
+
+        -- Notch center (only show if enabled)
+        if config.notchEnabled then
+            lx, ly = layout.getCursor()
+            ui.label(lx, ly, "Center:")
+            local newNotchCenter = ui.slider("notch_center", lx + 55, ly, w - 85, -10000, 10000, config.notchCenter)
+            if newNotchCenter ~= config.notchCenter then
+                config.notchCenter = newNotchCenter
+            end
+            local notchCText = string.format("%.0f Hz", config.notchCenter)
+            drawText(lx + w - 70, ly - 2, notchCText, 0.5, 0.5, 0.55, 1.0)
+            layout.newLine(24)
+
+            -- Notch width
+            lx, ly = layout.getCursor()
+            ui.label(lx, ly, "Width:")
+            local newNotchWidth = ui.slider("notch_width", lx + 55, ly, w - 85, 10, 500, config.notchWidth)
+            if newNotchWidth ~= config.notchWidth then
+                config.notchWidth = newNotchWidth
+            end
+            local notchWText = string.format("%.0f Hz", config.notchWidth)
+            drawText(lx + w - 70, ly - 2, notchWText, 0.5, 0.5, 0.55, 1.0)
+            layout.newLine(24)
+        end
 
         layout.space(8)
         sepX, sepY = layout.getCursor()
@@ -535,6 +591,29 @@ function draw()
         end
         local kText = string.format("%.1f kHz", qsdOffsetK)
         drawText(lx + w - 70, ly - 2, kText, 0.5, 0.5, 0.55, 1.0)
+        layout.newLine(24)
+
+        -- LMS mu (learning rate) for image rejection
+        -- Logarithmic scale: slider 0-1 maps to mu 0.0001 to 0.1
+        lx, ly = layout.getCursor()
+        ui.label(lx, ly, "LMS:")
+        local function muToSlider(mu)
+            -- Map 0.0001..0.1 to 0..1 (log scale)
+            return (math.log(mu) - math.log(0.0001)) / (math.log(0.1) - math.log(0.0001))
+        end
+        local function sliderToMu(pos)
+            -- Map 0..1 to 0.0001..0.1 (log scale)
+            local logMu = math.log(0.0001) + pos * (math.log(0.1) - math.log(0.0001))
+            return math.exp(logMu)
+        end
+        local muSliderPos = muToSlider(lmsMu)
+        local newMuSliderPos = ui.slider("lms_mu", lx + 40, ly, w - 70, 0, 1, muSliderPos)
+        if newMuSliderPos ~= muSliderPos then
+            lmsMu = sliderToMu(newMuSliderPos)
+            rx.setLmsMu(lmsMu)
+        end
+        local muText = string.format("%.4f", lmsMu)
+        drawText(lx + w - 60, ly - 2, muText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
         -- RF Attenuator (0-45 dB in 3 dB steps)
@@ -727,6 +806,38 @@ function draw()
                 layout.endHorizontal()
             end
         end
+
+        layout.space(8)
+        sepX, sepY = layout.getCursor()
+        ui.separator(sepX, sepY, w - 24)
+        layout.newLine(12)
+
+        -- Waterfall Range
+        lx, ly = layout.getCursor()
+        ui.label(lx, ly, "Display", {"Title"})
+        layout.newLine(24)
+
+        lx, ly = layout.getCursor()
+        ui.label(lx, ly, "Floor:")
+        local newMinDb = ui.slider("wf_min", lx + 45, ly, w - 75, -140, -60, wfMinDb)
+        if newMinDb ~= wfMinDb then
+            wfMinDb = newMinDb
+            waterfall.setRange(wfMinDb, wfMaxDb)
+        end
+        local minText = string.format("%.0f dB", wfMinDb)
+        drawText(lx + w - 60, ly - 2, minText, 0.5, 0.5, 0.55, 1.0)
+        layout.newLine(24)
+
+        lx, ly = layout.getCursor()
+        ui.label(lx, ly, "Peak:")
+        local newMaxDb = ui.slider("wf_max", lx + 45, ly, w - 75, -100, -20, wfMaxDb)
+        if newMaxDb ~= wfMaxDb then
+            wfMaxDb = newMaxDb
+            waterfall.setRange(wfMinDb, wfMaxDb)
+        end
+        local maxText = string.format("%.0f dB", wfMaxDb)
+        drawText(lx + w - 60, ly - 2, maxText, 0.5, 0.5, 0.55, 1.0)
+        layout.newLine(24)
     end
     layout.endDock()
 

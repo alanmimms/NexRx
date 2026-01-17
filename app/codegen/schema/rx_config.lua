@@ -151,6 +151,97 @@ return {
         },
 
         -- =================================================================
+        -- Baseband Filter Properties
+        -- =================================================================
+
+        bandpassEnabled = {
+            type = "boolean",
+            default = false,
+            description = "Enable baseband bandpass filter",
+            ui = {
+                widget = "checkbox",
+                label = "Bandpass",
+                group = "filter"
+            }
+        },
+
+        bandpassCenter = {
+            type = "number",
+            default = 700,
+            range = {-20000, 20000, 10},
+            description = "Bandpass center frequency offset (Hz)",
+            ui = {
+                widget = "slider",
+                label = "BP Center",
+                suffix = "Hz",
+                group = "filter"
+            }
+        },
+
+        bandpassWidth = {
+            type = "number",
+            default = 500,
+            range = {50, 6000, 10},
+            description = "Bandpass filter bandwidth (Hz)",
+            ui = {
+                widget = "slider",
+                label = "BP Width",
+                suffix = "Hz",
+                group = "filter"
+            }
+        },
+
+        bandpassTaps = {
+            type = "number",
+            default = 127,
+            range = {15, 511, 2},
+            description = "Bandpass FIR filter taps (steepness)",
+            ui = {
+                widget = "slider",
+                label = "BP Taps",
+                suffix = "",
+                group = "filter"
+            }
+        },
+
+        notchEnabled = {
+            type = "boolean",
+            default = false,
+            description = "Enable baseband notch filter",
+            ui = {
+                widget = "checkbox",
+                label = "Notch",
+                group = "filter"
+            }
+        },
+
+        notchCenter = {
+            type = "number",
+            default = 0,
+            range = {-20000, 20000, 10},
+            description = "Notch center frequency offset (Hz)",
+            ui = {
+                widget = "slider",
+                label = "Notch Center",
+                suffix = "Hz",
+                group = "filter"
+            }
+        },
+
+        notchWidth = {
+            type = "number",
+            default = 100,
+            range = {10, 500, 5},
+            description = "Notch filter bandwidth (Hz)",
+            ui = {
+                widget = "slider",
+                label = "Notch Width",
+                suffix = "Hz",
+                group = "filter"
+            }
+        },
+
+        -- =================================================================
         -- Twin/Hardware Properties (Remote)
         -- =================================================================
 
@@ -292,6 +383,8 @@ return {
         audio = {"volume", "squelch", "muted", "testToneEnabled", "testToneFreq"},
         radio = {"mode", "filterWidth", "filterShift"},
         dsp = {"agcEnabled", "nrEnabled", "nbEnabled"},
+        filter = {"bandpassEnabled", "bandpassCenter", "bandpassWidth", "bandpassTaps",
+                  "notchEnabled", "notchCenter", "notchWidth"},
         hardware = {"qsdOffsetK", "rfAttenuation"},
         connection = {"twinHost", "twinControlPort", "twinStreamPort", "twinAutoConnect", "connectTwin", "disconnectTwin"},
         display = {"colormap"},

@@ -22,7 +22,14 @@ rule {
     filterShape = "pointed",
     agcSpeed = "medium",
     noiseReduction = false,
-    notchFilter = false
+    -- Baseband FIR filter defaults (disabled by default)
+    bandpassEnabled = false,
+    bandpassCenter = 1400,   -- Hz offset from DC
+    bandpassWidth = 2400,    -- Hz bandwidth
+    bandpassTaps = 127,      -- Filter steepness
+    notchEnabled = false,
+    notchCenter = 0,
+    notchWidth = 100
 }
 
 -- =============================================================================
@@ -34,7 +41,12 @@ rule {
     tags = {"ssb"},
     filterBandwidth = 2400,
     filterShape = "pointed",
-    agcSpeed = "medium"
+    agcSpeed = "medium",
+    -- Enable FIR bandpass for SSB
+    bandpassEnabled = true,
+    bandpassCenter = 1400,   -- Center of 300-2500 Hz passband
+    bandpassWidth = 2400,
+    bandpassTaps = 63        -- Softer edges OK for voice
 }
 
 -- CW defaults
@@ -43,7 +55,12 @@ rule {
     filterBandwidth = 500,
     filterShape = "pointed",
     agcSpeed = "fast",
-    cwSidetone = 700
+    cwSidetone = 700,
+    -- Enable FIR bandpass centered on CW pitch
+    bandpassEnabled = true,
+    bandpassCenter = 700,    -- Match sidetone/BFO
+    bandpassWidth = 500,
+    bandpassTaps = 127
 }
 
 -- AM defaults (for broadcast listening)
@@ -91,13 +108,17 @@ rule {
 rule {
     tags = {"cw", "contest"},
     filterBandwidth = 250,
-    agcSpeed = "fast"
+    agcSpeed = "fast",
+    bandpassWidth = 250,
+    bandpassTaps = 255      -- Sharper rolloff for contest
 }
 
 -- Contest CW on 20m - your personal preference: extra tight
 rule {
     tags = {"cw", "contest", "20m"},
-    filterBandwidth = 200
+    filterBandwidth = 200,
+    bandpassWidth = 200,
+    bandpassTaps = 511      -- Maximum sharpness
 }
 
 -- DXing - need to hear weak ones

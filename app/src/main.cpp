@@ -8,6 +8,7 @@
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
 #include "buffer/RateAdaptiveBuffer.hpp"
+#include "dsp/BasebandFilter.hpp"
 
 // Twin integration (TCP/UDP to digital twin or STM32)
 #include "net/Socket.hpp"
@@ -814,6 +815,14 @@ private:
             waterfall_.setRange(minDb, maxDb);
         };
 
+        lua_["waterfall"]["getMinDb"] = [this]() {
+            return waterfall_.getMinDb();
+        };
+
+        lua_["waterfall"]["getMaxDb"] = [this]() {
+            return waterfall_.getMaxDb();
+        };
+
         lua_["waterfall"]["isInitialized"] = [this]() {
             return waterfall_.isInitialized();
         };
@@ -972,6 +981,60 @@ private:
             return demod_.getBfoOffset();
         };
 
+        // Baseband filter control (FIR bandpass and notch)
+        lua_["rx"]["setBandpassEnabled"] = [this](bool en) {
+            basebandFilter_.setBandpassEnabled(en);
+        };
+        lua_["rx"]["setBandpassCenter"] = [this](float hz) {
+            basebandFilter_.setBandpassCenter(hz);
+        };
+        lua_["rx"]["setBandpassWidth"] = [this](float hz) {
+            basebandFilter_.setBandpassWidth(hz);
+        };
+        lua_["rx"]["setBandpassTaps"] = [this](int taps) {
+            basebandFilter_.setBandpassTaps(taps);
+        };
+        lua_["rx"]["getBandpassEnabled"] = [this]() {
+            return basebandFilter_.bandpassEnabled();
+        };
+        lua_["rx"]["getBandpassCenter"] = [this]() {
+            return basebandFilter_.bandpassCenter();
+        };
+        lua_["rx"]["getBandpassWidth"] = [this]() {
+            return basebandFilter_.bandpassWidth();
+        };
+        lua_["rx"]["getBandpassTaps"] = [this]() {
+            return basebandFilter_.bandpassTaps();
+        };
+
+        lua_["rx"]["setNotchEnabled"] = [this](bool en) {
+            basebandFilter_.setNotchEnabled(en);
+        };
+        lua_["rx"]["setNotchCenter"] = [this](float hz) {
+            basebandFilter_.setNotchCenter(hz);
+        };
+        lua_["rx"]["setNotchWidth"] = [this](float hz) {
+            basebandFilter_.setNotchWidth(hz);
+        };
+        lua_["rx"]["getNotchEnabled"] = [this]() {
+            return basebandFilter_.notchEnabled();
+        };
+        lua_["rx"]["getNotchCenter"] = [this]() {
+            return basebandFilter_.notchCenter();
+        };
+        lua_["rx"]["getNotchWidth"] = [this]() {
+            return basebandFilter_.notchWidth();
+        };
+
+        // LMS adaptive filter control
+        lua_["rx"]["setLmsMu"] = [this](float mu) {
+            lmsMu_ = std::clamp(mu, 0.0001f, 0.1f);
+        };
+
+        lua_["rx"]["getLmsMu"] = [this]() {
+            return lmsMu_;
+        };
+
         lua_["rx"]["getAudioStats"] = [this]() {
             // Return audio buffer stats for debugging
             // Returns: written, read, underruns, drops, fill_ratio
@@ -1099,6 +1162,21 @@ private:
                 qsdOffsetKhz_ = rxConfig_->qsdOffsetK();
             } else if (name == "rfAttenuation" && twinConnected_) {
                 attenDb_ = rxConfig_->rfAttenuation();
+            // Baseband filter properties
+            } else if (name == "bandpassEnabled") {
+                basebandFilter_.setBandpassEnabled(rxConfig_->bandpassEnabled());
+            } else if (name == "bandpassCenter") {
+                basebandFilter_.setBandpassCenter(static_cast<float>(rxConfig_->bandpassCenter()));
+            } else if (name == "bandpassWidth") {
+                basebandFilter_.setBandpassWidth(static_cast<float>(rxConfig_->bandpassWidth()));
+            } else if (name == "bandpassTaps") {
+                basebandFilter_.setBandpassTaps(static_cast<int>(rxConfig_->bandpassTaps()));
+            } else if (name == "notchEnabled") {
+                basebandFilter_.setNotchEnabled(rxConfig_->notchEnabled());
+            } else if (name == "notchCenter") {
+                basebandFilter_.setNotchCenter(static_cast<float>(rxConfig_->notchCenter()));
+            } else if (name == "notchWidth") {
+                basebandFilter_.setNotchWidth(static_cast<float>(rxConfig_->notchWidth()));
             }
         });
 
@@ -1109,6 +1187,31 @@ private:
         if (!setbox_.loadFile("config/base/defaults.lua")) {
             std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
         }
+
+        // Wire SetBox property changes to RxConfig
+        // This allows modes.lua rules to control filter parameters
+        setbox_.onPropertyChange([this](const std::string& name,
+                                        const NexRx::SetBox::PropertyValue& value) {
+            // Forward filter properties to RxConfig
+            std::visit([&](auto&& val) {
+                using T = std::decay_t<decltype(val)>;
+                if (name == "bandpassEnabled" && std::is_same_v<T, bool>) {
+                    if constexpr (std::is_same_v<T, bool>) rxConfig_->setBandpassEnabled(val);
+                } else if (name == "bandpassCenter" && std::is_same_v<T, double>) {
+                    if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassCenter(val);
+                } else if (name == "bandpassWidth" && std::is_same_v<T, double>) {
+                    if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassWidth(val);
+                } else if (name == "bandpassTaps" && std::is_same_v<T, double>) {
+                    if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassTaps(static_cast<int>(val));
+                } else if (name == "notchEnabled" && std::is_same_v<T, bool>) {
+                    if constexpr (std::is_same_v<T, bool>) rxConfig_->setNotchEnabled(val);
+                } else if (name == "notchCenter" && std::is_same_v<T, double>) {
+                    if constexpr (std::is_same_v<T, double>) rxConfig_->setNotchCenter(val);
+                } else if (name == "notchWidth" && std::is_same_v<T, double>) {
+                    if constexpr (std::is_same_v<T, double>) rxConfig_->setNotchWidth(val);
+                }
+            }, value);
+        });
 
         // Load main Lua script
         try {
@@ -1278,6 +1381,7 @@ private:
 
     // Demodulator and audio output
     Demodulator demod_;
+    nexrx::BasebandFilter basebandFilter_{96000.0f};  // Complex FIR bandpass/notch
     nexrx::RateAdaptiveBuffer<float> audioBuffer_;
     std::atomic<float> audioVolume_{0.0316f};  // Volume applied before soft-clip
     bool audioDecimateSkip_ = false;  // For 96kHz→48kHz decimation
@@ -1438,9 +1542,12 @@ private:
         float i_f = out_i;
         float q_f = out_q;
 
-        // Use LMS output for audio (image-rejected signal)
-        float audio_i = out_i;
-        float audio_q = out_q;
+        // Apply baseband filters (bandpass and/or notch)
+        basebandFilter_.process(i_f, q_f);
+
+        // Use filtered output for audio
+        float audio_i = i_f;
+        float audio_q = q_f;
 
         // Signal level metering (RMS of I/Q magnitude)
         float mag_sq = i_f * i_f + q_f * q_f;
@@ -1464,9 +1571,10 @@ private:
         }
 
         // Lock-free write (single producer, consumer copies under lock)
+        // Use unfiltered LMS output for spectrum display (show full bandwidth)
         size_t pos = iqBufferWritePos_.load(std::memory_order_relaxed);
-        iqBuffer_[pos * 2] = i_f;
-        iqBuffer_[pos * 2 + 1] = q_f;
+        iqBuffer_[pos * 2] = out_i;
+        iqBuffer_[pos * 2 + 1] = out_q;
         iqBufferWritePos_.store((pos + 1) % FFT_SIZE, std::memory_order_release);
 
         // Demodulate using LMS output (best image rejection for audio)

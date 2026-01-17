@@ -200,6 +200,7 @@ set(NEXRX_APP_SOURCES
     src/FontRenderer.cpp
     src/AudioEngine.cpp
     src/WaterfallRenderer.cpp
+    src/dsp/BasebandFilter.cpp
 )
 
 # Add generated config code if code generation is enabled
