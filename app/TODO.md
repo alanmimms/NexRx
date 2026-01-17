@@ -16,3 +16,9 @@
 		 if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassWidth(val);
 	 } . . .
 
+* Move `main.cpp` `fontPaths` to Lua.
+
+* Set window width/height in Lua using SetBox methodology and make it
+  reactive to changes to UI that govern its size.
+
+* TODO: do I need bidirectional bindings like QML?
