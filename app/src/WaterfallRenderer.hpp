@@ -67,9 +67,17 @@ public:
     void render(float x, float y, float w, float h);
 
     /**
-     * @brief Set the colormap
+     * @brief Set the colormap by enum
      */
     void setColormap(WaterfallColormap colormap);
+
+    /**
+     * @brief Set colormap from gradient stops
+     * @param stops Vector of {position, r, g, b} where position is 0-1 and RGB are 0-255
+     *
+     * This allows Lua to define custom colormaps without C++ changes.
+     */
+    void setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops);
 
     /**
      * @brief Get current colormap

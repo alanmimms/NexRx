@@ -233,6 +233,21 @@ void WaterfallRenderer::setColormap(WaterfallColormap colormap) {
     textureDirty_ = true;
 }
 
+void WaterfallRenderer::setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops) {
+    if (stops.empty()) return;
+
+    // Convert to internal gradient format and build LUT
+    std::vector<std::pair<float, uint32_t>> gradientStops;
+    gradientStops.reserve(stops.size());
+
+    for (const auto& [pos, r, g, b] : stops) {
+        gradientStops.push_back({pos, packRGBA(r, g, b)});
+    }
+
+    colormapLUT_ = buildGradient(gradientStops);
+    textureDirty_ = true;
+}
+
 void WaterfallRenderer::setRange(float minDb, float maxDb) {
     minDb_ = minDb;
     maxDb_ = maxDb;

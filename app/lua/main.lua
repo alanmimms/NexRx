@@ -136,6 +136,20 @@ local function getBand(freq)
     end
 end
 
+-- Apply colormap by name from Lua definitions (config/colormaps.lua)
+-- Falls back to C++ built-in if Lua colormap not found
+local function applyColormap(name)
+    -- Check if colormaps table exists (loaded from config/colormaps.lua)
+    if colormaps and colormaps[name] then
+        waterfall.setColormapData(colormaps[name])
+        return true
+    else
+        -- Fallback to C++ built-in colormaps
+        waterfall.setColormap(name)
+        return false
+    end
+end
+
 -- Initialize
 function init()
     print("[Lua] init() called")
@@ -209,7 +223,7 @@ function init()
     -- Initialize waterfall
     if waterfall.init(waterfallBins, waterfallRows) then
         waterfall.setRange(wfMinDb, wfMaxDb)
-        waterfall.setColormap(selectedColormap)
+        applyColormap(selectedColormap)
         print("[Lua] Waterfall initialized: " .. waterfallBins .. "x" .. waterfallRows)
     else
         print("[Lua] Warning: Waterfall init failed")
@@ -919,14 +933,15 @@ function draw()
         drawText(px, py, freqStr, freqColor[1], freqColor[2], freqColor[3], 1.0)
 
         -- Colormap selector (right side of title)
-        local colormaps = {"viridis", "plasma", "inferno", "green", "blue"}
+        -- Uses colormaps from config/colormaps.lua when available
+        local cmapNames = {"viridis", "plasma", "inferno", "green", "blue"}
         local cmapX = px + pw - 280
-        for i, cmap in ipairs(colormaps) do
+        for i, cmap in ipairs(cmapNames) do
             local btnX = cmapX + (i - 1) * 55
             local tags = selectedColormap == cmap and {"Active"} or {}
             if ui.button("cmap_" .. cmap, cmap, btnX, py - 2, 52, 20, tags) then
                 selectedColormap = cmap
-                waterfall.setColormap(cmap)
+                applyColormap(cmap)
             end
         end
 

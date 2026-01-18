@@ -698,6 +698,7 @@ private:
             waterfall_.renderSpectrum(specData.data(), static_cast<int>(specData.size()), x, y, w, h);
         };
 
+        // Legacy: setColormap by name (uses hardcoded C++ colormaps)
         lua_["waterfall"]["setColormap"] = [this](const std::string& name) {
             if (name == "viridis") waterfall_.setColormap(WaterfallColormap::Viridis);
             else if (name == "plasma") waterfall_.setColormap(WaterfallColormap::Plasma);
@@ -706,6 +707,21 @@ private:
             else if (name == "green") waterfall_.setColormap(WaterfallColormap::GreenPhosphor);
             else if (name == "blue") waterfall_.setColormap(WaterfallColormap::BlueHot);
             else if (name == "grayscale") waterfall_.setColormap(WaterfallColormap::Grayscale);
+        };
+
+        // New: setColormapData from Lua gradient stops
+        // Input: table of {position, r, g, b} where position is 0-1, RGB are 0-255
+        lua_["waterfall"]["setColormapData"] = [this](sol::table stops) {
+            std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>> gradientStops;
+            for (size_t i = 1; i <= stops.size(); ++i) {
+                sol::table stop = stops[i];
+                float pos = stop[1].get_or(0.0f);
+                uint8_t r = static_cast<uint8_t>(stop[2].get_or(0));
+                uint8_t g = static_cast<uint8_t>(stop[3].get_or(0));
+                uint8_t b = static_cast<uint8_t>(stop[4].get_or(0));
+                gradientStops.push_back({pos, r, g, b});
+            }
+            waterfall_.setColormapData(gradientStops);
         };
 
         lua_["waterfall"]["setRange"] = [this](float minDb, float maxDb) {
@@ -1088,6 +1104,9 @@ private:
             }
             if (!loadFile("config/modes.lua").get<bool>()) {
                 std::cerr << "Warning: Failed to load config/modes.lua" << std::endl;
+            }
+            if (!loadFile("config/colormaps.lua").get<bool>()) {
+                std::cerr << "Warning: Failed to load config/colormaps.lua" << std::endl;
             }
             if (!loadFile("config/settings.lua").get<bool>()) {
                 std::cerr << "Error: config/settings.lua not found.\n"
