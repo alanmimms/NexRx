@@ -30,42 +30,43 @@ local fpsFrames = 0
 
 -- Application state
 -- Note: volume, muted, testTone* now use config.* API (see header comment)
+-- Configuration values are loaded from SetBox in init()
 local rxActive = false
-local frequency = 14.200  -- MHz
-local squelch = 0.3
-local agcEnabled = true
-local nrEnabled = false
-local nbEnabled = false
-local selectedMode = "USB"
-local selectedBand = "20m"
+local frequency        -- MHz (loaded from SetBox)
+local squelch          -- 0-1 (loaded from SetBox)
+local agcEnabled       -- bool (loaded from SetBox)
+local nrEnabled        -- bool (loaded from SetBox)
+local nbEnabled        -- bool (loaded from SetBox)
+local selectedMode     -- "USB", "LSB", "CW", "AM" (loaded from SetBox)
+local selectedBand     -- "20m", etc. (loaded from SetBox)
 
--- VFO state
-local vfoA = 14.200
-local vfoB = 7.050
-local activeVFO = "A"
+-- VFO state (loaded from SetBox)
+local vfoA             -- MHz
+local vfoB             -- MHz
+local activeVFO        -- "A" or "B"
 
--- LMS adaptive filter
-local lmsMu = 0.001  -- Learning rate for image rejection
+-- LMS adaptive filter (loaded from SetBox)
+local lmsMu            -- Learning rate for image rejection
 
--- QSD offset k (kHz) for image rejection
-local qsdOffsetK = 12.0  -- Default 12 kHz
+-- QSD offset k (kHz) for image rejection (loaded from SetBox)
+local qsdOffsetK       -- kHz
 
--- RF Attenuator (0-45 dB in 3 dB steps)
-local rfAttenDb = 0  -- Default 0 dB (no attenuation)
+-- RF Attenuator (0-45 dB in 3 dB steps) (loaded from SetBox)
+local rfAttenDb        -- dB
 
--- Waterfall state
-local waterfallBins = 512
-local waterfallRows = 256
-local spectrumData = {}
-local selectedColormap = "viridis"
-local wfMinDb = -120  -- Waterfall min dB (noise floor)
-local wfMaxDb = -40   -- Waterfall max dB (strongest signals)
+-- Waterfall state (loaded from SetBox)
+local waterfallBins    -- FFT bins
+local waterfallRows    -- history rows
+local spectrumData = {}  -- runtime buffer
+local selectedColormap -- colormap name
+local wfMinDb          -- Waterfall min dB (noise floor)
+local wfMaxDb          -- Waterfall max dB (strongest signals)
 
--- Twin connection state (can be modified before calling connectTwin())
+-- Hardware connection state (loaded from SetBox)
 local twinSettings = {
-    host = "127.0.0.1",
-    controlPort = 5000,
-    streamPort = 5001,
+    host = nil,
+    controlPort = nil,
+    streamPort = nil,
 }
 
 -- Connect to twin with current settings
@@ -138,6 +139,60 @@ end
 -- Initialize
 function init()
     print("[Lua] init() called")
+
+    -- ==========================================================================
+    -- Load all configuration from SetBox
+    -- ==========================================================================
+
+    -- Radio settings
+    frequency = setbox.getNumber("defaultFrequency", 14.200e6) / 1e6  -- Convert Hz to MHz
+    selectedMode = setbox.getString("defaultMode", "USB")
+    selectedBand = setbox.getString("defaultBand", "20m")
+
+    -- VFO state
+    vfoA = setbox.getNumber("vfoA", 14.200e6) / 1e6  -- Convert Hz to MHz
+    vfoB = setbox.getNumber("vfoB", 7.050e6) / 1e6   -- Convert Hz to MHz
+    activeVFO = setbox.getString("activeVFO", "A")
+
+    -- DSP settings
+    squelch = setbox.getNumber("squelch", 0.3)
+    agcEnabled = setbox.getBool("agcEnabled", true)
+    nrEnabled = setbox.getBool("nrEnabled", false)
+    nbEnabled = setbox.getBool("nbEnabled", false)
+    lmsMu = setbox.getNumber("lmsMu", 0.001)
+
+    -- Hardware settings
+    qsdOffsetK = setbox.getNumber("qsdOffsetK", 12.0)
+    rfAttenDb = math.floor(setbox.getNumber("rfAttenDb", 0))
+
+    -- Waterfall/display settings
+    waterfallBins = math.floor(setbox.getNumber("waterfallBins", 512))
+    waterfallRows = math.floor(setbox.getNumber("waterfallRows", 256))
+    selectedColormap = setbox.getString("colormap", "viridis")
+    wfMinDb = setbox.getNumber("wfMinDb", -120)
+    wfMaxDb = setbox.getNumber("wfMaxDb", -40)
+
+    -- Hardware connection settings (supports both hw* and legacy twin* names)
+    twinSettings.host = setbox.getString("hwHost", setbox.getString("twinHost", "127.0.0.1"))
+    twinSettings.controlPort = math.floor(setbox.getNumber("hwControlPort", setbox.getNumber("twinControlPort", 5000)))
+    twinSettings.streamPort = math.floor(setbox.getNumber("hwStreamPort", setbox.getNumber("twinStreamPort", 5001)))
+
+    print(string.format("[Lua] Config loaded: freq=%.3f MHz, mode=%s, band=%s",
+        frequency, selectedMode, selectedBand))
+    print(string.format("[Lua] VFO A=%.3f MHz, B=%.3f MHz, active=%s",
+        vfoA, vfoB, activeVFO))
+    print(string.format("[Lua] DSP: squelch=%.2f, AGC=%s, NR=%s, NB=%s",
+        squelch, tostring(agcEnabled), tostring(nrEnabled), tostring(nbEnabled)))
+    print(string.format("[Lua] Hardware: QSD k=%.1f kHz, atten=%d dB",
+        qsdOffsetK, rfAttenDb))
+    print(string.format("[Lua] Display: waterfall %dx%d, colormap=%s, range=[%d,%d] dB",
+        waterfallBins, waterfallRows, selectedColormap, wfMinDb, wfMaxDb))
+
+    -- ==========================================================================
+    -- Initialize subsystems
+    -- ==========================================================================
+
+    -- Background color
     local bg = setbox.getString("background", "#1a1a2e")
     local r, g, b = hexToRgb(bg)
     setClearColor(r, g, b)
@@ -153,7 +208,7 @@ function init()
 
     -- Initialize waterfall
     if waterfall.init(waterfallBins, waterfallRows) then
-        waterfall.setRange(-120, -40)
+        waterfall.setRange(wfMinDb, wfMaxDb)
         waterfall.setColormap(selectedColormap)
         print("[Lua] Waterfall initialized: " .. waterfallBins .. "x" .. waterfallRows)
     else
@@ -165,20 +220,15 @@ function init()
         spectrumData[i] = -100
     end
 
-    -- Load twin connection settings from config
-    twinSettings.host = setbox.getString("twinHost", "127.0.0.1")
-    twinSettings.controlPort = math.floor(setbox.getNumber("twinControlPort", 5000))
-    twinSettings.streamPort = math.floor(setbox.getNumber("twinStreamPort", 5001))
-
-    -- Try to connect to twin (digital twin simulation)
-    local autoConnect = setbox.getBool("twinAutoConnect", true)
+    -- Try to connect to hardware (digital twin simulation or real hardware)
+    local autoConnect = setbox.getBool("hwAutoConnect", setbox.getBool("twinAutoConnect", true))
     if autoConnect then
         if not connectTwin() then
-            print("[Lua] Twin not available - using simulated spectrum")
+            print("[Lua] Hardware not available - using simulated spectrum")
         end
     else
         twinConnected = false
-        print("[Lua] Twin auto-connect disabled")
+        print("[Lua] Hardware auto-connect disabled")
     end
 
     print("[Lua] NexRx UI initialized with layout system")
