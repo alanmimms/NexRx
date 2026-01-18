@@ -22,6 +22,9 @@ local ui = require("ui.widgets")
 local theme = require("ui.theme")
 local layout = require("ui.layout")
 
+-- Load mode definitions (Lua owns mode enum)
+local modeHelper = require("modes")
+
 -- Global state
 local frameCount = 0
 local fps = 0
@@ -544,7 +547,7 @@ function draw()
             local tags = selectedMode == mode and {"Active"} or {}
             if ui.button("mode_" .. mode, mode, mx, my, 50, 26, tags) then
                 selectedMode = mode
-                rx.setMode(mode)  -- Update demodulator mode
+                modeHelper.setMode(mode)  -- Update demodulator mode
             end
         end
         layout.endHorizontal()

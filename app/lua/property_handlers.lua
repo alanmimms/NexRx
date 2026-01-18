@@ -51,16 +51,10 @@ end
 -- =============================================================================
 
 handlers.mode = function(value)
-    if rx and rx.setMode then
-        -- value is a ModeChoice enum value, convert to string
-        local modeMap = {
-            [0] = "USB",
-            [1] = "LSB",
-            [2] = "AM",
-            [3] = "CW",
-        }
-        local modeName = modeMap[value] or "USB"
-        rx.setMode(modeName)
+    -- value is a ModeChoice enum value (integer)
+    -- Pass directly to C++ - no string conversion needed
+    if rx and rx.setModeId then
+        rx.setModeId(value)
     end
 end
 

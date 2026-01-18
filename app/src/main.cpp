@@ -864,26 +864,16 @@ private:
         // Expose receiver controls to Lua
         lua_["rx"] = lua_.create_table();
 
-        lua_["rx"]["setMode"] = [this](const std::string& mode) {
-            if (mode == "usb" || mode == "USB") {
-                demod_.setMode(Demodulator::Mode::USB);
-            } else if (mode == "lsb" || mode == "LSB") {
-                demod_.setMode(Demodulator::Mode::LSB);
-            } else if (mode == "am" || mode == "AM") {
-                demod_.setMode(Demodulator::Mode::AM);
-            } else if (mode == "cw" || mode == "CW") {
-                demod_.setMode(Demodulator::Mode::CW);
+        // Mode control - Lua passes integer mode ID, no string parsing in C++
+        // Mode IDs: 0=USB, 1=LSB, 2=AM, 3=CW (matches Demodulator::Mode enum)
+        lua_["rx"]["setModeId"] = [this](int modeId) {
+            if (modeId >= 0 && modeId <= 3) {
+                demod_.setMode(static_cast<Demodulator::Mode>(modeId));
             }
         };
 
-        lua_["rx"]["getMode"] = [this]() {
-            switch (demod_.getMode()) {
-                case Demodulator::Mode::USB: return std::string("USB");
-                case Demodulator::Mode::LSB: return std::string("LSB");
-                case Demodulator::Mode::AM:  return std::string("AM");
-                case Demodulator::Mode::CW:  return std::string("CW");
-                default: return std::string("USB");
-            }
+        lua_["rx"]["getModeId"] = [this]() {
+            return static_cast<int>(demod_.getMode());
         };
 
         lua_["rx"]["setBfo"] = [this](float hz) {
