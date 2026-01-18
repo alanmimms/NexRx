@@ -1,8 +1,8 @@
 --[[
-  NexRx Base Configuration
+  NexRx Default Configuration
 
-  This file defines the default SetBox rules shipped with the application.
-  Users can override any of these settings in their own config files.
+  This file defines all default SetBox rules shipped with the application.
+  Users can override any of these settings in config/settings.lua.
 
   Priority levels:
     -100 to -1: Base defaults (easily overridden)
@@ -20,29 +20,88 @@ rule {
     tags = {},
     priority = -100,
     apply = {
-        -- Colors
+        -- =================================================================
+        -- Radio Defaults
+        -- =================================================================
+        defaultFrequency = 14.200e6,    -- Hz (20m band)
+        defaultMode = "USB",
+        defaultBand = "20m",
+        vfoA = 14.200e6,                -- Hz
+        vfoB = 7.050e6,                 -- Hz
+        activeVFO = "A",
+
+        -- =================================================================
+        -- DSP Defaults
+        -- =================================================================
+        squelch = 0.3,
+        agcEnabled = true,
+        nrEnabled = false,
+        nbEnabled = false,
+        lmsMu = 0.001,                  -- LMS adaptive filter learning rate
+        bfoOffset = 700,                -- Hz (CW sidetone)
+
+        -- =================================================================
+        -- Hardware Defaults
+        -- =================================================================
+        qsdOffsetK = 12.0,              -- kHz
+        rfAttenDb = 0,                  -- dB (0-45 in 3 dB steps)
+
+        -- =================================================================
+        -- Display Defaults
+        -- =================================================================
+        waterfallBins = 512,
+        waterfallRows = 256,
+        colormap = "viridis",
+        wfMinDb = -120,
+        wfMaxDb = -40,
+        spectrumEmaAlpha = 0.3,         -- Spectrum smoothing
+
+        -- =================================================================
+        -- Window Defaults
+        -- =================================================================
+        windowWidth = 1280,
+        windowHeight = 850,
+        fontSize = 16,
+
+        -- =================================================================
+        -- Connection Defaults (hw abstraction layer)
+        -- =================================================================
+        hwHost = "127.0.0.1",           -- Hardware/twin server address
+        hwControlPort = 5000,           -- TCP control port
+        hwStreamPort = 5001,            -- UDP stream port
+        hwAutoConnect = true,           -- Auto-connect on startup
+
+        -- Legacy names (for compatibility during transition)
+        twinHost = "127.0.0.1",
+        twinControlPort = 5000,
+        twinStreamPort = 5001,
+        twinAutoConnect = true,
+
+        -- =================================================================
+        -- Recording Defaults
+        -- =================================================================
+        recordingPath = "/tmp/nexrx_audio.wav",
+
+        -- =================================================================
+        -- Audio Defaults
+        -- =================================================================
+        rxVolume = 0.8,
+        muted = false,
+
+        -- =================================================================
+        -- UI Theme Colors
+        -- =================================================================
         background = "#1a1a2e",
         foreground = "#e2e8f0",
         accent = "#3b82f6",
 
         -- Typography
-        fontSize = 14,
         fontFamily = "system-ui",
 
         -- Spacing
         padding = 8,
         margin = 4,
         borderRadius = 4,
-
-        -- Audio
-        rxVolume = 0.8,
-        muted = false,
-
-        -- Twin connection settings
-        twinHost = "127.0.0.1",           -- Twin server address (localhost)
-        twinControlPort = 5000,        -- TCP control port
-        twinStreamPort = 5001,         -- UDP stream port
-        twinAutoConnect = true,        -- Auto-connect on startup
     }
 }
 
@@ -486,4 +545,4 @@ rule {
     }
 }
 
-print("[defaults.lua] Base configuration loaded")
+print("[default.lua] Configuration loaded")

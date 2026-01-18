@@ -1183,9 +1183,17 @@ private:
         // Register RxConfig Lua bindings
         nexrx::RxConfig::registerLuaBindings(lua_, *rxConfig_);
 
-        // Load SetBox base config
-        if (!setbox_.loadFile("config/base/defaults.lua")) {
-            std::cerr << "Warning: Failed to load defaults.lua: " << setbox_.lastError() << std::endl;
+        // Load SetBox configuration files
+        if (!setbox_.loadFile("config/default.lua")) {
+            std::cerr << "Warning: Failed to load default.lua: " << setbox_.lastError() << std::endl;
+        }
+        if (!setbox_.loadFile("config/modes.lua")) {
+            std::cerr << "Warning: Failed to load modes.lua: " << setbox_.lastError() << std::endl;
+        }
+        if (!setbox_.loadFile("config/settings.lua")) {
+            std::cerr << "Error: config/settings.lua not found.\n"
+                      << "Please restore it from the app distribution." << std::endl;
+            // Continue anyway - defaults will be used
         }
 
         // Wire SetBox property changes to RxConfig
