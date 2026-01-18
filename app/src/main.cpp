@@ -968,27 +968,9 @@ private:
             }
         };
 
-        lua_["rx"]["getSignalLevel"] = [this]() {
-            // Return signal level: RMS voltage, dBm, S-units
-            float rms = signalLevelRms_.load(std::memory_order_relaxed);
-
-            // Convert to dBm (assuming 50 ohm reference)
-            // P = V^2 / R, dBm = 10*log10(P / 1mW)
-            // dBm = 10*log10(V^2 / 50 / 0.001) = 20*log10(V) + 10*log10(1/0.05) = 20*log10(V) + 13
-            float dBm = -120.0f;  // Floor
-            if (rms > 1e-9f) {
-                dBm = 20.0f * std::log10(rms) + 13.0f;
-            }
-
-            // S-meter: S9 = -73 dBm, each S-unit = 6 dB
-            // S = (dBm + 73) / 6 + 9, clamped to 0-9+
-            float sUnits = (dBm + 73.0f) / 6.0f + 9.0f;
-            sUnits = std::max(0.0f, sUnits);
-
-            // Also return dB over S9 for readings above S9
-            float dBoverS9 = dBm + 73.0f;
-
-            return std::make_tuple(rms, dBm, sUnits, dBoverS9);
+        // Signal level - C++ only provides raw RMS, Lua calculates dBm/S-units
+        lua_["rx"]["getSignalRms"] = [this]() {
+            return signalLevelRms_.load(std::memory_order_relaxed);
         };
 
         // Initialize configuration system

@@ -25,6 +25,9 @@ local layout = require("ui.layout")
 -- Load mode definitions (Lua owns mode enum)
 local modeHelper = require("modes")
 
+-- Load S-meter calculations (Lua owns signal calculations)
+local smeter = require("smeter")
+
 -- Global state
 local frameCount = 0
 local fps = 0
@@ -805,8 +808,8 @@ function draw()
         local mw = w - 24
         drawRoundedRect(mx, my, mw, 28, 4, 0.12, 0.12, 0.15, 1.0)
 
-        -- Get real signal level from rx
-        local rms, dBm, sUnits, dBoverS9 = rx.getSignalLevel()
+        -- Get signal level from smeter module (Lua calculates from RMS)
+        local sig = smeter.getReading()
 
         -- Map S-units to bar display (0-9 = bars 0-8, 9+ = bars 9+)
         -- Bar 0-8 = S1-S9, bar 9 = S9+10, etc
@@ -821,7 +824,7 @@ function draw()
                 barThreshold = 9 + (i - 8) * (10/6)  -- S9+10, +20, +30
             end
 
-            if sUnits >= barThreshold then
+            if sig.sUnits >= barThreshold then
                 local r, g, b = 0.2, 0.8, 0.3  -- Green for S1-S5
                 if i >= 9 then r, g, b = 0.9, 0.3, 0.2 end  -- Red for S9+
                 if i >= 6 and i < 9 then r, g, b = 0.9, 0.7, 0.2 end  -- Yellow for S6-S9
@@ -832,17 +835,10 @@ function draw()
         end
         layout.newLine(40)
 
-        -- Display S-meter reading
-        local sText
-        if sUnits < 9 then
-            sText = string.format("S%.0f", math.max(1, math.floor(sUnits + 0.5)))
-        else
-            sText = string.format("S9+%.0f", math.max(0, dBoverS9))
-        end
-        local dBmText = string.format("%.0f dBm", dBm)
-        local sx, sy = layout.center(measureText(sText), 16)
-        drawText(sx - 20, layout.getCursor() - 8, sText, 0.9, 0.9, 0.95, 1.0)
-        drawText(sx + 30, layout.getCursor() - 8, dBmText, 0.5, 0.5, 0.55, 1.0)
+        -- Display S-meter reading (text comes from smeter module)
+        local sx, sy = layout.center(measureText(sig.sText), 16)
+        drawText(sx - 20, layout.getCursor() - 8, sig.sText, 0.9, 0.9, 0.95, 1.0)
+        drawText(sx + 30, layout.getCursor() - 8, sig.dBmText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(16)
 
         sepX, sepY = layout.getCursor()
