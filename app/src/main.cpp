@@ -1047,54 +1047,66 @@ private:
             std::cout << "[Config] Reset to defaults" << std::endl;
         });
 
-        // Wire up change notifications
+        // Wire up change notifications - dispatch to Lua property handlers
+        // Note: volume uses atomic for thread-safe access from audio callback
         rxConfig_->onPropertyChange([this](const std::string& name) {
+            // Volume needs special handling for thread-safe audio callback access
             if (name == "volume") {
                 audioVolume_.store(static_cast<float>(rxConfig_->volume()), std::memory_order_relaxed);
-            } else if (name == "muted") {
-                audio_.setMuted(rxConfig_->muted());
-            } else if (name == "mode") {
-                switch (rxConfig_->mode()) {
-                    case nexrx::ModeChoice::USB: demod_.setMode(Demodulator::Mode::USB); break;
-                    case nexrx::ModeChoice::LSB: demod_.setMode(Demodulator::Mode::LSB); break;
-                    case nexrx::ModeChoice::AM:  demod_.setMode(Demodulator::Mode::AM); break;
-                    case nexrx::ModeChoice::CW:  demod_.setMode(Demodulator::Mode::CW); break;
+            }
+
+            // Dispatch to Lua property handlers (loaded later)
+            // The Lua handler will call the appropriate C++ primitive
+            sol::function handler = lua_["onPropertyChange"];
+            if (handler.valid()) {
+                try {
+                    // Get the current value and pass to Lua
+                    if (name == "volume") {
+                        handler(name, rxConfig_->volume());
+                    } else if (name == "muted") {
+                        handler(name, rxConfig_->muted());
+                    } else if (name == "mode") {
+                        handler(name, static_cast<int>(rxConfig_->mode()));
+                    } else if (name == "testToneEnabled") {
+                        handler(name, rxConfig_->testToneEnabled());
+                    } else if (name == "testToneFreq") {
+                        handler(name, rxConfig_->testToneFreq());
+                    } else if (name == "colormap") {
+                        handler(name, static_cast<int>(rxConfig_->colormap()));
+                    } else if (name == "qsdOffsetK") {
+                        handler(name, rxConfig_->qsdOffsetK());
+                    } else if (name == "rfAttenuation") {
+                        handler(name, rxConfig_->rfAttenuation());
+                    } else if (name == "bandpassEnabled") {
+                        handler(name, rxConfig_->bandpassEnabled());
+                    } else if (name == "bandpassCenter") {
+                        handler(name, rxConfig_->bandpassCenter());
+                    } else if (name == "bandpassWidth") {
+                        handler(name, rxConfig_->bandpassWidth());
+                    } else if (name == "bandpassTaps") {
+                        handler(name, rxConfig_->bandpassTaps());
+                    } else if (name == "notchEnabled") {
+                        handler(name, rxConfig_->notchEnabled());
+                    } else if (name == "notchCenter") {
+                        handler(name, rxConfig_->notchCenter());
+                    } else if (name == "notchWidth") {
+                        handler(name, rxConfig_->notchWidth());
+                    }
+                } catch (const std::exception& e) {
+                    std::cerr << "[RxConfig] Lua handler error for '" << name << "': " << e.what() << std::endl;
                 }
-            } else if (name == "testToneEnabled" || name == "testToneFreq") {
-                audio_.setTestTone(rxConfig_->testToneEnabled(),
-                                   static_cast<float>(rxConfig_->testToneFreq()));
-            } else if (name == "colormap") {
-                switch (rxConfig_->colormap()) {
-                    case nexrx::ColormapChoice::VIRIDIS: waterfall_.setColormap(WaterfallColormap::Viridis); break;
-                    case nexrx::ColormapChoice::PLASMA:  waterfall_.setColormap(WaterfallColormap::Plasma); break;
-                    case nexrx::ColormapChoice::INFERNO: waterfall_.setColormap(WaterfallColormap::Inferno); break;
-                    case nexrx::ColormapChoice::GREEN:   waterfall_.setColormap(WaterfallColormap::GreenPhosphor); break;
-                    case nexrx::ColormapChoice::BLUE:    waterfall_.setColormap(WaterfallColormap::BlueHot); break;
-                }
-            } else if (name == "qsdOffsetK" && twinConnected_) {
-                qsdOffsetKhz_ = rxConfig_->qsdOffsetK();
-            } else if (name == "rfAttenuation" && twinConnected_) {
-                attenDb_ = rxConfig_->rfAttenuation();
-            // Baseband filter properties
-            } else if (name == "bandpassEnabled") {
-                basebandFilter_.setBandpassEnabled(rxConfig_->bandpassEnabled());
-            } else if (name == "bandpassCenter") {
-                basebandFilter_.setBandpassCenter(static_cast<float>(rxConfig_->bandpassCenter()));
-            } else if (name == "bandpassWidth") {
-                basebandFilter_.setBandpassWidth(static_cast<float>(rxConfig_->bandpassWidth()));
-            } else if (name == "bandpassTaps") {
-                basebandFilter_.setBandpassTaps(static_cast<int>(rxConfig_->bandpassTaps()));
-            } else if (name == "notchEnabled") {
-                basebandFilter_.setNotchEnabled(rxConfig_->notchEnabled());
-            } else if (name == "notchCenter") {
-                basebandFilter_.setNotchCenter(static_cast<float>(rxConfig_->notchCenter()));
-            } else if (name == "notchWidth") {
-                basebandFilter_.setNotchWidth(static_cast<float>(rxConfig_->notchWidth()));
             }
         });
 
         // Register RxConfig Lua bindings
         nexrx::RxConfig::registerLuaBindings(lua_, *rxConfig_);
+
+        // Load property handlers (defines global onPropertyChange function)
+        try {
+            lua_.safe_script_file("lua/property_handlers.lua", sol::script_pass_on_error);
+        } catch (const std::exception& e) {
+            std::cerr << "Warning: Failed to load lua/property_handlers.lua: " << e.what() << std::endl;
+        }
 
         // Load SetBox configuration files via Lua setbox module
         sol::function loadFile = lua_["setbox"]["loadFile"];
