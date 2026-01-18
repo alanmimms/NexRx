@@ -128,18 +128,18 @@ handlers.notchWidth = function(value)
 end
 
 -- =============================================================================
--- Hardware/Twin Handlers
+-- Hardware Handlers
 -- =============================================================================
 
 handlers.qsdOffsetK = function(value)
-    if twin and twin.setQsdOffset then
-        twin.setQsdOffset(value)
+    if hw and hw.setQsdOffset then
+        hw.setQsdOffset(value)
     end
 end
 
 handlers.rfAttenuation = function(value)
-    if twin and twin.setAttenuation then
-        twin.setAttenuation(value)
+    if hw and hw.setAttenuation then
+        hw.setAttenuation(value)
     end
 end
 

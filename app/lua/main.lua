@@ -69,49 +69,49 @@ local wfMinDb          -- Waterfall min dB (noise floor)
 local wfMaxDb          -- Waterfall max dB (strongest signals)
 
 -- Hardware connection state (loaded from SetBox)
-local twinSettings = {
+local hwSettings = {
     host = nil,
     controlPort = nil,
     streamPort = nil,
 }
 
--- Connect to twin with current settings
-local function connectTwin()
-    if twin.isConnected() then
-        twin.disconnect()
+-- Connect to hardware with current settings
+local function connectHardware()
+    if hw.isConnected() then
+        hw.disconnect()
     end
 
-    print("[Lua] Connecting to twin at " .. twinSettings.host ..
-          " (TCP:" .. twinSettings.controlPort .. ", UDP:" .. twinSettings.streamPort .. ")...")
+    print("[Lua] Connecting to hardware at " .. hwSettings.host ..
+          " (TCP:" .. hwSettings.controlPort .. ", UDP:" .. hwSettings.streamPort .. ")...")
 
-    if twin.connect(twinSettings.host, twinSettings.controlPort, twinSettings.streamPort) then
-        twinConnected = true
-        print("[Lua] Connected to digital twin!")
+    if hw.connect(hwSettings.host, hwSettings.controlPort, hwSettings.streamPort) then
+        hwConnected = true
+        print("[Lua] Connected to hardware!")
         -- Send initial QSD offset k
-        twin.setQsdOffset(qsdOffsetK)
+        hw.setQsdOffset(qsdOffsetK)
         print("[Lua] Set QSD offset k = " .. qsdOffsetK .. " kHz")
         return true
     else
-        twinConnected = false
-        print("[Lua] Failed to connect to twin")
+        hwConnected = false
+        print("[Lua] Failed to connect to hardware")
         return false
     end
 end
 
--- Disconnect from twin
-local function disconnectTwin()
-    if twin.isConnected() then
-        twin.disconnect()
-        twinConnected = false
-        print("[Lua] Disconnected from twin")
+-- Disconnect from hardware
+local function disconnectHardware()
+    if hw.isConnected() then
+        hw.disconnect()
+        hwConnected = false
+        print("[Lua] Disconnected from hardware")
     end
 end
 
--- Twin connection state
-local twinConnected = false
-local twinFramesReceived = 0
-local useTwinSpectrum = true  -- Try to use twin data when available
-local lastVfoFreq = 0  -- Track VFO changes for twin control
+-- Hardware connection state
+local hwConnected = false
+local hwFramesReceived = 0
+local useHwSpectrum = true  -- Try to use hardware data when available
+local lastVfoFreq = 0  -- Track VFO changes for hardware control
 
 -- Frequency entry state
 local freqEntryMode = false
@@ -193,9 +193,9 @@ function init()
     wfMaxDb = setbox.getNumber("wfMaxDb", -40)
 
     -- Hardware connection settings (supports both hw* and legacy twin* names)
-    twinSettings.host = setbox.getString("hwHost", setbox.getString("twinHost", "127.0.0.1"))
-    twinSettings.controlPort = math.floor(setbox.getNumber("hwControlPort", setbox.getNumber("twinControlPort", 5000)))
-    twinSettings.streamPort = math.floor(setbox.getNumber("hwStreamPort", setbox.getNumber("twinStreamPort", 5001)))
+    hwSettings.host = setbox.getString("hwHost", setbox.getString("twinHost", "127.0.0.1"))
+    hwSettings.controlPort = math.floor(setbox.getNumber("hwControlPort", setbox.getNumber("twinControlPort", 5000)))
+    hwSettings.streamPort = math.floor(setbox.getNumber("hwStreamPort", setbox.getNumber("twinStreamPort", 5001)))
 
     print(string.format("[Lua] Config loaded: freq=%.3f MHz, mode=%s, band=%s",
         frequency, selectedMode, selectedBand))
@@ -243,11 +243,11 @@ function init()
     -- Try to connect to hardware (digital twin simulation or real hardware)
     local autoConnect = setbox.getBool("hwAutoConnect", setbox.getBool("twinAutoConnect", true))
     if autoConnect then
-        if not connectTwin() then
+        if not connectHardware() then
             print("[Lua] Hardware not available - using simulated spectrum")
         end
     else
-        twinConnected = false
+        hwConnected = false
         print("[Lua] Hardware auto-connect disabled")
     end
 
@@ -375,32 +375,32 @@ function update(dt)
         quit()
     end
 
-    -- Get spectrum data from twin or generate simulated
-    local gotTwinData = false
-    if useTwinSpectrum and twin.isConnected() then
-        local twinSpectrum = twin.getSpectrum()
-        if #twinSpectrum > 0 then
-            -- Resample twin spectrum to our bin count if needed
-            if #twinSpectrum == waterfallBins then
-                spectrumData = twinSpectrum
+    -- Get spectrum data from hardware or generate simulated
+    local gotHwData = false
+    if useHwSpectrum and hw.isConnected() then
+        local hwSpectrum = hw.getSpectrum()
+        if #hwSpectrum > 0 then
+            -- Resample hardware spectrum to our bin count if needed
+            if #hwSpectrum == waterfallBins then
+                spectrumData = hwSpectrum
             else
                 -- Simple resampling
-                local ratio = #twinSpectrum / waterfallBins
+                local ratio = #hwSpectrum / waterfallBins
                 for i = 1, waterfallBins do
                     local srcIdx = math.floor((i - 1) * ratio) + 1
-                    spectrumData[i] = twinSpectrum[srcIdx] or -100
+                    spectrumData[i] = hwSpectrum[srcIdx] or -100
                 end
             end
-            gotTwinData = true
-            twinFramesReceived = twin.getFramesReceived()
+            gotHwData = true
+            hwFramesReceived = hw.getFramesReceived()
         end
-        twinConnected = true
+        hwConnected = true
     else
-        twinConnected = twin.isConnected()
+        hwConnected = hw.isConnected()
     end
 
-    -- Fall back to simulated spectrum if no twin data
-    if not gotTwinData then
+    -- Fall back to simulated spectrum if no hardware data
+    if not gotHwData then
         generateSpectrum()
     end
 
@@ -409,7 +409,7 @@ function update(dt)
         waterfall.addRow(spectrumData)
     end
 
-    -- Send VFO changes to twin (frequency is in MHz, convert to Hz)
+    -- Send VFO changes to hardware (frequency is in MHz, convert to Hz)
     local currentVfoHz = frequency * 1e6
     if currentVfoHz ~= lastVfoFreq then
         rx.setVfo(currentVfoHz)
@@ -437,13 +437,13 @@ function draw()
         -- Branding
         drawText(x + 10, y + 8, "NexRx SDR Receiver", 0.6, 0.7, 0.9, 1.0)
 
-        -- Twin connection status
-        local twinStatus = twinConnected and "TWIN" or "SIM"
-        local twinColor = twinConnected and {0.2, 0.9, 0.4} or {0.6, 0.6, 0.6}
-        drawText(x + 200, y + 8, twinStatus, twinColor[1], twinColor[2], twinColor[3], 1.0)
-        if twinConnected then
-            local framesText = string.format(" (%d frames)", twinFramesReceived)
-            drawText(x + 200 + measureText(twinStatus) + 4, y + 8, framesText, 0.5, 0.5, 0.55, 1.0)
+        -- Hardware connection status
+        local hwStatus = hwConnected and "HW" or "SIM"
+        local hwStatusColor = hwConnected and {0.2, 0.9, 0.4} or {0.6, 0.6, 0.6}
+        drawText(x + 200, y + 8, hwStatus, hwStatusColor[1], hwStatusColor[2], hwStatusColor[3], 1.0)
+        if hwConnected then
+            local framesText = string.format(" (%d frames)", hwFramesReceived)
+            drawText(x + 200 + measureText(hwStatus) + 4, y + 8, framesText, 0.5, 0.5, 0.55, 1.0)
 
             -- Audio stats for debugging (now includes drops and fill ratio)
             local audioWritten, audioRead, underruns, drops, fillRatio = rx.getAudioStats()
@@ -451,7 +451,7 @@ function draw()
             drawText(x + 400, y + 8, audioText, 0.5, 0.7, 0.5, 1.0)
 
             -- Drop rates (IQ and Audio)
-            local iqDropRate = twin.getIqDropRate()
+            local iqDropRate = hw.getIqDropRate()
             local audioDropRate = rx.getAudioDropRate()
             local dropText = string.format("Drop: IQ=%.0f/s A=%.0f/s", iqDropRate, audioDropRate)
             -- Color red if drops > 0
@@ -657,7 +657,7 @@ function draw()
         local newK = ui.slider("qsd_k", lx + 50, ly, w - 80, 1, 24, qsdOffsetK)
         if newK ~= qsdOffsetK then
             qsdOffsetK = newK
-            twin.setQsdOffset(qsdOffsetK)
+            hw.setQsdOffset(qsdOffsetK)
         end
         local kText = string.format("%.1f kHz", qsdOffsetK)
         drawText(lx + w - 70, ly - 2, kText, 0.5, 0.5, 0.55, 1.0)
@@ -695,7 +695,7 @@ function draw()
         local newAttenDb = math.floor(newAttenSteps + 0.5) * 3  -- Round to nearest 3 dB
         if newAttenDb ~= rfAttenDb then
             rfAttenDb = newAttenDb
-            twin.setAttenuation(rfAttenDb)
+            hw.setAttenuation(rfAttenDb)
         end
         local attenText = string.format("%d dB", rfAttenDb)
         drawText(lx + w - 60, ly - 2, attenText, 0.5, 0.5, 0.55, 1.0)

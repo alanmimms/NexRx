@@ -748,10 +748,11 @@ private:
             return waterfall_.getHeight();
         };
 
-        // Expose twin connection to Lua
-        lua_["twin"] = lua_.create_table();
+        // Expose hardware interface to Lua ("hw" = hardware abstraction)
+        // "twin" is a hardware emulator; this interface works with any backend
+        lua_["hw"] = lua_.create_table();
 
-        lua_["twin"]["connect"] = [this](
+        lua_["hw"]["connect"] = [this](
             sol::optional<std::string> host,
             sol::optional<int> controlPort,
             sol::optional<int> streamPort)
@@ -782,31 +783,31 @@ private:
             return false;
         };
 
-        lua_["twin"]["disconnect"] = [this]() {
+        lua_["hw"]["disconnect"] = [this]() {
             twinHost_.stopReceiving();
             twinHost_.shutdown();
             twinConnected_ = false;
             std::cout << "[Twin] Disconnected" << std::endl;
         };
 
-        lua_["twin"]["isConnected"] = [this]() {
+        lua_["hw"]["isConnected"] = [this]() {
             return twinConnected_ && twinHost_.isConnected();
         };
 
-        lua_["twin"]["getFramesReceived"] = [this]() {
+        lua_["hw"]["getFramesReceived"] = [this]() {
             return static_cast<double>(twinHost_.framesReceived());
         };
 
-        lua_["twin"]["getFramesDropped"] = [this]() {
+        lua_["hw"]["getFramesDropped"] = [this]() {
             return static_cast<double>(twinHost_.framesDropped());
         };
 
-        lua_["twin"]["getIqDropRate"] = [this]() {
+        lua_["hw"]["getIqDropRate"] = [this]() {
             // Return IQ frame drops per second
             return static_cast<double>(iqDropTracker_.dropsPerSecond());
         };
 
-        lua_["twin"]["getSpectrum"] = [this](sol::this_state s) {
+        lua_["hw"]["getSpectrum"] = [this](sol::this_state s) {
             // Compute spectrum from accumulated I/Q data
             computeSpectrum();
 
@@ -820,12 +821,12 @@ private:
             return result;
         };
 
-        lua_["twin"]["poll"] = [this]() {
+        lua_["hw"]["poll"] = [this]() {
             // Poll for frames if not using background thread
             return twinHost_.pollFrames(100);
         };
 
-        lua_["twin"]["setQsdOffset"] = [this](double k_khz) {
+        lua_["hw"]["setQsdOffset"] = [this](double k_khz) {
             // Set QSD offset (k) via TCP control
             // QSD0 = f-k, QSD1 = f+k, QSD2 = f (sextature)
             if (twinConnected_) {
@@ -835,12 +836,12 @@ private:
             }
         };
 
-        lua_["twin"]["getQsdOffset"] = [this]() {
+        lua_["hw"]["getQsdOffset"] = [this]() {
             return qsdOffsetKhz_;
         };
 
         // Attenuator control (0-45 dB in 3 dB steps)
-        lua_["twin"]["setAttenuation"] = [this](double db) {
+        lua_["hw"]["setAttenuation"] = [this](double db) {
             // Set total attenuation - twin will round to nearest valid value
             if (twinConnected_) {
                 std::string cmd = "SET_ATTEN_TOTAL " + std::to_string(db);
@@ -849,7 +850,7 @@ private:
             }
         };
 
-        lua_["twin"]["setAttenuator"] = [this](int db, bool enabled) {
+        lua_["hw"]["setAttenuator"] = [this](int db, bool enabled) {
             // Set individual attenuator (3, 6, 12, or 24 dB)
             if (twinConnected_ && (db == 3 || db == 6 || db == 12 || db == 24)) {
                 std::string cmd = "SET_ATTEN " + std::to_string(db) + " " + (enabled ? "1" : "0");
@@ -857,7 +858,7 @@ private:
             }
         };
 
-        lua_["twin"]["getAttenuation"] = [this]() {
+        lua_["hw"]["getAttenuation"] = [this]() {
             return attenDb_;
         };
 
