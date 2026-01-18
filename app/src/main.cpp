@@ -3,7 +3,6 @@
  * @brief NexRx Application - SDL2/OpenGL with Lua GUI
  */
 
-#include "setbox/SetBox.hpp"
 #include "FontRenderer.hpp"
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
@@ -324,7 +323,6 @@ public:
     int windowWidth() const { return windowWidth_; }
     int windowHeight() const { return windowHeight_; }
     const InputState& input() const { return input_; }
-    NexRx::SetBox::SetBoxEngine& setbox() { return setbox_; }
 
     // Drawing primitives (called from Lua)
     void drawRect(float x, float y, float w, float h, float r, float g, float b, float a) {
@@ -584,125 +582,24 @@ private:
             drawRoundedRect(x, y, w, h, radius, r, g, b, a);
         });
 
-        // Expose SetBox engine
-        lua_["setbox"] = lua_.create_table();
-        lua_["setbox"]["setActiveTags"] = [this](sol::table tags) {
-            NexRx::SetBox::TagSet tagSet;
-            for (auto& [k, v] : tags) {
-                if (v.is<std::string>()) {
-                    tagSet.add(v.as<std::string>());
-                }
-            }
-            setbox_.setActiveTags(tagSet);
-        };
+        // ==========================================================================
+        // Load Pure Lua SetBox Module
+        // ==========================================================================
+        // The setbox module is now pure Lua. It defines the global rule() function
+        // and provides the setbox.* API for configuration management.
+        try {
+            lua_.safe_script_file("lua/setbox.lua", sol::script_pass_on_error);
+            // The module sets up global 'setbox' and 'rule' automatically
+        } catch (const std::exception& e) {
+            std::cerr << "Failed to load lua/setbox.lua: " << e.what() << std::endl;
+            return false;
+        }
 
-        lua_["setbox"]["addTag"] = [this](const std::string& tag) {
-            setbox_.addTag(tag);
-        };
-
-        lua_["setbox"]["removeTag"] = [this](const std::string& tag) {
-            setbox_.removeTag(tag);
-        };
-
-        lua_["setbox"]["getString"] = [this](const std::string& name, const std::string& defaultVal) {
-            return setbox_.getString(name, defaultVal);
-        };
-
-        lua_["setbox"]["getNumber"] = [this](const std::string& name, double defaultVal) {
-            return setbox_.getNumber(name, defaultVal);
-        };
-
-        lua_["setbox"]["getBool"] = [this](const std::string& name, bool defaultVal) {
-            return setbox_.getBool(name, defaultVal);
-        };
-
-        lua_["setbox"]["hasTag"] = [this](const std::string& tag) {
-            return setbox_.hasTag(tag);
-        };
-
-        lua_["setbox"]["toggleTag"] = [this](const std::string& tag) {
-            setbox_.toggleTag(tag);
-        };
-
-        lua_["setbox"]["loadFile"] = [this](const std::string& path) {
-            if (!setbox_.loadFile(path)) {
-                std::cerr << "[SetBox] Failed to load " << path << ": "
-                          << setbox_.lastError() << std::endl;
-                return false;
-            }
-            return true;
-        };
-
-        // Register callback for SetBox property changes
-        // Usage: setbox.onPropertyChange(function(name, value) ... end)
-        lua_["setbox"]["onPropertyChange"] = [this](sol::function callback) {
-            setbox_.onPropertyChange([callback](const std::string& name,
-                                                const NexRx::SetBox::PropertyValue& value) {
-                try {
-                    // Convert PropertyValue to Lua value
-                    std::visit([&](auto&& val) {
-                        using T = std::decay_t<decltype(val)>;
-                        if constexpr (std::is_same_v<T, sol::object>) {
-                            callback(name, val);
-                        } else {
-                            callback(name, val);
-                        }
-                    }, value);
-                } catch (const std::exception& e) {
-                    std::cerr << "[SetBox] Callback error for '" << name << "': "
-                              << e.what() << std::endl;
-                }
-            });
-        };
-
-        // Get all resolved properties as a Lua table
-        lua_["setbox"]["resolve"] = [this]() {
-            sol::table result = lua_.create_table();
-            auto props = setbox_.resolve();
-            for (const auto& [name, value] : props) {
-                std::visit([&](auto&& val) {
-                    result[name] = val;
-                }, value);
-            }
-            return result;
-        };
-
-        // Define a rule from app Lua (alternative to loading rule files)
-        // Usage: setbox.rule { tags = {"cw", "80m"}, filterBandwidth = 800 }
-        // Note: 'tags' is optional - omitting it creates a global default rule
-        lua_["setbox"]["rule"] = [this](sol::table ruleTable) {
-            // Forward to SetBox's rule registration via its Lua state
-            sol::function ruleFunc = setbox_.lua()["rule"];
-            if (ruleFunc.valid()) {
-                // Copy the table to SetBox's Lua state
-                sol::table sbTable = setbox_.lua().create_table();
-                for (const auto& [k, v] : ruleTable) {
-                    if (k.is<std::string>()) {
-                        std::string key = k.as<std::string>();
-                        if (v.is<double>()) {
-                            sbTable[key] = v.as<double>();
-                        } else if (v.is<bool>()) {
-                            sbTable[key] = v.as<bool>();
-                        } else if (v.is<std::string>()) {
-                            sbTable[key] = v.as<std::string>();
-                        } else if (v.is<sol::table>()) {
-                            // Copy nested table (for tags)
-                            sol::table nested = setbox_.lua().create_table();
-                            sol::table srcNested = v.as<sol::table>();
-                            for (const auto& [nk, nv] : srcNested) {
-                                if (nv.is<std::string>()) {
-                                    nested[nk] = nv.as<std::string>();
-                                } else if (nv.is<double>()) {
-                                    nested[nk] = nv.as<double>();
-                                }
-                            }
-                            sbTable[key] = nested;
-                        }
-                    }
-                }
-                ruleFunc(sbTable);
-            }
-        };
+        // Verify setbox module loaded correctly
+        if (!lua_["setbox"].valid() || !lua_["rule"].valid()) {
+            std::cerr << "Error: setbox module did not export setbox table or rule function" << std::endl;
+            return false;
+        }
 
         // Expose audio engine to Lua
         lua_["audio"] = lua_.create_table();
@@ -1183,43 +1080,48 @@ private:
         // Register RxConfig Lua bindings
         nexrx::RxConfig::registerLuaBindings(lua_, *rxConfig_);
 
-        // Load SetBox configuration files
-        if (!setbox_.loadFile("config/default.lua")) {
-            std::cerr << "Warning: Failed to load default.lua: " << setbox_.lastError() << std::endl;
-        }
-        if (!setbox_.loadFile("config/modes.lua")) {
-            std::cerr << "Warning: Failed to load modes.lua: " << setbox_.lastError() << std::endl;
-        }
-        if (!setbox_.loadFile("config/settings.lua")) {
-            std::cerr << "Error: config/settings.lua not found.\n"
-                      << "Please restore it from the app distribution." << std::endl;
-            // Continue anyway - defaults will be used
+        // Load SetBox configuration files via Lua setbox module
+        sol::function loadFile = lua_["setbox"]["loadFile"];
+        if (loadFile.valid()) {
+            if (!loadFile("config/default.lua").get<bool>()) {
+                std::cerr << "Warning: Failed to load config/default.lua" << std::endl;
+            }
+            if (!loadFile("config/modes.lua").get<bool>()) {
+                std::cerr << "Warning: Failed to load config/modes.lua" << std::endl;
+            }
+            if (!loadFile("config/settings.lua").get<bool>()) {
+                std::cerr << "Error: config/settings.lua not found.\n"
+                          << "Please restore it from the app distribution." << std::endl;
+                // Continue anyway - defaults will be used
+            }
+        } else {
+            std::cerr << "Error: setbox.loadFile not available" << std::endl;
+            return false;
         }
 
-        // Wire SetBox property changes to RxConfig
+        // Wire SetBox property changes to RxConfig via native callback
         // This allows modes.lua rules to control filter parameters
-        setbox_.onPropertyChange([this](const std::string& name,
-                                        const NexRx::SetBox::PropertyValue& value) {
-            // Forward filter properties to RxConfig
-            std::visit([&](auto&& val) {
-                using T = std::decay_t<decltype(val)>;
-                if (name == "bandpassEnabled" && std::is_same_v<T, bool>) {
-                    if constexpr (std::is_same_v<T, bool>) rxConfig_->setBandpassEnabled(val);
-                } else if (name == "bandpassCenter" && std::is_same_v<T, double>) {
-                    if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassCenter(val);
-                } else if (name == "bandpassWidth" && std::is_same_v<T, double>) {
-                    if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassWidth(val);
-                } else if (name == "bandpassTaps" && std::is_same_v<T, double>) {
-                    if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassTaps(static_cast<int>(val));
-                } else if (name == "notchEnabled" && std::is_same_v<T, bool>) {
-                    if constexpr (std::is_same_v<T, bool>) rxConfig_->setNotchEnabled(val);
-                } else if (name == "notchCenter" && std::is_same_v<T, double>) {
-                    if constexpr (std::is_same_v<T, double>) rxConfig_->setNotchCenter(val);
-                } else if (name == "notchWidth" && std::is_same_v<T, double>) {
-                    if constexpr (std::is_same_v<T, double>) rxConfig_->setNotchWidth(val);
+        sol::function registerNative = lua_["setbox"]["_registerNativeCallback"];
+        if (registerNative.valid()) {
+            registerNative([this](const std::string& name, sol::object value) {
+                // Forward filter properties to RxConfig
+                if (name == "bandpassEnabled" && value.is<bool>()) {
+                    rxConfig_->setBandpassEnabled(value.as<bool>());
+                } else if (name == "bandpassCenter" && value.is<double>()) {
+                    rxConfig_->setBandpassCenter(value.as<double>());
+                } else if (name == "bandpassWidth" && value.is<double>()) {
+                    rxConfig_->setBandpassWidth(value.as<double>());
+                } else if (name == "bandpassTaps" && value.is<double>()) {
+                    rxConfig_->setBandpassTaps(static_cast<int>(value.as<double>()));
+                } else if (name == "notchEnabled" && value.is<bool>()) {
+                    rxConfig_->setNotchEnabled(value.as<bool>());
+                } else if (name == "notchCenter" && value.is<double>()) {
+                    rxConfig_->setNotchCenter(value.as<double>());
+                } else if (name == "notchWidth" && value.is<double>()) {
+                    rxConfig_->setNotchWidth(value.as<double>());
                 }
-            }, value);
-        });
+            });
+        }
 
         // Load main Lua script
         try {
@@ -1356,7 +1258,6 @@ private:
     SDL_Window* window_ = nullptr;
     SDL_GLContext glContext_ = nullptr;
     sol::state lua_;
-    NexRx::SetBox::SetBoxEngine setbox_;
     FontRenderer font_;
     AudioEngine audio_;
     WaterfallRenderer waterfall_;
