@@ -276,21 +276,22 @@ else()
 endif()
 
 # -----------------------------------------------------------------------------
-# Copy config and lua files to build directory
+# Symlink config and lua directories to build directory
+# Using symlinks ensures edits are immediately visible without re-running cmake.
+# Distribution packaging will need to copy actual files instead.
 # -----------------------------------------------------------------------------
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+add_custom_target(symlink_resources ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_CURRENT_SOURCE_DIR}/config
+        ${CMAKE_CURRENT_BINARY_DIR}/config
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_CURRENT_SOURCE_DIR}/lua
+        ${CMAKE_CURRENT_BINARY_DIR}/lua
+    COMMENT "Creating symlinks to config/ and lua/ directories"
+)
 
-# Create lua directory structure in build
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lua)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lua/ui)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lua/app)
-
-# Copy lua files if they exist
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lua)
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lua/
-         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lua)
-endif()
+# Ensure symlinks exist before building the app
+add_dependencies(nexrx_app symlink_resources)
 
 # -----------------------------------------------------------------------------
 # Summary
