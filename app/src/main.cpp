@@ -930,6 +930,11 @@ private:
             return basebandFilter_.notchWidth();
         };
 
+        // Force filter coefficient recomputation (call after batch parameter changes)
+        lua_["rx"]["recomputeFilters"] = [this]() {
+            return basebandFilter_.recompute();
+        };
+
         // LMS adaptive filter control
         lua_["rx"]["setLmsMu"] = [this](float mu) {
             lmsMu_ = std::clamp(mu, 0.0001f, 0.1f);

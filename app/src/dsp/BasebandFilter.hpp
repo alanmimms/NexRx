@@ -34,6 +34,12 @@ public:
     void setNotchCenter(float hz);      // Offset from DC
     void setNotchWidth(float hz);       // Notch bandwidth
 
+    /// Force coefficient recomputation if parameters have changed.
+    /// Call this after making multiple parameter changes to avoid
+    /// recomputation during realtime DSP processing.
+    /// @return true if any coefficients were recomputed
+    bool recompute();
+
     // Getters
     bool bandpassEnabled() const { return bpEnabled_; }
     float bandpassCenter() const { return bpCenter_; }

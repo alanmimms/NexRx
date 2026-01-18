@@ -86,6 +86,27 @@ void BasebandFilter::setNotchWidth(float hz) {
     }
 }
 
+bool BasebandFilter::recompute() {
+    // Force coefficient recomputation if parameters have changed.
+    // This allows batching multiple parameter changes and then
+    // triggering a single recomputation outside of realtime DSP.
+    bool recomputed = false;
+
+    if (bpCoeffsDirty_) {
+        designBandpass();
+        bpCoeffsDirty_ = false;
+        recomputed = true;
+    }
+
+    if (notchCoeffsDirty_) {
+        designNotch();
+        notchCoeffsDirty_ = false;
+        recomputed = true;
+    }
+
+    return recomputed;
+}
+
 void BasebandFilter::process(float& i, float& q) {
     // Recompute coefficients if parameters changed
     if (bpEnabled_ && bpCoeffsDirty_) {
