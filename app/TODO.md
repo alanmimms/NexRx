@@ -7,6 +7,8 @@
   one for crossfading _ad hoc_ each time we need to do something like
   that is a waste and complicates the system.
 
+* add the missing ham bands.
+
 * Find better ways of doing binding from C++ to Lua and back again to
   avoid messes like this:
   
