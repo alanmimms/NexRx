@@ -995,9 +995,9 @@ function draw()
         drawLine(centerX, vizY, centerX, vizY + vizH, 0.9, 0.3, 0.3, 0.5, 1.0)
 
         -- Frequency scale labels (simplified)
-        local spanKHz = 100  -- Simulated span
-        drawText(px + 5, vizY + vizH - 16, string.format("-%.0f kHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
-        drawText(px + pw - 55, vizY + vizH - 16, string.format("+%.0f kHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
+        local spanKHz = 96  -- Simulated span
+        drawText(px + 5, vizY + vizH - 16, string.format("-%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
+        drawText(px + pw - 55, vizY + vizH - 16, string.format("+%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
     end
 
     layout.finish()
