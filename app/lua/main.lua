@@ -34,7 +34,7 @@ local fpsFrames = 0
 local rxActive = false
 
 -- Audio state (loaded from SetBox, controls C++ audio engine)
-local volume            -- 0-1 (loaded from SetBox)
+local volumeDb          -- dB, range -60 to 0 (loaded from SetBox)
 local muted             -- bool (loaded from SetBox)
 local testToneEnabled   -- bool (test tone generation)
 
@@ -187,8 +187,8 @@ function init()
     nbEnabled = setbox.getBool("nbEnabled", false)
     lmsMu = setbox.getNumber("lmsMu", 0.001)
 
-    -- Audio settings
-    volume = setbox.getNumber("volume", 0.5)
+    -- Audio settings (volume in dB for intuitive config)
+    volumeDb = setbox.getNumber("volumeDb", -20)
     muted = setbox.getBool("muted", false)
     testToneEnabled = false  -- Always start with test tone off
 
@@ -236,9 +236,10 @@ function init()
     local r, g, b = hexToRgb(bg)
     setClearColor(r, g, b)
 
-    -- Initialize audio
+    -- Initialize audio (convert dB to linear gain for C++ audio engine)
     if audio.isInitialized() then
-        audio.setVolume(volume)
+        local linearGain = math.pow(10, volumeDb / 20)
+        audio.setVolume(linearGain)
         audio.setMuted(muted)
         audio.start()
         print("[Lua] Audio started at " .. audio.getSampleRate() .. " Hz")
@@ -747,26 +748,15 @@ function draw()
 
         lx, ly = layout.getCursor()
         ui.label(lx, ly, "Vol:")
-        -- Logarithmic volume: slider position 0-1 maps to -60dB to 0dB
-        -- volume = 10^(dB/20), so position p: dB = -60 + 60*p, gain = 10^((-60+60*p)/20)
-        local function linearToLog(pos)
-            if pos <= 0 then return 0 end
-            local db = -60 + 60 * pos  -- -60dB to 0dB
-            return math.pow(10, db / 20)
+        -- Volume slider works directly in dB (-60 to 0)
+        local newVolumeDb = ui.slider("volume", lx + 40, ly, w - 70, -60, 0, volumeDb)
+        if newVolumeDb ~= volumeDb then
+            volumeDb = newVolumeDb
+            local linearGain = math.pow(10, volumeDb / 20)
+            audio.setVolume(linearGain)
         end
-        local function logToLinear(gain)
-            if gain <= 0.001 then return 0 end  -- Below -60dB, show as 0
-            local db = 20 * math.log(gain, 10)
-            return clamp((db + 60) / 60, 0, 1)
-        end
-        local sliderPos = logToLinear(volume)
-        local newSliderPos = ui.slider("volume", lx + 40, ly, w - 70, 0, 1, sliderPos)
-        if newSliderPos ~= sliderPos then
-            volume = linearToLog(newSliderPos)
-            audio.setVolume(volume)
-        end
-        local volDb = volume > 0.001 and string.format("%.0fdB", 20 * math.log(volume, 10)) or "-inf"
-        drawText(lx + w - 60, ly - 2, volDb, 0.5, 0.5, 0.55, 1.0)
+        local volText = string.format("%.0fdB", volumeDb)
+        drawText(lx + w - 60, ly - 2, volText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
         lx, ly = layout.getCursor()
