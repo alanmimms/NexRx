@@ -6,6 +6,9 @@
   - Dock regions (top, bottom, left, right, center)
   - Split panels
 
+  The layout system also tracks region hierarchy for event dispatch.
+  Widgets created during a dock/split inherit that region as their parent.
+
   Usage:
     layout.begin(0, 0, windowW, windowH)
 
@@ -30,13 +33,25 @@ local layout = {}
 local regionStack = {}
 local currentRegion = nil
 
+-- Region ID counter for unique identification
+local nextRegionId = 1
+
 -- Spacing and padding defaults
 layout.defaultPadding = 8
 layout.defaultSpacing = 4
 
+-- Events module reference (set via layout.setEventsModule)
+local eventsModule = nil
+
 -- Region structure
-local function createRegion(x, y, w, h)
+local function createRegion(x, y, w, h, name)
+    local id = "region_" .. nextRegionId
+    nextRegionId = nextRegionId + 1
+
     return {
+        -- Unique identifier for event dispatch
+        id = id,
+        name = name or id,
         x = x,
         y = y,
         w = w,
@@ -58,15 +73,52 @@ local function createRegion(x, y, w, h)
     }
 end
 
+-- Set events module for parent hierarchy tracking
+function layout.setEventsModule(events)
+    eventsModule = events
+end
+
+-- Get current region ID (for widget parent assignment)
+function layout.getCurrentRegionId()
+    if currentRegion then
+        return currentRegion.id
+    end
+    return nil
+end
+
+-- Get current region name
+function layout.getCurrentRegionName()
+    if currentRegion then
+        return currentRegion.name
+    end
+    return nil
+end
+
 -- Begin layout for a frame
 function layout.begin(x, y, w, h)
+    -- Reset state for new frame
     regionStack = {}
-    currentRegion = createRegion(x, y, w, h)
+    nextRegionId = 1
+
+    -- Create root region
+    currentRegion = createRegion(x, y, w, h, "root")
     table.insert(regionStack, currentRegion)
+
+    -- Notify events module of root region
+    if eventsModule and eventsModule.pushLayoutParent then
+        eventsModule.pushLayoutParent(currentRegion.id)
+    end
 end
 
 -- Finish layout for a frame
 function layout.finish()
+    -- Pop any remaining regions from events
+    if eventsModule and eventsModule.popLayoutParent then
+        for i = 1, #regionStack do
+            eventsModule.popLayoutParent()
+        end
+    end
+
     regionStack = {}
     currentRegion = nil
 end
@@ -93,15 +145,26 @@ function layout.getRemainingSize()
 end
 
 -- Push a new sub-region
-local function pushRegion(x, y, w, h)
-    local region = createRegion(x, y, w, h)
+local function pushRegion(x, y, w, h, name)
+    local region = createRegion(x, y, w, h, name)
     table.insert(regionStack, region)
     currentRegion = region
+
+    -- Notify events module of new parent context
+    if eventsModule and eventsModule.pushLayoutParent then
+        eventsModule.pushLayoutParent(region.id)
+    end
+
     return region
 end
 
 -- Pop back to parent region
 local function popRegion()
+    -- Notify events module before popping
+    if eventsModule and eventsModule.popLayoutParent then
+        eventsModule.popLayoutParent()
+    end
+
     if #regionStack > 1 then
         table.remove(regionStack)
         currentRegion = regionStack[#regionStack]
@@ -112,7 +175,8 @@ end
 -- Dock a region to a side
 -- side: "top", "bottom", "left", "right"
 -- size: height for top/bottom, width for left/right
-function layout.dock(side, size)
+-- name: optional name for the region (for debugging/events)
+function layout.dock(side, size, name)
     if not currentRegion then return end
     local r = currentRegion
     local x, y, w, h
@@ -137,7 +201,7 @@ function layout.dock(side, size)
         return
     end
 
-    pushRegion(x, y, w, h)
+    pushRegion(x, y, w, h, name or ("dock_" .. side))
 end
 
 -- End a docked region
@@ -148,7 +212,7 @@ end
 -- Split current region horizontally (left/right)
 -- ratio: 0.0 to 1.0, portion for left side
 -- Returns left region; call layout.nextSplit() for right
-function layout.splitH(ratio)
+function layout.splitH(ratio, name)
     if not currentRegion then return end
     local r = currentRegion
     local leftW = math.floor(r.w * ratio)
@@ -157,13 +221,14 @@ function layout.splitH(ratio)
     r.splitMode = "horizontal"
     r.splitRatio = ratio
     r.splitSize = leftW
+    r.splitName = name
 
-    pushRegion(r.x, r.y, leftW, r.h)
+    pushRegion(r.x, r.y, leftW, r.h, name and (name .. "_left") or "split_left")
 end
 
 -- Split current region vertically (top/bottom)
 -- ratio: 0.0 to 1.0, portion for top side
-function layout.splitV(ratio)
+function layout.splitV(ratio, name)
     if not currentRegion then return end
     local r = currentRegion
     local topH = math.floor(r.h * ratio)
@@ -171,8 +236,9 @@ function layout.splitV(ratio)
     r.splitMode = "vertical"
     r.splitRatio = ratio
     r.splitSize = topH
+    r.splitName = name
 
-    pushRegion(r.x, r.y, r.w, topH)
+    pushRegion(r.x, r.y, r.w, topH, name and (name .. "_top") or "split_top")
 end
 
 -- Move to the next split region
@@ -184,11 +250,11 @@ function layout.nextSplit()
     if r.splitMode == "horizontal" then
         local rightX = r.x + r.splitSize
         local rightW = r.w - r.splitSize
-        pushRegion(rightX, r.y, rightW, r.h)
+        pushRegion(rightX, r.y, rightW, r.h, r.splitName and (r.splitName .. "_right") or "split_right")
     elseif r.splitMode == "vertical" then
         local bottomY = r.y + r.splitSize
         local bottomH = r.h - r.splitSize
-        pushRegion(r.x, bottomY, r.w, bottomH)
+        pushRegion(r.x, bottomY, r.w, bottomH, r.splitName and (r.splitName .. "_bottom") or "split_bottom")
     end
 end
 
@@ -202,10 +268,10 @@ function layout.endSplit()
 end
 
 -- Begin a horizontal layout (items placed left to right)
-function layout.beginHorizontal(spacing)
+function layout.beginHorizontal(spacing, name)
     if not currentRegion then return end
     local r = currentRegion
-    local region = pushRegion(r.cursorX, r.cursorY, r.w - (r.cursorX - r.x), r.h - (r.cursorY - r.y))
+    local region = pushRegion(r.cursorX, r.cursorY, r.w - (r.cursorX - r.x), r.h - (r.cursorY - r.y), name or "hstack")
     region.mode = "horizontal"
     region.spacing = spacing or layout.defaultSpacing
     region.cursorX = region.x
@@ -223,10 +289,10 @@ function layout.endHorizontal()
 end
 
 -- Begin a vertical layout (items placed top to bottom)
-function layout.beginVertical(spacing)
+function layout.beginVertical(spacing, name)
     if not currentRegion then return end
     local r = currentRegion
-    local region = pushRegion(r.cursorX, r.cursorY, r.w - (r.cursorX - r.x), r.h - (r.cursorY - r.y))
+    local region = pushRegion(r.cursorX, r.cursorY, r.w - (r.cursorX - r.x), r.h - (r.cursorY - r.y), name or "vstack")
     region.mode = "vertical"
     region.spacing = spacing or layout.defaultSpacing
     region.cursorX = region.x

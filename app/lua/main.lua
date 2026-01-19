@@ -18,6 +18,12 @@ local ui = require("ui.widgets")
 local theme = require("ui.theme")
 local layout = require("ui.layout")
 
+-- Load new architecture modules
+local bands = require("bands")
+local dispatch = require("dispatch")
+local events = require("events")
+local animate = require("animate")
+
 -- Load mode definitions (Lua owns mode enum)
 local modeHelper = require("modes")
 
@@ -97,6 +103,8 @@ local function connectHardware()
         -- Send initial QSD offset k
         hw.setQsdOffset(qsdOffsetK)
         print("[Lua] Set QSD offset k = " .. qsdOffsetK .. " kHz")
+        -- Enable hardware dispatch functions
+        dispatch.enableHardware()
         return true
     else
         hwConnected = false
@@ -110,6 +118,8 @@ local function disconnectHardware()
     if hw.isConnected() then
         hw.disconnect()
         hwConnected = false
+        -- Disable hardware dispatch functions
+        dispatch.disableHardware()
         print("[Lua] Disconnected from hardware")
     end
 end
@@ -117,8 +127,8 @@ end
 -- Hardware connection state
 local hwConnected = false
 local hwFramesReceived = 0
-local useHwSpectrum = true  -- Try to use hardware data when available
 local lastVfoFreq = 0  -- Track VFO changes for hardware control
+-- Note: useHwSpectrum replaced by dispatch module
 
 -- Frequency entry state
 local freqEntryMode = false
@@ -138,16 +148,8 @@ local function clamp(v, min, max)
     return math.max(min, math.min(max, v))
 end
 
-local function getBand(freq)
-    if freq >= 1.8 and freq <= 2.0 then return "160m"
-    elseif freq >= 3.5 and freq <= 4.0 then return "80m"
-    elseif freq >= 7.0 and freq <= 7.3 then return "40m"
-    elseif freq >= 14.0 and freq <= 14.35 then return "20m"
-    elseif freq >= 21.0 and freq <= 21.45 then return "15m"
-    elseif freq >= 28.0 and freq <= 29.7 then return "10m"
-    else return "OOB"
-    end
-end
+-- getBand() replaced by bands module - see bands.getCurrent()
+-- Band definitions now in config/bands.lua as SetBox rules
 
 -- Apply colormap by name from Lua definitions (config/colormaps.lua)
 -- Colormaps are defined in Lua only - no C++ fallback
@@ -280,6 +282,62 @@ function init()
         print("[Lua] Hardware auto-connect disabled")
     end
 
+    -- ==========================================================================
+    -- Initialize new architecture modules
+    -- ==========================================================================
+
+    -- Initialize bands module and set initial frequency
+    bands.init()
+    bands.setFrequency(frequency * 1e6)  -- Pass Hz to bands module
+    print(string.format("[Lua] Band detection initialized, current band: %s", bands.getCurrent() or "OOB"))
+
+    -- Initialize events module and wire to layout/widgets
+    events.init()
+    layout.setEventsModule(events)
+    ui.setEventsModule(events)
+    ui.setLayoutModule(layout)
+
+    -- Register event handlers for frequency tuning
+    events.registerHandler("freq_tune", function(event, widget)
+        local step = 0.001  -- 1 kHz
+        frequency = clamp(frequency + event.delta * step, 0.1, 30.0)
+        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    events.registerHandler("freq_tune_coarse", function(event, widget)
+        local step = 0.1  -- 100 kHz
+        frequency = clamp(frequency + event.delta * step, 0.1, 30.0)
+        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    events.registerHandler("freq_tune_fine", function(event, widget)
+        local step = 0.0001  -- 100 Hz
+        frequency = clamp(frequency + event.delta * step, 0.1, 30.0)
+        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    -- Initialize dispatch module
+    dispatch.init()
+
+    -- Enable hardware dispatch if connected
+    if hwConnected then
+        dispatch.enableHardware()
+    end
+
+    -- Enable waterfall dispatch if initialized
+    if waterfall.isInitialized() then
+        dispatch.enableWaterfall()
+    end
+
+    -- Initialize animation system (nothing to configure, just ready to use)
+    print("[Lua] Animation system ready")
+
     print("[Lua] NexRx UI initialized with layout system")
 end
 
@@ -333,6 +391,12 @@ function update(dt)
         fpsFrames = 0
     end
 
+    -- Update animation system
+    animate.update(dt)
+
+    -- Clear widget registry for immediate-mode UI (rebuilt in draw)
+    events.clearWidgets()
+
     -- Frequency entry mode handling
     freqEntryBlink = freqEntryBlink + dt
     if freqEntryBlink > 1.0 then freqEntryBlink = 0 end
@@ -364,6 +428,7 @@ function update(dt)
             if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
                 frequency = newFreq
                 if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+                bands.setFrequency(frequency * 1e6)  -- Update band tag
             end
             freqEntryMode = false
             freqEntryText = ""
@@ -397,6 +462,7 @@ function update(dt)
         end
         frequency = clamp(frequency + wheel * step, 0.1, 30.0)
         if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)  -- Update band tag
     end
 
     -- ESC to quit (when not in frequency entry mode)
@@ -404,39 +470,31 @@ function update(dt)
         quit()
     end
 
-    -- Get spectrum data from hardware or generate simulated
-    local gotHwData = false
-    if useHwSpectrum and hw.isConnected() then
-        local hwSpectrum = hw.getSpectrum()
-        if #hwSpectrum > 0 then
-            -- Resample hardware spectrum to our bin count if needed
-            if #hwSpectrum == wfBins then
-                spectrumData = hwSpectrum
-            else
-                -- Simple resampling
-                local ratio = #hwSpectrum / wfBins
-                for i = 1, wfBins do
-                    local srcIdx = math.floor((i - 1) * ratio) + 1
-                    spectrumData[i] = hwSpectrum[srcIdx] or -100
-                end
+    -- Get spectrum data using dispatch module (eliminates conditionals)
+    -- dispatch.getSpectrum() returns hardware data or nil, fallback to simulated
+    local hwSpectrum = dispatch.getSpectrum()
+    if hwSpectrum then
+        -- Resample hardware spectrum to our bin count if needed
+        if #hwSpectrum == wfBins then
+            spectrumData = hwSpectrum
+        else
+            -- Simple resampling
+            local ratio = #hwSpectrum / wfBins
+            for i = 1, wfBins do
+                local srcIdx = math.floor((i - 1) * ratio) + 1
+                spectrumData[i] = hwSpectrum[srcIdx] or -100
             end
-            gotHwData = true
-            hwFramesReceived = hw.getFramesReceived()
         end
+        hwFramesReceived = hw.getFramesReceived()
         hwConnected = true
     else
+        -- Fall back to simulated spectrum
+        generateSpectrum()
         hwConnected = hw.isConnected()
     end
 
-    -- Fall back to simulated spectrum if no hardware data
-    if not gotHwData then
-        generateSpectrum()
-    end
-
-    -- Update waterfall
-    if waterfall.isInitialized() then
-        waterfall.addRow(spectrumData)
-    end
+    -- Update waterfall using dispatch (no-op if not initialized)
+    dispatch.updateWaterfall(spectrumData)
 
     -- Send VFO changes to hardware (frequency is in MHz, convert to Hz)
     local currentVfoHz = frequency * 1e6
@@ -507,7 +565,7 @@ function draw()
 
         local bpInfo = bandpassEnabled and string.format("BP: %.0f Hz", bandpassWidth) or "BP: Off"
         local info = string.format("Band: %s | Mode: %s | %s | Mouse: %d, %d",
-                                   getBand(frequency), selectedMode, bpInfo, mouseX, mouseY)
+                                   bands.getCurrent() or "OOB", selectedMode, bpInfo, mouseX, mouseY)
         drawText(x + 10, y + 6, info, 0.5, 0.5, 0.55, 1.0)
     end
     layout.endDock()
@@ -533,16 +591,19 @@ function draw()
         if ui.button("vfo_a", "VFO A", bx, by, 60, 28, vfoATags) then
             activeVFO = "A"
             frequency = vfoA
+            bands.setFrequency(frequency * 1e6)
         end
         bx, by = layout.reserveSpace(60, 28)
         if ui.button("vfo_b", "VFO B", bx, by, 60, 28, vfoBTags) then
             activeVFO = "B"
             frequency = vfoB
+            bands.setFrequency(frequency * 1e6)
         end
         bx, by = layout.reserveSpace(50, 28)
         if ui.button("vfo_swap", "A<>B", bx, by, 50, 28) then
             vfoA, vfoB = vfoB, vfoA
             frequency = activeVFO == "A" and vfoA or vfoB
+            bands.setFrequency(frequency * 1e6)
         end
         layout.endHorizontal()
 
@@ -558,8 +619,12 @@ function draw()
 
         -- Frequency slider
         local sx, sy = layout.getCursor()
-        frequency = ui.slider("freq_slider", sx, sy, w - 24, 1.0, 30.0, frequency)
-        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        local newFreq = ui.slider("freq_slider", sx, sy, w - 24, 1.0, 30.0, frequency)
+        if newFreq ~= frequency then
+            frequency = newFreq
+            if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+            bands.setFrequency(frequency * 1e6)
+        end
         layout.newLine(20)
 
         layout.space(8)
@@ -876,22 +941,23 @@ function draw()
         ui.label(lx, ly, "Band", {"Title"})
         layout.newLine(24)
 
-        local bands = {"160m", "80m", "40m", "20m", "15m", "10m"}
+        local bandNames = {"160m", "80m", "40m", "20m", "15m", "10m"}
         local bandFreqs = {1.9, 3.5, 7.0, 14.0, 21.0, 28.0}
 
-        for i, band in ipairs(bands) do
+        for i, bandName in ipairs(bandNames) do
             if i % 2 == 1 then
                 layout.beginHorizontal(4)
             end
 
             local bx, by = layout.reserveSpace(80, 26)
-            local tags = getBand(frequency) == band and {"Active"} or {}
-            if ui.button("band_" .. band, band, bx, by, 80, 26, tags) then
+            local tags = bands.getCurrent() == bandName and {"Active"} or {}
+            if ui.button("band_" .. bandName, bandName, bx, by, 80, 26, tags) then
                 frequency = bandFreqs[i]
                 if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+                bands.setFrequency(frequency * 1e6)  -- Update band tag
             end
 
-            if i % 2 == 0 or i == #bands then
+            if i % 2 == 0 or i == #bandNames then
                 layout.endHorizontal()
             end
         end
@@ -976,9 +1042,7 @@ function draw()
 
         -- Spectrum (top 35%)
         local specH = math.floor(vizH * 0.35)
-        if waterfall.isInitialized() then
-            waterfall.renderSpectrum(spectrumData, px, vizY, pw, specH)
-        end
+        dispatch.renderSpectrum(spectrumData, px, vizY, pw, specH)
 
         -- Separator line
         drawLine(px, vizY + specH + 2, px + pw, vizY + specH + 2, 0.3, 0.3, 0.4, 1.0, 1.0)
@@ -986,9 +1050,7 @@ function draw()
         -- Waterfall (bottom 65%)
         local wfY = vizY + specH + 4
         local wfH = vizH - specH - 8
-        if waterfall.isInitialized() then
-            waterfall.render(px, wfY, pw, wfH)
-        end
+        dispatch.renderWaterfall(px, wfY, pw, wfH)
 
         -- Center frequency marker
         local centerX = px + pw / 2

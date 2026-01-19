@@ -1,8 +1,13 @@
 --[[
   Immediate-Mode Widget System
 
+  Widgets can optionally register with the events module for SetBox-based
+  event dispatch. Set the events module via ui.setEventsModule(events).
+
   Usage:
     local ui = require("ui.widgets")
+    local events = require("events")
+    ui.setEventsModule(events)
 
     function draw()
         ui.beginFrame()
@@ -21,6 +26,33 @@ local state = require("ui.state")
 local theme = require("ui.theme")
 
 local ui = {}
+
+-- Events module reference (optional, for SetBox event dispatch)
+local eventsModule = nil
+
+-- Layout module reference (for getting current region ID)
+local layoutModule = nil
+
+-- Set events module for widget registration
+function ui.setEventsModule(events)
+    eventsModule = events
+end
+
+-- Set layout module for parent hierarchy
+function ui.setLayoutModule(layout)
+    layoutModule = layout
+end
+
+-- Internal: register widget with events module if available
+local function registerWidget(id, bounds, widgetTags)
+    if eventsModule and eventsModule.registerWidget then
+        local parentId = nil
+        if layoutModule and layoutModule.getCurrentRegionId then
+            parentId = layoutModule.getCurrentRegionId()
+        end
+        eventsModule.registerWidget(id, bounds, widgetTags, parentId)
+    end
+end
 
 -- Forward state functions
 ui.beginFrame = function()
@@ -42,6 +74,13 @@ end
 function ui.button(id, label, x, y, w, h, tags)
     w = w or 100
     h = h or 32
+
+    -- Register with events module for SetBox dispatch
+    local widgetTags = {"Button"}
+    if tags then
+        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+    end
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)
     if isHot then
@@ -79,6 +118,13 @@ end
 function ui.toggle(id, label, x, y, w, h, checked, tags)
     w = w or 100
     h = h or 32
+
+    -- Register with events module
+    local widgetTags = {"Toggle", "Button"}
+    if tags then
+        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+    end
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)
     if isHot then
@@ -123,6 +169,13 @@ function ui.checkbox(id, label, x, y, checked, tags)
     local labelW = measureText(label)
     local totalW = boxSize + spacing + labelW
     local h = boxSize
+
+    -- Register with events module
+    local widgetTags = {"Checkbox"}
+    if tags then
+        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+    end
+    registerWidget(id, {x=x, y=y, w=totalW, h=h}, widgetTags)
 
     -- Hit area includes label
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, totalW, h)
@@ -170,6 +223,13 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags)
     local hitH = math.max(h, handleR * 2)
     local hitY = y - (hitH - h) / 2
 
+    -- Register with events module
+    local widgetTags = {"Slider"}
+    if tags then
+        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+    end
+    registerWidget(id, {x=x - handleR, y=hitY, w=w + handleR*2, h=hitH}, widgetTags)
+
     -- Normalize value
     local t = (value - minVal) / (maxVal - minVal)
     t = clamp(t, 0, 1)
@@ -215,6 +275,13 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
     local handleR = 10
     local hitW = math.max(w, handleR * 2)
     local hitX = x - (hitW - w) / 2
+
+    -- Register with events module
+    local widgetTags = {"Slider", "Vertical"}
+    if tags then
+        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+    end
+    registerWidget(id, {x=hitX, y=y - handleR, w=hitW, h=h + handleR*2}, widgetTags)
 
     -- Normalize value (top = max, bottom = min)
     local t = (value - minVal) / (maxVal - minVal)
@@ -316,6 +383,13 @@ end
 function ui.textInput(id, x, y, w, text, placeholder, tags)
     local h = 28
     local padding = 8
+
+    -- Register with events module
+    local widgetTags = {"Input", "TextInput"}
+    if tags then
+        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+    end
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)
     if isHot then
