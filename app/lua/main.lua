@@ -68,10 +68,10 @@ local qsdOffsetK       -- kHz
 local rfAttenDb        -- dB
 
 -- Waterfall state (loaded from SetBox)
-local waterfallBins    -- FFT bins
-local waterfallRows    -- history rows
+local wfBins           -- FFT bins
+local wfRows           -- history rows
 local spectrumData = {}  -- runtime buffer
-local selectedColormap -- colormap name
+local wfColormap       -- colormap name
 local wfMinDb          -- Waterfall min dB (noise floor)
 local wfMaxDb          -- Waterfall max dB (strongest signals)
 
@@ -205,16 +205,16 @@ function init()
     rfAttenDb = math.floor(setbox.getNumber("rfAttenDb", 0))
 
     -- Waterfall/display settings
-    waterfallBins = math.floor(setbox.getNumber("waterfallBins", 512))
-    waterfallRows = math.floor(setbox.getNumber("waterfallRows", 256))
-    selectedColormap = setbox.getString("colormap", "viridis")
+    wfBins = math.floor(setbox.getNumber("wfBins", 512))
+    wfRows = math.floor(setbox.getNumber("wfRows", 256))
+    wfColormap = setbox.getString("wfColormap", "viridis")
     wfMinDb = setbox.getNumber("wfMinDb", -120)
     wfMaxDb = setbox.getNumber("wfMaxDb", -40)
 
-    -- Hardware connection settings (supports both hw* and legacy twin* names)
-    hwSettings.host = setbox.getString("hwHost", setbox.getString("twinHost", "127.0.0.1"))
-    hwSettings.controlPort = math.floor(setbox.getNumber("hwControlPort", setbox.getNumber("twinControlPort", 5000)))
-    hwSettings.streamPort = math.floor(setbox.getNumber("hwStreamPort", setbox.getNumber("twinStreamPort", 5001)))
+    -- Hardware connection settings
+    hwSettings.host = setbox.getString("hwHost", "127.0.0.1")
+    hwSettings.controlPort = math.floor(setbox.getNumber("hwControlPort", 5000))
+    hwSettings.streamPort = math.floor(setbox.getNumber("hwStreamPort", 5001))
 
     print(string.format("[Lua] Config loaded: freq=%.3f MHz, mode=%s, band=%s",
         frequency, selectedMode, selectedBand))
@@ -225,7 +225,7 @@ function init()
     print(string.format("[Lua] Hardware: QSD k=%.1f kHz, atten=%d dB",
         qsdOffsetK, rfAttenDb))
     print(string.format("[Lua] Display: waterfall %dx%d, colormap=%s, range=[%d,%d] dB",
-        waterfallBins, waterfallRows, selectedColormap, wfMinDb, wfMaxDb))
+        wfBins, wfRows, wfColormap, wfMinDb, wfMaxDb))
 
     -- ==========================================================================
     -- Initialize subsystems
@@ -256,21 +256,21 @@ function init()
     rx.setNotchWidth(notchWidth)
 
     -- Initialize waterfall
-    if waterfall.init(waterfallBins, waterfallRows) then
+    if waterfall.init(wfBins, wfRows) then
         waterfall.setRange(wfMinDb, wfMaxDb)
-        applyColormap(selectedColormap)
-        print("[Lua] Waterfall initialized: " .. waterfallBins .. "x" .. waterfallRows)
+        applyColormap(wfColormap)
+        print("[Lua] Waterfall initialized: " .. wfBins .. "x" .. wfRows)
     else
         print("[Lua] Warning: Waterfall init failed")
     end
 
     -- Initialize spectrum data buffer
-    for i = 1, waterfallBins do
+    for i = 1, wfBins do
         spectrumData[i] = -100
     end
 
     -- Try to connect to hardware (digital twin simulation or real hardware)
-    local autoConnect = setbox.getBool("hwAutoConnect", setbox.getBool("twinAutoConnect", true))
+    local autoConnect = setbox.getBool("hwAutoConnect", true)
     if autoConnect then
         if not connectHardware() then
             print("[Lua] Hardware not available - using simulated spectrum")
@@ -285,8 +285,8 @@ end
 
 -- Generate simulated spectrum data
 local function generateSpectrum()
-    local centerBin = waterfallBins / 2
-    for i = 1, waterfallBins do
+    local centerBin = wfBins / 2
+    for i = 1, wfBins do
         -- Base noise floor
         local noise = -100 + math.random() * 10
 
@@ -410,12 +410,12 @@ function update(dt)
         local hwSpectrum = hw.getSpectrum()
         if #hwSpectrum > 0 then
             -- Resample hardware spectrum to our bin count if needed
-            if #hwSpectrum == waterfallBins then
+            if #hwSpectrum == wfBins then
                 spectrumData = hwSpectrum
             else
                 -- Simple resampling
-                local ratio = #hwSpectrum / waterfallBins
-                for i = 1, waterfallBins do
+                local ratio = #hwSpectrum / wfBins
+                for i = 1, wfBins do
                     local srcIdx = math.floor((i - 1) * ratio) + 1
                     spectrumData[i] = hwSpectrum[srcIdx] or -100
                 end
@@ -963,9 +963,9 @@ function draw()
         local cmapX = px + pw - 280
         for i, cmap in ipairs(cmapNames) do
             local btnX = cmapX + (i - 1) * 55
-            local tags = selectedColormap == cmap and {"Active"} or {}
+            local tags = wfColormap == cmap and {"Active"} or {}
             if ui.button("cmap_" .. cmap, cmap, btnX, py - 2, 52, 20, tags) then
-                selectedColormap = cmap
+                wfColormap = cmap
                 applyColormap(cmap)
             end
         end

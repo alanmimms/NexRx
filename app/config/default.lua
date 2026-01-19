@@ -49,9 +49,9 @@ rule {
         -- =================================================================
         -- Display Defaults
         -- =================================================================
-        waterfallBins = 512,
-        waterfallRows = 256,
-        colormap = "viridis",
+        wfBins = 512,
+        wfRows = 256,
+        wfColormap = "viridis",
         wfMinDb = -120,
         wfMaxDb = -40,
         spectrumEmaAlpha = 0.3,         -- Spectrum smoothing
@@ -90,12 +90,6 @@ rule {
         hwControlPort = 5000,           -- TCP control port
         hwStreamPort = 5001,            -- UDP stream port
         hwAutoConnect = true,           -- Auto-connect on startup
-
-        -- Legacy names (for compatibility during transition)
-        twinHost = "127.0.0.1",
-        twinControlPort = 5000,
-        twinStreamPort = 5001,
-        twinAutoConnect = true,
 
         -- =================================================================
         -- Recording Defaults
@@ -514,7 +508,7 @@ rule {
     id = "waterfall-base",
     tags = {"Waterfall"},
     apply = {
-        colormap = "viridis",
+        wfColormap = "viridis",
         speed = 50,
         gain = 0,
         minDb = -120,
@@ -526,7 +520,7 @@ rule {
     id = "waterfall-cw",
     tags = {"Waterfall", "CW"},
     apply = {
-        colormap = "green_phosphor",
+        wfColormap = "green_phosphor",
         span = 3000,
     }
 }
