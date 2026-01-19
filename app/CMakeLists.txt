@@ -149,29 +149,9 @@ find_program(LUA_INTERPRETER
 )
 
 if(NOT LUA_INTERPRETER)
-    message(WARNING "Lua interpreter not found - code generation disabled")
+    message(WARNING "Lua interpreter not found - some features may be unavailable")
 else()
     message(STATUS "Lua interpreter: ${LUA_INTERPRETER}")
-
-    set(CODEGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
-    set(CODEGEN_SCHEMA ${CMAKE_CURRENT_SOURCE_DIR}/codegen/schema/rx_config.lua)
-    set(CODEGEN_GENERATOR ${CMAKE_CURRENT_SOURCE_DIR}/codegen/generator/generate_config.lua)
-    set(CODEGEN_OUTPUTS
-        ${CODEGEN_OUTPUT_DIR}/RxConfig.hpp
-        ${CODEGEN_OUTPUT_DIR}/RxConfig.cpp
-    )
-
-    add_custom_command(
-        OUTPUT ${CODEGEN_OUTPUTS}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CODEGEN_OUTPUT_DIR}
-        COMMAND ${LUA_INTERPRETER} ${CODEGEN_GENERATOR} ${CODEGEN_SCHEMA} ${CODEGEN_OUTPUT_DIR}
-        DEPENDS ${CODEGEN_SCHEMA} ${CODEGEN_GENERATOR}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Generating RxConfig from Lua schema"
-        VERBATIM
-    )
-
-    add_custom_target(generate_config DEPENDS ${CODEGEN_OUTPUTS})
 endif()
 
 # -----------------------------------------------------------------------------
@@ -203,13 +183,6 @@ set(NEXRX_APP_SOURCES
     src/dsp/BasebandFilter.cpp
 )
 
-# Add generated config code if code generation is enabled
-if(LUA_INTERPRETER)
-    list(APPEND NEXRX_APP_SOURCES
-        ${CODEGEN_OUTPUT_DIR}/RxConfig.cpp
-    )
-endif()
-
 if(NEXRX_REMOTE_TWIN)
     # Windows/macOS: use cross-platform socket abstraction and client transports
     list(APPEND NEXRX_APP_SOURCES
@@ -227,13 +200,7 @@ target_include_directories(nexrx_app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/extern
     ${SDL2_INCLUDE_DIRS}
     ${TWIN_DIR}/src
-    ${CODEGEN_OUTPUT_DIR}
 )
-
-# Ensure generated config is built before the app
-if(LUA_INTERPRETER)
-    add_dependencies(nexrx_app generate_config)
-endif()
 
 # Platform-specific audio libraries for miniaudio
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

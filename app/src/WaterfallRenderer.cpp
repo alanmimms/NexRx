@@ -85,8 +85,8 @@ bool WaterfallRenderer::init(int width, int height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // Build colormap
-    buildColormap();
+    // Initialize default colormap (will be replaced when Lua calls setColormapData)
+    initDefaultColormap();
 
     initialized_ = true;
     textureDirty_ = true;
@@ -227,12 +227,6 @@ void WaterfallRenderer::renderSpectrum(const float* data, int count, float x, fl
     glLineWidth(1.0f);
 }
 
-void WaterfallRenderer::setColormap(WaterfallColormap colormap) {
-    colormap_ = colormap;
-    buildColormap();
-    textureDirty_ = true;
-}
-
 void WaterfallRenderer::setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops) {
     if (stops.empty()) return;
 
@@ -254,76 +248,13 @@ void WaterfallRenderer::setRange(float minDb, float maxDb) {
     textureDirty_ = true;
 }
 
-void WaterfallRenderer::buildColormap() {
-    switch (colormap_) {
-        case WaterfallColormap::Viridis:
-            colormapLUT_ = buildGradient({
-                {0.0f, packRGBA(68, 1, 84)},
-                {0.25f, packRGBA(59, 82, 139)},
-                {0.5f, packRGBA(33, 145, 140)},
-                {0.75f, packRGBA(94, 201, 98)},
-                {1.0f, packRGBA(253, 231, 37)}
-            });
-            break;
-
-        case WaterfallColormap::Plasma:
-            colormapLUT_ = buildGradient({
-                {0.0f, packRGBA(13, 8, 135)},
-                {0.25f, packRGBA(126, 3, 168)},
-                {0.5f, packRGBA(204, 71, 120)},
-                {0.75f, packRGBA(248, 149, 64)},
-                {1.0f, packRGBA(240, 249, 33)}
-            });
-            break;
-
-        case WaterfallColormap::Inferno:
-            colormapLUT_ = buildGradient({
-                {0.0f, packRGBA(0, 0, 4)},
-                {0.25f, packRGBA(87, 16, 110)},
-                {0.5f, packRGBA(188, 55, 84)},
-                {0.75f, packRGBA(249, 142, 9)},
-                {1.0f, packRGBA(252, 255, 164)}
-            });
-            break;
-
-        case WaterfallColormap::Magma:
-            colormapLUT_ = buildGradient({
-                {0.0f, packRGBA(0, 0, 4)},
-                {0.25f, packRGBA(81, 18, 124)},
-                {0.5f, packRGBA(183, 55, 121)},
-                {0.75f, packRGBA(254, 159, 109)},
-                {1.0f, packRGBA(252, 253, 191)}
-            });
-            break;
-
-        case WaterfallColormap::GreenPhosphor:
-            colormapLUT_ = buildGradient({
-                {0.0f, packRGBA(0, 10, 0)},
-                {0.3f, packRGBA(0, 60, 0)},
-                {0.6f, packRGBA(0, 180, 0)},
-                {0.8f, packRGBA(100, 255, 100)},
-                {1.0f, packRGBA(200, 255, 200)}
-            });
-            break;
-
-        case WaterfallColormap::BlueHot:
-            colormapLUT_ = buildGradient({
-                {0.0f, packRGBA(0, 0, 20)},
-                {0.3f, packRGBA(0, 50, 150)},
-                {0.6f, packRGBA(50, 150, 255)},
-                {0.8f, packRGBA(200, 220, 255)},
-                {1.0f, packRGBA(255, 255, 255)}
-            });
-            break;
-
-        case WaterfallColormap::Grayscale:
-        default:
-            colormapLUT_ = buildGradient({
-                {0.0f, packRGBA(0, 0, 0)},
-                {1.0f, packRGBA(255, 255, 255)}
-            });
-            break;
-    }
+void WaterfallRenderer::initDefaultColormap() {
+    // Simple grayscale default - replaced when Lua calls setColormapData()
+    // This ensures the waterfall works even before Lua colormap is loaded
+    colormapLUT_ = buildGradient({
+        {0.0f, packRGBA(0, 0, 0)},
+        {1.0f, packRGBA(255, 255, 255)}
+    });
 }
 
 void WaterfallRenderer::updateTexture() {

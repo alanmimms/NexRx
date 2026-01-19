@@ -15,9 +15,6 @@
 #include "transport/IQFrame.hpp"
 #include "Demodulator.hpp"
 
-// Configuration system (generated)
-#include "config/TwinRemoteHandler.hpp"
-#include "RxConfig.hpp"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -96,8 +93,30 @@ public:
     App() = default;
     ~App() { shutdown(); }
 
-    bool init(int width, int height, const std::string& title, bool vsyncEnabled = true) {
-        // Initialize SDL
+    bool init(const std::string& title, bool vsyncEnabled = true) {
+        // ==========================================================================
+        // Phase 1: Load configuration from Lua/SetBox BEFORE creating window
+        // ==========================================================================
+        if (!initLuaConfig()) {
+            std::cerr << "Failed to load configuration" << std::endl;
+            return false;
+        }
+
+        // Read window size from SetBox (with fallback defaults)
+        int windowWidth = 1280;
+        int windowHeight = 850;
+        float fontSize = 16.0f;
+
+        sol::function getNumber = lua_["setbox"]["getNumber"];
+        if (getNumber.valid()) {
+            windowWidth = static_cast<int>(getNumber("windowWidth", 1280).get<double>());
+            windowHeight = static_cast<int>(getNumber("windowHeight", 850).get<double>());
+            fontSize = static_cast<float>(getNumber("fontSize", 16.0).get<double>());
+        }
+
+        // ==========================================================================
+        // Phase 2: Initialize SDL and create window with config values
+        // ==========================================================================
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
             std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
             return false;
@@ -110,11 +129,11 @@ public:
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-        // Create window
+        // Create window with size from config
         window_ = SDL_CreateWindow(
             title.c_str(),
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            width, height,
+            windowWidth, windowHeight,
             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN
         );
 
@@ -151,35 +170,25 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // Initialize font renderer
-        // Try common font paths (platform-specific)
-        const char* fontPaths[] = {
-#ifdef _WIN32
-            "C:/Windows/Fonts/segoeui.ttf",
-            "C:/Windows/Fonts/arial.ttf",
-            "C:/Windows/Fonts/tahoma.ttf",
-#elif defined(__APPLE__)
-            "/System/Library/Fonts/SFNS.ttf",
-            "/System/Library/Fonts/Helvetica.ttc",
-            "/Library/Fonts/Arial.ttf",
-#else
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-            "/usr/share/fonts/TTF/DejaVuSans.ttf",
-#endif
-            "fonts/DejaVuSans.ttf",
-            nullptr
-        };
-
-        for (const char** path = fontPaths; *path; ++path) {
-            if (font_.loadFont(*path, 16.0f)) {
-                std::cout << "Loaded font: " << *path << std::endl;
-                break;
+        // ==========================================================================
+        // Phase 3: Load font using paths from SetBox config
+        // ==========================================================================
+        sol::object fontPathsObj = lua_["setbox"]["get"]("fontPaths");
+        if (fontPathsObj.is<sol::table>()) {
+            sol::table fontPaths = fontPathsObj.as<sol::table>();
+            for (auto& kv : fontPaths) {
+                if (kv.second.is<std::string>()) {
+                    std::string path = kv.second.as<std::string>();
+                    if (font_.loadFont(path.c_str(), fontSize)) {
+                        std::cout << "Loaded font: " << path << std::endl;
+                        break;
+                    }
+                }
             }
         }
 
         if (!font_.isLoaded()) {
-            std::cerr << "Warning: Could not load any font" << std::endl;
+            std::cerr << "Warning: Could not load any font from fontPaths config" << std::endl;
         }
 
         // Initialize audio engine
@@ -463,7 +472,11 @@ public:
     }
 
 private:
-    bool initLua() {
+    // ==========================================================================
+    // initLuaConfig() - Early Lua initialization for configuration
+    // Called BEFORE window/OpenGL creation to read window size, font paths, etc.
+    // ==========================================================================
+    bool initLuaConfig() {
         lua_.open_libraries(
             sol::lib::base,
             sol::lib::package,
@@ -478,6 +491,56 @@ private:
         std::string path = lua_["package"]["path"];
         path += ";lua/?.lua;lua/?/init.lua";
         lua_["package"]["path"] = path;
+
+        // Load SetBox module (pure Lua configuration system)
+        try {
+            lua_.safe_script_file("lua/setbox.lua", sol::script_pass_on_error);
+        } catch (const std::exception& e) {
+            std::cerr << "Failed to load lua/setbox.lua: " << e.what() << std::endl;
+            return false;
+        }
+
+        // Verify setbox module loaded correctly
+        if (!lua_["setbox"].valid() || !lua_["rule"].valid()) {
+            std::cerr << "Error: setbox module did not export setbox table or rule function" << std::endl;
+            return false;
+        }
+
+        // Load configuration files
+        sol::function loadFile = lua_["setbox"]["loadFile"];
+        if (loadFile.valid()) {
+            if (!loadFile("config/default.lua").get<bool>()) {
+                std::cerr << "Warning: Failed to load config/default.lua" << std::endl;
+            }
+            // Settings file is optional - user customizations
+            loadFile("config/settings.lua");  // OK if missing
+        } else {
+            std::cerr << "Error: setbox.loadFile not available" << std::endl;
+            return false;
+        }
+
+        luaConfigLoaded_ = true;
+        return true;
+    }
+
+    bool initLua() {
+        // If config already loaded (from initLuaConfig), skip those steps
+        if (!luaConfigLoaded_) {
+            lua_.open_libraries(
+                sol::lib::base,
+                sol::lib::package,
+                sol::lib::string,
+                sol::lib::table,
+                sol::lib::math,
+                sol::lib::io,
+                sol::lib::os
+            );
+
+            // Set up package path
+            std::string path = lua_["package"]["path"];
+            path += ";lua/?.lua;lua/?/init.lua";
+            lua_["package"]["path"] = path;
+        }
 
         // Expose app functions to Lua
         lua_.set_function("quit", [this]() { quit(); });
@@ -583,22 +646,21 @@ private:
         });
 
         // ==========================================================================
-        // Load Pure Lua SetBox Module
+        // SetBox Configuration (already loaded by initLuaConfig if luaConfigLoaded_)
         // ==========================================================================
-        // The setbox module is now pure Lua. It defines the global rule() function
-        // and provides the setbox.* API for configuration management.
-        try {
-            lua_.safe_script_file("lua/setbox.lua", sol::script_pass_on_error);
-            // The module sets up global 'setbox' and 'rule' automatically
-        } catch (const std::exception& e) {
-            std::cerr << "Failed to load lua/setbox.lua: " << e.what() << std::endl;
-            return false;
-        }
+        if (!luaConfigLoaded_) {
+            // Load SetBox if not already done
+            try {
+                lua_.safe_script_file("lua/setbox.lua", sol::script_pass_on_error);
+            } catch (const std::exception& e) {
+                std::cerr << "Failed to load lua/setbox.lua: " << e.what() << std::endl;
+                return false;
+            }
 
-        // Verify setbox module loaded correctly
-        if (!lua_["setbox"].valid() || !lua_["rule"].valid()) {
-            std::cerr << "Error: setbox module did not export setbox table or rule function" << std::endl;
-            return false;
+            if (!lua_["setbox"].valid() || !lua_["rule"].valid()) {
+                std::cerr << "Error: setbox module did not export setbox table or rule function" << std::endl;
+                return false;
+            }
         }
 
         // Expose audio engine to Lua
@@ -698,18 +760,7 @@ private:
             waterfall_.renderSpectrum(specData.data(), static_cast<int>(specData.size()), x, y, w, h);
         };
 
-        // Legacy: setColormap by name (uses hardcoded C++ colormaps)
-        lua_["waterfall"]["setColormap"] = [this](const std::string& name) {
-            if (name == "viridis") waterfall_.setColormap(WaterfallColormap::Viridis);
-            else if (name == "plasma") waterfall_.setColormap(WaterfallColormap::Plasma);
-            else if (name == "inferno") waterfall_.setColormap(WaterfallColormap::Inferno);
-            else if (name == "magma") waterfall_.setColormap(WaterfallColormap::Magma);
-            else if (name == "green") waterfall_.setColormap(WaterfallColormap::GreenPhosphor);
-            else if (name == "blue") waterfall_.setColormap(WaterfallColormap::BlueHot);
-            else if (name == "grayscale") waterfall_.setColormap(WaterfallColormap::Grayscale);
-        };
-
-        // New: setColormapData from Lua gradient stops
+        // setColormapData from Lua gradient stops - Lua owns colormap definitions
         // Input: table of {position, r, g, b} where position is 0-1, RGB are 0-255
         lua_["waterfall"]["setColormapData"] = [this](sol::table stops) {
             std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>> gradientStops;
@@ -979,106 +1030,6 @@ private:
             return signalLevelRms_.load(std::memory_order_relaxed);
         };
 
-        // Initialize configuration system
-        remoteHandler_ = std::make_unique<nexrx::TwinRemoteHandler>(twinHost_);
-        rxConfig_ = std::make_unique<nexrx::RxConfig>(*remoteHandler_);
-
-        // Register action handlers
-        rxConfig_->registerAction("connectTwin", [this]() {
-            // Action triggered from config - connect to twin
-            if (!twinConnected_ && !twinHost_.isConnected()) {
-                nexrx::HostConfig config;
-                config.host = rxConfig_->twinHost();
-                config.controlPort = static_cast<uint16_t>(rxConfig_->twinControlPort());
-                config.streamPort = static_cast<uint16_t>(rxConfig_->twinStreamPort());
-                config.verbose = true;
-
-                if (twinHost_.initialize(config)) {
-                    twinHost_.setFrameCallback([this](const nexrx::IQFrame& frame) {
-                        processIQFrame(frame);
-                    });
-                    if (twinHost_.startReceiving()) {
-                        twinConnected_ = true;
-                        std::cout << "[Config] Connected to twin" << std::endl;
-                    }
-                }
-            }
-        });
-
-        rxConfig_->registerAction("disconnectTwin", [this]() {
-            if (twinConnected_) {
-                twinHost_.stopReceiving();
-                twinHost_.shutdown();
-                twinConnected_ = false;
-                std::cout << "[Config] Disconnected from twin" << std::endl;
-            }
-        });
-
-        rxConfig_->registerAction("resetDefaults", [this]() {
-            rxConfig_->setVolume(0.0316);
-            rxConfig_->setSquelch(0.3);
-            rxConfig_->setMode(nexrx::ModeChoice::USB);
-            rxConfig_->setMuted(false);
-            rxConfig_->setAgcEnabled(true);
-            rxConfig_->setNrEnabled(false);
-            rxConfig_->setNbEnabled(false);
-            std::cout << "[Config] Reset to defaults" << std::endl;
-        });
-
-        // Wire up change notifications - dispatch to Lua property handlers
-        // Note: volume uses atomic for thread-safe access from audio callback
-        rxConfig_->onPropertyChange([this](const std::string& name) {
-            // Volume needs special handling for thread-safe audio callback access
-            if (name == "volume") {
-                audioVolume_.store(static_cast<float>(rxConfig_->volume()), std::memory_order_relaxed);
-            }
-
-            // Dispatch to Lua property handlers (loaded later)
-            // The Lua handler will call the appropriate C++ primitive
-            sol::function handler = lua_["onPropertyChange"];
-            if (handler.valid()) {
-                try {
-                    // Get the current value and pass to Lua
-                    if (name == "volume") {
-                        handler(name, rxConfig_->volume());
-                    } else if (name == "muted") {
-                        handler(name, rxConfig_->muted());
-                    } else if (name == "mode") {
-                        handler(name, static_cast<int>(rxConfig_->mode()));
-                    } else if (name == "testToneEnabled") {
-                        handler(name, rxConfig_->testToneEnabled());
-                    } else if (name == "testToneFreq") {
-                        handler(name, rxConfig_->testToneFreq());
-                    } else if (name == "colormap") {
-                        handler(name, static_cast<int>(rxConfig_->colormap()));
-                    } else if (name == "qsdOffsetK") {
-                        handler(name, rxConfig_->qsdOffsetK());
-                    } else if (name == "rfAttenuation") {
-                        handler(name, rxConfig_->rfAttenuation());
-                    } else if (name == "bandpassEnabled") {
-                        handler(name, rxConfig_->bandpassEnabled());
-                    } else if (name == "bandpassCenter") {
-                        handler(name, rxConfig_->bandpassCenter());
-                    } else if (name == "bandpassWidth") {
-                        handler(name, rxConfig_->bandpassWidth());
-                    } else if (name == "bandpassTaps") {
-                        handler(name, rxConfig_->bandpassTaps());
-                    } else if (name == "notchEnabled") {
-                        handler(name, rxConfig_->notchEnabled());
-                    } else if (name == "notchCenter") {
-                        handler(name, rxConfig_->notchCenter());
-                    } else if (name == "notchWidth") {
-                        handler(name, rxConfig_->notchWidth());
-                    }
-                } catch (const std::exception& e) {
-                    std::cerr << "[RxConfig] Lua handler error for '" << name << "': " << e.what() << std::endl;
-                }
-            }
-        });
-
-        // Register RxConfig Lua bindings
-        nexrx::RxConfig::registerLuaBindings(lua_, *rxConfig_);
-
         // Load property handlers (defines global onPropertyChange function)
         try {
             lua_.safe_script_file("lua/property_handlers.lua", sol::script_pass_on_error);
@@ -1086,50 +1037,33 @@ private:
             std::cerr << "Warning: Failed to load lua/property_handlers.lua: " << e.what() << std::endl;
         }
 
-        // Load SetBox configuration files via Lua setbox module
+        // Load additional config files (default.lua and settings.lua already loaded by initLuaConfig)
         sol::function loadFile = lua_["setbox"]["loadFile"];
         if (loadFile.valid()) {
-            if (!loadFile("config/default.lua").get<bool>()) {
-                std::cerr << "Warning: Failed to load config/default.lua" << std::endl;
+            // default.lua and settings.lua already loaded in initLuaConfig (for window size, fonts)
+            if (!luaConfigLoaded_) {
+                if (!loadFile("config/default.lua").get<bool>()) {
+                    std::cerr << "Warning: Failed to load config/default.lua" << std::endl;
+                }
+                loadFile("config/settings.lua");  // Optional
             }
+            // Always load these additional config files
             if (!loadFile("config/modes.lua").get<bool>()) {
                 std::cerr << "Warning: Failed to load config/modes.lua" << std::endl;
             }
             if (!loadFile("config/colormaps.lua").get<bool>()) {
                 std::cerr << "Warning: Failed to load config/colormaps.lua" << std::endl;
             }
-            if (!loadFile("config/settings.lua").get<bool>()) {
-                std::cerr << "Error: config/settings.lua not found.\n"
-                          << "Please restore it from the app distribution." << std::endl;
-                // Continue anyway - defaults will be used
-            }
         } else {
             std::cerr << "Error: setbox.loadFile not available" << std::endl;
             return false;
         }
 
-        // Wire SetBox property changes to RxConfig via native callback
-        // This allows modes.lua rules to control filter parameters
-        sol::function registerNative = lua_["setbox"]["_registerNativeCallback"];
-        if (registerNative.valid()) {
-            registerNative([this](const std::string& name, sol::object value) {
-                // Forward filter properties to RxConfig
-                if (name == "bandpassEnabled" && value.is<bool>()) {
-                    rxConfig_->setBandpassEnabled(value.as<bool>());
-                } else if (name == "bandpassCenter" && value.is<double>()) {
-                    rxConfig_->setBandpassCenter(value.as<double>());
-                } else if (name == "bandpassWidth" && value.is<double>()) {
-                    rxConfig_->setBandpassWidth(value.as<double>());
-                } else if (name == "bandpassTaps" && value.is<double>()) {
-                    rxConfig_->setBandpassTaps(static_cast<int>(value.as<double>()));
-                } else if (name == "notchEnabled" && value.is<bool>()) {
-                    rxConfig_->setNotchEnabled(value.as<bool>());
-                } else if (name == "notchCenter" && value.is<double>()) {
-                    rxConfig_->setNotchCenter(value.as<double>());
-                } else if (name == "notchWidth" && value.is<double>()) {
-                    rxConfig_->setNotchWidth(value.as<double>());
-                }
-            });
+        // Wire SetBox property changes to Lua handlers
+        // This triggers onPropertyChange when config values change
+        sol::function registerCallback = lua_["setbox"]["onPropertyChange"];
+        if (registerCallback.valid()) {
+            registerCallback(lua_["onPropertyChange"]);
         }
 
         // Load main Lua script
@@ -1271,10 +1205,8 @@ private:
     AudioEngine audio_;
     WaterfallRenderer waterfall_;
 
-    // Twin integration
+    // Hardware integration
     nexrx::HostApp twinHost_;
-    std::unique_ptr<nexrx::TwinRemoteHandler> remoteHandler_;
-    std::unique_ptr<nexrx::RxConfig> rxConfig_;
     std::mutex spectrumMutex_;
     std::vector<float> spectrumData_;      // Latest spectrum (dB values)
     std::vector<float> iqBuffer_;          // Ring buffer for FFT
@@ -1326,6 +1258,7 @@ private:
     int windowHeight_ = 0;
     bool running_ = false;
     bool vsyncEnabled_ = true;
+    bool luaConfigLoaded_ = false;  // Set by initLuaConfig() before window creation
     uint32_t lastFrameTime_ = 0;
 
     InputState input_;
@@ -1826,7 +1759,7 @@ int main(int argc, char* argv[]) {
     App app;
     gApp = &app;
 
-    if (!app.init(1280, 850, "NexRx", !disableVsync)) {
+    if (!app.init("NexRx", !disableVsync)) {
         std::cerr << "Failed to initialize application" << std::endl;
         return 1;
     }

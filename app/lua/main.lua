@@ -3,14 +3,10 @@
 
   Demonstrates the layout system with a realistic SDR receiver UI.
 
-  Configuration API:
-  The 'config' global provides typed access to receiver settings.
-  Example usage:
-    config.volume = 0.5           -- Set volume (0-1)
-    config.mode = 1               -- USB=0, LSB=1, CW=2, AM=3
-    config.setMode(1)             -- Explicit setter
-    print(config.qsdOffsetK)      -- Get QSD offset
-    config.resetDefaults()        -- Invoke action
+  Architecture: Lua is the control plane, C++ is the data plane.
+  - Configuration loaded from SetBox (config/default.lua, config/settings.lua)
+  - Lua owns all state and UI logic
+  - Lua calls C++ primitives for DSP, audio, rendering
 ]]
 
 -- Add lua directory to package path for requires
@@ -34,10 +30,21 @@ local fps = 0
 local fpsAccum = 0
 local fpsFrames = 0
 
--- Application state
--- Note: volume, muted, testTone* now use config.* API (see header comment)
--- Configuration values are loaded from SetBox in init()
+-- Application state (all loaded from SetBox in init())
 local rxActive = false
+
+-- Audio state (loaded from SetBox, controls C++ audio engine)
+local volume            -- 0-1 (loaded from SetBox)
+local muted             -- bool (loaded from SetBox)
+local testToneEnabled   -- bool (test tone generation)
+
+-- Baseband filter state (loaded from SetBox, controls C++ BasebandFilter)
+local bandpassEnabled   -- bool
+local bandpassCenter    -- Hz offset from DC
+local bandpassWidth     -- Hz bandwidth
+local notchEnabled      -- bool
+local notchCenter       -- Hz offset from DC
+local notchWidth        -- Hz bandwidth
 local frequency        -- MHz (loaded from SetBox)
 local squelch          -- 0-1 (loaded from SetBox)
 local agcEnabled       -- bool (loaded from SetBox)
@@ -143,15 +150,14 @@ local function getBand(freq)
 end
 
 -- Apply colormap by name from Lua definitions (config/colormaps.lua)
--- Falls back to C++ built-in if Lua colormap not found
+-- Colormaps are defined in Lua only - no C++ fallback
 local function applyColormap(name)
     -- Check if colormaps table exists (loaded from config/colormaps.lua)
     if colormaps and colormaps[name] then
         waterfall.setColormapData(colormaps[name])
         return true
     else
-        -- Fallback to C++ built-in colormaps
-        waterfall.setColormap(name)
+        print("[Lua] Warning: Colormap '" .. name .. "' not found in config/colormaps.lua")
         return false
     end
 end
@@ -180,6 +186,19 @@ function init()
     nrEnabled = setbox.getBool("nrEnabled", false)
     nbEnabled = setbox.getBool("nbEnabled", false)
     lmsMu = setbox.getNumber("lmsMu", 0.001)
+
+    -- Audio settings
+    volume = setbox.getNumber("volume", 0.5)
+    muted = setbox.getBool("muted", false)
+    testToneEnabled = false  -- Always start with test tone off
+
+    -- Baseband filter settings (offset from SetBox, or defaults)
+    bandpassEnabled = setbox.getBool("bandpassEnabled", false)
+    bandpassCenter = setbox.getNumber("bandpassCenter", 700)
+    bandpassWidth = setbox.getNumber("bandpassWidth", 500)
+    notchEnabled = setbox.getBool("notchEnabled", false)
+    notchCenter = setbox.getNumber("notchCenter", 0)
+    notchWidth = setbox.getNumber("notchWidth", 100)
 
     -- Hardware settings
     qsdOffsetK = setbox.getNumber("qsdOffsetK", 12.0)
@@ -219,12 +238,21 @@ function init()
 
     -- Initialize audio
     if audio.isInitialized() then
-        audio.setVolume(config.volume)  -- Use config API
+        audio.setVolume(volume)
+        audio.setMuted(muted)
         audio.start()
         print("[Lua] Audio started at " .. audio.getSampleRate() .. " Hz")
     else
         print("[Lua] Warning: Audio not initialized")
     end
+
+    -- Initialize baseband filter with current settings
+    rx.setBandpassEnabled(bandpassEnabled)
+    rx.setBandpassCenter(bandpassCenter)
+    rx.setBandpassWidth(bandpassWidth)
+    rx.setNotchEnabled(notchEnabled)
+    rx.setNotchCenter(notchCenter)
+    rx.setNotchWidth(notchWidth)
 
     -- Initialize waterfall
     if waterfall.init(waterfallBins, waterfallRows) then
@@ -476,7 +504,7 @@ function draw()
         drawRect(x, y, w, h, 0.08, 0.08, 0.1, 1.0)
         drawLine(x, y, x + w, y, 0.2, 0.2, 0.25, 1.0, 1.0)
 
-        local bpInfo = config.bandpassEnabled and string.format("BP: %.0f Hz", config.bandpassWidth) or "BP: Off"
+        local bpInfo = bandpassEnabled and string.format("BP: %.0f Hz", bandpassWidth) or "BP: Off"
         local info = string.format("Band: %s | Mode: %s | %s | Mouse: %d, %d",
                                    getBand(frequency), selectedMode, bpInfo, mouseX, mouseY)
         drawText(x + 10, y + 6, info, 0.5, 0.5, 0.55, 1.0)
@@ -567,64 +595,70 @@ function draw()
 
         -- Bandpass enable
         local cx, cy = layout.getCursor()
-        local newBpEn = ui.checkbox("bp_en", "Bandpass", cx, cy, config.bandpassEnabled)
-        if newBpEn ~= config.bandpassEnabled then
-            config.bandpassEnabled = newBpEn
+        local newBpEn = ui.checkbox("bp_en", "Bandpass", cx, cy, bandpassEnabled)
+        if newBpEn ~= bandpassEnabled then
+            bandpassEnabled = newBpEn
+            rx.setBandpassEnabled(bandpassEnabled)
         end
         layout.newLine(24)
 
         -- Bandpass center (only show if enabled)
-        if config.bandpassEnabled then
+        if bandpassEnabled then
             lx, ly = layout.getCursor()
             ui.label(lx, ly, "Center:")
-            local newBpCenter = ui.slider("bp_center", lx + 55, ly, w - 85, -5000, 5000, config.bandpassCenter)
-            if newBpCenter ~= config.bandpassCenter then
-                config.bandpassCenter = newBpCenter
+            local newBpCenter = ui.slider("bp_center", lx + 55, ly, w - 85, -5000, 5000, bandpassCenter)
+            if newBpCenter ~= bandpassCenter then
+                bandpassCenter = newBpCenter
+                rx.setBandpassCenter(bandpassCenter)
             end
-            local bpCText = string.format("%.0f Hz", config.bandpassCenter)
+            local bpCText = string.format("%.0f Hz", bandpassCenter)
             drawText(lx + w - 70, ly - 2, bpCText, 0.5, 0.5, 0.55, 1.0)
             layout.newLine(24)
 
             -- Bandpass width
             lx, ly = layout.getCursor()
             ui.label(lx, ly, "Width:")
-            local newBpWidth = ui.slider("bp_width", lx + 55, ly, w - 85, 50, 4000, config.bandpassWidth)
-            if newBpWidth ~= config.bandpassWidth then
-                config.bandpassWidth = newBpWidth
+            local newBpWidth = ui.slider("bp_width", lx + 55, ly, w - 85, 50, 4000, bandpassWidth)
+            if newBpWidth ~= bandpassWidth then
+                bandpassWidth = newBpWidth
+                rx.setBandpassWidth(bandpassWidth)
             end
-            local bpWText = string.format("%.0f Hz", config.bandpassWidth)
+            local bpWText = string.format("%.0f Hz", bandpassWidth)
             drawText(lx + w - 70, ly - 2, bpWText, 0.5, 0.5, 0.55, 1.0)
             layout.newLine(24)
         end
 
         -- Notch enable
         cx, cy = layout.getCursor()
-        local newNotchEn = ui.checkbox("notch_en", "Notch", cx, cy, config.notchEnabled)
-        if newNotchEn ~= config.notchEnabled then
-            config.notchEnabled = newNotchEn
+        local newNotchEn = ui.checkbox("notch_en", "Notch", cx, cy, notchEnabled)
+        if newNotchEn ~= notchEnabled then
+            notchEnabled = newNotchEn
+            rx.setNotchEnabled(notchEnabled)
         end
         layout.newLine(24)
 
         -- Notch center (only show if enabled)
-        if config.notchEnabled then
+        if notchEnabled then
             lx, ly = layout.getCursor()
             ui.label(lx, ly, "Center:")
-            local newNotchCenter = ui.slider("notch_center", lx + 55, ly, w - 85, -10000, 10000, config.notchCenter)
-            if newNotchCenter ~= config.notchCenter then
-                config.notchCenter = newNotchCenter
+            local newNotchCenter = ui.slider("notch_center", lx + 55, ly, w - 85, -10000, 10000, notchCenter)
+            if newNotchCenter ~= notchCenter then
+                notchCenter = newNotchCenter
+                rx.setNotchCenter(notchCenter)
             end
-            local notchCText = string.format("%.0f Hz", config.notchCenter)
+            local notchCText = string.format("%.0f Hz", notchCenter)
             drawText(lx + w - 70, ly - 2, notchCText, 0.5, 0.5, 0.55, 1.0)
             layout.newLine(24)
 
             -- Notch width
             lx, ly = layout.getCursor()
             ui.label(lx, ly, "Width:")
-            local newNotchWidth = ui.slider("notch_width", lx + 55, ly, w - 85, 10, 500, config.notchWidth)
-            if newNotchWidth ~= config.notchWidth then
-                config.notchWidth = newNotchWidth
+            local newNotchWidth = ui.slider("notch_width", lx + 55, ly, w - 85, 10, 500, notchWidth)
+            if newNotchWidth ~= notchWidth then
+                notchWidth = newNotchWidth
+                rx.setNotchWidth(notchWidth)
             end
-            local notchWText = string.format("%.0f Hz", config.notchWidth)
+            local notchWText = string.format("%.0f Hz", notchWidth)
             drawText(lx + w - 70, ly - 2, notchWText, 0.5, 0.5, 0.55, 1.0)
             layout.newLine(24)
         end
@@ -725,13 +759,13 @@ function draw()
             local db = 20 * math.log(gain, 10)
             return clamp((db + 60) / 60, 0, 1)
         end
-        -- Use config.volume instead of local variable (demonstrates config API)
-        local sliderPos = logToLinear(config.volume)
+        local sliderPos = logToLinear(volume)
         local newSliderPos = ui.slider("volume", lx + 40, ly, w - 70, 0, 1, sliderPos)
         if newSliderPos ~= sliderPos then
-            config.volume = linearToLog(newSliderPos)  -- Sets config, triggers C++ callback
+            volume = linearToLog(newSliderPos)
+            audio.setVolume(volume)
         end
-        local volDb = config.volume > 0.001 and string.format("%.0fdB", 20 * math.log(config.volume, 10)) or "-inf"
+        local volDb = volume > 0.001 and string.format("%.0fdB", 20 * math.log(volume, 10)) or "-inf"
         drawText(lx + w - 60, ly - 2, volDb, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
@@ -740,20 +774,22 @@ function draw()
         squelch = ui.slider("squelch", lx + 40, ly, w - 70, 0, 1, squelch)
         layout.newLine(24)
 
-        -- Mute checkbox (using config API)
+        -- Mute checkbox
         cx, cy = layout.getCursor()
-        local newMuted = ui.checkbox("mute", "Mute", cx, cy, config.muted)
-        if newMuted ~= config.muted then
-            config.muted = newMuted  -- Triggers C++ callback
+        local newMuted = ui.checkbox("mute", "Mute", cx, cy, muted)
+        if newMuted ~= muted then
+            muted = newMuted
+            audio.setMuted(muted)
         end
         layout.newLine(24)
 
-        -- Test tone button (using config API)
-        local toneTags = config.testToneEnabled and {"Primary"} or {"Secondary"}
-        local toneLabel = config.testToneEnabled and "Tone ON" or "Test Tone"
+        -- Test tone button
+        local toneTags = testToneEnabled and {"Primary"} or {"Secondary"}
+        local toneLabel = testToneEnabled and "Tone ON" or "Test Tone"
         local tx, ty = layout.getCursor()
         if ui.button("test_tone", toneLabel, tx, ty, 90, 26, toneTags) then
-            config.testToneEnabled = not config.testToneEnabled  -- Triggers C++ callback
+            testToneEnabled = not testToneEnabled
+            audio.setTestTone(testToneEnabled)
         end
         layout.newLine(28)
 

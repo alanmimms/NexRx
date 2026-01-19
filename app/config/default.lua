@@ -64,6 +64,26 @@ rule {
         fontSize = 16,
 
         -- =================================================================
+        -- Font Search Paths (platform-specific, tried in order)
+        -- =================================================================
+        fontPaths = {
+            -- Windows
+            "C:/Windows/Fonts/segoeui.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/tahoma.ttf",
+            -- macOS
+            "/System/Library/Fonts/SFNS.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/Library/Fonts/Arial.ttf",
+            -- Linux
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            -- Fallback (bundled with app)
+            "fonts/DejaVuSans.ttf",
+        },
+
+        -- =================================================================
         -- Connection Defaults (hw abstraction layer)
         -- =================================================================
         hwHost = "127.0.0.1",           -- Hardware/twin server address

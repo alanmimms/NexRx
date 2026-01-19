@@ -1,6 +1,10 @@
 /**
  * @file WaterfallRenderer.hpp
  * @brief OpenGL-based waterfall/spectrogram display
+ *
+ * Colormaps are defined in Lua (config/colormaps.lua) and provided to C++
+ * via setColormapData(). This keeps colormap definitions configurable without
+ * C++ changes.
  */
 
 #pragma once
@@ -8,19 +12,6 @@
 #include <vector>
 #include <string>
 #include <cstdint>
-
-/**
- * @brief Colormap types for waterfall display
- */
-enum class WaterfallColormap {
-    Viridis,        // Blue-green-yellow
-    Plasma,         // Purple-red-yellow
-    Inferno,        // Black-red-yellow-white
-    Magma,          // Black-purple-orange-white
-    GreenPhosphor,  // Classic CRT green
-    BlueHot,        // Blue-white (good for weak signals)
-    Grayscale       // Simple grayscale
-};
 
 /**
  * @brief Waterfall/spectrogram display renderer
@@ -67,22 +58,12 @@ public:
     void render(float x, float y, float w, float h);
 
     /**
-     * @brief Set the colormap by enum
-     */
-    void setColormap(WaterfallColormap colormap);
-
-    /**
      * @brief Set colormap from gradient stops
      * @param stops Vector of {position, r, g, b} where position is 0-1 and RGB are 0-255
      *
-     * This allows Lua to define custom colormaps without C++ changes.
+     * Colormaps are defined in Lua (config/colormaps.lua) and passed here.
      */
     void setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops);
-
-    /**
-     * @brief Get current colormap
-     */
-    WaterfallColormap getColormap() const { return colormap_; }
 
     /**
      * @brief Set the dB range for mapping
@@ -130,7 +111,7 @@ public:
     void renderSpectrum(const float* data, int count, float x, float y, float w, float h);
 
 private:
-    void buildColormap();
+    void initDefaultColormap();
     void updateTexture();
     uint32_t dbToColor(float db);
 
@@ -143,9 +124,8 @@ private:
     std::vector<std::vector<float>> rows_;
     int topRow_ = 0;  // Index of the newest row
 
-    // Colormap
-    WaterfallColormap colormap_ = WaterfallColormap::Viridis;
-    std::vector<uint32_t> colormapLUT_;  // 256-entry lookup table
+    // Colormap LUT (256-entry lookup table, populated from Lua via setColormapData)
+    std::vector<uint32_t> colormapLUT_;
 
     // Range
     float minDb_ = -120.0f;
