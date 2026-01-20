@@ -23,6 +23,7 @@ local bands = require("bands")
 local dispatch = require("dispatch")
 local events = require("events")
 local animate = require("animate")
+local keys = require("keycodes")
 
 -- Load mode definitions (Lua owns mode enum)
 local modeHelper = require("modes")
@@ -130,8 +131,7 @@ local hwFramesReceived = 0
 local lastVfoFreq = 0  -- Track VFO changes for hardware control
 -- Note: useHwSpectrum replaced by dispatch module
 
--- Frequency entry state
-local freqEntryMode = false
+-- Frequency entry state (mode is managed via events.hasModeTag("FreqEntryMode"))
 local freqEntryText = ""
 local freqEntryBlink = 0
 
@@ -297,29 +297,317 @@ function init()
     ui.setEventsModule(events)
     ui.setLayoutModule(layout)
 
-    -- Register event handlers for frequency tuning
-    events.registerHandler("freq_tune", function(event, widget)
-        local step = 0.001  -- 1 kHz
+    -- =======================================================================
+    -- Event Handlers
+    -- =======================================================================
+
+    -- Unified VFO tuning handler - checks modifiers in the event object
+    -- Bound to FrequencyDisplay widget via SetBox rule
+    events.registerHandler("vfo_tune", function(event, widget)
+        -- Determine step based on modifiers (from event, not globals)
+        local step
+        if event.shift then
+            step = 0.1      -- Shift: 100 kHz
+        elseif event.ctrl then
+            step = 0.0001   -- Ctrl: 100 Hz
+        else
+            step = 0.001    -- Default: 1 kHz
+        end
+
         frequency = clamp(frequency + event.delta * step, 0.1, 30.0)
         if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
         bands.setFrequency(frequency * 1e6)
         return true
     end)
 
-    events.registerHandler("freq_tune_coarse", function(event, widget)
-        local step = 0.1  -- 100 kHz
-        frequency = clamp(frequency + event.delta * step, 0.1, 30.0)
+    -- Start frequency entry mode (F key or click on frequency display)
+    events.registerHandler("freq_entry_start", function(event, widget)
+        if not events.hasModeTag("FreqEntryMode") then
+            events.addModeTag("FreqEntryMode")
+            freqEntryText = ""
+            return true
+        end
+        return false
+    end)
+
+    -- Cancel frequency entry (ESC in FreqEntryMode)
+    events.registerHandler("freq_entry_cancel", function(event, widget)
+        events.removeModeTag("FreqEntryMode")
+        freqEntryText = ""
+        return true
+    end)
+
+    -- Confirm frequency entry (Enter in FreqEntryMode)
+    events.registerHandler("freq_entry_confirm", function(event, widget)
+        local newFreq = tonumber(freqEntryText)
+        if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
+            frequency = newFreq
+            if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+            bands.setFrequency(frequency * 1e6)
+        end
+        events.removeModeTag("FreqEntryMode")
+        freqEntryText = ""
+        return true
+    end)
+
+    -- Backspace in frequency entry mode
+    events.registerHandler("freq_entry_backspace", function(event, widget)
+        if #freqEntryText > 0 then
+            freqEntryText = freqEntryText:sub(1, -2)
+        end
+        return true
+    end)
+
+    -- Text input for frequency entry
+    events.registerHandler("freq_entry_text", function(event, widget)
+        if event.text then
+            for i = 1, #event.text do
+                local ch = event.text:sub(i, i)
+                if ch:match("[0-9]") or (ch == "." and not freqEntryText:find("%.")) then
+                    freqEntryText = freqEntryText .. ch
+                end
+            end
+        end
+        return true
+    end)
+
+    -- Quit application (Ctrl+Q)
+    events.registerHandler("app_quit", function(event, widget)
+        quit()
+        return true
+    end)
+
+    -- Waterfall click to tune (placeholder for future)
+    events.registerHandler("waterfall_click", function(event, widget)
+        -- TODO: Calculate frequency offset from click position
+        print(string.format("[Events] Waterfall click at (%d, %d)", event.x or 0, event.y or 0))
+        return true
+    end)
+
+    -- =======================================================================
+    -- VFO Button Handlers
+    -- =======================================================================
+
+    events.registerHandler("vfo_a_click", function(event, widget)
+        activeVFO = "A"
+        frequency = vfoA
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    events.registerHandler("vfo_b_click", function(event, widget)
+        activeVFO = "B"
+        frequency = vfoB
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    events.registerHandler("vfo_swap_click", function(event, widget)
+        vfoA, vfoB = vfoB, vfoA
+        frequency = activeVFO == "A" and vfoA or vfoB
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    -- =======================================================================
+    -- Mode Button Handlers
+    -- =======================================================================
+
+    events.registerHandler("mode_usb_click", function(event, widget)
+        selectedMode = "USB"
+        modeHelper.setMode("USB")
+        return true
+    end)
+
+    events.registerHandler("mode_lsb_click", function(event, widget)
+        selectedMode = "LSB"
+        modeHelper.setMode("LSB")
+        return true
+    end)
+
+    events.registerHandler("mode_cw_click", function(event, widget)
+        selectedMode = "CW"
+        modeHelper.setMode("CW")
+        return true
+    end)
+
+    events.registerHandler("mode_am_click", function(event, widget)
+        selectedMode = "AM"
+        modeHelper.setMode("AM")
+        return true
+    end)
+
+    -- =======================================================================
+    -- DSP Checkbox Handlers
+    -- =======================================================================
+
+    events.registerHandler("bandpass_toggle", function(event, widget)
+        bandpassEnabled = not bandpassEnabled
+        rx.setBandpassEnabled(bandpassEnabled)
+        return true
+    end)
+
+    events.registerHandler("notch_toggle", function(event, widget)
+        notchEnabled = not notchEnabled
+        rx.setNotchEnabled(notchEnabled)
+        return true
+    end)
+
+    events.registerHandler("agc_toggle", function(event, widget)
+        agcEnabled = not agcEnabled
+        -- TODO: rx.setAgcEnabled(agcEnabled) when implemented
+        return true
+    end)
+
+    events.registerHandler("nr_toggle", function(event, widget)
+        nrEnabled = not nrEnabled
+        -- TODO: rx.setNrEnabled(nrEnabled) when implemented
+        return true
+    end)
+
+    events.registerHandler("nb_toggle", function(event, widget)
+        nbEnabled = not nbEnabled
+        -- TODO: rx.setNbEnabled(nbEnabled) when implemented
+        return true
+    end)
+
+    -- =======================================================================
+    -- Audio Control Handlers
+    -- =======================================================================
+
+    events.registerHandler("mute_toggle", function(event, widget)
+        muted = not muted
+        audio.setMuted(muted)
+        return true
+    end)
+
+    events.registerHandler("test_tone_toggle", function(event, widget)
+        testToneEnabled = not testToneEnabled
+        audio.setTestTone(testToneEnabled)
+        return true
+    end)
+
+    events.registerHandler("wav_record_toggle", function(event, widget)
+        local isRecording = audio.isRecording()
+        if isRecording then
+            audio.stopRecording()
+        else
+            audio.startRecording("/tmp/nexrx_audio.wav")
+        end
+        return true
+    end)
+
+    -- =======================================================================
+    -- RX Toggle Handler
+    -- =======================================================================
+
+    events.registerHandler("rx_toggle_click", function(event, widget)
+        rxActive = not rxActive
+        return true
+    end)
+
+    -- =======================================================================
+    -- Band Button Handlers
+    -- =======================================================================
+
+    local bandFreqs = {
+        ["160m"] = 1.9, ["80m"] = 3.5, ["40m"] = 7.0,
+        ["20m"] = 14.0, ["15m"] = 21.0, ["10m"] = 28.0,
+    }
+
+    events.registerHandler("band_160m_click", function(event, widget)
+        frequency = bandFreqs["160m"]
         if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
         bands.setFrequency(frequency * 1e6)
         return true
     end)
 
-    events.registerHandler("freq_tune_fine", function(event, widget)
-        local step = 0.0001  -- 100 Hz
-        frequency = clamp(frequency + event.delta * step, 0.1, 30.0)
+    events.registerHandler("band_80m_click", function(event, widget)
+        frequency = bandFreqs["80m"]
         if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
         bands.setFrequency(frequency * 1e6)
         return true
+    end)
+
+    events.registerHandler("band_40m_click", function(event, widget)
+        frequency = bandFreqs["40m"]
+        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    events.registerHandler("band_20m_click", function(event, widget)
+        frequency = bandFreqs["20m"]
+        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    events.registerHandler("band_15m_click", function(event, widget)
+        frequency = bandFreqs["15m"]
+        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    events.registerHandler("band_10m_click", function(event, widget)
+        frequency = bandFreqs["10m"]
+        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
+        bands.setFrequency(frequency * 1e6)
+        return true
+    end)
+
+    -- =======================================================================
+    -- Colormap Button Handlers
+    -- =======================================================================
+
+    events.registerHandler("cmap_viridis_click", function(event, widget)
+        wfColormap = "viridis"
+        applyColormap("viridis")
+        return true
+    end)
+
+    events.registerHandler("cmap_plasma_click", function(event, widget)
+        wfColormap = "plasma"
+        applyColormap("plasma")
+        return true
+    end)
+
+    events.registerHandler("cmap_inferno_click", function(event, widget)
+        wfColormap = "inferno"
+        applyColormap("inferno")
+        return true
+    end)
+
+    events.registerHandler("cmap_green_click", function(event, widget)
+        wfColormap = "green"
+        applyColormap("green")
+        return true
+    end)
+
+    events.registerHandler("cmap_blue_click", function(event, widget)
+        wfColormap = "blue"
+        applyColormap("blue")
+        return true
+    end)
+
+    -- Enhanced unhandled event logger with full details
+    events.registerHandler("log_unhandled", function(event, widget)
+        local mods = event.modifiers and table.concat(event.modifiers, "+") or "none"
+        local widgetId = widget and widget.id or "none"
+        local widgetTags = widget and widget.tags and table.concat(widget.tags, ",") or "none"
+        local modeTags = table.concat(events.getModeTags(), ",")
+        print(string.format("[Events] UNHANDLED: type=%s x=%d y=%d mods=[%s] widget=%s tags=[%s] modes=[%s]",
+            event.type or "?",
+            event.x or 0, event.y or 0,
+            mods, widgetId, widgetTags, modeTags))
+        if event.delta then
+            print(string.format("         delta=%d", event.delta))
+        end
+        if event.key then
+            print(string.format("         key=%s scancode=%d", event.key or "?", event.scancode or 0))
+        end
+        return false  -- Not handled, but logged
     end)
 
     -- Initialize dispatch module
@@ -394,80 +682,109 @@ function update(dt)
     -- Update animation system
     animate.update(dt)
 
-    -- Clear widget registry for immediate-mode UI (rebuilt in draw)
-    events.clearWidgets()
-
-    -- Frequency entry mode handling
+    -- Frequency entry mode handling (blink cursor)
+    -- freqEntryMode is now managed via events.hasModeTag("FreqEntryMode")
     freqEntryBlink = freqEntryBlink + dt
     if freqEntryBlink > 1.0 then freqEntryBlink = 0 end
 
-    -- SDL Scancodes
-    local SC_F = 9
-    local SC_RETURN = 40
-    local SC_ESCAPE = 41
-    local SC_BACKSPACE = 42
+    -- =======================================================================
+    -- Event dispatch via SetBox
+    -- =======================================================================
 
-    if freqEntryMode then
-        -- Get text input from SDL (handles all typing correctly)
-        local textIn = getTextInput()
-        for i = 1, #textIn do
-            local ch = textIn:sub(i, i)
-            -- Only allow digits and decimal point
-            if ch:match("[0-9]") or (ch == "." and not freqEntryText:find("%.")) then
-                freqEntryText = freqEntryText .. ch
-            end
-        end
+    local mouseX, mouseY = getMousePos()
 
-        -- Backspace
-        if isKeyPressed(SC_BACKSPACE) and #freqEntryText > 0 then
-            freqEntryText = freqEntryText:sub(1, -2)
-        end
-        -- Enter - apply frequency
-        if isKeyPressed(SC_RETURN) then
-            local newFreq = tonumber(freqEntryText)
-            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
-                frequency = newFreq
-                if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
-                bands.setFrequency(frequency * 1e6)  -- Update band tag
-            end
-            freqEntryMode = false
-            freqEntryText = ""
-        end
-        -- Escape - cancel
-        if isKeyPressed(SC_ESCAPE) then
-            freqEntryMode = false
-            freqEntryText = ""
-        end
-    else
-        -- 'F' key to start frequency entry
-        if isKeyPressed(SC_F) then
-            freqEntryMode = true
-            freqEntryText = ""
-        end
+    -- Build modifier state (both array for tags and booleans for handlers)
+    local shift = isShiftDown()
+    local ctrl = isCtrlDown()
+    local alt = isAltDown()
+
+    local function getModifiers()
+        local mods = {}
+        if shift then table.insert(mods, "Shift") end
+        if ctrl then table.insert(mods, "Ctrl") end
+        if alt then table.insert(mods, "Alt") end
+        return mods
     end
 
-    -- Mouse wheel for tuning with modifier support
-    -- Shift+scroll = 100 kHz steps
-    -- Ctrl+scroll = 100 Hz steps
-    -- Plain scroll = 1 kHz steps
+    -- Dispatch mouse wheel events
     local wheel = getMouseWheel()
-    if wheel ~= 0 and not freqEntryMode then
-        local step
-        if isShiftDown() then
-            step = 0.1  -- 100 kHz
-        elseif isCtrlDown() then
-            step = 0.0001  -- 100 Hz
-        else
-            step = 0.001  -- 1 kHz default
-        end
-        frequency = clamp(frequency + wheel * step, 0.1, 30.0)
-        if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
-        bands.setFrequency(frequency * 1e6)  -- Update band tag
+    if wheel ~= 0 then
+        local wheelEvent = events.createEvent(events.Type.MOUSE_WHEEL, {
+            x = mouseX,
+            y = mouseY,
+            delta = wheel,
+            modifiers = getModifiers(),
+            shift = shift,
+            ctrl = ctrl,
+            alt = alt,
+        })
+        events.dispatch(wheelEvent)
     end
 
-    -- ESC to quit (when not in frequency entry mode)
-    if isKeyPressed(SC_ESCAPE) and not freqEntryMode then
-        quit()
+    -- Dispatch mouse button events
+    if isMouseClicked(0) then  -- Left button
+        local clickEvent = events.createEvent(events.Type.MOUSE_DOWN, {
+            x = mouseX,
+            y = mouseY,
+            button = 1,
+            modifiers = getModifiers(),
+            shift = shift,
+            ctrl = ctrl,
+            alt = alt,
+        })
+        events.dispatch(clickEvent)
+    end
+
+    -- =======================================================================
+    -- Keyboard event dispatch
+    -- Check all important keys and dispatch events for those that are pressed
+    -- =======================================================================
+
+    -- Keys to check for dispatch
+    local keysToCheck = {
+        keys.SC_ESCAPE, keys.SC_RETURN, keys.SC_BACKSPACE, keys.SC_TAB,
+        keys.SC_F, keys.SC_Q, keys.SC_A, keys.SC_B, keys.SC_M, keys.SC_S,
+        keys.SC_UP, keys.SC_DOWN, keys.SC_LEFT, keys.SC_RIGHT,
+        keys.SC_SPACE,
+        keys.SC_F1, keys.SC_F2, keys.SC_F3, keys.SC_F4, keys.SC_F5,
+        keys.SC_F6, keys.SC_F7, keys.SC_F8, keys.SC_F9, keys.SC_F10,
+        keys.SC_0, keys.SC_1, keys.SC_2, keys.SC_3, keys.SC_4,
+        keys.SC_5, keys.SC_6, keys.SC_7, keys.SC_8, keys.SC_9,
+        keys.SC_PERIOD,
+    }
+
+    for _, scancode in ipairs(keysToCheck) do
+        if isKeyPressed(scancode) then
+            local keyName = keys.getName(scancode)
+            local keyEvent = events.createEvent(events.Type.KEY_DOWN, {
+                scancode = scancode,
+                key = keyName,
+                char = keys.getChar(scancode),
+                x = mouseX,
+                y = mouseY,
+                modifiers = getModifiers(),
+                shift = shift,
+                ctrl = ctrl,
+                alt = alt,
+            })
+            events.dispatchKey(keyEvent)
+        end
+    end
+
+    -- Dispatch text input (for frequency entry mode - handled via FreqEntryMode tag)
+    local textIn = getTextInput()
+    if #textIn > 0 and events.hasModeTag("FreqEntryMode") then
+        local textEvent = events.createEvent(events.Type.TEXT_INPUT, {
+            text = textIn,
+            x = mouseX,
+            y = mouseY,
+            modifiers = getModifiers(),
+            shift = shift,
+            ctrl = ctrl,
+            alt = alt,
+        })
+        -- Dispatch through SetBox to find handler for FreqEntryMode + TextInput
+        events.dispatchKey(textEvent)
     end
 
     -- Get spectrum data using dispatch module (eliminates conditionals)
@@ -509,6 +826,10 @@ function draw()
     local winW, winH = getWindowSize()
     local mouseX, mouseY = getMousePos()
 
+    -- Clear widget registry at start of draw (keeps previous frame's widgets
+    -- available during update() for event dispatch, then rebuild here)
+    events.clearWidgets()
+
     ui.beginFrame()
     layout.begin(0, 0, winW, winH)
 
@@ -518,6 +839,10 @@ function draw()
     layout.dock("top", 32)
     do
         local x, y, w, h = layout.getRect()
+
+        -- Register top bar for event dispatch
+        events.registerWidget("top_bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
+
         drawRect(x, y, w, h, 0.08, 0.08, 0.12, 1.0)
         drawLine(x, y + h, x + w, y + h, 0.2, 0.2, 0.25, 1.0, 1.0)
 
@@ -560,6 +885,10 @@ function draw()
     layout.dock("bottom", 28)
     do
         local x, y, w, h = layout.getRect()
+
+        -- Register bottom bar for event dispatch
+        events.registerWidget("bottom_bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
+
         drawRect(x, y, w, h, 0.08, 0.08, 0.1, 1.0)
         drawLine(x, y, x + w, y, 0.2, 0.2, 0.25, 1.0, 1.0)
 
@@ -585,36 +914,30 @@ function draw()
         layout.newLine(20)
 
         layout.beginHorizontal()
-        local vfoATags = activeVFO == "A" and {"Primary"} or {"Secondary"}
-        local vfoBTags = activeVFO == "B" and {"Primary"} or {"Secondary"}
+        local vfoATags = activeVFO == "A" and {"Primary", "VfoA"} or {"Secondary", "VfoA"}
+        local vfoBTags = activeVFO == "B" and {"Primary", "VfoB"} or {"Secondary", "VfoB"}
         local bx, by = layout.reserveSpace(60, 28)
-        if ui.button("vfo_a", "VFO A", bx, by, 60, 28, vfoATags) then
-            activeVFO = "A"
-            frequency = vfoA
-            bands.setFrequency(frequency * 1e6)
-        end
+        ui.button("vfo_a", "VFO A", bx, by, 60, 28, vfoATags)
         bx, by = layout.reserveSpace(60, 28)
-        if ui.button("vfo_b", "VFO B", bx, by, 60, 28, vfoBTags) then
-            activeVFO = "B"
-            frequency = vfoB
-            bands.setFrequency(frequency * 1e6)
-        end
+        ui.button("vfo_b", "VFO B", bx, by, 60, 28, vfoBTags)
         bx, by = layout.reserveSpace(50, 28)
-        if ui.button("vfo_swap", "A<>B", bx, by, 50, 28) then
-            vfoA, vfoB = vfoB, vfoA
-            frequency = activeVFO == "A" and vfoA or vfoB
-            bands.setFrequency(frequency * 1e6)
-        end
+        ui.button("vfo_swap", "A<>B", bx, by, 50, 28, {"VfoSwap"})
         layout.endHorizontal()
 
         layout.space(8)
 
-        -- Frequency display
+        -- Frequency display (clickable/scrollable for tuning)
         local freqStr = string.format("%.6f", frequency)
         local freqW = measureText(freqStr)
         local fx, fy = layout.getCursor()
-        drawRoundedRect(fx, fy, w - 24, 36, 4, 0.1, 0.1, 0.15, 1.0)
-        drawText(fx + (w - 24 - freqW) / 2, fy + 10, freqStr, 0.2, 0.9, 0.4, 1.0)
+        local freqBoxW, freqBoxH = w - 24, 36
+        drawRoundedRect(fx, fy, freqBoxW, freqBoxH, 4, 0.1, 0.1, 0.15, 1.0)
+        drawText(fx + (freqBoxW - freqW) / 2, fy + 10, freqStr, 0.2, 0.9, 0.4, 1.0)
+        -- Register for wheel tuning and click to enter frequency
+        events.registerWidget("sidebar_freq_display",
+            {x = fx, y = fy, w = freqBoxW, h = freqBoxH},
+            {"FrequencyDisplay"},
+            nil)
         layout.newLine(40)
 
         -- Frequency slider
@@ -641,11 +964,10 @@ function draw()
         local modes = {"USB", "LSB", "CW", "AM"}
         for _, mode in ipairs(modes) do
             local mx, my = layout.reserveSpace(50, 26)
-            local tags = selectedMode == mode and {"Active"} or {}
-            if ui.button("mode_" .. mode, mode, mx, my, 50, 26, tags) then
-                selectedMode = mode
-                modeHelper.setMode(mode)  -- Update demodulator mode
-            end
+            local activeTags = selectedMode == mode and {"Active"} or {}
+            local modeTags = {"Mode" .. mode}
+            for _, t in ipairs(activeTags) do table.insert(modeTags, t) end
+            ui.button("mode_" .. mode, mode, mx, my, 50, 26, modeTags)
         end
         layout.endHorizontal()
 
@@ -661,11 +983,7 @@ function draw()
 
         -- Bandpass enable
         local cx, cy = layout.getCursor()
-        local newBpEn = ui.checkbox("bp_en", "Bandpass", cx, cy, bandpassEnabled)
-        if newBpEn ~= bandpassEnabled then
-            bandpassEnabled = newBpEn
-            rx.setBandpassEnabled(bandpassEnabled)
-        end
+        ui.checkbox("bp_en", "Bandpass", cx, cy, bandpassEnabled, {"Bandpass"})
         layout.newLine(24)
 
         -- Bandpass center (only show if enabled)
@@ -696,11 +1014,7 @@ function draw()
 
         -- Notch enable
         cx, cy = layout.getCursor()
-        local newNotchEn = ui.checkbox("notch_en", "Notch", cx, cy, notchEnabled)
-        if newNotchEn ~= notchEnabled then
-            notchEnabled = newNotchEn
-            rx.setNotchEnabled(notchEnabled)
-        end
+        ui.checkbox("notch_en", "Notch", cx, cy, notchEnabled, {"Notch"})
         layout.newLine(24)
 
         -- Notch center (only show if enabled)
@@ -740,15 +1054,15 @@ function draw()
         layout.newLine(24)
 
         local cx, cy = layout.getCursor()
-        agcEnabled = ui.checkbox("agc", "AGC", cx, cy, agcEnabled)
+        ui.checkbox("agc", "AGC", cx, cy, agcEnabled, {"AGC"})
         layout.newLine(24)
 
         cx, cy = layout.getCursor()
-        nrEnabled = ui.checkbox("nr", "Noise Reduction", cx, cy, nrEnabled)
+        ui.checkbox("nr", "Noise Reduction", cx, cy, nrEnabled, {"NR"})
         layout.newLine(24)
 
         cx, cy = layout.getCursor()
-        nbEnabled = ui.checkbox("nb", "Noise Blanker", cx, cy, nbEnabled)
+        ui.checkbox("nb", "Noise Blanker", cx, cy, nbEnabled, {"NB"})
         layout.newLine(28)
 
         -- QSD offset k for image rejection
@@ -831,40 +1145,27 @@ function draw()
 
         -- Mute checkbox
         cx, cy = layout.getCursor()
-        local newMuted = ui.checkbox("mute", "Mute", cx, cy, muted)
-        if newMuted ~= muted then
-            muted = newMuted
-            audio.setMuted(muted)
-        end
+        ui.checkbox("mute", "Mute", cx, cy, muted, {"Mute"})
         layout.newLine(24)
 
         -- Test tone button
-        local toneTags = testToneEnabled and {"Primary"} or {"Secondary"}
+        local toneTags = testToneEnabled and {"Primary", "TestTone"} or {"Secondary", "TestTone"}
         local toneLabel = testToneEnabled and "Tone ON" or "Test Tone"
         local tx, ty = layout.getCursor()
-        if ui.button("test_tone", toneLabel, tx, ty, 90, 26, toneTags) then
-            testToneEnabled = not testToneEnabled
-            audio.setTestTone(testToneEnabled)
-        end
+        ui.button("test_tone", toneLabel, tx, ty, 90, 26, toneTags)
         layout.newLine(28)
 
         -- WAV Recording button
         local isRecording = audio.isRecording()
-        local recTags = isRecording and {"Danger"} or {"Secondary"}
+        local recTags = isRecording and {"Danger", "WavRecord"} or {"Secondary", "WavRecord"}
         local recLabel = isRecording and "REC" or "Record"
-        local rx, ry = layout.getCursor()
-        if ui.button("wav_rec", recLabel, rx, ry, 70, 26, recTags) then
-            if isRecording then
-                audio.stopRecording()
-            else
-                audio.startRecording("/tmp/nexrx_audio.wav")
-            end
-        end
+        local recBtnX, recBtnY = layout.getCursor()
+        ui.button("wav_rec", recLabel, recBtnX, recBtnY, 70, 26, recTags)
         -- Show recording duration
         if isRecording then
             local duration = audio.getRecordingDuration()
             local durText = string.format("%.1fs", duration)
-            drawText(rx + 78, ry + 6, durText, 1.0, 0.3, 0.3, 1.0)
+            drawText(recBtnX + 78, recBtnY + 6, durText, 1.0, 0.3, 0.3, 1.0)
         end
         layout.newLine(28)
     end
@@ -882,8 +1183,8 @@ function draw()
         -- RX Toggle
         local toggleX, toggleY = layout.getCursor()
         local rxLabel = rxActive and "RX ON" or "RX OFF"
-        local rxTags = rxActive and {"Primary"} or {"Danger"}
-        rxActive = ui.toggle("rx_toggle", rxLabel, toggleX, toggleY, w - 24, 40, rxActive, rxTags)
+        local rxToggleTags = rxActive and {"Primary", "RxToggle"} or {"Danger", "RxToggle"}
+        ui.toggle("rx_toggle", rxLabel, toggleX, toggleY, w - 24, 40, rxActive, rxToggleTags)
         layout.newLine(52)
 
         local sepX, sepY = layout.getCursor()
@@ -942,7 +1243,6 @@ function draw()
         layout.newLine(24)
 
         local bandNames = {"160m", "80m", "40m", "20m", "15m", "10m"}
-        local bandFreqs = {1.9, 3.5, 7.0, 14.0, 21.0, 28.0}
 
         for i, bandName in ipairs(bandNames) do
             if i % 2 == 1 then
@@ -950,12 +1250,10 @@ function draw()
             end
 
             local bx, by = layout.reserveSpace(80, 26)
-            local tags = bands.getCurrent() == bandName and {"Active"} or {}
-            if ui.button("band_" .. bandName, bandName, bx, by, 80, 26, tags) then
-                frequency = bandFreqs[i]
-                if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
-                bands.setFrequency(frequency * 1e6)  -- Update band tag
-            end
+            -- Tag format: "Band160m", "Band80m" etc. for SetBox routing
+            local bandTag = "Band" .. bandName
+            local bandBtnTags = bands.getCurrent() == bandName and {"Active", bandTag} or {bandTag}
+            ui.button("band_" .. bandName, bandName, bx, by, 80, 26, bandBtnTags)
 
             if i % 2 == 0 or i == #bandNames then
                 layout.endHorizontal()
@@ -1013,7 +1311,8 @@ function draw()
         -- Title bar with frequency info (or entry field)
         local freqStr
         local freqColor = {0.2, 0.9, 0.4}
-        if freqEntryMode then
+        local inFreqEntry = events.hasModeTag("FreqEntryMode")
+        if inFreqEntry then
             -- Show entry text with blinking cursor
             local cursor = freqEntryBlink < 0.5 and "_" or ""
             freqStr = freqEntryText .. cursor .. " MHz [Enter=OK, Esc=Cancel]"
@@ -1021,7 +1320,14 @@ function draw()
         else
             freqStr = string.format("%.6f MHz", frequency)
         end
+        local freqW = measureText(freqStr)
         drawText(px, py, freqStr, freqColor[1], freqColor[2], freqColor[3], 1.0)
+
+        -- Register frequency display widget for event dispatch
+        events.registerWidget("frequency_display",
+            {x = px, y = py - 4, w = freqW + 20, h = 24},
+            {"FrequencyDisplay"},
+            nil)
 
         -- Colormap selector (right side of title)
         -- Uses colormaps from config/colormaps.lua when available
@@ -1029,11 +1335,10 @@ function draw()
         local cmapX = px + pw - 280
         for i, cmap in ipairs(cmapNames) do
             local btnX = cmapX + (i - 1) * 55
-            local tags = wfColormap == cmap and {"Active"} or {}
-            if ui.button("cmap_" .. cmap, cmap, btnX, py - 2, 52, 20, tags) then
-                wfColormap = cmap
-                applyColormap(cmap)
-            end
+            -- Tag format: "CmapViridis", "CmapPlasma" etc. (capitalize first letter)
+            local cmapTag = "Cmap" .. cmap:sub(1,1):upper() .. cmap:sub(2)
+            local cmapBtnTags = wfColormap == cmap and {"Active", cmapTag} or {cmapTag}
+            ui.button("cmap_" .. cmap, cmap, btnX, py - 2, 52, 20, cmapBtnTags)
         end
 
         -- Display area
@@ -1044,6 +1349,12 @@ function draw()
         local specH = math.floor(vizH * 0.35)
         dispatch.renderSpectrum(spectrumData, px, vizY, pw, specH)
 
+        -- Register spectrum widget for event dispatch
+        events.registerWidget("spectrum_display",
+            {x = px, y = vizY, w = pw, h = specH},
+            {"Spectrum"},
+            nil)
+
         -- Separator line
         drawLine(px, vizY + specH + 2, px + pw, vizY + specH + 2, 0.3, 0.3, 0.4, 1.0, 1.0)
 
@@ -1051,6 +1362,12 @@ function draw()
         local wfY = vizY + specH + 4
         local wfH = vizH - specH - 8
         dispatch.renderWaterfall(px, wfY, pw, wfH)
+
+        -- Register waterfall widget for event dispatch
+        events.registerWidget("waterfall_display",
+            {x = px, y = wfY, w = pw, h = wfH},
+            {"Waterfall"},
+            nil)
 
         -- Center frequency marker
         local centerX = px + pw / 2

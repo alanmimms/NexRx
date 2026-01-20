@@ -1,23 +1,31 @@
 --[[
-  Immediate-Mode Widget System
+  Event-Driven Widget System
 
-  Widgets can optionally register with the events module for SetBox-based
-  event dispatch. Set the events module via ui.setEventsModule(events).
+  Widgets register themselves with the events module for SetBox-based
+  event dispatch. Widgets are purely presentational - they draw themselves
+  based on passed state but don't handle clicks directly.
+
+  Click/interaction handling flows through:
+  1. Widget registers with events module (with tags)
+  2. Mouse click dispatched through events.dispatch()
+  3. SetBox resolves handler based on widget tags
+  4. Handler performs action and updates state
 
   Usage:
     local ui = require("ui.widgets")
     local events = require("events")
     ui.setEventsModule(events)
 
+    -- Register handler
+    events.registerHandler("my_button_click", function(event, widget)
+        print("Button clicked!")
+        return true
+    end)
+
     function draw()
         ui.beginFrame()
-
-        if ui.button("btn1", "Click Me", 50, 50) then
-            print("Button clicked!")
-        end
-
-        value = ui.slider("slider1", 50, 100, 200, 0, 100, value)
-
+        -- Button draws itself, click handled via event dispatch
+        ui.button("btn1", "Click Me", 50, 50, 100, 32, {"MyButton"})
         ui.endFrame()
     end
 ]]
@@ -27,7 +35,7 @@ local theme = require("ui.theme")
 
 local ui = {}
 
--- Events module reference (optional, for SetBox event dispatch)
+-- Events module reference (required for event dispatch)
 local eventsModule = nil
 
 -- Layout module reference (for getting current region ID)
@@ -43,7 +51,7 @@ function ui.setLayoutModule(layout)
     layoutModule = layout
 end
 
--- Internal: register widget with events module if available
+-- Internal: register widget with events module
 local function registerWidget(id, bounds, widgetTags)
     if eventsModule and eventsModule.registerWidget then
         local parentId = nil
@@ -69,28 +77,31 @@ local function clamp(v, min, max)
     return math.max(min, math.min(max, v))
 end
 
--- Button widget
--- Returns true if clicked
+-- =============================================================================
+-- Button Widget
+-- Purely presentational - click handling via event dispatch
+-- =============================================================================
 function ui.button(id, label, x, y, w, h, tags)
     w = w or 100
     h = h or 32
 
-    -- Register with events module for SetBox dispatch
+    -- Build widget tags
     local widgetTags = {"Button"}
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
+
+    -- Register with events module for SetBox dispatch
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
+    -- Track hot/active state for visual feedback only
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)
     if isHot then
         state.setHot(id)
-        if state.mouseClicked then
+        if state.mouseDown then
             state.setActive(id)
         end
     end
-
-    local clicked = state.wasClicked(id)
 
     -- Get style from theme
     local style = theme.getButtonStyle(tags, state.isHot(id), state.isActive(id), false)
@@ -110,42 +121,45 @@ function ui.button(id, label, x, y, w, h, tags)
     local textY = y + (h - lineH) / 2
     drawText(textX, textY, label, style.fgR, style.fgG, style.fgB, 1.0)
 
-    return clicked
+    -- No return value - click handling via events
 end
 
--- Toggle button (like button but shows state)
--- Returns new checked state
+-- =============================================================================
+-- Toggle Widget
+-- Like button but displays checked state visually
+-- =============================================================================
 function ui.toggle(id, label, x, y, w, h, checked, tags)
     w = w or 100
     h = h or 32
 
-    -- Register with events module
+    -- Build widget tags
     local widgetTags = {"Toggle", "Button"}
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
+    if checked then
+        table.insert(widgetTags, "Checked")
+    end
+
+    -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
+    -- Track hot/active for visual feedback
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)
     if isHot then
         state.setHot(id)
-        if state.mouseClicked then
+        if state.mouseDown then
             state.setActive(id)
         end
     end
 
-    local clicked = state.wasClicked(id)
-    if clicked then
-        checked = not checked
-    end
-
-    -- Modify tags based on state
-    local allTags = tags and {table.unpack(tags)} or {}
+    -- Modify display tags based on state
+    local displayTags = tags and {table.unpack(tags)} or {}
     if checked then
-        table.insert(allTags, "Active")
+        table.insert(displayTags, "Active")
     end
 
-    local style = theme.getButtonStyle(allTags, state.isHot(id), state.isActive(id), false)
+    local style = theme.getButtonStyle(displayTags, state.isHot(id), state.isActive(id), false)
 
     -- Draw button
     drawRoundedRect(x, y, w, h, style.borderRadius, style.bgR, style.bgG, style.bgB, 1.0)
@@ -158,11 +172,12 @@ function ui.toggle(id, label, x, y, w, h, checked, tags)
     local lineH = getLineHeight()
     drawText(x + (w - labelW) / 2, y + (h - lineH) / 2, label, style.fgR, style.fgG, style.fgB, 1.0)
 
-    return checked
+    -- No return value - state changes via event handlers
 end
 
--- Checkbox widget
--- Returns new checked state
+-- =============================================================================
+-- Checkbox Widget
+-- =============================================================================
 function ui.checkbox(id, label, x, y, checked, tags)
     local boxSize = 18
     local spacing = 8
@@ -170,25 +185,25 @@ function ui.checkbox(id, label, x, y, checked, tags)
     local totalW = boxSize + spacing + labelW
     local h = boxSize
 
-    -- Register with events module
+    -- Build widget tags
     local widgetTags = {"Checkbox"}
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
+    if checked then
+        table.insert(widgetTags, "Checked")
+    end
+
+    -- Register with events module
     registerWidget(id, {x=x, y=y, w=totalW, h=h}, widgetTags)
 
-    -- Hit area includes label
+    -- Track hot/active for visual feedback
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, totalW, h)
     if isHot then
         state.setHot(id)
-        if state.mouseClicked then
+        if state.mouseDown then
             state.setActive(id)
         end
-    end
-
-    local clicked = state.wasClicked(id)
-    if clicked then
-        checked = not checked
     end
 
     local style = theme.getCheckboxStyle(tags, state.isHot(id), state.isActive(id), checked)
@@ -199,8 +214,6 @@ function ui.checkbox(id, label, x, y, checked, tags)
 
     -- Draw checkmark if checked
     if checked then
-        -- Simple checkmark using lines
-        local cx, cy = x + boxSize/2, y + boxSize/2
         drawLine(x + 4, y + boxSize/2, x + boxSize/2 - 1, y + boxSize - 5,
                  style.accentR, style.accentG, style.accentB, 1.0, 2)
         drawLine(x + boxSize/2 - 1, y + boxSize - 5, x + boxSize - 4, y + 4,
@@ -212,22 +225,26 @@ function ui.checkbox(id, label, x, y, checked, tags)
     local textY = y + (boxSize - lineH) / 2
     drawText(x + boxSize + spacing, textY, label, style.fgR, style.fgG, style.fgB, 1.0)
 
-    return checked
+    -- No return value - state changes via event handlers
 end
 
--- Horizontal slider widget
--- Returns new value
+-- =============================================================================
+-- Slider Widget
+-- Handles dragging internally for smooth UX, dispatches value via callback
+-- =============================================================================
 function ui.slider(id, x, y, w, minVal, maxVal, value, tags)
     local h = 8
     local handleR = 10
     local hitH = math.max(h, handleR * 2)
     local hitY = y - (hitH - h) / 2
 
-    -- Register with events module
+    -- Build widget tags
     local widgetTags = {"Slider"}
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
+
+    -- Register with events module
     registerWidget(id, {x=x - handleR, y=hitY, w=w + handleR*2, h=hitH}, widgetTags)
 
     -- Normalize value
@@ -242,10 +259,12 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags)
         end
     end
 
-    -- Handle dragging
+    -- Handle dragging - sliders still track this for smooth visual feedback
+    -- The caller must check the return value and update state
+    local newValue = value
     if state.isActive(id) and state.mouseDown then
         t = clamp((state.mouseX - x) / w, 0, 1)
-        value = minVal + t * (maxVal - minVal)
+        newValue = minVal + t * (maxVal - minVal)
     end
 
     local style = theme.getSliderStyle(tags, state.isHot(id), state.isActive(id))
@@ -253,8 +272,10 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags)
     -- Draw track
     drawRoundedRect(x, y, w, h, h/2, style.bgR, style.bgG, style.bgB, 1.0)
 
-    -- Draw filled portion
-    local fillW = w * t
+    -- Draw filled portion (use newValue for immediate visual feedback)
+    local displayT = (newValue - minVal) / (maxVal - minVal)
+    displayT = clamp(displayT, 0, 1)
+    local fillW = w * displayT
     if fillW > 0 then
         drawRoundedRect(x, y, fillW, h, h/2, style.accentR, style.accentG, style.accentB, 1.0)
     end
@@ -265,22 +286,27 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags)
     drawCircle(handleX, handleY, handleR, 1.0, 1.0, 1.0, 1.0)
     drawCircleOutline(handleX, handleY, handleR, style.borderR, style.borderG, style.borderB, 1.0, 2)
 
-    return value
+    -- Sliders return new value for smooth drag feedback
+    -- Caller should update state if value changed
+    return newValue
 end
 
--- Vertical slider widget
--- Returns new value
+-- =============================================================================
+-- Vertical Slider Widget
+-- =============================================================================
 function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
     local w = 8
     local handleR = 10
     local hitW = math.max(w, handleR * 2)
     local hitX = x - (hitW - w) / 2
 
-    -- Register with events module
+    -- Build widget tags
     local widgetTags = {"Slider", "Vertical"}
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
+
+    -- Register with events module
     registerWidget(id, {x=hitX, y=y - handleR, w=hitW, h=h + handleR*2}, widgetTags)
 
     -- Normalize value (top = max, bottom = min)
@@ -296,9 +322,10 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
     end
 
     -- Handle dragging
+    local newValue = value
     if state.isActive(id) and state.mouseDown then
         t = 1.0 - clamp((state.mouseY - y) / h, 0, 1)
-        value = minVal + t * (maxVal - minVal)
+        newValue = minVal + t * (maxVal - minVal)
     end
 
     local style = theme.getSliderStyle(tags, state.isHot(id), state.isActive(id))
@@ -307,7 +334,9 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
     drawRoundedRect(x, y, w, h, w/2, style.bgR, style.bgG, style.bgB, 1.0)
 
     -- Draw filled portion (from bottom)
-    local fillH = h * t
+    local displayT = (newValue - minVal) / (maxVal - minVal)
+    displayT = clamp(displayT, 0, 1)
+    local fillH = h * displayT
     if fillH > 0 then
         drawRoundedRect(x, y + h - fillH, w, fillH, w/2, style.accentR, style.accentG, style.accentB, 1.0)
     end
@@ -318,8 +347,12 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
     drawCircle(handleX, handleY, handleR, 1.0, 1.0, 1.0, 1.0)
     drawCircleOutline(handleX, handleY, handleR, style.borderR, style.borderG, style.borderB, 1.0, 2)
 
-    return value
+    return newValue
 end
+
+-- =============================================================================
+-- Non-Interactive Widgets
+-- =============================================================================
 
 -- Progress bar (non-interactive)
 function ui.progressBar(x, y, w, h, value, tags)
@@ -379,16 +412,20 @@ function ui.separator(x, y, w, tags)
     drawLine(x, y, x + w, y, style.borderR, style.borderG, style.borderB, 0.5, 1)
 end
 
--- Simple text input (basic, no cursor blinking)
+-- =============================================================================
+-- Text Input Widget
+-- =============================================================================
 function ui.textInput(id, x, y, w, text, placeholder, tags)
     local h = 28
     local padding = 8
 
-    -- Register with events module
+    -- Build widget tags
     local widgetTags = {"Input", "TextInput"}
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
+
+    -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)

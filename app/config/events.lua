@@ -1,245 +1,349 @@
 --[[
     NexRx Event Handler Rules
 
-    Defines SetBox rules that map event + widget + modifier combinations
+    Defines SetBox rules that map event + widget + modifier + mode combinations
     to handler function names. The events.lua module resolves these rules
     to dispatch events appropriately.
 
     Tag structure:
     - "Event" - Always present for event rules
-    - Event type: "MouseDown", "MouseUp", "MouseWheel", "KeyDown", etc.
-    - Widget tags: "Button", "Slider", "FrequencyDisplay", etc.
+    - Event type: "MouseDown", "MouseUp", "MouseWheel", "KeyDown", "TextInput"
+    - Key name: "Escape", "Enter", "F", "Q", etc. (for keyboard events)
+    - Widget tags: "Button", "Checkbox", "Toggle", "Slider", etc.
+    - Custom tags: "VfoA", "RxToggle", "ModeUSB", etc.
+    - Mode tags: "FreqEntryMode" (added/removed dynamically)
     - Modifiers: "Shift", "Ctrl", "Alt"
 
-    More specific rules (more tags) take precedence.
+    More specific rules (more tags, higher priority) take precedence.
     Handler names reference functions registered via events.registerHandler().
 ]]
 
 -- =============================================================================
--- Mouse Wheel Events
+-- VFO Tuning (Mouse Wheel on Frequency Display)
 -- =============================================================================
 
--- Default mouse wheel (no specific widget) - does nothing
 rule {
-    id = "event-wheel-default",
-    tags = {"Event", "MouseWheel"},
-    priority = -100,
-    apply = {
-        handler = nil,  -- No handler = bubble up
-    }
-}
-
--- Mouse wheel on frequency display = tune (1 kHz steps)
-rule {
-    id = "event-freq-wheel",
+    id = "event-vfo-wheel",
     tags = {"Event", "MouseWheel", "FrequencyDisplay"},
     priority = 0,
-    apply = {
-        handler = "freq_tune",
-        tuneStep = 0.001,  -- 1 kHz in MHz
-    }
+    apply = { handler = "vfo_tune" }
 }
 
--- Shift+wheel on frequency display = coarse tune (100 kHz steps)
-rule {
-    id = "event-freq-wheel-shift",
-    tags = {"Event", "MouseWheel", "FrequencyDisplay", "Shift"},
-    priority = 10,
-    apply = {
-        handler = "freq_tune_coarse",
-        tuneStep = 0.1,  -- 100 kHz in MHz
-    }
-}
+-- =============================================================================
+-- Frequency Entry Mode
+-- =============================================================================
 
--- Ctrl+wheel on frequency display = fine tune (100 Hz steps)
 rule {
-    id = "event-freq-wheel-ctrl",
-    tags = {"Event", "MouseWheel", "FrequencyDisplay", "Ctrl"},
-    priority = 10,
-    apply = {
-        handler = "freq_tune_fine",
-        tuneStep = 0.0001,  -- 100 Hz in MHz
-    }
-}
-
--- Mouse wheel on slider = adjust value
-rule {
-    id = "event-slider-wheel",
-    tags = {"Event", "MouseWheel", "Slider"},
+    id = "event-freq-entry-start-f",
+    tags = {"Event", "KeyDown", "F"},
     priority = 0,
-    apply = {
-        handler = "slider_wheel",
-    }
+    apply = { handler = "freq_entry_start" }
 }
 
--- Mouse wheel on waterfall = zoom/scroll (future)
+rule {
+    id = "event-freq-entry-start-click",
+    tags = {"Event", "MouseDown", "FrequencyDisplay"},
+    priority = 0,
+    apply = { handler = "freq_entry_start" }
+}
+
+rule {
+    id = "event-freq-entry-cancel",
+    tags = {"Event", "KeyDown", "Escape", "FreqEntryMode"},
+    priority = 100,
+    apply = { handler = "freq_entry_cancel" }
+}
+
+rule {
+    id = "event-freq-entry-confirm",
+    tags = {"Event", "KeyDown", "Enter", "FreqEntryMode"},
+    priority = 100,
+    apply = { handler = "freq_entry_confirm" }
+}
+
+rule {
+    id = "event-freq-entry-backspace",
+    tags = {"Event", "KeyDown", "Backspace", "FreqEntryMode"},
+    priority = 100,
+    apply = { handler = "freq_entry_backspace" }
+}
+
+rule {
+    id = "event-freq-entry-text",
+    tags = {"Event", "TextInput", "FreqEntryMode"},
+    priority = 100,
+    apply = { handler = "freq_entry_text" }
+}
+
+-- =============================================================================
+-- Application Control
+-- =============================================================================
+
+rule {
+    id = "event-app-quit",
+    tags = {"Event", "KeyDown", "Q", "Ctrl"},
+    priority = 1000,
+    apply = { handler = "app_quit" }
+}
+
+-- =============================================================================
+-- VFO Button Clicks
+-- =============================================================================
+
+rule {
+    id = "event-vfo-a-click",
+    tags = {"Event", "MouseDown", "Button", "VfoA"},
+    priority = 10,
+    apply = { handler = "vfo_a_click" }
+}
+
+rule {
+    id = "event-vfo-b-click",
+    tags = {"Event", "MouseDown", "Button", "VfoB"},
+    priority = 10,
+    apply = { handler = "vfo_b_click" }
+}
+
+rule {
+    id = "event-vfo-swap-click",
+    tags = {"Event", "MouseDown", "Button", "VfoSwap"},
+    priority = 10,
+    apply = { handler = "vfo_swap_click" }
+}
+
+-- =============================================================================
+-- Mode Button Clicks
+-- =============================================================================
+
+rule {
+    id = "event-mode-usb-click",
+    tags = {"Event", "MouseDown", "Button", "ModeUSB"},
+    priority = 10,
+    apply = { handler = "mode_usb_click" }
+}
+
+rule {
+    id = "event-mode-lsb-click",
+    tags = {"Event", "MouseDown", "Button", "ModeLSB"},
+    priority = 10,
+    apply = { handler = "mode_lsb_click" }
+}
+
+rule {
+    id = "event-mode-cw-click",
+    tags = {"Event", "MouseDown", "Button", "ModeCW"},
+    priority = 10,
+    apply = { handler = "mode_cw_click" }
+}
+
+rule {
+    id = "event-mode-am-click",
+    tags = {"Event", "MouseDown", "Button", "ModeAM"},
+    priority = 10,
+    apply = { handler = "mode_am_click" }
+}
+
+-- =============================================================================
+-- DSP Checkbox Clicks
+-- =============================================================================
+
+rule {
+    id = "event-bandpass-toggle",
+    tags = {"Event", "MouseDown", "Checkbox", "Bandpass"},
+    priority = 10,
+    apply = { handler = "bandpass_toggle" }
+}
+
+rule {
+    id = "event-notch-toggle",
+    tags = {"Event", "MouseDown", "Checkbox", "Notch"},
+    priority = 10,
+    apply = { handler = "notch_toggle" }
+}
+
+rule {
+    id = "event-agc-toggle",
+    tags = {"Event", "MouseDown", "Checkbox", "AGC"},
+    priority = 10,
+    apply = { handler = "agc_toggle" }
+}
+
+rule {
+    id = "event-nr-toggle",
+    tags = {"Event", "MouseDown", "Checkbox", "NR"},
+    priority = 10,
+    apply = { handler = "nr_toggle" }
+}
+
+rule {
+    id = "event-nb-toggle",
+    tags = {"Event", "MouseDown", "Checkbox", "NB"},
+    priority = 10,
+    apply = { handler = "nb_toggle" }
+}
+
+-- =============================================================================
+-- Audio Control Clicks
+-- =============================================================================
+
+rule {
+    id = "event-mute-toggle",
+    tags = {"Event", "MouseDown", "Checkbox", "Mute"},
+    priority = 10,
+    apply = { handler = "mute_toggle" }
+}
+
+rule {
+    id = "event-test-tone-toggle",
+    tags = {"Event", "MouseDown", "Button", "TestTone"},
+    priority = 10,
+    apply = { handler = "test_tone_toggle" }
+}
+
+rule {
+    id = "event-wav-record-toggle",
+    tags = {"Event", "MouseDown", "Button", "WavRecord"},
+    priority = 10,
+    apply = { handler = "wav_record_toggle" }
+}
+
+-- =============================================================================
+-- RX Toggle Click
+-- =============================================================================
+
+rule {
+    id = "event-rx-toggle-click",
+    tags = {"Event", "MouseDown", "Toggle", "RxToggle"},
+    priority = 10,
+    apply = { handler = "rx_toggle_click" }
+}
+
+-- =============================================================================
+-- Band Button Clicks
+-- =============================================================================
+
+rule {
+    id = "event-band-160m-click",
+    tags = {"Event", "MouseDown", "Button", "Band160m"},
+    priority = 10,
+    apply = { handler = "band_160m_click" }
+}
+
+rule {
+    id = "event-band-80m-click",
+    tags = {"Event", "MouseDown", "Button", "Band80m"},
+    priority = 10,
+    apply = { handler = "band_80m_click" }
+}
+
+rule {
+    id = "event-band-40m-click",
+    tags = {"Event", "MouseDown", "Button", "Band40m"},
+    priority = 10,
+    apply = { handler = "band_40m_click" }
+}
+
+rule {
+    id = "event-band-20m-click",
+    tags = {"Event", "MouseDown", "Button", "Band20m"},
+    priority = 10,
+    apply = { handler = "band_20m_click" }
+}
+
+rule {
+    id = "event-band-15m-click",
+    tags = {"Event", "MouseDown", "Button", "Band15m"},
+    priority = 10,
+    apply = { handler = "band_15m_click" }
+}
+
+rule {
+    id = "event-band-10m-click",
+    tags = {"Event", "MouseDown", "Button", "Band10m"},
+    priority = 10,
+    apply = { handler = "band_10m_click" }
+}
+
+-- =============================================================================
+-- Colormap Button Clicks
+-- =============================================================================
+
+rule {
+    id = "event-cmap-viridis-click",
+    tags = {"Event", "MouseDown", "Button", "CmapViridis"},
+    priority = 10,
+    apply = { handler = "cmap_viridis_click" }
+}
+
+rule {
+    id = "event-cmap-plasma-click",
+    tags = {"Event", "MouseDown", "Button", "CmapPlasma"},
+    priority = 10,
+    apply = { handler = "cmap_plasma_click" }
+}
+
+rule {
+    id = "event-cmap-inferno-click",
+    tags = {"Event", "MouseDown", "Button", "CmapInferno"},
+    priority = 10,
+    apply = { handler = "cmap_inferno_click" }
+}
+
+rule {
+    id = "event-cmap-green-click",
+    tags = {"Event", "MouseDown", "Button", "CmapGreen"},
+    priority = 10,
+    apply = { handler = "cmap_green_click" }
+}
+
+rule {
+    id = "event-cmap-blue-click",
+    tags = {"Event", "MouseDown", "Button", "CmapBlue"},
+    priority = 10,
+    apply = { handler = "cmap_blue_click" }
+}
+
+-- =============================================================================
+-- Spectrum/Waterfall Interactions (mouse wheel tunes VFO)
+-- =============================================================================
+
+rule {
+    id = "event-spectrum-wheel",
+    tags = {"Event", "MouseWheel", "Spectrum"},
+    priority = 0,
+    apply = { handler = "vfo_tune" }
+}
+
 rule {
     id = "event-waterfall-wheel",
     tags = {"Event", "MouseWheel", "Waterfall"},
     priority = 0,
-    apply = {
-        handler = "waterfall_wheel",
-    }
+    apply = { handler = "vfo_tune" }
 }
 
--- =============================================================================
--- Mouse Button Events
--- =============================================================================
-
--- Mouse down on button = activate
-rule {
-    id = "event-button-down",
-    tags = {"Event", "MouseDown", "Button"},
-    priority = 0,
-    apply = {
-        handler = "button_press",
-    }
-}
-
--- Mouse up on button = release/click
-rule {
-    id = "event-button-up",
-    tags = {"Event", "MouseUp", "Button"},
-    priority = 0,
-    apply = {
-        handler = "button_release",
-    }
-}
-
--- Mouse down on slider = start drag
-rule {
-    id = "event-slider-down",
-    tags = {"Event", "MouseDown", "Slider"},
-    priority = 0,
-    apply = {
-        handler = "slider_start_drag",
-    }
-}
-
--- Mouse down on checkbox = toggle
-rule {
-    id = "event-checkbox-down",
-    tags = {"Event", "MouseDown", "Checkbox"},
-    priority = 0,
-    apply = {
-        handler = "checkbox_toggle",
-    }
-}
-
--- Mouse down on frequency display = start entry mode
-rule {
-    id = "event-freq-click",
-    tags = {"Event", "MouseDown", "FrequencyDisplay"},
-    priority = 0,
-    apply = {
-        handler = "freq_entry_start",
-    }
-}
-
--- Mouse down on waterfall = click-to-tune (future)
 rule {
     id = "event-waterfall-click",
     tags = {"Event", "MouseDown", "Waterfall"},
     priority = 0,
-    apply = {
-        handler = "waterfall_click",
-    }
-}
-
--- =============================================================================
--- Keyboard Events
--- =============================================================================
-
--- Escape key (global) = cancel/quit
-rule {
-    id = "event-key-escape",
-    tags = {"Event", "KeyDown", "Escape"},
-    priority = 0,
-    apply = {
-        handler = "key_escape",
-    }
-}
-
--- F key = start frequency entry
-rule {
-    id = "event-key-f",
-    tags = {"Event", "KeyDown", "F"},
-    priority = 0,
-    apply = {
-        handler = "freq_entry_start",
-    }
-}
-
--- Enter key = confirm
-rule {
-    id = "event-key-enter",
-    tags = {"Event", "KeyDown", "Enter"},
-    priority = 0,
-    apply = {
-        handler = "key_enter",
-    }
-}
-
--- Backspace key = delete
-rule {
-    id = "event-key-backspace",
-    tags = {"Event", "KeyDown", "Backspace"},
-    priority = 0,
-    apply = {
-        handler = "key_backspace",
-    }
-}
-
--- =============================================================================
--- Text Input Events
--- =============================================================================
-
--- Text input while frequency entry active
-rule {
-    id = "event-text-freq-entry",
-    tags = {"Event", "TextInput", "FrequencyEntry"},
-    priority = 0,
-    apply = {
-        handler = "freq_entry_text",
-    }
-}
-
--- =============================================================================
--- Window Events
--- =============================================================================
-
--- Window resize
-rule {
-    id = "event-window-resize",
-    tags = {"Event", "WindowResize"},
-    priority = 0,
-    apply = {
-        handler = "window_resize",
-    }
+    apply = { handler = "waterfall_click" }
 }
 
 -- =============================================================================
 -- Fallback: Unhandled Events
 -- =============================================================================
 
--- Any unhandled event = log it
 rule {
     id = "event-unhandled",
     tags = {"Event", "Unhandled"},
     priority = -1000,
-    apply = {
-        handler = "log_unhandled",
-    }
+    apply = { handler = "log_unhandled" }
 }
 
--- Any event with no specific handler = let it bubble
 rule {
     id = "event-default",
     tags = {"Event"},
     priority = -1000,
-    apply = {
-        handler = nil,  -- No handler = continue bubbling
-    }
+    apply = { handler = nil }
 }
 
 print("[events.lua] Event handler rules loaded")

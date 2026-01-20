@@ -65,6 +65,13 @@ Events._layoutParentStack = {}
 Events._currentLayoutParent = nil
 
 -- ============================================================================
+-- Mode Tags (global tags for application modes like FreqEntryMode)
+-- ============================================================================
+
+-- Active mode tags: {tagName -> true}
+Events.modeTags = {}
+
+-- ============================================================================
 -- Handler Registry
 -- ============================================================================
 
@@ -79,20 +86,12 @@ Events.handlers = {}
 function Events.init()
     Events.widgets = {}
     Events.handlers = {}
+    Events.modeTags = {}
     Events._layoutParentStack = {}
     Events._currentLayoutParent = nil
     Events.nextZIndex = 1
 
-    -- Register the unhandled event handler
-    Events.registerHandler("log_unhandled", function(event, widget)
-        local mods = event.modifiers and table.concat(event.modifiers, "+") or "none"
-        local widgetId = widget and widget.id or "none"
-        print(string.format("[Events] Unhandled %s at (%d,%d) mods=[%s] widget=%s",
-            event.type or "unknown",
-            event.x or 0, event.y or 0,
-            mods, widgetId))
-        return false  -- Still not handled, but logged
-    end)
+    -- Default unhandled handler is registered in main.lua with enhanced logging
 
     print("[Events] Event dispatch system initialized")
 end
@@ -193,6 +192,40 @@ function Events.getCurrentLayoutParent()
 end
 
 -- ============================================================================
+-- Public API - Mode Tag Management
+-- ============================================================================
+
+--- Add a mode tag (e.g., "FreqEntryMode")
+-- Mode tags are included in all event tag resolution
+-- @param tag tag name to add
+function Events.addModeTag(tag)
+    Events.modeTags[tag] = true
+end
+
+--- Remove a mode tag
+-- @param tag tag name to remove
+function Events.removeModeTag(tag)
+    Events.modeTags[tag] = nil
+end
+
+--- Check if a mode tag is active
+-- @param tag tag name to check
+-- @return true if tag is active
+function Events.hasModeTag(tag)
+    return Events.modeTags[tag] == true
+end
+
+--- Get list of all active mode tags
+-- @return array of active tag names
+function Events.getModeTags()
+    local tags = {}
+    for tag, _ in pairs(Events.modeTags) do
+        table.insert(tags, tag)
+    end
+    return tags
+end
+
+-- ============================================================================
 -- Public API - Handler Registration
 -- ============================================================================
 
@@ -270,26 +303,43 @@ function Events.dispatch(event)
 end
 
 --- Dispatch a keyboard event (not position-dependent)
--- @param event {type, key, modifiers, ...}
+-- @param event {type, key, scancode, modifiers, ...}
 -- @return true if handled
 function Events.dispatchKey(event)
     if not event or not event.type then
         return false
     end
 
-    -- Build tags (no widget for keyboard events unless focused)
+    -- Build tags: {"Event", event.type, key_name, ...mode_tags, ...modifiers}
     local tags = {"Event", event.type}
+
+    -- Add key name as tag (e.g., "Escape", "Enter", "F")
+    if event.key then
+        table.insert(tags, event.key)
+    end
+
+    -- Add mode tags (e.g., FreqEntryMode)
+    for modeTag, _ in pairs(Events.modeTags) do
+        table.insert(tags, modeTag)
+    end
+
+    -- Add modifier tags
     Events._addModifierTags(event, tags)
 
-    -- Add focus widget tags if any
-    -- (focus tracking would need to be added to state.lua)
-
+    -- Try to resolve handler via SetBox
     local handlerName = Events._resolveHandler(tags)
     if handlerName and Events.handlers[handlerName] then
         local ok, result = pcall(Events.handlers[handlerName], event, nil)
         if ok and result == true then
             return true
         end
+    end
+
+    -- If not handled, try with "Unhandled" tag
+    table.insert(tags, "Unhandled")
+    handlerName = Events._resolveHandler(tags)
+    if handlerName and Events.handlers[handlerName] then
+        pcall(Events.handlers[handlerName], event, nil)
     end
 
     return false
@@ -344,6 +394,11 @@ end
 function Events._buildEventTags(event, widget)
     local tags = {"Event", event.type}
 
+    -- Add key name for keyboard events (e.g., "Escape", "Enter", "F")
+    if event.key then
+        table.insert(tags, event.key)
+    end
+
     -- Add widget tags
     if widget and widget.tags then
         for _, tag in ipairs(widget.tags) do
@@ -351,7 +406,12 @@ function Events._buildEventTags(event, widget)
         end
     end
 
-    -- Add modifier tags
+    -- Add mode tags (e.g., FreqEntryMode)
+    for modeTag, _ in pairs(Events.modeTags) do
+        table.insert(tags, modeTag)
+    end
+
+    -- Add modifier tags (Shift, Ctrl, Alt)
     Events._addModifierTags(event, tags)
 
     return tags

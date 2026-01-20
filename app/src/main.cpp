@@ -1054,6 +1054,12 @@ private:
             if (!loadFile("config/colormaps.lua").get<bool>()) {
                 std::cerr << "Warning: Failed to load config/colormaps.lua" << std::endl;
             }
+            if (!loadFile("config/bands.lua").get<bool>()) {
+                std::cerr << "Warning: Failed to load config/bands.lua" << std::endl;
+            }
+            if (!loadFile("config/events.lua").get<bool>()) {
+                std::cerr << "Warning: Failed to load config/events.lua" << std::endl;
+            }
         } else {
             std::cerr << "Error: setbox.loadFile not available" << std::endl;
             return false;
@@ -1144,10 +1150,7 @@ private:
                     input_.shiftDown = (event.key.keysym.mod & KMOD_SHIFT) != 0;
                     input_.ctrlDown = (event.key.keysym.mod & KMOD_CTRL) != 0;
                     input_.altDown = (event.key.keysym.mod & KMOD_ALT) != 0;
-                    // ESC to quit (only if not in text entry - let Lua handle it)
-                    // if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    //     running_ = false;
-                    // }
+                    // Quit is handled by Lua (Ctrl+Q dispatches to app_quit handler)
                     break;
 
                 case SDL_KEYUP:
@@ -1764,7 +1767,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << "Running main loop (ESC to quit)..." << std::endl;
+    std::cout << "Running main loop (Ctrl+Q to quit)..." << std::endl;
     app.run();
 
     std::cout << "Shutting down..." << std::endl;
