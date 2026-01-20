@@ -27,6 +27,8 @@
 #include <thread>
 #include <memory>
 #include <random>
+#include <atomic>
+#include <mutex>
 
 // Denormal float handling - prevents artifacts with weak signals
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
@@ -275,12 +277,14 @@ class ControlHandler {
 public:
     ControlHandler(double initial_lo_hz, double initial_k_khz, AttenuatorModel* atten = nullptr)
         : lo_freq_hz_(initial_lo_hz), qsd_offset_khz_(initial_k_khz),
-          attenuator_(atten), streaming_(false), running_(false) {}
+          attenuator_(atten), streaming_(false), running_(false),
+          connected_(false), reconnected_(false) {}
 
     void start(TcpControlTransport* control, bool verbose) {
         control_ = control;
         verbose_ = verbose;
         running_ = true;
+        connected_ = true;  // Initially connected (acceptClient already called)
         thread_ = std::thread(&ControlHandler::run, this);
     }
 
@@ -295,15 +299,54 @@ public:
     void setLO(double freq) { lo_freq_hz_.store(freq, std::memory_order_relaxed); }
     double getQsdOffset() const { return qsd_offset_khz_.load(std::memory_order_relaxed); }
     void setQsdOffset(double k_khz) { qsd_offset_khz_.store(k_khz, std::memory_order_relaxed); }
-    bool isStreaming() const { return streaming_.load(std::memory_order_relaxed); }
-    void setStreaming(bool s) { streaming_.store(s, std::memory_order_relaxed); }
+    bool isStreaming() const { return streaming_.load(std::memory_order_acquire); }
+    void setStreaming(bool s) { streaming_.store(s, std::memory_order_release); }
+
+    // Connection state - main loop should pause streaming when disconnected
+    bool isConnected() const { return connected_.load(std::memory_order_acquire); }
+
+    // Check if a new client connected (and get their IP)
+    // Returns empty string if no reconnection, otherwise returns new client IP
+    std::string consumeReconnect() {
+        std::lock_guard<std::mutex> lock(reconnectMutex_);
+        if (reconnected_) {
+            reconnected_ = false;
+            return newClientIP_;
+        }
+        return "";
+    }
 
 private:
     void run() {
         while (running_) {
             auto result = control_->receiveRequest(std::chrono::milliseconds(100));
+
             if (!result.ok()) {
-                continue;  // Timeout or error, keep trying
+                if (result.error == TransportError::Closed) {
+                    // Client disconnected - stop streaming and wait for new client
+                    connected_.store(false, std::memory_order_release);
+                    streaming_.store(false, std::memory_order_release);
+                    if (verbose_) {
+                        std::cout << "\n[Control] Client disconnected, waiting for reconnection..." << std::endl;
+                    }
+
+                    // Wait for new client (blocking)
+                    if (control_->acceptClient(std::chrono::milliseconds(0))) {
+                        std::string newIP = control_->peerIP();
+                        if (verbose_) {
+                            std::cout << "[Control] New client connected from " << control_->peerAddress() << std::endl;
+                        }
+                        // Signal reconnection to main loop (to update UDP destination)
+                        {
+                            std::lock_guard<std::mutex> lock(reconnectMutex_);
+                            newClientIP_ = newIP;
+                            reconnected_ = true;
+                        }
+                        connected_.store(true, std::memory_order_release);
+                        // NOTE: Don't auto-resume streaming - client must send START_STREAM
+                    }
+                }
+                continue;  // Timeout or handled disconnect
             }
 
             std::string request(result.value.begin(), result.value.end());
@@ -339,12 +382,25 @@ private:
             return oss.str();
         }
         else if (verb == "START_STREAM") {
-            streaming_.store(true, std::memory_order_relaxed);
+            streaming_.store(true, std::memory_order_release);
             return "OK\n";
         }
         else if (verb == "STOP_STREAM") {
-            streaming_.store(false, std::memory_order_relaxed);
+            streaming_.store(false, std::memory_order_release);
             return "OK\n";
+        }
+        else if (verb == "DISCONNECT") {
+            // Graceful disconnect - stop streaming and mark as disconnected
+            // Use seq_cst for maximum visibility across threads
+            streaming_.store(false, std::memory_order_seq_cst);
+            connected_.store(false, std::memory_order_seq_cst);
+            // Full fence to ensure visibility
+            std::atomic_thread_fence(std::memory_order_seq_cst);
+            std::cout << "\n[Control] Client sent DISCONNECT - streaming="
+                      << streaming_.load(std::memory_order_seq_cst)
+                      << " connected=" << connected_.load(std::memory_order_seq_cst) << std::endl;
+            return "OK\n";
+            // Note: Client will close TCP connection after receiving OK
         }
         else if (verb == "GET_STREAM_CONFIG") {
             // Return stream configuration for rate negotiation
@@ -426,6 +482,10 @@ private:
     AttenuatorModel* attenuator_ = nullptr;
     std::atomic<bool> streaming_;
     std::atomic<bool> running_;
+    std::atomic<bool> connected_;
+    std::atomic<bool> reconnected_;
+    std::string newClientIP_;
+    std::mutex reconnectMutex_;
     std::thread thread_;
 };
 
@@ -570,9 +630,10 @@ int runFunctionalMode(const Options& opts) {
                   << ":" << opts.streamPort << std::endl;
 
         // Start control handler thread
+        // Note: Streaming starts as false - client must send START_STREAM to begin
         controlHandler = std::make_unique<ControlHandler>(lo_freq, opts.qsd_offset_khz, &attenuator);
         controlHandler->start(control.get(), opts.verbose);
-        controlHandler->setStreaming(true);
+        std::cout << "[Control] Waiting for START_STREAM command..." << std::endl;
     }
 
     std::vector<IQFrame> frames;
@@ -679,6 +740,20 @@ int runFunctionalMode(const Options& opts) {
     auto [rf_cos_d, rf_sin_d] = computePhaseInc(rf_freq);
 
     for (size_t i = 0; i < numSamples * OVERSAMPLE_RATIO; ++i) {
+        // Early check: if streaming mode but not connected, skip expensive computation
+        // This check runs at 480kHz so must be fast - just atomic loads
+        if (opts.stream && controlHandler) {
+            if (!controlHandler->isConnected() || !controlHandler->isStreaming()) {
+                // Skip to pacing interval for sleep/wait logic
+                // Jump directly to pacing check (every 960*5 = 4800 iterations)
+                size_t nextPacingCheck = ((i / (960 * OVERSAMPLE_RATIO)) + 1) * (960 * OVERSAMPLE_RATIO);
+                if (nextPacingCheck < numSamples * OVERSAMPLE_RATIO) {
+                    i = nextPacingCheck - 1;  // -1 because loop will increment
+                    continue;
+                }
+            }
+        }
+
         double t = i * oversamplePeriod;
 
         // Get RF I/Q from stimulus (antenna signal - knows nothing about LO)
@@ -793,13 +868,21 @@ int runFunctionalMode(const Options& opts) {
 
             // Write to transport or collect locally
             if (opts.stream && stream) {
-                // Batch writes to reduce mutex lock overhead
-                batchBuffer.push_back(frame);
-                if (batchBuffer.size() >= BATCH_SIZE) {
-                    auto err = stream->writeBatch(batchBuffer);
-                    if (err != TransportError::None && err != TransportError::BufferFull) {
-                        std::cerr << "Transport write error" << std::endl;
+                // Only send if client is connected and streaming enabled
+                bool shouldStream = controlHandler && controlHandler->isConnected() && controlHandler->isStreaming();
+
+                if (shouldStream) {
+                    // Batch writes to reduce mutex lock overhead
+                    batchBuffer.push_back(frame);
+                    if (batchBuffer.size() >= BATCH_SIZE) {
+                        auto err = stream->writeBatch(batchBuffer);
+                        if (err != TransportError::None && err != TransportError::BufferFull) {
+                            std::cerr << "Transport write error" << std::endl;
+                        }
+                        batchBuffer.clear();
                     }
+                } else {
+                    // Not streaming - discard any pending frames
                     batchBuffer.clear();
                 }
             } else {
@@ -835,13 +918,32 @@ int runFunctionalMode(const Options& opts) {
 
         // Real-time pacing when streaming (every 10ms of output = 960 * 5 oversample)
         if (opts.stream && i % (960 * OVERSAMPLE_RATIO) == 0) {
-            auto now = std::chrono::steady_clock::now();
-            double elapsed = std::chrono::duration<double>(now - startTime).count();
-            double simTime = outputSample * samplePeriod;
+            // Only pace (sleep) if actually streaming - no point sleeping when disconnected
+            bool stillStreaming = controlHandler && controlHandler->isConnected() && controlHandler->isStreaming();
+            if (stillStreaming) {
+                auto now = std::chrono::steady_clock::now();
+                double elapsed = std::chrono::duration<double>(now - startTime).count();
+                double simTime = outputSample * samplePeriod;
 
-            if (simTime > elapsed) {
-                std::this_thread::sleep_for(
-                    std::chrono::microseconds(static_cast<int>((simTime - elapsed) * 1e6)));
+                if (simTime > elapsed) {
+                    std::this_thread::sleep_for(
+                        std::chrono::microseconds(static_cast<int>((simTime - elapsed) * 1e6)));
+                }
+            } else {
+                // Not streaming - wait for reconnection instead of spinning CPU
+                static bool printedWaiting = false;
+                if (!printedWaiting) {
+                    std::cout << "\n[Stream] Paused - waiting for client..." << std::endl;
+                    printedWaiting = true;
+                }
+                // Sleep 100ms between checks, reset timer on reconnect
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                if (controlHandler->isConnected() && controlHandler->isStreaming()) {
+                    printedWaiting = false;
+                    // Reset start time so we don't have a huge time jump
+                    startTime = std::chrono::steady_clock::now();
+                    std::cout << "[Stream] Client reconnected, resuming..." << std::endl;
+                }
             }
 
             // Check for LO frequency and k offset updates from TCP control
@@ -863,6 +965,17 @@ int runFunctionalMode(const Options& opts) {
                     lo0_cos = 1.0; lo0_sin = 0.0;
                     lo1_cos = 1.0; lo1_sin = 0.0;
                     lo2_cos = 1.0; lo2_sin = 0.0;
+                }
+
+                // Check for client reconnection - update UDP destination
+                std::string newClientIP = controlHandler->consumeReconnect();
+                if (!newClientIP.empty() && stream) {
+                    std::string udpDest = opts.udpHost.empty() ? newClientIP : opts.udpHost;
+                    stream->setDestination(udpDest, opts.streamPort);
+                    if (opts.verbose) {
+                        std::cout << "\n[Stream] Updated UDP destination to " << udpDest
+                                  << ":" << opts.streamPort << std::endl;
+                    }
                 }
             }
         }

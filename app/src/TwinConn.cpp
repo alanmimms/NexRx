@@ -109,7 +109,19 @@ bool TwinConn::initialize(const TwinConfig& config) {
 void TwinConn::shutdown() {
     stopReceiving();
 
-    if (control_) {
+    // Send graceful disconnect to twin before closing TCP
+    if (control_ && connected_) {
+        try {
+            // Send DISCONNECT command - don't wait too long for response
+            std::string cmd = "DISCONNECT\n";
+            std::vector<uint8_t> request(cmd.begin(), cmd.end());
+            control_->sendRequest(request, std::chrono::milliseconds(100));
+            if (config_.verbose) {
+                std::cout << "[TwinConn] Sent DISCONNECT to twin" << std::endl;
+            }
+        } catch (...) {
+            // Ignore errors during shutdown
+        }
         control_->disconnect();
         control_.reset();
     }

@@ -264,8 +264,9 @@ std::optional<std::vector<uint8_t>> TcpControlTransport::receiveMessage(
             return std::nullopt;
         }
         if (n == 0) {
-            // Client closed connection - signal with special marker
-            // We'll handle this differently in receiveRequest
+            // Client closed connection cleanly
+            // Set errno to something other than EAGAIN so receiveRequest detects this
+            errno = ECONNRESET;
             return std::nullopt;
         }
         received += n;
@@ -285,7 +286,12 @@ std::optional<std::vector<uint8_t>> TcpControlTransport::receiveMessage(
     received = 0;
     while (received < len) {
         ssize_t n = recv(fd, data.data() + received, len - received, 0);
-        if (n <= 0) {
+        if (n < 0) {
+            return std::nullopt;
+        }
+        if (n == 0) {
+            // Client closed connection cleanly
+            errno = ECONNRESET;
             return std::nullopt;
         }
         received += n;

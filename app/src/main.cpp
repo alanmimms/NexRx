@@ -824,6 +824,11 @@ private:
                     processIQFrame(frame);
                 });
 
+                // Request twin to start streaming UDP data
+                if (!twinHost_.startStream()) {
+                    std::cerr << "[Twin] Failed to start stream" << std::endl;
+                }
+
                 if (twinHost_.startReceiving()) {
                     twinConnected_ = true;
                     std::cout << "[Twin] Connected" << std::endl;
