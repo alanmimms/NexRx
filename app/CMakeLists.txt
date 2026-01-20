@@ -113,34 +113,6 @@ find_package(Threads REQUIRED)
 set(TWIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../twin")
 
 # -----------------------------------------------------------------------------
-# SetBox library - tag-based configuration engine
-# -----------------------------------------------------------------------------
-add_library(setbox STATIC
-    src/setbox/SetBox.cpp
-)
-
-target_include_directories(setbox PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${LUA_INCLUDE_DIRS}
-)
-
-target_link_libraries(setbox PUBLIC
-    ${LUA_LIBS}
-    sol2::sol2
-)
-
-if(MSVC)
-    target_compile_options(setbox PRIVATE /W4)
-else()
-    target_compile_options(setbox PRIVATE
-        -Wall -Wextra -Wpedantic
-        $<$<CONFIG:Debug>:-g -O0>
-        $<$<CONFIG:Release>:-O3>
-        $<$<CONFIG:RelWithDebInfo>:-O2 -g>
-    )
-endif()
-
-# -----------------------------------------------------------------------------
 # Code Generation - RxConfig from Lua schema
 # -----------------------------------------------------------------------------
 find_program(LUA_INTERPRETER
@@ -155,22 +127,6 @@ else()
 endif()
 
 # -----------------------------------------------------------------------------
-# Test executable for SetBox engine
-# -----------------------------------------------------------------------------
-add_executable(setbox_test src/setbox_test.cpp)
-
-target_link_libraries(setbox_test PRIVATE
-    setbox
-    Threads::Threads
-)
-
-if(MSVC)
-    target_compile_options(setbox_test PRIVATE /W4)
-else()
-    target_compile_options(setbox_test PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
-# -----------------------------------------------------------------------------
 # Main application executable
 # -----------------------------------------------------------------------------
 
@@ -180,16 +136,16 @@ set(NEXRX_APP_SOURCES
     src/FontRenderer.cpp
     src/AudioEngine.cpp
     src/WaterfallRenderer.cpp
-    src/dsp/BasebandFilter.cpp
+    src/BasebandFilter.cpp
 )
 
 if(NEXRX_REMOTE_TWIN)
-    # Windows/macOS: use cross-platform socket abstraction and client transports
+    # Cross-platform socket abstraction and client transports
     list(APPEND NEXRX_APP_SOURCES
-        src/net/Socket.cpp
-        src/twin/TcpControlClient.cpp
-        src/twin/UdpStreamClient.cpp
-        src/twin/HostApp.cpp
+        src/Socket.cpp
+        src/TcpControlClient.cpp
+        src/UdpStreamClient.cpp
+        src/TwinConn.cpp
     )
 endif()
 
@@ -199,6 +155,7 @@ target_include_directories(nexrx_app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/extern
     ${SDL2_INCLUDE_DIRS}
+    ${LUA_INCLUDE_DIRS}
     ${TWIN_DIR}/src
 )
 
@@ -216,8 +173,9 @@ endif()
 
 # Link libraries - all platforms use TCP/UDP to twin
 target_link_libraries(nexrx_app PRIVATE
-    setbox
     tinycbor
+    ${LUA_LIBS}
+    sol2::sol2
     ${SDL2_LIBRARIES}
     OpenGL::GL
     Threads::Threads

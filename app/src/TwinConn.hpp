@@ -1,10 +1,7 @@
-// NexRx App - Host Application (Cross-platform)
+// NexRx App - Twin Connection (Cross-platform)
 //
-// Host-side application to receive and process I/Q data
-// from the digital twin simulation via UDP streaming.
-// Control commands sent via TCP.
-//
-// This is a cross-platform version using the socket abstraction.
+// Connects to the digital twin simulation via TCP (control)
+// and UDP (I/Q streaming).
 //
 // Copyright 2026 NexRx Project - MIT License
 
@@ -24,9 +21,9 @@
 namespace nexrx {
 
 //======================================================================
-// Host Application Configuration
+// Twin Connection Configuration
 //======================================================================
-struct HostConfig {
+struct TwinConfig {
     std::string host = "127.0.0.1";       // Twin address
     uint16_t controlPort = 5000;           // TCP control port
     uint16_t streamPort = 5001;            // UDP stream port
@@ -36,25 +33,25 @@ struct HostConfig {
 };
 
 //======================================================================
-// Host Application
+// Twin Connection
 //
 // Connects to the digital twin's network transport and
 // receives I/Q frames for processing.
 //======================================================================
-class HostApp {
+class TwinConn {
 public:
     using FrameCallback = std::function<void(const IQFrame&)>;
     using BatchCallback = std::function<void(const std::vector<IQFrame>&)>;
 
-    HostApp() = default;
-    ~HostApp();
+    TwinConn() = default;
+    ~TwinConn();
 
     // Non-copyable
-    HostApp(const HostApp&) = delete;
-    HostApp& operator=(const HostApp&) = delete;
+    TwinConn(const TwinConn&) = delete;
+    TwinConn& operator=(const TwinConn&) = delete;
 
     // Initialize and connect to twin
-    bool initialize(const HostConfig& config = HostConfig{});
+    bool initialize(const TwinConfig& config = TwinConfig{});
 
     // Shutdown and disconnect
     void shutdown();
@@ -120,7 +117,7 @@ public:
 private:
     void receiveLoop();
 
-    HostConfig config_;
+    TwinConfig config_;
     std::unique_ptr<TcpControlClient> control_;
     std::unique_ptr<UdpStreamClient> stream_;
     bool connected_ = false;

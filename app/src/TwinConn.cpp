@@ -1,8 +1,8 @@
-// NexRx App - Host Application Implementation (Cross-platform)
+// NexRx App - Twin Connection Implementation (Cross-platform)
 //
 // Copyright 2026 NexRx Project - MIT License
 
-#include "HostApp.hpp"
+#include "TwinConn.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -36,11 +36,11 @@ void boostThreadPriority() {
 
 namespace nexrx {
 
-HostApp::~HostApp() {
+TwinConn::~TwinConn() {
     shutdown();
 }
 
-bool HostApp::initialize(const HostConfig& config) {
+bool TwinConn::initialize(const TwinConfig& config) {
     if (connected_) {
         return true;
     }
@@ -57,7 +57,7 @@ bool HostApp::initialize(const HostConfig& config) {
 
     if (!control_->connect()) {
         if (config.verbose) {
-            std::cerr << "[HostApp] Failed to connect to TCP control: "
+            std::cerr << "[TwinConn] Failed to connect to TCP control: "
                       << config.host << ":" << config.controlPort << std::endl;
         }
         control_.reset();
@@ -65,7 +65,7 @@ bool HostApp::initialize(const HostConfig& config) {
     }
 
     if (config.verbose) {
-        std::cout << "[HostApp] Connected to TCP control: "
+        std::cout << "[TwinConn] Connected to TCP control: "
                   << config.host << ":" << config.controlPort << std::endl;
     }
 
@@ -80,7 +80,7 @@ bool HostApp::initialize(const HostConfig& config) {
 
     if (!stream_->connect()) {
         if (config.verbose) {
-            std::cerr << "[HostApp] Failed to bind UDP stream port: "
+            std::cerr << "[TwinConn] Failed to bind UDP stream port: "
                       << config.streamPort << std::endl;
         }
         control_->disconnect();
@@ -92,13 +92,13 @@ bool HostApp::initialize(const HostConfig& config) {
     // Send NAT hole punch to establish return path for UDP
     if (stream_->sendHolePunch()) {
         if (config.verbose) {
-            std::cout << "[HostApp] Sent UDP hole punch to "
+            std::cout << "[TwinConn] Sent UDP hole punch to "
                       << config.host << ":" << config.streamPort << std::endl;
         }
     }
 
     if (config.verbose) {
-        std::cout << "[HostApp] Listening on UDP port: "
+        std::cout << "[TwinConn] Listening on UDP port: "
                   << config.streamPort << std::endl;
     }
 
@@ -106,7 +106,7 @@ bool HostApp::initialize(const HostConfig& config) {
     return true;
 }
 
-void HostApp::shutdown() {
+void TwinConn::shutdown() {
     stopReceiving();
 
     if (control_) {
@@ -122,7 +122,7 @@ void HostApp::shutdown() {
     connected_ = false;
 }
 
-bool HostApp::startReceiving() {
+bool TwinConn::startReceiving() {
     if (!connected_ || receiving_) {
         return false;
     }
@@ -130,16 +130,16 @@ bool HostApp::startReceiving() {
     stopRequested_ = false;
     receiving_ = true;
 
-    receiveThread_ = std::thread(&HostApp::receiveLoop, this);
+    receiveThread_ = std::thread(&TwinConn::receiveLoop, this);
 
     if (config_.verbose) {
-        std::cout << "[HostApp] Started receiving" << std::endl;
+        std::cout << "[TwinConn] Started receiving" << std::endl;
     }
 
     return true;
 }
 
-void HostApp::stopReceiving() {
+void TwinConn::stopReceiving() {
     if (!receiving_) {
         return;
     }
@@ -153,11 +153,11 @@ void HostApp::stopReceiving() {
     receiving_ = false;
 
     if (config_.verbose) {
-        std::cout << "[HostApp] Stopped receiving" << std::endl;
+        std::cout << "[TwinConn] Stopped receiving" << std::endl;
     }
 }
 
-size_t HostApp::pollFrames(size_t maxFrames) {
+size_t TwinConn::pollFrames(size_t maxFrames) {
     if (!connected_ || !stream_) {
         return 0;
     }
@@ -193,7 +193,7 @@ size_t HostApp::pollFrames(size_t maxFrames) {
     return count;
 }
 
-void HostApp::receiveLoop() {
+void TwinConn::receiveLoop() {
     // Boost thread priority for real-time audio processing
     boostThreadPriority();
 
@@ -213,7 +213,7 @@ void HostApp::receiveLoop() {
 // Control Commands
 //------------------------------------------------------------------
 
-std::string HostApp::sendCommand(const std::string& cmd) {
+std::string TwinConn::sendCommand(const std::string& cmd) {
     if (!connected_ || !control_) {
         return "ERROR not connected";
     }
@@ -228,7 +228,7 @@ std::string HostApp::sendCommand(const std::string& cmd) {
     return std::string(result.value.begin(), result.value.end());
 }
 
-bool HostApp::setLO(double freq_hz) {
+bool TwinConn::setLO(double freq_hz) {
     std::ostringstream cmd;
     cmd << "SET_LO " << std::fixed << freq_hz << "\n";
 
@@ -236,7 +236,7 @@ bool HostApp::setLO(double freq_hz) {
     return response.find("OK") == 0;
 }
 
-bool HostApp::getStatus(double& lo_freq_hz, bool& streaming) {
+bool TwinConn::getStatus(double& lo_freq_hz, bool& streaming) {
     std::string response = sendCommand("GET_STATUS\n");
 
     if (response.find("STATUS") != 0) {
@@ -256,12 +256,12 @@ bool HostApp::getStatus(double& lo_freq_hz, bool& streaming) {
     return true;
 }
 
-bool HostApp::startStream() {
+bool TwinConn::startStream() {
     std::string response = sendCommand("START_STREAM\n");
     return response.find("OK") == 0;
 }
 
-bool HostApp::stopStream() {
+bool TwinConn::stopStream() {
     std::string response = sendCommand("STOP_STREAM\n");
     return response.find("OK") == 0;
 }
@@ -270,19 +270,19 @@ bool HostApp::stopStream() {
 // Statistics
 //------------------------------------------------------------------
 
-uint64_t HostApp::framesDropped() const {
+uint64_t TwinConn::framesDropped() const {
     return stream_ ? stream_->framesDropped() : 0;
 }
 
-uint64_t HostApp::bufferOverruns() const {
+uint64_t TwinConn::bufferOverruns() const {
     return stream_ ? stream_->bufferOverruns() : 0;
 }
 
-uint64_t HostApp::packetsReceived() const {
+uint64_t TwinConn::packetsReceived() const {
     return stream_ ? stream_->packetsReceived() : 0;
 }
 
-void HostApp::resetStats() {
+void TwinConn::resetStats() {
     framesReceived_ = 0;
     lastSequence_ = 0;
     if (stream_) {

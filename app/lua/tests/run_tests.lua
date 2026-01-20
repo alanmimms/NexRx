@@ -37,6 +37,7 @@ local testModules = {
     {"events_test", "Event Dispatch"},
     {"animate_test", "Animation System"},
     {"bands_test", "Band Detection"},
+    {"setbox_test", "SetBox Engine"},
 }
 
 for _, info in ipairs(testModules) do

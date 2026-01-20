@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "net/Socket.hpp"
+#include "Socket.hpp"
 #include "transport/Transport.hpp"
 #include "transport/IQFrame.hpp"
 

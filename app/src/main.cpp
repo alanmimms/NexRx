@@ -6,12 +6,12 @@
 #include "FontRenderer.hpp"
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
-#include "buffer/RateAdaptiveBuffer.hpp"
-#include "dsp/BasebandFilter.hpp"
+#include "RateAdaptiveBuffer.hpp"
+#include "BasebandFilter.hpp"
 
 // Twin integration (TCP/UDP to digital twin or STM32)
-#include "net/Socket.hpp"
-#include "twin/HostApp.hpp"
+#include "Socket.hpp"
+#include "TwinConn.hpp"
 #include "transport/IQFrame.hpp"
 #include "Demodulator.hpp"
 
@@ -808,7 +808,7 @@ private:
             sol::optional<int> controlPort,
             sol::optional<int> streamPort)
         {
-            nexrx::HostConfig config;
+            nexrx::TwinConfig config;
             config.host = host.value_or("127.0.0.1");
             config.controlPort = static_cast<uint16_t>(controlPort.value_or(5000));
             config.streamPort = static_cast<uint16_t>(streamPort.value_or(5001));
@@ -1206,7 +1206,7 @@ private:
     WaterfallRenderer waterfall_;
 
     // Hardware integration
-    nexrx::HostApp twinHost_;
+    nexrx::TwinConn twinHost_;
     std::mutex spectrumMutex_;
     std::vector<float> spectrumData_;      // Latest spectrum (dB values)
     std::vector<float> iqBuffer_;          // Ring buffer for FFT
