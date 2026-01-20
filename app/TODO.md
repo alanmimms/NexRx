@@ -7,19 +7,21 @@
   one for crossfading _ad hoc_ each time we need to do something like
   that is a waste and complicates the system.
 
-* add the missing ham bands.
+* Reimplement `if freqEntryMode then` code in `update()` in `main.lua`
+  to use setbox tags for frequency entry mode and steering keystrokes
+  to the freq entry processing code.
+  * Define many/most SDL scan codes for key strokes in a separate lua
+    file.
+* Change mouse wheel tuning actions to be setbox based dispatched with
+  modifiers.
+* Remove ESC handling and switch to control-Q.
+  * Allow this anywhere.
 
-* Find better ways of doing binding from C++ to Lua and back again to
-  avoid messes like this:
-  
-	 } else if (name == "bandpassCenter" && std::is_same_v<T, double>) {
-		 if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassCenter(val);
-	 } else if (name == "bandpassWidth" && std::is_same_v<T, double>) {
-		 if constexpr (std::is_same_v<T, double>) rxConfig_->setBandpassWidth(val);
-	 } . . .
+* Distribute `fonts/DejaVuSans.ttf` if possible according to license.
+  * Fix fonts so they don't create a mess of complaints at start.
 
-* TODO: do I need bidirectional bindings like QML?
-
+* Add tag for platform the app is running on so we can conditionalize
+  things like font path using proper rules.
 
 # UI
 * Make mode reflected in selector for mode and remove it from status bar.
@@ -73,3 +75,5 @@
 * Zoom out to show more than +/-50kHz waterfall/spectrum.
   * Can timeshare or quick-shift tuning for QSDs somehow?
 * Can waterfall look much more like spectrum rotated out from 2d on screen into 3d?
+
+
