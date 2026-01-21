@@ -282,4 +282,21 @@ function Keys.getShiftedChar(scancode)
     return shiftMap[scancode]
 end
 
+--- Get all dispatchable scancodes (all keys including modifiers)
+-- @return array of all scancodes that should be checked for key events
+function Keys.getAllScancodes()
+    local scancodes = {}
+    for code, _ in pairs(codeToName) do
+        table.insert(scancodes, code)
+    end
+    return scancodes
+end
+
+--- Check if a scancode is a modifier key
+-- @param scancode SDL scan code
+-- @return true if this is a modifier key (Ctrl, Shift, Alt, Gui)
+function Keys.isModifier(scancode)
+    return scancode >= 224 and scancode <= 231
+end
+
 return Keys

@@ -11,7 +11,8 @@
     - Button name: "Left", "Middle", "Right" (for mouse click/release events)
     - Key name: "Escape", "Enter", "F", "Q", etc. (for keyboard events)
     - Widget tags: "Button", "Checkbox", "Toggle", "Slider", etc.
-    - Custom tags: "VfoA", "RxToggle", "ModeUSB", "VfoTune", etc.
+    - Control tags: "VFOControl" (behavior tags - any widget with this tag tunes VFO)
+    - Custom tags: "VfoA", "RxToggle", "ModeUSB", etc.
     - Mode tags: "FreqEntryMode" (added/removed dynamically)
     - Modifiers: "Shift", "Ctrl", "Alt" (keyboard) + "Left", "Middle", "Right" (held buttons for motion)
 
@@ -63,6 +64,110 @@ rule {
     tags = {"Event", "KeyDown", "Slider", "LogScale"},
     priority = 10,
     apply = { handler = "slider_adjust_log" }
+}
+
+-- =============================================================================
+-- VFO Control (any widget tagged VFOControl responds to VFO tuning)
+-- "Control" is a behavior tag - waterfall, spectrum, slider all tune VFO
+-- Frequency is in MHz, so: 1kHz=0.001, 10kHz=0.01, 100kHz=0.1, 1MHz=1.0
+-- =============================================================================
+
+-- VFOControl base: 1 kHz steps (no modifiers)
+rule {
+    id = "event-vfo-wheel",
+    tags = {"Event", "MouseWheel", "VFOControl"},
+    priority = 20,
+    apply = { handler = "vfo_control", step = 0.001 }
+}
+
+rule {
+    id = "event-vfo-arrow",
+    tags = {"Event", "KeyDown", "VFOControl"},
+    priority = 20,
+    apply = { handler = "vfo_control", step = 0.001 }
+}
+
+-- VFOControl + Ctrl: 10 kHz steps
+rule {
+    id = "event-vfo-wheel-ctrl",
+    tags = {"Event", "MouseWheel", "VFOControl", "Ctrl"},
+    priority = 30,
+    apply = { handler = "vfo_control", step = 0.01 }
+}
+
+rule {
+    id = "event-vfo-arrow-ctrl",
+    tags = {"Event", "KeyDown", "VFOControl", "Ctrl"},
+    priority = 30,
+    apply = { handler = "vfo_control", step = 0.01 }
+}
+
+-- VFOControl + Shift: 1 MHz steps
+rule {
+    id = "event-vfo-wheel-shift",
+    tags = {"Event", "MouseWheel", "VFOControl", "Shift"},
+    priority = 30,
+    apply = { handler = "vfo_control", step = 1.0 }
+}
+
+rule {
+    id = "event-vfo-arrow-shift",
+    tags = {"Event", "KeyDown", "VFOControl", "Shift"},
+    priority = 30,
+    apply = { handler = "vfo_control", step = 1.0 }
+}
+
+-- VFOControl + Ctrl + Shift: 100 kHz steps
+rule {
+    id = "event-vfo-wheel-ctrl-shift",
+    tags = {"Event", "MouseWheel", "VFOControl", "Ctrl", "Shift"},
+    priority = 40,
+    apply = { handler = "vfo_control", step = 0.1 }
+}
+
+rule {
+    id = "event-vfo-arrow-ctrl-shift",
+    tags = {"Event", "KeyDown", "VFOControl", "Ctrl", "Shift"},
+    priority = 40,
+    apply = { handler = "vfo_control", step = 0.1 }
+}
+
+-- VFOControl + H: 10 Hz fine tuning
+rule {
+    id = "event-vfo-wheel-h",
+    tags = {"Event", "MouseWheel", "VFOControl", "H"},
+    priority = 30,
+    apply = { handler = "vfo_control", step = 0.00001 }
+}
+
+rule {
+    id = "event-vfo-arrow-h",
+    tags = {"Event", "KeyDown", "VFOControl", "H"},
+    priority = 30,
+    apply = { handler = "vfo_control", step = 0.00001 }
+}
+
+-- VFOControl + Shift + H: 100 Hz fine tuning
+rule {
+    id = "event-vfo-wheel-shift-h",
+    tags = {"Event", "MouseWheel", "VFOControl", "Shift", "H"},
+    priority = 40,
+    apply = { handler = "vfo_control", step = 0.0001 }
+}
+
+rule {
+    id = "event-vfo-arrow-shift-h",
+    tags = {"Event", "KeyDown", "VFOControl", "Shift", "H"},
+    priority = 40,
+    apply = { handler = "vfo_control", step = 0.0001 }
+}
+
+-- KeyUp on VFOControl widgets - silently consume (keys used as modifiers)
+rule {
+    id = "event-vfo-keyup",
+    tags = {"Event", "KeyUp", "VFOControl"},
+    priority = 0,
+    apply = { handler = "noop" }
 }
 
 -- =============================================================================

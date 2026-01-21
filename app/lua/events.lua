@@ -490,9 +490,17 @@ function Events._addModifierTags(event, tags)
 end
 
 -- All possible modifier tags (for two-phase resolution)
+-- Includes generic (Shift) and specific (LShift, RShift) variants
 local MODIFIER_TAGS = {
+    -- Generic modifiers (derived from specific)
     Shift = true, Ctrl = true, Alt = true,
-    Left = true, Middle = true, Right = true  -- Held buttons for motion
+    -- Specific modifier keys
+    LShift = true, RShift = true,
+    LCtrl = true, RCtrl = true,
+    LAlt = true, RAlt = true,
+    LGui = true, RGui = true,
+    -- Mouse buttons (held buttons act as modifiers for motion)
+    Left = true, Middle = true, Right = true,
 }
 
 --- Query SetBox for all handler-related properties with given tags

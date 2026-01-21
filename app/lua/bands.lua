@@ -9,7 +9,7 @@
     Usage:
         local bands = require("bands")
         bands.init()
-        bands.setFrequency(14.2e6)  -- Automatically updates "20m" tag
+        bands.setCurrent(14.2e6)  -- Automatically updates "20m" tag
         local band = bands.getCurrent()  -- Returns "20m"
 ]]
 
@@ -86,7 +86,7 @@ end
 
 --- Set the current frequency and update band tag if changed
 -- @param freqHz frequency in Hz
-function Bands.setFrequency(freqHz)
+function Bands.setCurrent(freqHz)
     Bands.frequencyHz = freqHz
     local newBand = Bands._getBandForFreq(freqHz)
 

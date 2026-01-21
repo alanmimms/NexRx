@@ -565,6 +565,11 @@ private:
             return false;
         });
 
+        lua_.set_function("isMouseReleased", [this](int button) {
+            if (button >= 0 && button < 3) return input_.mouseReleased[button];
+            return false;
+        });
+
         lua_.set_function("isKeyDown", [this](int key) {
             if (key >= 0 && key < 512) return input_.keyDown[key];
             return false;

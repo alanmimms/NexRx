@@ -161,6 +161,25 @@ rule {
     }
 }
 
+-- RX Toggle styling (theme queries with "Button" prefix + passed tags)
+rule {
+    id = "rx-toggle-off",
+    tags = {"Button", "RxToggle"},
+    priority = 15,
+    apply = {
+        background = "#dc2626",  -- Red when OFF
+    }
+}
+
+rule {
+    id = "rx-toggle-on",
+    tags = {"Button", "RxToggle", "Active"},
+    priority = 16,  -- Higher priority to override OFF state
+    apply = {
+        background = "#16a34a",  -- Green when ON
+    }
+}
+
 -- Button state styles (tag-based, used by immediate-mode UI)
 rule {
     id = "button-hovered",

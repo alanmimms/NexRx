@@ -97,6 +97,7 @@ local spectrumData = {}  -- runtime buffer
 
 -- Key state tracking for KeyUp detection
 local keyStates = {}     -- scancode -> true if key was down last frame
+local activeTags = {}    -- tag name -> true for all currently active tags (held keys, held buttons, etc.)
 
 -- Hardware connection state (loaded from SetBox)
 local hwSettings = {
@@ -304,7 +305,7 @@ function init()
 
     -- Initialize bands module and set initial frequency
     bands.init()
-    bands.setFrequency(state.frequency * 1e6)  -- Pass Hz to bands module
+    bands.setCurrent(state.frequency * 1e6)  -- Pass Hz to bands module
     print(string.format("[Lua] Band detection initialized, current band: %s", bands.getCurrent() or "OOB"))
 
     -- Initialize events module and wire to layout/widgets
@@ -359,7 +360,7 @@ function init()
         set = function(v)
             state.frequency = clamp(v, 0.1, 30.0)
             if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-            bands.setFrequency(state.frequency * 1e6)
+            bands.setCurrent(state.frequency * 1e6)
         end,
     }
 
@@ -378,7 +379,7 @@ function init()
                 state.selectedBand = v
                 state.frequency = bandFreqs[v]
                 if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-                bands.setFrequency(state.frequency * 1e6)
+                bands.setCurrent(state.frequency * 1e6)
             end
         end,
     }
@@ -421,18 +422,15 @@ function init()
     -- =======================================================================
 
     -- Factory for slider adjustment handlers
-    -- applyDelta: function(current, delta, min, max, ctrl, shift) -> newValue
-    local function createSliderHandler(applyDelta, handlerName)
+    -- defaultStepFn: function(current, delta, min, max, ctrl, shift) -> newValue (fallback)
+    -- If props.step is provided by the rule, uses that instead of defaultStepFn
+    local function createSliderHandler(defaultStepFn, handlerName)
         return function(event, widget, props)
             -- Validate widget has required data
             if not widget or not widget.data then return false end
             local data = widget.data
             local propName, minVal, maxVal = data.property, data.min, data.max
             if not propName or not minVal or not maxVal then return false end
-
-            -- Extract modifiers
-            local ctrl = hasModifier(event, "Ctrl")
-            local shift = hasModifier(event, "Shift")
 
             -- Determine delta from wheel or arrow keys
             local delta = event.delta
@@ -447,15 +445,25 @@ function init()
             local current = getProperty(propName)
             if current == nil then return false end
 
-            -- Apply handler-specific delta calculation, clamp result
-            local newVal = applyDelta(current, delta, minVal, maxVal, ctrl, shift)
+            -- Calculate new value
+            local newVal
+            if props and props.step then
+                -- Rule provided explicit step value - use it directly
+                newVal = current + delta * props.step
+            else
+                -- Fall back to default step calculation
+                local ctrl = hasModifier(event, "Ctrl")
+                local shift = hasModifier(event, "Shift")
+                newVal = defaultStepFn(current, delta, minVal, maxVal, ctrl, shift)
+            end
             newVal = math.max(minVal, math.min(maxVal, newVal))
 
             -- Debug output
             if events.debugDispatch then
                 local modsStr = event.modifiers and table.concat(event.modifiers, ",") or "none"
-                print(string.format("[%s] prop=%s current=%s new=%s mods={%s}",
-                    handlerName, propName, tostring(current), tostring(newVal), modsStr))
+                local stepInfo = (props and props.step) and string.format("step=%s", props.step) or "default"
+                print(string.format("[%s] prop=%s current=%s new=%s mods={%s} %s",
+                    handlerName, propName, tostring(current), tostring(newVal), modsStr, stepInfo))
             end
 
             setProperty(propName, newVal)
@@ -463,7 +471,7 @@ function init()
         end
     end
 
-    -- Linear slider: steps as fractions of range
+    -- Linear slider: steps as fractions of range (default behavior)
     -- default=1%, ctrl=0.1%, shift=10%, ctrl+shift=25%
     events.registerHandler("slider_adjust", createSliderHandler(
         function(current, delta, minVal, maxVal, ctrl, shift)
@@ -519,6 +527,44 @@ function init()
     end)
 
     -- =======================================================================
+    -- Control Handlers (behavior-specific, not widget-specific)
+    -- =======================================================================
+
+    -- VFO Control handler - tunes frequency from any widget tagged VFOControl
+    -- Knows: property="frequency", bounds=0.1-30.0 MHz
+    -- Step comes from rule props (based on modifiers)
+    events.registerHandler("vfo_control", function(event, widget, props)
+        -- Determine delta from wheel or arrow keys
+        local delta = event.delta
+        if not delta then
+            if event.key == "Right" or event.key == "Up" then delta = 1
+            elseif event.key == "Left" or event.key == "Down" then delta = -1
+            else return false end
+        end
+        if delta == 0 then return false end
+
+        -- Get step from rule (required)
+        local step = props and props.step
+        if not step then return false end
+
+        -- Apply to frequency (VFO control always operates on frequency)
+        local current = state.frequency
+        local newVal = current + delta * step
+        newVal = math.max(0.1, math.min(30.0, newVal))
+
+        -- Update state
+        state.frequency = newVal
+        if state.activeVFO == "A" then state.vfoA = newVal else state.vfoB = newVal end
+        bands.setCurrent(newVal * 1e6)
+
+        if events.debugDispatch then
+            print(string.format("[vfo_control] freq=%.6f step=%s delta=%d", newVal, step, delta))
+        end
+
+        return true
+    end)
+
+    -- =======================================================================
     -- Specific Event Handlers (for complex logic that can't be generalized)
     -- =======================================================================
 
@@ -545,7 +591,7 @@ function init()
         if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
             state.frequency = newFreq
             if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-            bands.setFrequency(state.frequency * 1e6)
+            bands.setCurrent(state.frequency * 1e6)
         end
         events.removeModeTag("FreqEntryMode")
         freqEntryText = ""
@@ -601,21 +647,21 @@ function init()
     events.registerHandler("vfo_a_click", function(event, widget)
         state.activeVFO = "A"
         state.frequency = state.vfoA
-        bands.setFrequency(state.frequency * 1e6)
+        bands.setCurrent(state.frequency * 1e6)
         return true
     end)
 
     events.registerHandler("vfo_b_click", function(event, widget)
         state.activeVFO = "B"
         state.frequency = state.vfoB
-        bands.setFrequency(state.frequency * 1e6)
+        bands.setCurrent(state.frequency * 1e6)
         return true
     end)
 
     events.registerHandler("vfo_swap_click", function(event, widget)
         state.vfoA, state.vfoB = state.vfoB, state.vfoA
         state.frequency = state.activeVFO == "A" and state.vfoA or state.vfoB
-        bands.setFrequency(state.frequency * 1e6)
+        bands.setCurrent(state.frequency * 1e6)
         return true
     end)
 
@@ -762,26 +808,31 @@ function update(dt)
 
     local mouseX, mouseY = getMousePos()
 
-    -- Build modifier state (both array for tags and booleans for handlers)
-    local shift = isShiftDown()
-    local ctrl = isCtrlDown()
-    local alt = isAltDown()
-
-    -- Build modifier list (keyboard + optionally held mouse buttons for motion)
-    local function getModifierTags(includeHeldButtons)
-        local mods = {}
-        if shift then table.insert(mods, "Shift") end
-        if ctrl then table.insert(mods, "Ctrl") end
-        if alt then table.insert(mods, "Alt") end
-        if includeHeldButtons then
-            for btn = 0, 2 do
-                if isMouseDown(btn) then
-                    table.insert(mods, BUTTON_NAMES[btn + 1])
-                end
-            end
+    -- Return all currently active tags (held keys, held buttons, mode tags)
+    -- Derives generic modifiers (Shift, Ctrl, Alt) from specific keys (LShift/RShift, etc.)
+    local function getActiveTags()
+        local tags = {}
+        for tagName, _ in pairs(activeTags) do
+            table.insert(tags, tagName)
         end
-        return mods
+        -- Derive generic modifier tags from specific keys
+        -- (allows rules to match "Shift" for either LShift or RShift)
+        if activeTags["LShift"] or activeTags["RShift"] then
+            table.insert(tags, "Shift")
+        end
+        if activeTags["LCtrl"] or activeTags["RCtrl"] then
+            table.insert(tags, "Ctrl")
+        end
+        if activeTags["LAlt"] or activeTags["RAlt"] then
+            table.insert(tags, "Alt")
+        end
+        return tags
     end
+
+    -- Booleans for handlers that still use them (legacy, prefer tags)
+    local shift = activeTags["LShift"] or activeTags["RShift"]
+    local ctrl = activeTags["LCtrl"] or activeTags["RCtrl"]
+    local alt = activeTags["LAlt"] or activeTags["RAlt"]
 
     -- Dispatch mouse wheel events
     local wheel = getMouseWheel()
@@ -790,7 +841,7 @@ function update(dt)
             x = mouseX,
             y = mouseY,
             delta = wheel,
-            modifiers = getModifierTags(false),
+            modifiers = getActiveTags(),
             shift = shift,
             ctrl = ctrl,
             alt = alt,
@@ -799,29 +850,39 @@ function update(dt)
     end
 
     -- Dispatch mouse button events (all buttons)
-    local function dispatchMouseButton(eventType, condition, button)
-        if condition then
-            events.dispatch(events.createEvent(eventType, {
+    -- Track held buttons in activeTags (same as held keys)
+    for btn = 0, 2 do
+        local button = BUTTON_NAMES[btn + 1]
+        local clicked = isMouseClicked(btn)
+        local released = isMouseReleased(btn)
+
+        if clicked then
+            -- Button just pressed - add to active tags and dispatch MouseDown
+            activeTags[button] = true
+            events.dispatch(events.createEvent(events.Type.MOUSE_DOWN, {
                 x = mouseX, y = mouseY, button = button,
-                modifiers = getModifierTags(false),
+                modifiers = getActiveTags(),
+                shift = shift, ctrl = ctrl, alt = alt,
+            }))
+        elseif released then
+            -- Button just released - remove from active tags and dispatch MouseUp
+            activeTags[button] = nil
+            events.dispatch(events.createEvent(events.Type.MOUSE_UP, {
+                x = mouseX, y = mouseY, button = button,
+                modifiers = getActiveTags(),
                 shift = shift, ctrl = ctrl, alt = alt,
             }))
         end
     end
-    for btn = 0, 2 do
-        local button = BUTTON_NAMES[btn + 1]
-        dispatchMouseButton(events.Type.MOUSE_DOWN, isMouseClicked(btn), button)
-        dispatchMouseButton(events.Type.MOUSE_UP, isMouseReleased(btn), button)
-    end
 
-    -- Dispatch mouse motion events (held buttons act as modifiers)
+    -- Dispatch mouse motion events (activeTags already includes held buttons)
     if mouseX ~= lastMouseX or mouseY ~= lastMouseY then
         events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, {
             x = mouseX,
             y = mouseY,
             dx = mouseX - lastMouseX,
             dy = mouseY - lastMouseY,
-            modifiers = getModifierTags(true),  -- Include held buttons
+            modifiers = getActiveTags(),
             shift = shift,
             ctrl = ctrl,
             alt = alt,
@@ -845,31 +906,35 @@ function update(dt)
         local isDown = isKeyDown(scancode)
         local wasDown = keyStates[scancode]
 
+        local keyName = keys.getName(scancode)
+
         if isDown and not wasDown then
-            -- Key just pressed - dispatch KeyDown
+            -- Key just pressed - add to active tags and dispatch KeyDown
+            if keyName then activeTags[keyName] = true end
             local keyEvent = events.createEvent(events.Type.KEY_DOWN, {
                 scancode = scancode,
-                key = keys.getName(scancode),
+                key = keyName,
                 char = keys.getChar(scancode),
                 isModifier = keys.isModifier(scancode),
                 x = mouseX,
                 y = mouseY,
-                modifiers = modifiers,
+                modifiers = getActiveTags(),
                 shift = shift,
                 ctrl = ctrl,
                 alt = alt,
             })
             events.dispatchKey(keyEvent)
         elseif wasDown and not isDown then
-            -- Key just released - dispatch KeyUp
+            -- Key just released - remove from active tags and dispatch KeyUp
+            if keyName then activeTags[keyName] = nil end
             local keyEvent = events.createEvent(events.Type.KEY_UP, {
                 scancode = scancode,
-                key = keys.getName(scancode),
+                key = keyName,
                 char = keys.getChar(scancode),
                 isModifier = keys.isModifier(scancode),
                 x = mouseX,
                 y = mouseY,
-                modifiers = modifiers,
+                modifiers = getActiveTags(),
                 shift = shift,
                 ctrl = ctrl,
                 alt = alt,
@@ -1077,17 +1142,17 @@ function draw()
         -- Register for wheel tuning and click to enter frequency
         events.registerWidget("sidebar-freq-display",
             {x = fx, y = fy, w = freqBoxW, h = freqBoxH},
-            {"FrequencyDisplay", "VfoTune"},
+            {"FrequencyDisplay", "VFOControl"},
             nil)
         layout.newLine(40)
 
-        -- Frequency slider (wheel/arrow handled via event rules)
+        -- Frequency slider (wheel/arrow handled via VFOControl rules in events.lua)
         local sx, sy = layout.getCursor()
-        local newFreq = ui.slider("freq-slider", sx, sy, w - 24, 1.0, 30.0, state.frequency, nil, "frequency")
+        local newFreq = ui.slider("freq-slider", sx, sy, w - 24, 1.0, 30.0, state.frequency, {"VFOControl"}, "frequency")
         if newFreq ~= state.frequency then
             state.frequency = newFreq
             if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-            bands.setFrequency(state.frequency * 1e6)
+            bands.setCurrent(state.frequency * 1e6)
         end
         layout.newLine(20)
 
@@ -1424,7 +1489,7 @@ function draw()
         -- Register frequency display widget for event dispatch
         events.registerWidget("frequency-display",
             {x = px, y = py - 4, w = freqW + 20, h = 24},
-            {"FrequencyDisplay", "VfoTune"},
+            {"FrequencyDisplay", "VFOControl"},
             nil)
 
         -- Colormap selector (right side of title)
@@ -1450,7 +1515,7 @@ function draw()
         -- Register spectrum widget for event dispatch
         events.registerWidget("spectrum-display",
             {x = px, y = vizY, w = pw, h = specH},
-            {"Spectrum", "VfoTune"},
+            {"Spectrum", "VFOControl"},
             nil)
 
         -- Separator line
@@ -1464,7 +1529,7 @@ function draw()
         -- Register waterfall widget for event dispatch
         events.registerWidget("waterfall-display",
             {x = px, y = wfY, w = pw, h = wfH},
-            {"Waterfall", "VfoTune"},
+            {"Waterfall", "VFOControl"},
             nil)
 
         -- Center frequency marker

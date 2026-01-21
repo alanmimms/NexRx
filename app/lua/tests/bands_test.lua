@@ -77,13 +77,13 @@ function Tests.test_freq_to_band_20m()
     print("test_freq_to_band_20m")
     bands.init()
 
-    bands.setFrequency(14.2e6)  -- 14.200 MHz
+    bands.setCurrent(14.2e6)  -- 14.200 MHz
     assert_eq("20m", bands.getCurrent(), "14.2 MHz is 20m")
 
-    bands.setFrequency(14.0e6)  -- Band edge
+    bands.setCurrent(14.0e6)  -- Band edge
     assert_eq("20m", bands.getCurrent(), "14.0 MHz is 20m")
 
-    bands.setFrequency(14.35e6)  -- Upper edge
+    bands.setCurrent(14.35e6)  -- Upper edge
     assert_eq("20m", bands.getCurrent(), "14.35 MHz is 20m")
 end
 
@@ -91,10 +91,10 @@ function Tests.test_freq_to_band_40m()
     print("test_freq_to_band_40m")
     bands.init()
 
-    bands.setFrequency(7.15e6)  -- 7.150 MHz
+    bands.setCurrent(7.15e6)  -- 7.150 MHz
     assert_eq("40m", bands.getCurrent(), "7.15 MHz is 40m")
 
-    bands.setFrequency(7.0e6)  -- Band start
+    bands.setCurrent(7.0e6)  -- Band start
     assert_eq("40m", bands.getCurrent(), "7.0 MHz is 40m")
 end
 
@@ -102,7 +102,7 @@ function Tests.test_freq_to_band_80m()
     print("test_freq_to_band_80m")
     bands.init()
 
-    bands.setFrequency(3.75e6)  -- 3.750 MHz
+    bands.setCurrent(3.75e6)  -- 3.750 MHz
     assert_eq("80m", bands.getCurrent(), "3.75 MHz is 80m")
 end
 
@@ -110,7 +110,7 @@ function Tests.test_freq_to_band_160m()
     print("test_freq_to_band_160m")
     bands.init()
 
-    bands.setFrequency(1.9e6)  -- 1.900 MHz
+    bands.setCurrent(1.9e6)  -- 1.900 MHz
     assert_eq("160m", bands.getCurrent(), "1.9 MHz is 160m")
 end
 
@@ -118,7 +118,7 @@ function Tests.test_freq_to_band_15m()
     print("test_freq_to_band_15m")
     bands.init()
 
-    bands.setFrequency(21.2e6)  -- 21.200 MHz
+    bands.setCurrent(21.2e6)  -- 21.200 MHz
     assert_eq("15m", bands.getCurrent(), "21.2 MHz is 15m")
 end
 
@@ -126,7 +126,7 @@ function Tests.test_freq_to_band_10m()
     print("test_freq_to_band_10m")
     bands.init()
 
-    bands.setFrequency(28.5e6)  -- 28.500 MHz
+    bands.setCurrent(28.5e6)  -- 28.500 MHz
     assert_eq("10m", bands.getCurrent(), "28.5 MHz is 10m")
 end
 
@@ -135,12 +135,12 @@ function Tests.test_band_edge_lower()
     bands.init()
 
     -- Just below 20m band
-    bands.setFrequency(13.999e6)
+    bands.setCurrent(13.999e6)
     local current = bands.getCurrent()
     assert_true(current == nil or current == "OOB", "13.999 MHz is out of band")
 
     -- Just at 20m band edge
-    bands.setFrequency(14.0e6)
+    bands.setCurrent(14.0e6)
     assert_eq("20m", bands.getCurrent(), "14.0 MHz is in 20m")
 end
 
@@ -149,7 +149,7 @@ function Tests.test_band_edge_upper()
     bands.init()
 
     -- Just above 20m band (assuming exclusive upper bound)
-    bands.setFrequency(14.351e6)
+    bands.setCurrent(14.351e6)
     -- This might be in band or out depending on definition
     -- Most definitions use inclusive bounds, so let's check
     local current = bands.getCurrent()
@@ -164,14 +164,14 @@ function Tests.test_out_of_band()
     bands.init()
 
     -- Frequency clearly out of amateur bands
-    bands.setFrequency(50.0e6)  -- 6m is usually defined separately
+    bands.setCurrent(50.0e6)  -- 6m is usually defined separately
     local current = bands.getCurrent()
     -- May be "6m" if defined, or "OOB"
     print(string.format("    Info: 50 MHz -> %s", current or "nil"))
     passed = passed + 1
 
     -- Way out of band - returns "OOB" not nil
-    bands.setFrequency(100.0e6)
+    bands.setCurrent(100.0e6)
     current = bands.getCurrent()
     assert_true(current == nil or current == "OOB", "100 MHz is out of band")
 end
@@ -180,13 +180,13 @@ function Tests.test_band_change_detection()
     print("test_band_change_detection")
     bands.init()
 
-    bands.setFrequency(14.2e6)
+    bands.setCurrent(14.2e6)
     assert_eq("20m", bands.getCurrent(), "starts in 20m")
 
-    bands.setFrequency(7.15e6)
+    bands.setCurrent(7.15e6)
     assert_eq("40m", bands.getCurrent(), "changed to 40m")
 
-    bands.setFrequency(21.2e6)
+    bands.setCurrent(21.2e6)
     assert_eq("15m", bands.getCurrent(), "changed to 15m")
 end
 
@@ -194,11 +194,11 @@ function Tests.test_same_band_no_change()
     print("test_same_band_no_change")
     bands.init()
 
-    bands.setFrequency(14.0e6)
+    bands.setCurrent(14.0e6)
     local band1 = bands.getCurrent()
     assert_eq("20m", band1, "initial band")
 
-    bands.setFrequency(14.2e6)
+    bands.setCurrent(14.2e6)
     local band2 = bands.getCurrent()
     assert_eq("20m", band2, "still 20m")
     assert_eq(band1, band2, "band didn't change")
@@ -208,10 +208,10 @@ function Tests.test_frequency_tracking()
     print("test_frequency_tracking")
     bands.init()
 
-    bands.setFrequency(14200000)  -- 14.2 MHz in Hz
+    bands.setCurrent(14200000)  -- 14.2 MHz in Hz
     assert_eq(14200000, bands.frequencyHz, "frequency stored correctly")
 
-    bands.setFrequency(7150000)
+    bands.setCurrent(7150000)
     assert_eq(7150000, bands.frequencyHz, "frequency updated")
 end
 
@@ -235,7 +235,7 @@ function Tests.test_zero_frequency()
     print("test_zero_frequency")
     bands.init()
 
-    bands.setFrequency(0)
+    bands.setCurrent(0)
     local current = bands.getCurrent()
     assert_true(current == nil or current == "OOB", "0 Hz is out of band")
 end
@@ -244,7 +244,7 @@ function Tests.test_negative_frequency()
     print("test_negative_frequency")
     bands.init()
 
-    bands.setFrequency(-14.2e6)
+    bands.setCurrent(-14.2e6)
     local current = bands.getCurrent()
     assert_true(current == nil or current == "OOB", "negative frequency is out of band")
 end
@@ -253,7 +253,7 @@ function Tests.test_band_30m()
     print("test_band_30m")
     bands.init()
 
-    bands.setFrequency(10.125e6)  -- 10.125 MHz
+    bands.setCurrent(10.125e6)  -- 10.125 MHz
     assert_eq("30m", bands.getCurrent(), "10.125 MHz is 30m")
 end
 
@@ -261,7 +261,7 @@ function Tests.test_band_17m()
     print("test_band_17m")
     bands.init()
 
-    bands.setFrequency(18.1e6)  -- 18.100 MHz
+    bands.setCurrent(18.1e6)  -- 18.100 MHz
     assert_eq("17m", bands.getCurrent(), "18.1 MHz is 17m")
 end
 
@@ -269,7 +269,7 @@ function Tests.test_band_12m()
     print("test_band_12m")
     bands.init()
 
-    bands.setFrequency(24.93e6)  -- 24.930 MHz
+    bands.setCurrent(24.93e6)  -- 24.930 MHz
     assert_eq("12m", bands.getCurrent(), "24.93 MHz is 12m")
 end
 

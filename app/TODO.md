@@ -1,5 +1,8 @@
 # NOTES to do
 
+* Lose `local bandFreqs` in `main.lua` and use the globally defined
+  full band table.
+
 * Use SetBox animation/easing mechanism to implement all crossfades in
   audio and demodulator chain. This allows these to be controlled in a
   common way, lets SetBox control speed/type of easing, etc. We
@@ -77,3 +80,22 @@
 * Can waterfall look much more like spectrum rotated out from 2d on screen into 3d?
 
 
+
+# Document
+
+The design philosophy is:
+
+  1. All UI is presentation only.
+     * We handle events based on tags defined for UI regions, for clicks, keys, modifiers, etc.
+	 * The UI widget code creates a presentation.
+	 * The code that creates a UI widget by calling that code also
+       creates the setbox rules to handle events as needed for that
+       UI.
+
+  1. All events dispatched uniformly - clicks, releases, motion, wheel, keys
+  2. Tags describe the event context - mouse button type, held mouse buttons, modifiers, widget, mode
+  3. SetBox rules determine handlers - no hard-coded mouse button-specific behavior
+  4. Motion events are first-class - with held mouse buttons acting as modifier
+
+* Need capability to support future extension of set of UI devices.
+  * Can add USB based keypads, touchpads, knobs, etc. for example like the ones used for CAD.
