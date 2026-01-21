@@ -46,50 +46,57 @@ local BUTTON_NAMES = {"Left", "Middle", "Right"}
 -- Application state (all loaded from SetBox in init())
 local rxActive = false
 
--- Audio state (loaded from SetBox, controls C++ audio engine)
-local volumeDb          -- dB, range -60 to 0 (loaded from SetBox)
-local muted             -- bool (loaded from SetBox)
-local testToneEnabled   -- bool (test tone generation)
+-- =======================================================================
+-- Property-controlled state
+-- All values accessible via getProperty/setProperty using state[name]
+-- Specs define min/max/step bounds and C++ setter functions
+-- =======================================================================
 
--- Baseband filter state (loaded from SetBox, controls C++ BasebandFilter)
-local bandpassEnabled   -- bool
-local bandpassCenter    -- Hz offset from DC
-local bandpassWidth     -- Hz bandwidth
-local notchEnabled      -- bool
-local notchCenter       -- Hz offset from DC
-local notchWidth        -- Hz bandwidth
-local frequency        -- MHz (loaded from SetBox)
-local squelch          -- 0-1 (loaded from SetBox)
-local agcEnabled       -- bool (loaded from SetBox)
-local nrEnabled        -- bool (loaded from SetBox)
-local nbEnabled        -- bool (loaded from SetBox)
-local selectedMode     -- "USB", "LSB", "CW", "AM" (loaded from SetBox)
-local selectedBand     -- "20m", etc. (loaded from SetBox)
+local state = {}  -- Populated in init() from SetBox
 
--- VFO state (loaded from SetBox)
-local vfoA             -- MHz
-local vfoB             -- MHz
-local activeVFO        -- "A" or "B"
+-- Property specifications: defines behavior for each property
+-- Fields: min, max (bounds), step (quantization), setter (C++ function), requiresHw (conditional)
+local propertySpecs = {
+    -- Boolean toggles (no bounds, just setter)
+    bandpassEnabled = { setter = function(v) rx.setBandpassEnabled(v) end },
+    notchEnabled    = { setter = function(v) rx.setNotchEnabled(v) end },
+    agcEnabled      = { setter = function(v) rx.setAgcEnabled(v) end },
+    nrEnabled       = { setter = function(v) rx.setNrEnabled(v) end },
+    nbEnabled       = { setter = function(v) rx.setNbEnabled(v) end },
+    muteEnabled     = { setter = function(v) rx.setMute(v) end },
+    testToneEnabled = { setter = function(v) audio.setTestTone(v, 440.0) end },
 
--- LMS adaptive filter (loaded from SetBox)
-local lmsMu            -- Learning rate for image rejection
+    -- Numeric with bounds
+    bandpassCenter = { min = -5000, max = 5000, setter = function(v) rx.setBandpassCenter(v) end },
+    bandpassWidth  = { min = 50, max = 4000, setter = function(v) rx.setBandpassWidth(v) end },
+    notchCenter    = { min = -10000, max = 10000, setter = function(v) rx.setNotchCenter(v) end },
+    notchWidth     = { min = 10, max = 500, setter = function(v) rx.setNotchWidth(v) end },
+    volumeDb       = { min = -60, max = 0, setter = function(v) audio.setVolume(v) end },
+    squelch        = { min = 0, max = 1 },  -- No C++ setter
+    lmsMu          = { min = 0.00001, max = 0.1, setter = function(v) rx.setLmsMu(v) end },
 
--- QSD offset k (kHz) for image rejection (loaded from SetBox)
-local qsdOffsetK       -- kHz
+    -- Waterfall range (setters reference other state values)
+    wfMinDb = { min = -140, max = -60, setter = function(v) waterfall.setRange(v, state.wfMaxDb) end },
+    wfMaxDb = { min = -100, max = -20, setter = function(v) waterfall.setRange(state.wfMinDb, v) end },
 
--- RF Attenuator (0-45 dB in 3 dB steps) (loaded from SetBox)
-local rfAttenDb        -- dB
+    -- Hardware-conditional (only call setter if hw connected)
+    qsdOffsetK = { min = 1, max = 24, setter = function(v) hw.setQsdOffset(v) end, requiresHw = true },
+    rfAttenDb  = { min = 0, max = 45, step = 3, setter = function(v) hw.setAttenuation(v) end, requiresHw = true },
 
--- Waterfall state (loaded from SetBox)
-local wfBins           -- FFT bins
-local wfRows           -- history rows
+    -- Special properties (custom logic in propertyAccessors, not auto-generated)
+    -- frequency, selectedMode, selectedBand, wfColormap, vfoA, vfoB, activeVFO
+}
+
+-- VFO state (also in state table but not auto-generated)
+-- state.vfoA, state.vfoB, state.activeVFO, state.frequency, state.selectedMode, state.selectedBand, state.wfColormap
+
+-- Non-property state (not exposed via property system)
+local wfBins           -- FFT bins (read-only after init)
+local wfRows           -- history rows (read-only after init)
 local spectrumData = {}  -- runtime buffer
 
 -- Key state tracking for KeyUp detection
 local keyStates = {}     -- scancode -> true if key was down last frame
-local wfColormap       -- colormap name
-local wfMinDb          -- Waterfall min dB (noise floor)
-local wfMaxDb          -- Waterfall max dB (strongest signals)
 
 -- Hardware connection state (loaded from SetBox)
 local hwSettings = {
@@ -111,8 +118,8 @@ local function connectHardware()
         hwConnected = true
         print("[Lua] Connected to hardware!")
         -- Send initial QSD offset k
-        hw.setQsdOffset(qsdOffsetK)
-        print("[Lua] Set QSD offset k = " .. qsdOffsetK .. " kHz")
+        hw.setQsdOffset(state.qsdOffsetK)
+        print("[Lua] Set QSD offset k = " .. state.qsdOffsetK .. " kHz")
         -- Enable hardware dispatch functions
         dispatch.enableHardware()
         return true
@@ -178,49 +185,49 @@ function init()
     print("[Lua] init() called")
 
     -- ==========================================================================
-    -- Load all configuration from SetBox
+    -- Load all configuration from SetBox into state table
     -- ==========================================================================
 
     -- Radio settings
-    frequency = setbox.getNumber("defaultFrequency", 14.200e6) / 1e6  -- Convert Hz to MHz
-    selectedMode = setbox.getString("defaultMode", "USB")
-    selectedBand = setbox.getString("defaultBand", "20m")
+    state.frequency = setbox.getNumber("defaultFrequency", 14.200e6) / 1e6  -- Convert Hz to MHz
+    state.selectedMode = setbox.getString("defaultMode", "USB")
+    state.selectedBand = setbox.getString("defaultBand", "20m")
 
     -- VFO state
-    vfoA = setbox.getNumber("vfoA", 14.200e6) / 1e6  -- Convert Hz to MHz
-    vfoB = setbox.getNumber("vfoB", 7.050e6) / 1e6   -- Convert Hz to MHz
-    activeVFO = setbox.getString("activeVFO", "A")
+    state.vfoA = setbox.getNumber("vfoA", 14.200e6) / 1e6  -- Convert Hz to MHz
+    state.vfoB = setbox.getNumber("vfoB", 7.050e6) / 1e6   -- Convert Hz to MHz
+    state.activeVFO = setbox.getString("activeVFO", "A")
 
     -- DSP settings
-    squelch = setbox.getNumber("squelch", 0.3)
-    agcEnabled = setbox.getBool("agcEnabled", true)
-    nrEnabled = setbox.getBool("nrEnabled", false)
-    nbEnabled = setbox.getBool("nbEnabled", false)
-    lmsMu = setbox.getNumber("lmsMu", 0.001)
+    state.squelch = setbox.getNumber("squelch", 0.3)
+    state.agcEnabled = setbox.getBool("agcEnabled", true)
+    state.nrEnabled = setbox.getBool("nrEnabled", false)
+    state.nbEnabled = setbox.getBool("nbEnabled", false)
+    state.lmsMu = setbox.getNumber("lmsMu", 0.001)
 
     -- Audio settings (volume in dB for intuitive config)
-    volumeDb = setbox.getNumber("volumeDb", -20)
-    muted = setbox.getBool("muted", false)
-    testToneEnabled = false  -- Always start with test tone off
+    state.volumeDb = setbox.getNumber("volumeDb", -20)
+    state.muteEnabled = setbox.getBool("muted", false)
+    state.testToneEnabled = false  -- Always start with test tone off
 
     -- Baseband filter settings (offset from SetBox, or defaults)
-    bandpassEnabled = setbox.getBool("bandpassEnabled", false)
-    bandpassCenter = setbox.getNumber("bandpassCenter", 700)
-    bandpassWidth = setbox.getNumber("bandpassWidth", 500)
-    notchEnabled = setbox.getBool("notchEnabled", false)
-    notchCenter = setbox.getNumber("notchCenter", 0)
-    notchWidth = setbox.getNumber("notchWidth", 100)
+    state.bandpassEnabled = setbox.getBool("bandpassEnabled", false)
+    state.bandpassCenter = setbox.getNumber("bandpassCenter", 700)
+    state.bandpassWidth = setbox.getNumber("bandpassWidth", 500)
+    state.notchEnabled = setbox.getBool("notchEnabled", false)
+    state.notchCenter = setbox.getNumber("notchCenter", 0)
+    state.notchWidth = setbox.getNumber("notchWidth", 100)
 
     -- Hardware settings
-    qsdOffsetK = setbox.getNumber("qsdOffsetK", 12.0)
-    rfAttenDb = math.floor(setbox.getNumber("rfAttenDb", 0))
+    state.qsdOffsetK = setbox.getNumber("qsdOffsetK", 12.0)
+    state.rfAttenDb = math.floor(setbox.getNumber("rfAttenDb", 0))
 
     -- Waterfall/display settings
     wfBins = math.floor(setbox.getNumber("wfBins", 512))
     wfRows = math.floor(setbox.getNumber("wfRows", 256))
-    wfColormap = setbox.getString("wfColormap", "viridis")
-    wfMinDb = setbox.getNumber("wfMinDb", -120)
-    wfMaxDb = setbox.getNumber("wfMaxDb", -40)
+    state.wfColormap = setbox.getString("wfColormap", "viridis")
+    state.wfMinDb = setbox.getNumber("wfMinDb", -120)
+    state.wfMaxDb = setbox.getNumber("wfMaxDb", -40)
 
     -- Hardware connection settings
     hwSettings.host = setbox.getString("hwHost", "127.0.0.1")
@@ -228,15 +235,15 @@ function init()
     hwSettings.streamPort = math.floor(setbox.getNumber("hwStreamPort", 5001))
 
     print(string.format("[Lua] Config loaded: freq=%.3f MHz, mode=%s, band=%s",
-        frequency, selectedMode, selectedBand))
+        state.frequency, state.selectedMode, state.selectedBand))
     print(string.format("[Lua] VFO A=%.3f MHz, B=%.3f MHz, active=%s",
-        vfoA, vfoB, activeVFO))
+        state.vfoA, state.vfoB, state.activeVFO))
     print(string.format("[Lua] DSP: squelch=%.2f, AGC=%s, NR=%s, NB=%s",
-        squelch, tostring(agcEnabled), tostring(nrEnabled), tostring(nbEnabled)))
+        state.squelch, tostring(state.agcEnabled), tostring(state.nrEnabled), tostring(state.nbEnabled)))
     print(string.format("[Lua] Hardware: QSD k=%.1f kHz, atten=%d dB",
-        qsdOffsetK, rfAttenDb))
+        state.qsdOffsetK, state.rfAttenDb))
     print(string.format("[Lua] Display: waterfall %dx%d, colormap=%s, range=[%d,%d] dB",
-        wfBins, wfRows, wfColormap, wfMinDb, wfMaxDb))
+        wfBins, wfRows, state.wfColormap, state.wfMinDb, state.wfMaxDb))
 
     -- ==========================================================================
     -- Initialize subsystems
@@ -249,9 +256,9 @@ function init()
 
     -- Initialize audio (convert dB to linear gain for C++ audio engine)
     if audio.isInitialized() then
-        local linearGain = math.pow(10, volumeDb / 20)
+        local linearGain = math.pow(10, state.volumeDb / 20)
         audio.setVolume(linearGain)
-        audio.setMuted(muted)
+        audio.setMuted(state.muteEnabled)
         audio.start()
         print("[Lua] Audio started at " .. audio.getSampleRate() .. " Hz")
     else
@@ -259,17 +266,17 @@ function init()
     end
 
     -- Initialize baseband filter with current settings
-    rx.setBandpassEnabled(bandpassEnabled)
-    rx.setBandpassCenter(bandpassCenter)
-    rx.setBandpassWidth(bandpassWidth)
-    rx.setNotchEnabled(notchEnabled)
-    rx.setNotchCenter(notchCenter)
-    rx.setNotchWidth(notchWidth)
+    rx.setBandpassEnabled(state.bandpassEnabled)
+    rx.setBandpassCenter(state.bandpassCenter)
+    rx.setBandpassWidth(state.bandpassWidth)
+    rx.setNotchEnabled(state.notchEnabled)
+    rx.setNotchCenter(state.notchCenter)
+    rx.setNotchWidth(state.notchWidth)
 
     -- Initialize waterfall
     if waterfall.init(wfBins, wfRows) then
-        waterfall.setRange(wfMinDb, wfMaxDb)
-        applyColormap(wfColormap)
+        waterfall.setRange(state.wfMinDb, state.wfMaxDb)
+        applyColormap(state.wfColormap)
         print("[Lua] Waterfall initialized: " .. wfBins .. "x" .. wfRows)
     else
         print("[Lua] Warning: Waterfall init failed")
@@ -297,7 +304,7 @@ function init()
 
     -- Initialize bands module and set initial frequency
     bands.init()
-    bands.setFrequency(frequency * 1e6)  -- Pass Hz to bands module
+    bands.setFrequency(state.frequency * 1e6)  -- Pass Hz to bands module
     print(string.format("[Lua] Band detection initialized, current band: %s", bands.getCurrent() or "OOB"))
 
     -- Initialize events module and wire to layout/widgets
@@ -308,181 +315,85 @@ function init()
 
     -- =======================================================================
     -- Property Accessor Registry
-    -- Maps property names to get/set functions for generic handlers
+    -- Auto-generated from propertySpecs, plus special-case properties
     -- =======================================================================
 
+    -- Generate accessors from property specs
+    -- Each generated accessor: get() returns state[name], set(v) clamps/steps then stores and calls setter
+    local function generateAccessors(specs)
+        local accessors = {}
+        for name, spec in pairs(specs) do
+            accessors[name] = {
+                get = function() return state[name] end,
+                set = function(v)
+                    -- Clamp to bounds if specified
+                    if spec.min ~= nil then v = math.max(spec.min, v) end
+                    if spec.max ~= nil then v = math.min(spec.max, v) end
+                    -- Quantize to step if specified
+                    if spec.step then v = math.floor(v / spec.step + 0.5) * spec.step end
+                    -- Store value
+                    state[name] = v
+                    -- Call C++ setter if specified (optionally check hardware connection)
+                    if spec.setter then
+                        if not spec.requiresHw or hw.isConnected() then
+                            spec.setter(v)
+                        end
+                    end
+                end,
+            }
+        end
+        return accessors
+    end
+
+    -- Auto-generate accessors from specs
+    local propertyAccessors = generateAccessors(propertySpecs)
+
+    -- Special-case properties with custom logic (not auto-generated)
     local bandFreqs = {
         ["160m"] = 1.9, ["80m"] = 3.5, ["40m"] = 7.0,
         ["20m"] = 14.0, ["15m"] = 21.0, ["10m"] = 28.0,
     }
 
-    local propertyAccessors = {
-        frequency = {
-            get = function() return frequency end,
-            set = function(v)
-                frequency = clamp(v, 0.1, 30.0)
-                if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
-                bands.setFrequency(frequency * 1e6)
-            end,
-        },
-        selectedMode = {
-            get = function() return selectedMode end,
-            set = function(v)
-                selectedMode = v
-                modeHelper.setMode(v)
-            end,
-        },
-        selectedBand = {
-            get = function() return selectedBand end,
-            set = function(v)
-                if bandFreqs[v] then
-                    selectedBand = v
-                    frequency = bandFreqs[v]
-                    if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
-                    bands.setFrequency(frequency * 1e6)
-                end
-            end,
-        },
-        wfColormap = {
-            get = function() return wfColormap end,
-            set = function(v)
-                wfColormap = v
-                applyColormap(v)
-            end,
-        },
-        bandpassEnabled = {
-            get = function() return bandpassEnabled end,
-            set = function(v)
-                bandpassEnabled = v
-                rx.setBandpassEnabled(v)
-            end,
-        },
-        notchEnabled = {
-            get = function() return notchEnabled end,
-            set = function(v)
-                notchEnabled = v
-                rx.setNotchEnabled(v)
-            end,
-        },
-        agcEnabled = {
-            get = function() return agcEnabled end,
-            set = function(v)
-                agcEnabled = v
-                rx.setAgcEnabled(v)
-            end,
-        },
-        nrEnabled = {
-            get = function() return nrEnabled end,
-            set = function(v)
-                nrEnabled = v
-                rx.setNrEnabled(v)
-            end,
-        },
-        nbEnabled = {
-            get = function() return nbEnabled end,
-            set = function(v)
-                nbEnabled = v
-                rx.setNbEnabled(v)
-            end,
-        },
-        muteEnabled = {
-            get = function() return muteEnabled end,
-            set = function(v)
-                muteEnabled = v
-                rx.setMute(v)
-            end,
-        },
-        testToneEnabled = {
-            get = function() return testToneEnabled end,
-            set = function(v)
-                testToneEnabled = v
-                audio.setTestTone(v, 440.0)  -- 440 Hz test tone
-            end,
-        },
-        -- Slider-controlled properties
-        bandpassCenter = {
-            get = function() return bandpassCenter end,
-            set = function(v)
-                bandpassCenter = clamp(v, -5000, 5000)
-                rx.setBandpassCenter(bandpassCenter)
-            end,
-        },
-        bandpassWidth = {
-            get = function() return bandpassWidth end,
-            set = function(v)
-                bandpassWidth = clamp(v, 50, 4000)
-                rx.setBandpassWidth(bandpassWidth)
-            end,
-        },
-        notchCenter = {
-            get = function() return notchCenter end,
-            set = function(v)
-                notchCenter = clamp(v, -10000, 10000)
-                rx.setNotchCenter(notchCenter)
-            end,
-        },
-        notchWidth = {
-            get = function() return notchWidth end,
-            set = function(v)
-                notchWidth = clamp(v, 10, 500)
-                rx.setNotchWidth(notchWidth)
-            end,
-        },
-        volumeDb = {
-            get = function() return volumeDb end,
-            set = function(v)
-                volumeDb = clamp(v, -60, 0)
-                audio.setVolume(volumeDb)
-            end,
-        },
-        squelch = {
-            get = function() return squelch end,
-            set = function(v)
-                squelch = clamp(v, 0, 1)
-            end,
-        },
-        wfMinDb = {
-            get = function() return wfMinDb end,
-            set = function(v)
-                wfMinDb = clamp(v, -140, -60)
-                waterfall.setRange(wfMinDb, wfMaxDb)
-            end,
-        },
-        wfMaxDb = {
-            get = function() return wfMaxDb end,
-            set = function(v)
-                wfMaxDb = clamp(v, -100, -20)
-                waterfall.setRange(wfMinDb, wfMaxDb)
-            end,
-        },
-        qsdOffsetK = {
-            get = function() return qsdOffsetK end,
-            set = function(v)
-                qsdOffsetK = clamp(v, 1, 24)
-                if hw.isConnected() then hw.setQsdOffset(qsdOffsetK) end
-            end,
-        },
-        lmsMu = {
-            get = function() return lmsMu end,
-            set = function(v)
-                lmsMu = clamp(v, 0.00001, 0.1)
-                rx.setLmsMu(lmsMu)
-            end,
-        },
-        rfAttenDb = {
-            get = function() return rfAttenDb end,
-            set = function(v)
-                rfAttenDb = clamp(math.floor(v / 3) * 3, 0, 45)  -- 3 dB steps
-                if hw.isConnected() then hw.setAttenuation(rfAttenDb) end
-            end,
-        },
+    propertyAccessors.frequency = {
+        get = function() return state.frequency end,
+        set = function(v)
+            state.frequency = clamp(v, 0.1, 30.0)
+            if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
+            bands.setFrequency(state.frequency * 1e6)
+        end,
+    }
+
+    propertyAccessors.selectedMode = {
+        get = function() return state.selectedMode end,
+        set = function(v)
+            state.selectedMode = v
+            modeHelper.setMode(v)
+        end,
+    }
+
+    propertyAccessors.selectedBand = {
+        get = function() return state.selectedBand end,
+        set = function(v)
+            if bandFreqs[v] then
+                state.selectedBand = v
+                state.frequency = bandFreqs[v]
+                if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
+                bands.setFrequency(state.frequency * 1e6)
+            end
+        end,
+    }
+
+    propertyAccessors.wfColormap = {
+        get = function() return state.wfColormap end,
+        set = function(v)
+            state.wfColormap = v
+            applyColormap(v)
+        end,
     }
 
     local function getProperty(name)
         local accessor = propertyAccessors[name]
-        if accessor then
-            return accessor.get()
-        end
+        if accessor then return accessor.get() end
         return nil
     end
 
@@ -504,119 +415,83 @@ function init()
         return false
     end
 
-    -- Generic slider adjustment handler (works with wheel delta or arrow keys)
-    -- Gets min/max/property from widget.data, calculates steps as fractions of range
-    -- Steps: default=1%, ctrl=0.1%, shift=10%, ctrl+shift=25%
-    events.registerHandler("slider_adjust", function(event, widget, props)
-        if not widget or not widget.data then return false end
-        local data = widget.data
+    -- =======================================================================
+    -- Slider Handler Factory
+    -- Extracts common logic: widget validation, delta extraction, property update
+    -- =======================================================================
 
-        local propName = data.property
-        local minVal = data.min
-        local maxVal = data.max
-        if not propName or not minVal or not maxVal then return false end
+    -- Factory for slider adjustment handlers
+    -- applyDelta: function(current, delta, min, max, ctrl, shift) -> newValue
+    local function createSliderHandler(applyDelta, handlerName)
+        return function(event, widget, props)
+            -- Validate widget has required data
+            if not widget or not widget.data then return false end
+            local data = widget.data
+            local propName, minVal, maxVal = data.property, data.min, data.max
+            if not propName or not minVal or not maxVal then return false end
 
-        local ctrl = hasModifier(event, "Ctrl")
-        local shift = hasModifier(event, "Shift")
+            -- Extract modifiers
+            local ctrl = hasModifier(event, "Ctrl")
+            local shift = hasModifier(event, "Shift")
 
-        -- Determine delta: from wheel, arrow keys
-        local delta = event.delta
-        if not delta then
-            if event.key == "Right" or event.key == "Up" then
-                delta = 1
-            elseif event.key == "Left" or event.key == "Down" then
-                delta = -1
-            else
-                return false
+            -- Determine delta from wheel or arrow keys
+            local delta = event.delta
+            if not delta then
+                if event.key == "Right" or event.key == "Up" then delta = 1
+                elseif event.key == "Left" or event.key == "Down" then delta = -1
+                else return false end
             end
-        end
-        if delta == 0 then return false end
+            if delta == 0 then return false end
 
-        -- Calculate step as fraction of range
-        local range = maxVal - minVal
-        local step
-        if ctrl and shift then
-            step = range * 0.25    -- 25% of range
-        elseif shift then
-            step = range * 0.10   -- 10% of range
-        elseif ctrl then
-            step = range * 0.001  -- 0.1% of range (fine)
-        else
-            step = range * 0.01   -- 1% of range (default)
-        end
+            -- Get current value
+            local current = getProperty(propName)
+            if current == nil then return false end
 
-        -- Debug output
-        if events.debugDispatch then
-            local modsStr = event.modifiers and table.concat(event.modifiers, ",") or "none"
-            print(string.format("[slider_adjust] prop=%s range=[%s,%s] step=%s mods={%s}",
-                propName, tostring(minVal), tostring(maxVal), tostring(step), modsStr))
-        end
+            -- Apply handler-specific delta calculation, clamp result
+            local newVal = applyDelta(current, delta, minVal, maxVal, ctrl, shift)
+            newVal = math.max(minVal, math.min(maxVal, newVal))
 
-        -- Get current value, apply delta, clamp
-        local current = getProperty(propName)
-        if current == nil then return false end
-
-        local newVal = current + delta * step
-        newVal = math.max(minVal, math.min(maxVal, newVal))
-
-        setProperty(propName, newVal)
-        return true
-    end)
-
-    -- Logarithmic slider adjustment (for parameters like LMS mu)
-    -- Multiplies/divides by factor based on modifiers
-    events.registerHandler("slider_adjust_log", function(event, widget, props)
-        if not widget or not widget.data then return false end
-        local data = widget.data
-
-        local propName = data.property
-        local minVal = data.min
-        local maxVal = data.max
-        if not propName or not minVal or not maxVal then return false end
-
-        local ctrl = hasModifier(event, "Ctrl")
-        local shift = hasModifier(event, "Shift")
-
-        -- Determine delta: from wheel, arrow keys
-        local delta = event.delta
-        if not delta then
-            if event.key == "Right" or event.key == "Up" then
-                delta = 1
-            elseif event.key == "Left" or event.key == "Down" then
-                delta = -1
-            else
-                return false
+            -- Debug output
+            if events.debugDispatch then
+                local modsStr = event.modifiers and table.concat(event.modifiers, ",") or "none"
+                print(string.format("[%s] prop=%s current=%s new=%s mods={%s}",
+                    handlerName, propName, tostring(current), tostring(newVal), modsStr))
             end
+
+            setProperty(propName, newVal)
+            return true
         end
-        if delta == 0 then return false end
+    end
 
-        -- Determine factor based on modifiers
-        local factor
-        if ctrl and shift then
-            factor = 5      -- 5x
-        elseif shift then
-            factor = 2      -- 2x
-        elseif ctrl then
-            factor = 1.1    -- 1.1x (fine)
-        else
-            factor = 1.5    -- 1.5x (default)
-        end
+    -- Linear slider: steps as fractions of range
+    -- default=1%, ctrl=0.1%, shift=10%, ctrl+shift=25%
+    events.registerHandler("slider_adjust", createSliderHandler(
+        function(current, delta, minVal, maxVal, ctrl, shift)
+            local range = maxVal - minVal
+            local step
+            if ctrl and shift then step = range * 0.25
+            elseif shift then step = range * 0.10
+            elseif ctrl then step = range * 0.001
+            else step = range * 0.01 end
+            return current + delta * step
+        end,
+        "slider_adjust"
+    ))
 
-        -- Get current value, apply multiplicative delta, clamp
-        local current = getProperty(propName)
-        if current == nil then return false end
-
-        local newVal
-        if delta > 0 then
-            newVal = current * factor
-        else
-            newVal = current / factor
-        end
-        newVal = math.max(minVal, math.min(maxVal, newVal))
-
-        setProperty(propName, newVal)
-        return true
-    end)
+    -- Logarithmic slider: multiplicative factors
+    -- default=1.5x, ctrl=1.1x, shift=2x, ctrl+shift=5x
+    events.registerHandler("slider_adjust_log", createSliderHandler(
+        function(current, delta, minVal, maxVal, ctrl, shift)
+            local factor
+            if ctrl and shift then factor = 5
+            elseif shift then factor = 2
+            elseif ctrl then factor = 1.1
+            else factor = 1.5 end
+            if delta > 0 then return current * factor
+            else return current / factor end
+        end,
+        "slider_adjust_log"
+    ))
 
     -- Generic set value handler
     -- Uses SetBox properties: property, value
@@ -668,9 +543,9 @@ function init()
     events.registerHandler("freq_entry_confirm", function(event, widget)
         local newFreq = tonumber(freqEntryText)
         if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
-            frequency = newFreq
-            if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
-            bands.setFrequency(frequency * 1e6)
+            state.frequency = newFreq
+            if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
+            bands.setFrequency(state.frequency * 1e6)
         end
         events.removeModeTag("FreqEntryMode")
         freqEntryText = ""
@@ -724,23 +599,23 @@ function init()
     -- =======================================================================
 
     events.registerHandler("vfo_a_click", function(event, widget)
-        activeVFO = "A"
-        frequency = vfoA
-        bands.setFrequency(frequency * 1e6)
+        state.activeVFO = "A"
+        state.frequency = state.vfoA
+        bands.setFrequency(state.frequency * 1e6)
         return true
     end)
 
     events.registerHandler("vfo_b_click", function(event, widget)
-        activeVFO = "B"
-        frequency = vfoB
-        bands.setFrequency(frequency * 1e6)
+        state.activeVFO = "B"
+        state.frequency = state.vfoB
+        bands.setFrequency(state.frequency * 1e6)
         return true
     end)
 
     events.registerHandler("vfo_swap_click", function(event, widget)
-        vfoA, vfoB = vfoB, vfoA
-        frequency = activeVFO == "A" and vfoA or vfoB
-        bands.setFrequency(frequency * 1e6)
+        state.vfoA, state.vfoB = state.vfoB, state.vfoA
+        state.frequency = state.activeVFO == "A" and state.vfoA or state.vfoB
+        bands.setFrequency(state.frequency * 1e6)
         return true
     end)
 
@@ -924,29 +799,19 @@ function update(dt)
     end
 
     -- Dispatch mouse button events (all buttons)
+    local function dispatchMouseButton(eventType, condition, button)
+        if condition then
+            events.dispatch(events.createEvent(eventType, {
+                x = mouseX, y = mouseY, button = button,
+                modifiers = getModifierTags(false),
+                shift = shift, ctrl = ctrl, alt = alt,
+            }))
+        end
+    end
     for btn = 0, 2 do
-        if isMouseClicked(btn) then
-            events.dispatch(events.createEvent(events.Type.MOUSE_DOWN, {
-                x = mouseX,
-                y = mouseY,
-                button = BUTTON_NAMES[btn + 1],
-                modifiers = getModifierTags(false),
-                shift = shift,
-                ctrl = ctrl,
-                alt = alt,
-            }))
-        end
-        if isMouseReleased(btn) then
-            events.dispatch(events.createEvent(events.Type.MOUSE_UP, {
-                x = mouseX,
-                y = mouseY,
-                button = BUTTON_NAMES[btn + 1],
-                modifiers = getModifierTags(false),
-                shift = shift,
-                ctrl = ctrl,
-                alt = alt,
-            }))
-        end
+        local button = BUTTON_NAMES[btn + 1]
+        dispatchMouseButton(events.Type.MOUSE_DOWN, isMouseClicked(btn), button)
+        dispatchMouseButton(events.Type.MOUSE_UP, isMouseReleased(btn), button)
     end
 
     -- Dispatch mouse motion events (held buttons act as modifiers)
@@ -1059,11 +924,42 @@ function update(dt)
     dispatch.updateWaterfall(spectrumData)
 
     -- Send VFO changes to hardware (frequency is in MHz, convert to Hz)
-    local currentVfoHz = frequency * 1e6
+    local currentVfoHz = state.frequency * 1e6
     if currentVfoHz ~= lastVfoFreq then
         rx.setVfo(currentVfoHz)
         lastVfoFreq = currentVfoHz
     end
+end
+
+-- =======================================================================
+-- UI Helper Functions
+-- Reduce boilerplate for common UI patterns
+-- =======================================================================
+
+-- Draw a labeled slider that reads/writes from property system
+-- Uses propertySpecs for min/max bounds, property system for get/set
+local function drawPropertySlider(id, label, prop, w, fmt)
+    local spec = propertySpecs[prop]
+    local lx, ly = layout.getCursor()
+    ui.label(id .. "-label", lx, ly, label .. ":")
+    local minVal = spec and spec.min or 0
+    local maxVal = spec and spec.max or 1
+    local current = getProperty(prop)
+    local tags = spec and spec.logScale and {"LogScale"} or nil
+    local newVal = ui.slider(id, lx + 55, ly, w - 85, minVal, maxVal, current, tags, prop)
+    if newVal ~= current then
+        setProperty(prop, newVal)
+    end
+    local text = string.format(fmt or "%.0f", newVal)
+    drawText(lx + w - 70, ly - 2, text, 0.5, 0.5, 0.55, 1.0)
+    layout.newLine(24)
+end
+
+-- Draw center/width filter controls (used for bandpass and notch)
+local function drawFilterControls(prefix, enabledProp, centerProp, widthProp, w)
+    if not state[enabledProp] then return end
+    drawPropertySlider(prefix .. "-center", "Center", centerProp, w, "%.0f Hz")
+    drawPropertySlider(prefix .. "-width", "Width", widthProp, w, "%.0f Hz")
 end
 
 -- Draw
@@ -1137,9 +1033,9 @@ function draw()
         drawRect(x, y, w, h, 0.08, 0.08, 0.1, 1.0)
         drawLine(x, y, x + w, y, 0.2, 0.2, 0.25, 1.0, 1.0)
 
-        local bpInfo = bandpassEnabled and string.format("BP: %.0f Hz", bandpassWidth) or "BP: Off"
+        local bpInfo = state.bandpassEnabled and string.format("BP: %.0f Hz", state.bandpassWidth) or "BP: Off"
         local info = string.format("Band: %s | Mode: %s | %s | Mouse: %d, %d",
-                                   bands.getCurrent() or "OOB", selectedMode, bpInfo, mouseX, mouseY)
+                                   bands.getCurrent() or "OOB", state.selectedMode, bpInfo, mouseX, mouseY)
         drawText(x + 10, y + 6, info, 0.5, 0.5, 0.55, 1.0)
     end
     layout.endDock()
@@ -1159,8 +1055,8 @@ function draw()
         layout.newLine(20)
 
         layout.beginHorizontal()
-        local vfoATags = activeVFO == "A" and {"Primary", "VfoA"} or {"Secondary", "VfoA"}
-        local vfoBTags = activeVFO == "B" and {"Primary", "VfoB"} or {"Secondary", "VfoB"}
+        local vfoATags = state.activeVFO == "A" and {"Primary", "VfoA"} or {"Secondary", "VfoA"}
+        local vfoBTags = state.activeVFO == "B" and {"Primary", "VfoB"} or {"Secondary", "VfoB"}
         local bx, by = layout.reserveSpace(60, 28)
         ui.button("vfo-a", "VFO A", bx, by, 60, 28, vfoATags)
         bx, by = layout.reserveSpace(60, 28)
@@ -1172,7 +1068,7 @@ function draw()
         layout.space(8)
 
         -- Frequency display (clickable/scrollable for tuning)
-        local freqStr = string.format("%.6f", frequency)
+        local freqStr = string.format("%.6f", state.frequency)
         local freqW = measureText(freqStr)
         local fx, fy = layout.getCursor()
         local freqBoxW, freqBoxH = w - 24, 36
@@ -1187,11 +1083,11 @@ function draw()
 
         -- Frequency slider (wheel/arrow handled via event rules)
         local sx, sy = layout.getCursor()
-        local newFreq = ui.slider("freq-slider", sx, sy, w - 24, 1.0, 30.0, frequency, nil, "frequency")
-        if newFreq ~= frequency then
-            frequency = newFreq
-            if activeVFO == "A" then vfoA = frequency else vfoB = frequency end
-            bands.setFrequency(frequency * 1e6)
+        local newFreq = ui.slider("freq-slider", sx, sy, w - 24, 1.0, 30.0, state.frequency, nil, "frequency")
+        if newFreq ~= state.frequency then
+            state.frequency = newFreq
+            if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
+            bands.setFrequency(state.frequency * 1e6)
         end
         layout.newLine(20)
 
@@ -1209,7 +1105,7 @@ function draw()
         local modes = {"USB", "LSB", "CW", "AM"}
         for _, mode in ipairs(modes) do
             local mx, my = layout.reserveSpace(50, 26)
-            local activeTags = selectedMode == mode and {"Active"} or {}
+            local activeTags = state.selectedMode == mode and {"Active"} or {}
             local modeTags = {"Mode" .. mode}
             for _, t in ipairs(activeTags) do table.insert(modeTags, t) end
             ui.button("mode-" .. mode:lower(), mode, mx, my, 50, 26, modeTags)
@@ -1226,67 +1122,17 @@ function draw()
         ui.label("baseband-title", lx, ly, "Baseband", {"Title"})
         layout.newLine(24)
 
-        -- Bandpass enable
+        -- Bandpass enable + controls
         local cx, cy = layout.getCursor()
-        ui.checkbox("bp-enable", "Bandpass", cx, cy, bandpassEnabled, {"Bandpass"})
+        ui.checkbox("bp-enable", "Bandpass", cx, cy, state.bandpassEnabled, {"Bandpass"})
         layout.newLine(24)
+        drawFilterControls("bp", "bandpassEnabled", "bandpassCenter", "bandpassWidth", w)
 
-        -- Bandpass center (only show if enabled)
-        if bandpassEnabled then
-            lx, ly = layout.getCursor()
-            ui.label("bp-center-label", lx, ly, "Center:")
-            local newBpCenter = ui.slider("bp-center", lx + 55, ly, w - 85, -5000, 5000, bandpassCenter, nil, "bandpassCenter")
-            if newBpCenter ~= bandpassCenter then
-                bandpassCenter = newBpCenter
-                rx.setBandpassCenter(bandpassCenter)
-            end
-            local bpCText = string.format("%.0f Hz", bandpassCenter)
-            drawText(lx + w - 70, ly - 2, bpCText, 0.5, 0.5, 0.55, 1.0)
-            layout.newLine(24)
-
-            -- Bandpass width
-            lx, ly = layout.getCursor()
-            ui.label("bp-width-label", lx, ly, "Width:")
-            local newBpWidth = ui.slider("bp-width", lx + 55, ly, w - 85, 50, 4000, bandpassWidth, nil, "bandpassWidth")
-            if newBpWidth ~= bandpassWidth then
-                bandpassWidth = newBpWidth
-                rx.setBandpassWidth(bandpassWidth)
-            end
-            local bpWText = string.format("%.0f Hz", bandpassWidth)
-            drawText(lx + w - 70, ly - 2, bpWText, 0.5, 0.5, 0.55, 1.0)
-            layout.newLine(24)
-        end
-
-        -- Notch enable
+        -- Notch enable + controls
         cx, cy = layout.getCursor()
-        ui.checkbox("notch-enable", "Notch", cx, cy, notchEnabled, {"Notch"})
+        ui.checkbox("notch-enable", "Notch", cx, cy, state.notchEnabled, {"Notch"})
         layout.newLine(24)
-
-        -- Notch center (only show if enabled)
-        if notchEnabled then
-            lx, ly = layout.getCursor()
-            ui.label("notch-center-label", lx, ly, "Center:")
-            local newNotchCenter = ui.slider("notch-center", lx + 55, ly, w - 85, -10000, 10000, notchCenter, nil, "notchCenter")
-            if newNotchCenter ~= notchCenter then
-                notchCenter = newNotchCenter
-                rx.setNotchCenter(notchCenter)
-            end
-            local notchCText = string.format("%.0f Hz", notchCenter)
-            drawText(lx + w - 70, ly - 2, notchCText, 0.5, 0.5, 0.55, 1.0)
-            layout.newLine(24)
-
-            -- Notch width
-            lx, ly = layout.getCursor()
-            ui.label("notch-width-label", lx, ly, "Width:")
-            local newNotchWidth = ui.slider("notch-width", lx + 55, ly, w - 85, 10, 500, notchWidth, nil, "notchWidth")
-            if newNotchWidth ~= notchWidth then
-                notchWidth = newNotchWidth
-                rx.setNotchWidth(notchWidth)
-            end
-            local notchWText = string.format("%.0f Hz", notchWidth)
-            drawText(lx + w - 70, ly - 2, notchWText, 0.5, 0.5, 0.55, 1.0)
-            layout.newLine(24)
-        end
+        drawFilterControls("notch", "notchEnabled", "notchCenter", "notchWidth", w)
 
         layout.space(8)
         sepX, sepY = layout.getCursor()
@@ -1299,26 +1145,26 @@ function draw()
         layout.newLine(24)
 
         local cx, cy = layout.getCursor()
-        ui.checkbox("agc-enable", "AGC", cx, cy, agcEnabled, {"AGC"})
+        ui.checkbox("agc-enable", "AGC", cx, cy, state.agcEnabled, {"AGC"})
         layout.newLine(24)
 
         cx, cy = layout.getCursor()
-        ui.checkbox("nr-enable", "Noise Reduction", cx, cy, nrEnabled, {"NR"})
+        ui.checkbox("nr-enable", "Noise Reduction", cx, cy, state.nrEnabled, {"NR"})
         layout.newLine(24)
 
         cx, cy = layout.getCursor()
-        ui.checkbox("nb-enable", "Noise Blanker", cx, cy, nbEnabled, {"NB"})
+        ui.checkbox("nb-enable", "Noise Blanker", cx, cy, state.nbEnabled, {"NB"})
         layout.newLine(28)
 
         -- QSD offset k for image rejection
         lx, ly = layout.getCursor()
         ui.label("qsd-k-label", lx, ly, "QSD k:")
-        local newK = ui.slider("qsd-k", lx + 50, ly, w - 80, 1, 24, qsdOffsetK, nil, "qsdOffsetK")
-        if newK ~= qsdOffsetK then
-            qsdOffsetK = newK
-            hw.setQsdOffset(qsdOffsetK)
+        local newK = ui.slider("qsd-k", lx + 50, ly, w - 80, 1, 24, state.qsdOffsetK, nil, "qsdOffsetK")
+        if newK ~= state.qsdOffsetK then
+            state.qsdOffsetK = newK
+            hw.setQsdOffset(state.qsdOffsetK)
         end
-        local kText = string.format("%.1f kHz", qsdOffsetK)
+        local kText = string.format("%.1f kHz", state.qsdOffsetK)
         drawText(lx + w - 70, ly - 2, kText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
@@ -1335,13 +1181,13 @@ function draw()
             local logMu = math.log(0.0001) + pos * (math.log(0.1) - math.log(0.0001))
             return math.exp(logMu)
         end
-        local muSliderPos = muToSlider(lmsMu)
+        local muSliderPos = muToSlider(state.lmsMu)
         local newMuSliderPos = ui.slider("lms-mu", lx + 40, ly, w - 70, 0, 1, muSliderPos, {"LogScale"}, "lmsMu")
         if newMuSliderPos ~= muSliderPos then
-            lmsMu = sliderToMu(newMuSliderPos)
-            rx.setLmsMu(lmsMu)
+            state.lmsMu = sliderToMu(newMuSliderPos)
+            rx.setLmsMu(state.lmsMu)
         end
-        local muText = string.format("%.4f", lmsMu)
+        local muText = string.format("%.4f", state.lmsMu)
         drawText(lx + w - 60, ly - 2, muText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
@@ -1349,14 +1195,14 @@ function draw()
         lx, ly = layout.getCursor()
         ui.label("rf-atten-label", lx, ly, "Atten:")
         -- Slider goes 0-15 (steps), displayed as 0-45 dB
-        local attenSteps = rfAttenDb / 3
+        local attenSteps = state.rfAttenDb / 3
         local newAttenSteps = ui.slider("rf-atten", lx + 50, ly, w - 80, 0, 15, attenSteps, nil, "rfAttenDb")
         local newAttenDb = math.floor(newAttenSteps + 0.5) * 3  -- Round to nearest 3 dB
-        if newAttenDb ~= rfAttenDb then
-            rfAttenDb = newAttenDb
-            hw.setAttenuation(rfAttenDb)
+        if newAttenDb ~= state.rfAttenDb then
+            state.rfAttenDb = newAttenDb
+            hw.setAttenuation(state.rfAttenDb)
         end
-        local attenText = string.format("%d dB", rfAttenDb)
+        local attenText = string.format("%d dB", state.rfAttenDb)
         drawText(lx + w - 60, ly - 2, attenText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
@@ -1373,30 +1219,30 @@ function draw()
         lx, ly = layout.getCursor()
         ui.label("volume-label", lx, ly, "Vol:")
         -- Volume slider works directly in dB (-60 to 0)
-        local newVolumeDb = ui.slider("volume", lx + 40, ly, w - 70, -60, 0, volumeDb, nil, "volumeDb")
-        if newVolumeDb ~= volumeDb then
-            volumeDb = newVolumeDb
-            local linearGain = math.pow(10, volumeDb / 20)
+        local newVolumeDb = ui.slider("volume", lx + 40, ly, w - 70, -60, 0, state.volumeDb, nil, "volumeDb")
+        if newVolumeDb ~= state.volumeDb then
+            state.volumeDb = newVolumeDb
+            local linearGain = math.pow(10, state.volumeDb / 20)
             audio.setVolume(linearGain)
         end
-        local volText = string.format("%.0fdB", volumeDb)
+        local volText = string.format("%.0fdB", state.volumeDb)
         drawText(lx + w - 60, ly - 2, volText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
         lx, ly = layout.getCursor()
         ui.label("squelch-label", lx, ly, "Sql:")
-        local newSquelch = ui.slider("squelch", lx + 40, ly, w - 70, 0, 1, squelch, nil, "squelch")
-        if newSquelch ~= squelch then squelch = newSquelch end
+        local newSquelch = ui.slider("squelch", lx + 40, ly, w - 70, 0, 1, state.squelch, nil, "squelch")
+        if newSquelch ~= state.squelch then state.squelch = newSquelch end
         layout.newLine(24)
 
         -- Mute checkbox
         cx, cy = layout.getCursor()
-        ui.checkbox("mute-enable", "Mute", cx, cy, muted, {"Mute"})
+        ui.checkbox("mute-enable", "Mute", cx, cy, state.muteEnabled, {"Mute"})
         layout.newLine(24)
 
         -- Test tone button
-        local toneTags = testToneEnabled and {"Primary", "TestTone"} or {"Secondary", "TestTone"}
-        local toneLabel = testToneEnabled and "Tone ON" or "Test Tone"
+        local toneTags = state.testToneEnabled and {"Primary", "TestTone"} or {"Secondary", "TestTone"}
+        local toneLabel = state.testToneEnabled and "Tone ON" or "Test Tone"
         local tx, ty = layout.getCursor()
         ui.button("test-tone", toneLabel, tx, ty, 90, 26, toneTags)
         layout.newLine(28)
@@ -1524,23 +1370,23 @@ function draw()
 
         lx, ly = layout.getCursor()
         ui.label("wf-floor-label", lx, ly, "Floor:")
-        local newMinDb = ui.slider("wf-floor", lx + 45, ly, w - 75, -140, -60, wfMinDb, nil, "wfMinDb")
-        if newMinDb ~= wfMinDb then
-            wfMinDb = newMinDb
-            waterfall.setRange(wfMinDb, wfMaxDb)
+        local newMinDb = ui.slider("wf-floor", lx + 45, ly, w - 75, -140, -60, state.wfMinDb, nil, "wfMinDb")
+        if newMinDb ~= state.wfMinDb then
+            state.wfMinDb = newMinDb
+            waterfall.setRange(state.wfMinDb, state.wfMaxDb)
         end
-        local minText = string.format("%.0f dB", wfMinDb)
+        local minText = string.format("%.0f dB", state.wfMinDb)
         drawText(lx + w - 60, ly - 2, minText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
 
         lx, ly = layout.getCursor()
         ui.label("wf-peak-label", lx, ly, "Peak:")
-        local newMaxDb = ui.slider("wf-peak", lx + 45, ly, w - 75, -100, -20, wfMaxDb, nil, "wfMaxDb")
-        if newMaxDb ~= wfMaxDb then
-            wfMaxDb = newMaxDb
-            waterfall.setRange(wfMinDb, wfMaxDb)
+        local newMaxDb = ui.slider("wf-peak", lx + 45, ly, w - 75, -100, -20, state.wfMaxDb, nil, "wfMaxDb")
+        if newMaxDb ~= state.wfMaxDb then
+            state.wfMaxDb = newMaxDb
+            waterfall.setRange(state.wfMinDb, state.wfMaxDb)
         end
-        local maxText = string.format("%.0f dB", wfMaxDb)
+        local maxText = string.format("%.0f dB", state.wfMaxDb)
         drawText(lx + w - 60, ly - 2, maxText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
     end
@@ -1570,7 +1416,7 @@ function draw()
             freqStr = freqEntryText .. cursor .. " MHz [Enter=OK, Esc=Cancel]"
             freqColor = {1.0, 0.9, 0.2}  -- Yellow when editing
         else
-            freqStr = string.format("%.6f MHz", frequency)
+            freqStr = string.format("%.6f MHz", state.frequency)
         end
         local freqW = measureText(freqStr)
         drawText(px, py, freqStr, freqColor[1], freqColor[2], freqColor[3], 1.0)
@@ -1589,7 +1435,7 @@ function draw()
             local btnX = cmapX + (i - 1) * 55
             -- Tag format: "CmapViridis", "CmapPlasma" etc. (capitalize first letter)
             local cmapTag = "Cmap" .. cmap:sub(1,1):upper() .. cmap:sub(2)
-            local cmapBtnTags = wfColormap == cmap and {"Active", cmapTag} or {cmapTag}
+            local cmapBtnTags = state.wfColormap == cmap and {"Active", cmapTag} or {cmapTag}
             ui.button("cmap-" .. cmap, cmap, btnX, py - 2, 52, 20, cmapBtnTags)
         end
 
