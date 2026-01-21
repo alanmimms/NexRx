@@ -52,13 +52,14 @@ function ui.setLayoutModule(layout)
 end
 
 -- Internal: register widget with events module
-local function registerWidget(id, bounds, widgetTags)
+-- @param data optional widget-specific data (e.g., {min=0, max=100, property="volume"})
+local function registerWidget(id, bounds, widgetTags, data)
     if eventsModule and eventsModule.registerWidget then
         local parentId = nil
         if layoutModule and layoutModule.getCurrentRegionId then
             parentId = layoutModule.getCurrentRegionId()
         end
-        eventsModule.registerWidget(id, bounds, widgetTags, parentId)
+        eventsModule.registerWidget(id, bounds, widgetTags, parentId, data)
     end
 end
 
@@ -232,7 +233,14 @@ end
 -- Slider Widget
 -- Handles dragging internally for smooth UX, dispatches value via callback
 -- =============================================================================
-function ui.slider(id, x, y, w, minVal, maxVal, value, tags)
+-- Slider widget
+-- @param id unique widget ID
+-- @param x, y, w position and width
+-- @param minVal, maxVal value range
+-- @param value current value
+-- @param tags optional tags array
+-- @param property optional property name for event-based adjustment
+function ui.slider(id, x, y, w, minVal, maxVal, value, tags, property)
     local h = 8
     local handleR = 10
     local hitH = math.max(h, handleR * 2)
@@ -244,8 +252,13 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags)
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
 
-    -- Register with events module
-    registerWidget(id, {x=x - handleR, y=hitY, w=w + handleR*2, h=hitH}, widgetTags)
+    -- Register with events module, including slider data for generic handlers
+    registerWidget(id, {x=x - handleR, y=hitY, w=w + handleR*2, h=hitH}, widgetTags, {
+        min = minVal,
+        max = maxVal,
+        value = value,
+        property = property,  -- Optional: property name for event-based adjustment
+    })
 
     -- Normalize value
     local t = (value - minVal) / (maxVal - minVal)
@@ -351,12 +364,21 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
 end
 
 -- =============================================================================
--- Non-Interactive Widgets
+-- Display Widgets (may or may not have event handlers - rules decide)
 -- =============================================================================
 
--- Progress bar (non-interactive)
-function ui.progressBar(x, y, w, h, value, tags)
+-- Progress bar
+function ui.progressBar(id, x, y, w, h, value, tags)
     local t = clamp(value, 0, 1)
+
+    -- Build widget tags
+    local widgetTags = {"ProgressBar"}
+    if tags then
+        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+    end
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
     local style = theme.getStyle(tags or {"ProgressBar"})
 
@@ -370,21 +392,52 @@ function ui.progressBar(x, y, w, h, value, tags)
     end
 end
 
--- Label (non-interactive text)
-function ui.label(x, y, text, tags)
+-- Label (text display)
+function ui.label(id, x, y, text, tags)
+    -- Build widget tags
+    local widgetTags = {"Label"}
+    if tags then
+        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+    end
+
+    -- Measure text for bounds
+    local w = measureText(text)
+    local h = getLineHeight()
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
     local style = theme.getLabelStyle(tags)
     drawText(x, y, text, style.fgR, style.fgG, style.fgB, 1.0)
 end
 
 -- Panel background
-function ui.panel(x, y, w, h, tags)
+function ui.panel(id, x, y, w, h, tags)
+    -- Build widget tags
+    local widgetTags = {"Panel"}
+    if tags then
+        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+    end
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
     local style = theme.getPanelStyle(tags)
     drawRoundedRect(x, y, w, h, style.borderRadius, style.bgR, style.bgG, style.bgB, 1.0)
     drawRectOutline(x, y, w, h, style.borderR, style.borderG, style.borderB, 1.0, style.borderWidth)
 end
 
 -- Panel with title
-function ui.panelWithTitle(x, y, w, h, title, tags)
+function ui.panelWithTitle(id, x, y, w, h, title, tags)
+    -- Build widget tags
+    local widgetTags = {"Panel", "TitledPanel"}
+    if tags then
+        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+    end
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
     local style = theme.getPanelStyle(tags)
     local titleH = 28
 
@@ -407,9 +460,44 @@ function ui.panelWithTitle(x, y, w, h, title, tags)
 end
 
 -- Separator line
-function ui.separator(x, y, w, tags)
+function ui.separator(id, x, y, w, tags)
+    local h = 1  -- Separator height for hit testing
+
+    -- Build widget tags
+    local widgetTags = {"Separator"}
+    if tags then
+        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+    end
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
     local style = theme.getStyle(tags or {"Separator"})
     drawLine(x, y, x + w, y, style.borderR, style.borderG, style.borderB, 0.5, 1)
+end
+
+-- Meter widget (like S-meter) - a bar graph display
+function ui.meter(id, x, y, w, h, value, minVal, maxVal, tags)
+    -- Build widget tags
+    local widgetTags = {"Meter"}
+    if tags then
+        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+    end
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
+    local style = theme.getStyle(tags or {"Meter"})
+
+    -- Draw background
+    drawRoundedRect(x, y, w, h, 4, style.bgR or 0.12, style.bgG or 0.12, style.bgB or 0.15, 1.0)
+
+    -- Draw filled portion
+    local t = clamp((value - minVal) / (maxVal - minVal), 0, 1)
+    local fillW = (w - 8) * t
+    if fillW > 0 then
+        drawRect(x + 4, y + 4, fillW, h - 8, style.accentR or 0.2, style.accentG or 0.8, style.accentB or 0.3, 1.0)
+    end
 end
 
 -- =============================================================================

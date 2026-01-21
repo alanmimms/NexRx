@@ -7,26 +7,62 @@
 
     Tag structure:
     - "Event" - Always present for event rules
-    - Event type: "MouseDown", "MouseUp", "MouseWheel", "KeyDown", "TextInput"
+    - Event type: "MouseDown", "MouseUp", "MouseMove", "MouseWheel", "KeyDown", "TextInput"
+    - Button name: "Left", "Middle", "Right" (for mouse click/release events)
     - Key name: "Escape", "Enter", "F", "Q", etc. (for keyboard events)
     - Widget tags: "Button", "Checkbox", "Toggle", "Slider", etc.
-    - Custom tags: "VfoA", "RxToggle", "ModeUSB", etc.
+    - Custom tags: "VfoA", "RxToggle", "ModeUSB", "VfoTune", etc.
     - Mode tags: "FreqEntryMode" (added/removed dynamically)
-    - Modifiers: "Shift", "Ctrl", "Alt"
+    - Modifiers: "Shift", "Ctrl", "Alt" (keyboard) + "Left", "Middle", "Right" (held buttons for motion)
+
+    Two-phase matching:
+    1. First try with ALL tags (including modifiers) - most specific
+    2. If no match, try WITHOUT modifier tags - general fallback
+
+    Generic handlers use SetBox properties:
+    - wheel_increment: property, step, step_ctrl, step_shift, step_ctrl_shift, min, max
+    - set_value: property, value
+    - toggle_property: property
 
     More specific rules (more tags, higher priority) take precedence.
-    Handler names reference functions registered via events.registerHandler().
 ]]
 
 -- =============================================================================
--- VFO Tuning (Mouse Wheel on Frequency Display)
+-- Generic Slider Controls (wheel and arrow keys)
+-- Handler gets min/max/property from widget.data, calculates steps as % of range
+-- Steps: default=1%, ctrl=0.1%, shift=10%, ctrl+shift=25%
 -- =============================================================================
 
+-- Generic slider wheel (matches any Slider widget with property in widget.data)
 rule {
-    id = "event-vfo-wheel",
-    tags = {"Event", "MouseWheel", "FrequencyDisplay"},
+    id = "event-slider-wheel",
+    tags = {"Event", "MouseWheel", "Slider"},
     priority = 0,
-    apply = { handler = "vfo_tune" }
+    apply = { handler = "slider_adjust" }
+}
+
+-- Generic slider arrow keys
+rule {
+    id = "event-slider-arrow",
+    tags = {"Event", "KeyDown", "Slider"},
+    priority = 0,
+    apply = { handler = "slider_adjust" }
+}
+
+-- Logarithmic slider (for LogScale tagged sliders like LMS mu)
+-- Uses multiplicative factors: default=1.5x, ctrl=1.1x, shift=2x, ctrl+shift=5x
+rule {
+    id = "event-slider-log-wheel",
+    tags = {"Event", "MouseWheel", "Slider", "LogScale"},
+    priority = 10,
+    apply = { handler = "slider_adjust_log" }
+}
+
+rule {
+    id = "event-slider-log-arrow",
+    tags = {"Event", "KeyDown", "Slider", "LogScale"},
+    priority = 10,
+    apply = { handler = "slider_adjust_log" }
 }
 
 -- =============================================================================
@@ -42,7 +78,7 @@ rule {
 
 rule {
     id = "event-freq-entry-start-click",
-    tags = {"Event", "MouseDown", "FrequencyDisplay"},
+    tags = {"Event", "MouseDown", "Left", "FrequencyDisplay"},
     priority = 0,
     apply = { handler = "freq_entry_start" }
 }
@@ -76,7 +112,7 @@ rule {
 }
 
 -- =============================================================================
--- Application Control
+-- Application Control (Global)
 -- =============================================================================
 
 rule {
@@ -86,123 +122,130 @@ rule {
     apply = { handler = "app_quit" }
 }
 
+rule {
+    id = "event-debug-toggle",
+    tags = {"Event", "KeyDown", "D", "Ctrl"},
+    priority = 1000,
+    apply = { handler = "debug_toggle" }
+}
+
 -- =============================================================================
--- VFO Button Clicks
+-- VFO Button Clicks (specific logic, keep dedicated handlers)
 -- =============================================================================
 
 rule {
     id = "event-vfo-a-click",
-    tags = {"Event", "MouseDown", "Button", "VfoA"},
+    tags = {"Event", "MouseDown", "Left", "Button", "VfoA"},
     priority = 10,
     apply = { handler = "vfo_a_click" }
 }
 
 rule {
     id = "event-vfo-b-click",
-    tags = {"Event", "MouseDown", "Button", "VfoB"},
+    tags = {"Event", "MouseDown", "Left", "Button", "VfoB"},
     priority = 10,
     apply = { handler = "vfo_b_click" }
 }
 
 rule {
     id = "event-vfo-swap-click",
-    tags = {"Event", "MouseDown", "Button", "VfoSwap"},
+    tags = {"Event", "MouseDown", "Left", "Button", "VfoSwap"},
     priority = 10,
     apply = { handler = "vfo_swap_click" }
 }
 
 -- =============================================================================
--- Mode Button Clicks
+-- Mode Button Clicks (generic set_value)
 -- =============================================================================
 
 rule {
     id = "event-mode-usb-click",
-    tags = {"Event", "MouseDown", "Button", "ModeUSB"},
+    tags = {"Event", "MouseDown", "Left", "Button", "ModeUSB"},
     priority = 10,
-    apply = { handler = "mode_usb_click" }
+    apply = { handler = "set_value", property = "selectedMode", value = "USB" }
 }
 
 rule {
     id = "event-mode-lsb-click",
-    tags = {"Event", "MouseDown", "Button", "ModeLSB"},
+    tags = {"Event", "MouseDown", "Left", "Button", "ModeLSB"},
     priority = 10,
-    apply = { handler = "mode_lsb_click" }
+    apply = { handler = "set_value", property = "selectedMode", value = "LSB" }
 }
 
 rule {
     id = "event-mode-cw-click",
-    tags = {"Event", "MouseDown", "Button", "ModeCW"},
+    tags = {"Event", "MouseDown", "Left", "Button", "ModeCW"},
     priority = 10,
-    apply = { handler = "mode_cw_click" }
+    apply = { handler = "set_value", property = "selectedMode", value = "CW" }
 }
 
 rule {
     id = "event-mode-am-click",
-    tags = {"Event", "MouseDown", "Button", "ModeAM"},
+    tags = {"Event", "MouseDown", "Left", "Button", "ModeAM"},
     priority = 10,
-    apply = { handler = "mode_am_click" }
+    apply = { handler = "set_value", property = "selectedMode", value = "AM" }
 }
 
 -- =============================================================================
--- DSP Checkbox Clicks
+-- DSP Checkbox Clicks (generic toggle_property)
 -- =============================================================================
 
 rule {
     id = "event-bandpass-toggle",
-    tags = {"Event", "MouseDown", "Checkbox", "Bandpass"},
+    tags = {"Event", "MouseDown", "Left", "Checkbox", "Bandpass"},
     priority = 10,
-    apply = { handler = "bandpass_toggle" }
+    apply = { handler = "toggle_property", property = "bandpassEnabled" }
 }
 
 rule {
     id = "event-notch-toggle",
-    tags = {"Event", "MouseDown", "Checkbox", "Notch"},
+    tags = {"Event", "MouseDown", "Left", "Checkbox", "Notch"},
     priority = 10,
-    apply = { handler = "notch_toggle" }
+    apply = { handler = "toggle_property", property = "notchEnabled" }
 }
 
 rule {
     id = "event-agc-toggle",
-    tags = {"Event", "MouseDown", "Checkbox", "AGC"},
+    tags = {"Event", "MouseDown", "Left", "Checkbox", "AGC"},
     priority = 10,
-    apply = { handler = "agc_toggle" }
+    apply = { handler = "toggle_property", property = "agcEnabled" }
 }
 
 rule {
     id = "event-nr-toggle",
-    tags = {"Event", "MouseDown", "Checkbox", "NR"},
+    tags = {"Event", "MouseDown", "Left", "Checkbox", "NR"},
     priority = 10,
-    apply = { handler = "nr_toggle" }
+    apply = { handler = "toggle_property", property = "nrEnabled" }
 }
 
 rule {
     id = "event-nb-toggle",
-    tags = {"Event", "MouseDown", "Checkbox", "NB"},
+    tags = {"Event", "MouseDown", "Left", "Checkbox", "NB"},
     priority = 10,
-    apply = { handler = "nb_toggle" }
+    apply = { handler = "toggle_property", property = "nbEnabled" }
 }
 
 -- =============================================================================
--- Audio Control Clicks
+-- Audio Control Clicks (generic toggle_property)
 -- =============================================================================
 
 rule {
     id = "event-mute-toggle",
-    tags = {"Event", "MouseDown", "Checkbox", "Mute"},
+    tags = {"Event", "MouseDown", "Left", "Checkbox", "Mute"},
     priority = 10,
-    apply = { handler = "mute_toggle" }
+    apply = { handler = "toggle_property", property = "muteEnabled" }
 }
 
 rule {
     id = "event-test-tone-toggle",
-    tags = {"Event", "MouseDown", "Button", "TestTone"},
+    tags = {"Event", "MouseDown", "Left", "Button", "TestTone"},
     priority = 10,
-    apply = { handler = "test_tone_toggle" }
+    apply = { handler = "toggle_property", property = "testToneEnabled" }
 }
 
 rule {
     id = "event-wav-record-toggle",
-    tags = {"Event", "MouseDown", "Button", "WavRecord"},
+    tags = {"Event", "MouseDown", "Left", "Button", "WavRecord"},
     priority = 10,
     apply = { handler = "wav_record_toggle" }
 }
@@ -213,119 +256,137 @@ rule {
 
 rule {
     id = "event-rx-toggle-click",
-    tags = {"Event", "MouseDown", "Toggle", "RxToggle"},
+    tags = {"Event", "MouseDown", "Left", "Toggle", "RxToggle"},
     priority = 10,
     apply = { handler = "rx_toggle_click" }
 }
 
 -- =============================================================================
--- Band Button Clicks
+-- Band Button Clicks (generic set_value)
 -- =============================================================================
 
 rule {
     id = "event-band-160m-click",
-    tags = {"Event", "MouseDown", "Button", "Band160m"},
+    tags = {"Event", "MouseDown", "Left", "Button", "Band160m"},
     priority = 10,
-    apply = { handler = "band_160m_click" }
+    apply = { handler = "set_value", property = "selectedBand", value = "160m" }
 }
 
 rule {
     id = "event-band-80m-click",
-    tags = {"Event", "MouseDown", "Button", "Band80m"},
+    tags = {"Event", "MouseDown", "Left", "Button", "Band80m"},
     priority = 10,
-    apply = { handler = "band_80m_click" }
+    apply = { handler = "set_value", property = "selectedBand", value = "80m" }
 }
 
 rule {
     id = "event-band-40m-click",
-    tags = {"Event", "MouseDown", "Button", "Band40m"},
+    tags = {"Event", "MouseDown", "Left", "Button", "Band40m"},
     priority = 10,
-    apply = { handler = "band_40m_click" }
+    apply = { handler = "set_value", property = "selectedBand", value = "40m" }
 }
 
 rule {
     id = "event-band-20m-click",
-    tags = {"Event", "MouseDown", "Button", "Band20m"},
+    tags = {"Event", "MouseDown", "Left", "Button", "Band20m"},
     priority = 10,
-    apply = { handler = "band_20m_click" }
+    apply = { handler = "set_value", property = "selectedBand", value = "20m" }
 }
 
 rule {
     id = "event-band-15m-click",
-    tags = {"Event", "MouseDown", "Button", "Band15m"},
+    tags = {"Event", "MouseDown", "Left", "Button", "Band15m"},
     priority = 10,
-    apply = { handler = "band_15m_click" }
+    apply = { handler = "set_value", property = "selectedBand", value = "15m" }
 }
 
 rule {
     id = "event-band-10m-click",
-    tags = {"Event", "MouseDown", "Button", "Band10m"},
+    tags = {"Event", "MouseDown", "Left", "Button", "Band10m"},
     priority = 10,
-    apply = { handler = "band_10m_click" }
+    apply = { handler = "set_value", property = "selectedBand", value = "10m" }
 }
 
 -- =============================================================================
--- Colormap Button Clicks
+-- Colormap Button Clicks (generic set_value)
 -- =============================================================================
 
 rule {
     id = "event-cmap-viridis-click",
-    tags = {"Event", "MouseDown", "Button", "CmapViridis"},
+    tags = {"Event", "MouseDown", "Left", "Button", "CmapViridis"},
     priority = 10,
-    apply = { handler = "cmap_viridis_click" }
+    apply = { handler = "set_value", property = "wfColormap", value = "viridis" }
 }
 
 rule {
     id = "event-cmap-plasma-click",
-    tags = {"Event", "MouseDown", "Button", "CmapPlasma"},
+    tags = {"Event", "MouseDown", "Left", "Button", "CmapPlasma"},
     priority = 10,
-    apply = { handler = "cmap_plasma_click" }
+    apply = { handler = "set_value", property = "wfColormap", value = "plasma" }
 }
 
 rule {
     id = "event-cmap-inferno-click",
-    tags = {"Event", "MouseDown", "Button", "CmapInferno"},
+    tags = {"Event", "MouseDown", "Left", "Button", "CmapInferno"},
     priority = 10,
-    apply = { handler = "cmap_inferno_click" }
+    apply = { handler = "set_value", property = "wfColormap", value = "inferno" }
 }
 
 rule {
     id = "event-cmap-green-click",
-    tags = {"Event", "MouseDown", "Button", "CmapGreen"},
+    tags = {"Event", "MouseDown", "Left", "Button", "CmapGreen"},
     priority = 10,
-    apply = { handler = "cmap_green_click" }
+    apply = { handler = "set_value", property = "wfColormap", value = "green" }
 }
 
 rule {
     id = "event-cmap-blue-click",
-    tags = {"Event", "MouseDown", "Button", "CmapBlue"},
+    tags = {"Event", "MouseDown", "Left", "Button", "CmapBlue"},
     priority = 10,
-    apply = { handler = "cmap_blue_click" }
+    apply = { handler = "set_value", property = "wfColormap", value = "blue" }
 }
 
 -- =============================================================================
--- Spectrum/Waterfall Interactions (mouse wheel tunes VFO)
+-- Waterfall Click (for click-to-tune)
 -- =============================================================================
-
-rule {
-    id = "event-spectrum-wheel",
-    tags = {"Event", "MouseWheel", "Spectrum"},
-    priority = 0,
-    apply = { handler = "vfo_tune" }
-}
-
-rule {
-    id = "event-waterfall-wheel",
-    tags = {"Event", "MouseWheel", "Waterfall"},
-    priority = 0,
-    apply = { handler = "vfo_tune" }
-}
 
 rule {
     id = "event-waterfall-click",
-    tags = {"Event", "MouseDown", "Waterfall"},
+    tags = {"Event", "MouseDown", "Left", "Waterfall"},
     priority = 0,
     apply = { handler = "waterfall_click" }
+}
+
+-- =============================================================================
+-- Generic MouseUp Handlers (no-op to mark interaction complete)
+-- =============================================================================
+
+rule {
+    id = "event-button-mouseup",
+    tags = {"Event", "MouseUp", "Left", "Button"},
+    priority = 0,
+    apply = { handler = "noop" }
+}
+
+rule {
+    id = "event-toggle-mouseup",
+    tags = {"Event", "MouseUp", "Left", "Toggle"},
+    priority = 0,
+    apply = { handler = "noop" }
+}
+
+rule {
+    id = "event-checkbox-mouseup",
+    tags = {"Event", "MouseUp", "Left", "Checkbox"},
+    priority = 0,
+    apply = { handler = "noop" }
+}
+
+rule {
+    id = "event-slider-mouseup",
+    tags = {"Event", "MouseUp", "Left", "Slider"},
+    priority = 0,
+    apply = { handler = "noop" }
 }
 
 -- =============================================================================

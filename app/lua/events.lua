@@ -91,9 +91,24 @@ function Events.init()
     Events._currentLayoutParent = nil
     Events.nextZIndex = 1
 
-    -- Default unhandled handler is registered in main.lua with enhanced logging
-
-    print("[Events] Event dispatch system initialized")
+    -- Verify setbox is available for event resolution
+    if not setbox then
+        print("[Events] WARNING: setbox global not available - event handlers will not resolve!")
+    else
+        -- Verify required functions exist
+        if not setbox.setActiveTags then
+            print("[Events] WARNING: setbox.setActiveTags not available")
+        end
+        if not setbox.getString then
+            print("[Events] WARNING: setbox.getString not available")
+        end
+        -- Count rules to verify config loaded
+        local ruleCount = 0
+        if setbox.getRules then
+            ruleCount = #setbox.getRules()
+        end
+        print(string.format("[Events] Event dispatch system initialized (setbox OK, %d rules)", ruleCount))
+    end
 end
 
 -- ============================================================================
@@ -105,7 +120,8 @@ end
 -- @param bounds {x, y, w, h}
 -- @param tags array of tags (e.g., {"Button", "Primary"})
 -- @param explicitParent optional explicit parent widget ID (nil = infer from layout)
-function Events.registerWidget(id, bounds, tags, explicitParent)
+-- @param data optional widget-specific data (e.g., {min=0, max=100} for sliders)
+function Events.registerWidget(id, bounds, tags, explicitParent, data)
     local parent = explicitParent or Events._currentLayoutParent
 
     Events.widgets[id] = {
@@ -115,6 +131,7 @@ function Events.registerWidget(id, bounds, tags, explicitParent)
         parent = parent,
         children = {},
         zIndex = Events.nextZIndex,
+        data = data or {},  -- Widget-specific data (min, max, property, etc.)
     }
     Events.nextZIndex = Events.nextZIndex + 1
 
@@ -246,6 +263,9 @@ end
 -- Public API - Event Dispatch
 -- ============================================================================
 
+-- Debug flag for event dispatch (set to true to trace tag matching)
+Events.debugDispatch = false
+
 --- Dispatch an event through the widget hierarchy
 -- @param event {type, x, y, button, key, delta, modifiers, ...}
 -- @return true if handled, false if bubbled to root unhandled
@@ -260,24 +280,54 @@ function Events.dispatch(event)
         targetWidget = Events.getWidgetAt(event.x, event.y)
     end
 
+    -- Debug: show what widget was hit (only for click events, not motion)
+    local showDebug = Events.debugDispatch and
+        (event.type == "MouseDown" or event.type == "MouseUp")
+
+    if showDebug then
+        local widgetName = targetWidget and targetWidget.id or "none"
+        local widgetTagsStr = targetWidget and table.concat(targetWidget.tags, ",") or ""
+        print(string.format("[Events] %s widget=%s tags={%s}",
+            event.type, widgetName, widgetTagsStr))
+    end
+
     -- Bubble through widget hierarchy
     local currentWidget = targetWidget
+    local firstBubble = true
     while true do
         -- Build tags for SetBox resolution
         local tags = Events._buildEventTags(event, currentWidget)
 
-        -- Resolve handler via SetBox
-        local handlerName = Events._resolveHandler(tags)
+        -- Resolve handler and properties via SetBox
+        local props = Events._resolveHandler(tags)
 
-        if handlerName then
-            local handler = Events.handlers[handlerName]
+        -- Debug: show resolution result (only on first bubble for target widget)
+        if showDebug and firstBubble then
+            if props and props.handler then
+                print(string.format("[Events] -> handler=%s", props.handler))
+            else
+                print("[Events] -> no handler")
+            end
+            firstBubble = false
+        end
+
+        if props and props.handler then
+            local handler = Events.handlers[props.handler]
             if handler then
-                local ok, result = pcall(handler, event, currentWidget)
+                local ok, result = pcall(handler, event, currentWidget, props)
                 if ok and result == true then
                     -- Event handled, stop bubbling
                     return true
                 end
                 -- Handler returned false or errored, continue bubbling
+                if not ok then
+                    print(string.format("[Events] Handler '%s' error: %s", props.handler, result))
+                end
+            else
+                -- Handler name resolved but not registered
+                if Events.debugDispatch then
+                    print(string.format("[Events DEBUG] Handler '%s' not registered!", props.handler))
+                end
             end
         end
 
@@ -294,52 +344,59 @@ function Events.dispatch(event)
     local unhandledTags = {"Event", event.type, "Unhandled"}
     Events._addModifierTags(event, unhandledTags)
 
-    local handlerName = Events._resolveHandler(unhandledTags)
-    if handlerName and Events.handlers[handlerName] then
-        pcall(Events.handlers[handlerName], event, nil)
+    local props = Events._resolveHandler(unhandledTags)
+    if props and props.handler and Events.handlers[props.handler] then
+        -- Pass the original target widget so unhandled handler can log it
+        pcall(Events.handlers[props.handler], event, targetWidget, props)
     end
 
     return false
 end
 
---- Dispatch a keyboard event (not position-dependent)
--- @param event {type, key, scancode, modifiers, ...}
+--- Dispatch a keyboard event
+-- Uses same tag-building as mouse events for consistency
+-- @param event {type, key, scancode, modifiers, x, y, ...}
 -- @return true if handled
 function Events.dispatchKey(event)
     if not event or not event.type then
         return false
     end
 
-    -- Build tags: {"Event", event.type, key_name, ...mode_tags, ...modifiers}
-    local tags = {"Event", event.type}
-
-    -- Add key name as tag (e.g., "Escape", "Enter", "F")
-    if event.key then
-        table.insert(tags, event.key)
+    -- Find widget under cursor (same as mouse events)
+    local widget = nil
+    if event.x and event.y then
+        widget = Events.getWidgetAt(event.x, event.y)
     end
 
-    -- Add mode tags (e.g., FreqEntryMode)
-    for modeTag, _ in pairs(Events.modeTags) do
-        table.insert(tags, modeTag)
+    -- Build tags using common function (includes widget tags, mode tags, modifiers)
+    local tags = Events._buildEventTags(event, widget)
+
+    -- Debug output for keyboard events
+    if Events.debugDispatch and event.type == "KeyDown" then
+        local widgetName = widget and widget.id or "none"
+        print(string.format("[Events] %s key=%s widget=%s tags={%s}",
+            event.type, event.key or "?", widgetName, table.concat(tags, ",")))
     end
 
-    -- Add modifier tags
-    Events._addModifierTags(event, tags)
-
-    -- Try to resolve handler via SetBox
-    local handlerName = Events._resolveHandler(tags)
-    if handlerName and Events.handlers[handlerName] then
-        local ok, result = pcall(Events.handlers[handlerName], event, nil)
+    -- Try to resolve handler and properties via SetBox
+    local props = Events._resolveHandler(tags)
+    if props and props.handler and Events.handlers[props.handler] then
+        if Events.debugDispatch and event.type == "KeyDown" then
+            print(string.format("[Events] -> handler=%s", props.handler))
+        end
+        local ok, result = pcall(Events.handlers[props.handler], event, widget, props)
         if ok and result == true then
             return true
         end
+    elseif Events.debugDispatch and event.type == "KeyDown" then
+        print("[Events] -> no handler")
     end
 
     -- If not handled, try with "Unhandled" tag
     table.insert(tags, "Unhandled")
-    handlerName = Events._resolveHandler(tags)
-    if handlerName and Events.handlers[handlerName] then
-        pcall(Events.handlers[handlerName], event, nil)
+    props = Events._resolveHandler(tags)
+    if props and props.handler and Events.handlers[props.handler] then
+        pcall(Events.handlers[props.handler], event, widget, props)
     end
 
     return false
@@ -394,6 +451,11 @@ end
 function Events._buildEventTags(event, widget)
     local tags = {"Event", event.type}
 
+    -- Add button for click/release events (e.g., "Left", "Right", "Middle")
+    if event.button then
+        table.insert(tags, event.button)
+    end
+
     -- Add key name for keyboard events (e.g., "Escape", "Enter", "F")
     if event.key then
         table.insert(tags, event.key)
@@ -411,7 +473,7 @@ function Events._buildEventTags(event, widget)
         table.insert(tags, modeTag)
     end
 
-    -- Add modifier tags (Shift, Ctrl, Alt)
+    -- Add modifier tags last (Shift, Ctrl, Alt, plus held buttons for motion)
     Events._addModifierTags(event, tags)
 
     return tags
@@ -427,36 +489,82 @@ function Events._addModifierTags(event, tags)
     end
 end
 
---- Resolve handler name via SetBox
+-- All possible modifier tags (for two-phase resolution)
+local MODIFIER_TAGS = {
+    Shift = true, Ctrl = true, Alt = true,
+    Left = true, Middle = true, Right = true  -- Held buttons for motion
+}
+
+--- Query SetBox for all handler-related properties with given tags
 -- @param tags tags array
--- @return handler name string or nil
-function Events._resolveHandler(tags)
+-- @return table with handler name and all other properties, or nil if no handler
+function Events._querySetBoxProperties(tags)
     if not setbox then
+        if Events.debugDispatch then
+            print("[Events DEBUG] setbox is nil!")
+        end
         return nil
     end
 
-    -- Save current tags, set event tags, resolve, restore
     local oldTags = setbox.getActiveTags and setbox.getActiveTags() or {}
-
-    -- Set event-specific tags temporarily
     if setbox.setActiveTags then
         setbox.setActiveTags(tags)
     end
 
-    -- Get handler property
-    local handler = nil
-    if setbox.getString then
-        handler = setbox.getString("handler", nil)
-    elseif setbox.get then
-        handler = setbox.get("handler")
-    end
+    -- Query all relevant properties for generic handlers
+    local props = {
+        handler = setbox.getString and setbox.getString("handler", nil) or setbox.get("handler"),
+        property = setbox.getString and setbox.getString("property", nil),
+        value = setbox.get and setbox.get("value"),
+        -- Linear step properties
+        step = setbox.getNumber and setbox.getNumber("step", nil),
+        step_ctrl = setbox.getNumber and setbox.getNumber("step_ctrl", nil),
+        step_shift = setbox.getNumber and setbox.getNumber("step_shift", nil),
+        step_ctrl_shift = setbox.getNumber and setbox.getNumber("step_ctrl_shift", nil),
+        -- Logarithmic factor properties
+        factor = setbox.getNumber and setbox.getNumber("factor", nil),
+        factor_ctrl = setbox.getNumber and setbox.getNumber("factor_ctrl", nil),
+        factor_shift = setbox.getNumber and setbox.getNumber("factor_shift", nil),
+        factor_ctrl_shift = setbox.getNumber and setbox.getNumber("factor_ctrl_shift", nil),
+        -- Range limits
+        min = setbox.getNumber and setbox.getNumber("min", nil),
+        max = setbox.getNumber and setbox.getNumber("max", nil),
+    }
 
-    -- Restore previous tags
+
     if setbox.setActiveTags then
         setbox.setActiveTags(oldTags)
     end
 
-    return handler
+    return props.handler and props or nil
+end
+
+--- Resolve handler and properties via SetBox with two-phase matching
+-- Phase 1: Try with full tags (most specific)
+-- Phase 2: Try without modifiers (more general fallback)
+-- @param tags tags array
+-- @return table with handler and properties, or nil
+function Events._resolveHandler(tags)
+    -- Phase 1: Try with full tags (most specific)
+    local props = Events._querySetBoxProperties(tags)
+    if props then
+        return props
+    end
+
+    -- Phase 2: Try without modifiers (more general)
+    local generalTags = {}
+    for _, tag in ipairs(tags) do
+        if not MODIFIER_TAGS[tag] then
+            table.insert(generalTags, tag)
+        end
+    end
+
+    -- Only try general if we actually removed modifiers
+    if #generalTags < #tags then
+        props = Events._querySetBoxProperties(generalTags)
+    end
+
+    return props
 end
 
 --- Create event object from raw input data
