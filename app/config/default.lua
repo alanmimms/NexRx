@@ -59,7 +59,7 @@ rule {
         -- =================================================================
         -- Window Defaults
         -- =================================================================
-        windowWidth = 1280,
+        windowWidth = 1900,  -- Widened to accommodate Active Tags debug widget
         windowHeight = 850,
         fontSize = 16,
 
@@ -126,7 +126,7 @@ rule {
 -- Button base
 rule {
     id = "button-base",
-    tags = {"Button"},
+    tags = {"widget.Button"},
     apply = {
         background = "#3b82f6",
         foreground = "#ffffff",
@@ -138,7 +138,7 @@ rule {
 
 rule {
     id = "button-primary",
-    tags = {"Button", "Primary"},
+    tags = {"widget.Button", "widget.Primary"},
     apply = {
         background = "#2563eb",
         fontWeight = "bold",
@@ -147,7 +147,7 @@ rule {
 
 rule {
     id = "button-secondary",
-    tags = {"Button", "Secondary"},
+    tags = {"widget.Button", "widget.Secondary"},
     apply = {
         background = "#64748b",
     }
@@ -155,16 +155,16 @@ rule {
 
 rule {
     id = "button-danger",
-    tags = {"Button", "Danger"},
+    tags = {"widget.Button", "widget.Danger"},
     apply = {
         background = "#dc2626",
     }
 }
 
--- RX Toggle styling (theme queries with "Button" prefix + passed tags)
+-- RX Toggle styling (theme queries with "widget.Button" prefix + passed tags)
 rule {
     id = "rx-toggle-off",
-    tags = {"Button", "RxToggle"},
+    tags = {"widget.Button", "widget.RxToggle"},
     priority = 15,
     apply = {
         background = "#dc2626",  -- Red when OFF
@@ -173,7 +173,7 @@ rule {
 
 rule {
     id = "rx-toggle-on",
-    tags = {"Button", "RxToggle", "Active"},
+    tags = {"widget.Button", "widget.RxToggle", "state.Active"},
     priority = 16,  -- Higher priority to override OFF state
     apply = {
         background = "#16a34a",  -- Green when ON
@@ -183,7 +183,7 @@ rule {
 -- Button state styles (tag-based, used by immediate-mode UI)
 rule {
     id = "button-hovered",
-    tags = {"Button", "Hovered"},
+    tags = {"widget.Button", "state.Hovered"},
     priority = 10,
     apply = {
         background = "#60a5fa",
@@ -192,7 +192,7 @@ rule {
 
 rule {
     id = "button-pressed",
-    tags = {"Button", "Pressed"},
+    tags = {"widget.Button", "state.Pressed"},
     priority = 11,
     apply = {
         background = "#1d4ed8",
@@ -201,7 +201,7 @@ rule {
 
 rule {
     id = "button-active",
-    tags = {"Button", "Active"},
+    tags = {"widget.Button", "state.Active"},
     priority = 5,
     apply = {
         background = "#2563eb",
@@ -211,7 +211,7 @@ rule {
 
 rule {
     id = "button-disabled",
-    tags = {"Button", "Disabled"},
+    tags = {"widget.Button", "state.Disabled"},
     priority = 20,
     apply = {
         background = "#4a5568",
@@ -222,7 +222,7 @@ rule {
 -- Panel styles
 rule {
     id = "panel-base",
-    tags = {"Panel"},
+    tags = {"widget.Panel"},
     apply = {
         background = "#1e293b",
         borderRadius = 8,
@@ -232,7 +232,7 @@ rule {
 
 rule {
     id = "panel-sidebar",
-    tags = {"Panel", "Sidebar"},
+    tags = {"widget.Panel", "widget.Sidebar"},
     apply = {
         background = "#0f172a",
         borderRadius = 0,
@@ -243,7 +243,7 @@ rule {
 -- Slider styles
 rule {
     id = "slider-base",
-    tags = {"Slider"},
+    tags = {"widget.Slider"},
     apply = {
         background = "#2d3748",
         accent = "#3b82f6",
@@ -253,7 +253,7 @@ rule {
 
 rule {
     id = "slider-hovered",
-    tags = {"Slider", "Hovered"},
+    tags = {"widget.Slider", "state.Hovered"},
     priority = 10,
     apply = {
         accent = "#60a5fa",
@@ -262,7 +262,7 @@ rule {
 
 rule {
     id = "slider-active",
-    tags = {"Slider", "Active"},
+    tags = {"widget.Slider", "state.Active"},
     priority = 11,
     apply = {
         accent = "#2563eb",
@@ -272,7 +272,7 @@ rule {
 -- Checkbox styles
 rule {
     id = "checkbox-base",
-    tags = {"Checkbox"},
+    tags = {"widget.Checkbox"},
     apply = {
         background = "#2d3748",
         foreground = "#e2e8f0",
@@ -283,7 +283,7 @@ rule {
 
 rule {
     id = "checkbox-checked",
-    tags = {"Checkbox", "Checked"},
+    tags = {"widget.Checkbox", "state.Checked"},
     priority = 5,
     apply = {
         background = "#3b82f6",
@@ -293,7 +293,7 @@ rule {
 
 rule {
     id = "checkbox-hovered",
-    tags = {"Checkbox", "Hovered"},
+    tags = {"widget.Checkbox", "state.Hovered"},
     priority = 10,
     apply = {
         border = "#60a5fa",
@@ -303,7 +303,7 @@ rule {
 -- Input field styles
 rule {
     id = "input-base",
-    tags = {"Input"},
+    tags = {"widget.Input"},
     apply = {
         background = "#1e293b",
         foreground = "#e2e8f0",
@@ -315,7 +315,7 @@ rule {
 
 rule {
     id = "input-hovered",
-    tags = {"Input", "Hovered"},
+    tags = {"widget.Input", "state.Hovered"},
     priority = 10,
     apply = {
         border = "#60a5fa",
@@ -324,7 +324,7 @@ rule {
 
 rule {
     id = "input-focused",
-    tags = {"Input", "Focused"},
+    tags = {"widget.Input", "state.Focused"},
     priority = 11,
     apply = {
         border = "#3b82f6",
@@ -335,7 +335,7 @@ rule {
 -- Label styles
 rule {
     id = "label-base",
-    tags = {"Label"},
+    tags = {"widget.Label"},
     apply = {
         foreground = "#e2e8f0",
     }
@@ -343,7 +343,7 @@ rule {
 
 rule {
     id = "label-title",
-    tags = {"Label", "Title"},
+    tags = {"widget.Label", "widget.Title"},
     apply = {
         foreground = "#f1f5f9",
         fontSize = 16,
@@ -352,7 +352,7 @@ rule {
 
 rule {
     id = "label-muted",
-    tags = {"Label", "Muted"},
+    tags = {"widget.Label", "widget.Muted"},
     apply = {
         foreground = "#94a3b8",
     }
@@ -360,7 +360,7 @@ rule {
 
 rule {
     id = "label-accent",
-    tags = {"Label", "Accent"},
+    tags = {"widget.Label", "widget.Accent"},
     apply = {
         foreground = "#60a5fa",
     }
@@ -369,7 +369,7 @@ rule {
 -- Progress bar styles
 rule {
     id = "progressbar-base",
-    tags = {"ProgressBar"},
+    tags = {"widget.ProgressBar"},
     apply = {
         background = "#2d3748",
         accent = "#3b82f6",
@@ -379,7 +379,7 @@ rule {
 -- Separator styles
 rule {
     id = "separator-base",
-    tags = {"Separator"},
+    tags = {"widget.Separator"},
     apply = {
         border = "#4a5568",
     }
@@ -392,7 +392,7 @@ rule {
 -- Band defaults
 rule {
     id = "radio-160m",
-    tags = {"Radio", "160m"},
+    tags = {"widget.Radio", "state.Band-160m"},
     apply = {
         frequency = 1.9e6,
         antenna = "wire",
@@ -401,7 +401,7 @@ rule {
 
 rule {
     id = "radio-80m",
-    tags = {"Radio", "80m"},
+    tags = {"widget.Radio", "state.Band-80m"},
     apply = {
         frequency = 3.5e6,
         antenna = "dipole",
@@ -410,7 +410,7 @@ rule {
 
 rule {
     id = "radio-40m",
-    tags = {"Radio", "40m"},
+    tags = {"widget.Radio", "state.Band-40m"},
     apply = {
         frequency = 7.0e6,
         antenna = "dipole",
@@ -419,7 +419,7 @@ rule {
 
 rule {
     id = "radio-20m",
-    tags = {"Radio", "20m"},
+    tags = {"widget.Radio", "state.Band-20m"},
     apply = {
         frequency = 14.0e6,
         antenna = "beam",
@@ -428,7 +428,7 @@ rule {
 
 rule {
     id = "radio-15m",
-    tags = {"Radio", "15m"},
+    tags = {"widget.Radio", "state.Band-15m"},
     apply = {
         frequency = 21.0e6,
         antenna = "beam",
@@ -437,7 +437,7 @@ rule {
 
 rule {
     id = "radio-10m",
-    tags = {"Radio", "10m"},
+    tags = {"widget.Radio", "state.Band-10m"},
     apply = {
         frequency = 28.0e6,
         antenna = "beam",
@@ -447,7 +447,7 @@ rule {
 -- Mode defaults
 rule {
     id = "radio-cw",
-    tags = {"Radio", "CW"},
+    tags = {"widget.Radio", "state.Mode-CW"},
     apply = {
         mode = "CW",
         filterWidth = 500,
@@ -458,7 +458,7 @@ rule {
 
 rule {
     id = "radio-ssb",
-    tags = {"Radio", "SSB"},
+    tags = {"widget.Radio", "state.Mode-SSB"},
     apply = {
         mode = "USB",
         filterWidth = 2400,
@@ -468,7 +468,7 @@ rule {
 
 rule {
     id = "radio-lsb",
-    tags = {"Radio", "LSB"},
+    tags = {"widget.Radio", "state.Mode-LSB"},
     apply = {
         mode = "LSB",
     }
@@ -476,7 +476,7 @@ rule {
 
 rule {
     id = "radio-usb",
-    tags = {"Radio", "USB"},
+    tags = {"widget.Radio", "state.Mode-USB"},
     apply = {
         mode = "USB",
     }
@@ -484,7 +484,7 @@ rule {
 
 rule {
     id = "radio-am",
-    tags = {"Radio", "AM"},
+    tags = {"widget.Radio", "state.Mode-AM"},
     apply = {
         mode = "AM",
         filterWidth = 6000,
@@ -495,7 +495,7 @@ rule {
 -- Band + Mode combinations (more specific)
 rule {
     id = "radio-40m-ssb",
-    tags = {"Radio", "40m", "SSB"},
+    tags = {"widget.Radio", "state.Band-40m", "state.Mode-SSB"},
     apply = {
         frequency = 7.2e6,
         mode = "LSB",  -- 40m and below use LSB
@@ -504,7 +504,7 @@ rule {
 
 rule {
     id = "radio-20m-cw",
-    tags = {"Radio", "20m", "CW"},
+    tags = {"widget.Radio", "state.Band-20m", "state.Mode-CW"},
     apply = {
         frequency = 14.035e6,
     }
@@ -512,7 +512,7 @@ rule {
 
 rule {
     id = "radio-20m-ssb",
-    tags = {"Radio", "20m", "SSB"},
+    tags = {"widget.Radio", "state.Band-20m", "state.Mode-SSB"},
     apply = {
         frequency = 14.2e6,
         mode = "USB",
@@ -525,7 +525,7 @@ rule {
 
 rule {
     id = "waterfall-base",
-    tags = {"Waterfall"},
+    tags = {"widget.Waterfall"},
     apply = {
         wfColormap = "viridis",
         speed = 50,
@@ -537,7 +537,7 @@ rule {
 
 rule {
     id = "waterfall-cw",
-    tags = {"Waterfall", "CW"},
+    tags = {"widget.Waterfall", "state.Mode-CW"},
     apply = {
         wfColormap = "green_phosphor",
         span = 3000,
@@ -546,7 +546,7 @@ rule {
 
 rule {
     id = "waterfall-ssb",
-    tags = {"Waterfall", "SSB"},
+    tags = {"widget.Waterfall", "state.Mode-SSB"},
     apply = {
         span = 6000,
     }
@@ -558,7 +558,7 @@ rule {
 
 rule {
     id = "contest-base",
-    tags = {"Contest"},
+    tags = {"state.Contest"},
     apply = {
         -- Compact UI
         fontSize = 12,
@@ -571,7 +571,7 @@ rule {
 
 rule {
     id = "contest-cw",
-    tags = {"Contest", "CW"},
+    tags = {"state.Contest", "state.Mode-CW"},
     apply = {
         filterWidth = 400,
         sidetoneFreq = 550,

@@ -86,10 +86,17 @@ function ui.button(id, label, x, y, w, h, tags)
     w = w or 100
     h = h or 32
 
-    -- Build widget tags
-    local widgetTags = {"Button"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Button"}
     if tags then
-        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+        for _, t in ipairs(tags) do
+            -- Add widget. prefix if not already namespaced
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
     end
 
     -- Register with events module for SetBox dispatch
@@ -133,13 +140,19 @@ function ui.toggle(id, label, x, y, w, h, checked, tags)
     w = w or 100
     h = h or 32
 
-    -- Build widget tags
-    local widgetTags = {"Toggle", "Button"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Toggle", "widget.Button"}
     if tags then
-        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
     end
     if checked then
-        table.insert(widgetTags, "Checked")
+        table.insert(widgetTags, "state.Checked")
     end
 
     -- Register with events module
@@ -154,10 +167,19 @@ function ui.toggle(id, label, x, y, w, h, checked, tags)
         end
     end
 
-    -- Modify display tags based on state
-    local displayTags = tags and {table.unpack(tags)} or {}
+    -- Modify display tags based on state (namespaced)
+    local displayTags = {}
+    if tags then
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(displayTags, "widget." .. t)
+            else
+                table.insert(displayTags, t)
+            end
+        end
+    end
     if checked then
-        table.insert(displayTags, "Active")
+        table.insert(displayTags, "state.Active")
     end
 
     local style = theme.getButtonStyle(displayTags, state.isHot(id), state.isActive(id), false)
@@ -186,13 +208,19 @@ function ui.checkbox(id, label, x, y, checked, tags)
     local totalW = boxSize + spacing + labelW
     local h = boxSize
 
-    -- Build widget tags
-    local widgetTags = {"Checkbox"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Checkbox"}
     if tags then
-        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
     end
     if checked then
-        table.insert(widgetTags, "Checked")
+        table.insert(widgetTags, "state.Checked")
     end
 
     -- Register with events module
@@ -246,10 +274,16 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags, property)
     local hitH = math.max(h, handleR * 2)
     local hitY = y - (hitH - h) / 2
 
-    -- Build widget tags
-    local widgetTags = {"Slider"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Slider"}
     if tags then
-        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
     end
 
     -- Register with events module, including slider data for generic handlers
@@ -267,9 +301,7 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags, property)
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x - handleR, hitY, w + handleR*2, hitH)
     if isHot then
         state.setHot(id)
-        if state.mouseClicked then
-            state.setActive(id)
-        end
+        -- Activation is handled by slider_activate rule, not direct click
     end
 
     -- Handle dragging - sliders still track this for smooth visual feedback
@@ -313,10 +345,16 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
     local hitW = math.max(w, handleR * 2)
     local hitX = x - (hitW - w) / 2
 
-    -- Build widget tags
-    local widgetTags = {"Slider", "Vertical"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Slider", "widget.Vertical"}
     if tags then
-        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
     end
 
     -- Register with events module
@@ -329,9 +367,7 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
     local isHot = state.pointInRect(state.mouseX, state.mouseY, hitX, y - handleR, hitW, h + handleR*2)
     if isHot then
         state.setHot(id)
-        if state.mouseClicked then
-            state.setActive(id)
-        end
+        -- Activation is handled by slider_activate rule, not direct click
     end
 
     -- Handle dragging
@@ -371,16 +407,22 @@ end
 function ui.progressBar(id, x, y, w, h, value, tags)
     local t = clamp(value, 0, 1)
 
-    -- Build widget tags
-    local widgetTags = {"ProgressBar"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.ProgressBar"}
     if tags then
-        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+        for _, tag in ipairs(tags) do
+            if not tag:find("%.") then
+                table.insert(widgetTags, "widget." .. tag)
+            else
+                table.insert(widgetTags, tag)
+            end
+        end
     end
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
-    local style = theme.getStyle(tags or {"ProgressBar"})
+    local style = theme.getStyle(widgetTags)
 
     -- Draw track
     drawRoundedRect(x, y, w, h, h/2, style.bgR, style.bgG, style.bgB, 1.0)
@@ -394,10 +436,16 @@ end
 
 -- Label (text display)
 function ui.label(id, x, y, text, tags)
-    -- Build widget tags
-    local widgetTags = {"Label"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Label"}
     if tags then
-        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+        for _, tag in ipairs(tags) do
+            if not tag:find("%.") then
+                table.insert(widgetTags, "widget." .. tag)
+            else
+                table.insert(widgetTags, tag)
+            end
+        end
     end
 
     -- Measure text for bounds
@@ -413,10 +461,16 @@ end
 
 -- Panel background
 function ui.panel(id, x, y, w, h, tags)
-    -- Build widget tags
-    local widgetTags = {"Panel"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Panel"}
     if tags then
-        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+        for _, tag in ipairs(tags) do
+            if not tag:find("%.") then
+                table.insert(widgetTags, "widget." .. tag)
+            else
+                table.insert(widgetTags, tag)
+            end
+        end
     end
 
     -- Register with events module
@@ -429,10 +483,16 @@ end
 
 -- Panel with title
 function ui.panelWithTitle(id, x, y, w, h, title, tags)
-    -- Build widget tags
-    local widgetTags = {"Panel", "TitledPanel"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Panel", "widget.TitledPanel"}
     if tags then
-        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+        for _, tag in ipairs(tags) do
+            if not tag:find("%.") then
+                table.insert(widgetTags, "widget." .. tag)
+            else
+                table.insert(widgetTags, tag)
+            end
+        end
     end
 
     -- Register with events module
@@ -451,7 +511,7 @@ function ui.panelWithTitle(id, x, y, w, h, title, tags)
     drawLine(x, y + titleH, x + w, y + titleH, style.borderR, style.borderG, style.borderB, 1.0, 1)
 
     -- Title text
-    local labelStyle = theme.getLabelStyle({"Title"})
+    local labelStyle = theme.getLabelStyle({"widget.Title"})
     local lineH = getLineHeight()
     drawText(x + style.padding, y + (titleH - lineH) / 2, title, labelStyle.fgR, labelStyle.fgG, labelStyle.fgB, 1.0)
 
@@ -463,31 +523,43 @@ end
 function ui.separator(id, x, y, w, tags)
     local h = 1  -- Separator height for hit testing
 
-    -- Build widget tags
-    local widgetTags = {"Separator"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Separator"}
     if tags then
-        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+        for _, tag in ipairs(tags) do
+            if not tag:find("%.") then
+                table.insert(widgetTags, "widget." .. tag)
+            else
+                table.insert(widgetTags, tag)
+            end
+        end
     end
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
-    local style = theme.getStyle(tags or {"Separator"})
+    local style = theme.getStyle(widgetTags)
     drawLine(x, y, x + w, y, style.borderR, style.borderG, style.borderB, 0.5, 1)
 end
 
 -- Meter widget (like S-meter) - a bar graph display
 function ui.meter(id, x, y, w, h, value, minVal, maxVal, tags)
-    -- Build widget tags
-    local widgetTags = {"Meter"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Meter"}
     if tags then
-        for _, tag in ipairs(tags) do table.insert(widgetTags, tag) end
+        for _, tag in ipairs(tags) do
+            if not tag:find("%.") then
+                table.insert(widgetTags, "widget." .. tag)
+            else
+                table.insert(widgetTags, tag)
+            end
+        end
     end
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
-    local style = theme.getStyle(tags or {"Meter"})
+    local style = theme.getStyle(widgetTags)
 
     -- Draw background
     drawRoundedRect(x, y, w, h, 4, style.bgR or 0.12, style.bgG or 0.12, style.bgB or 0.15, 1.0)
@@ -507,10 +579,16 @@ function ui.textInput(id, x, y, w, text, placeholder, tags)
     local h = 28
     local padding = 8
 
-    -- Build widget tags
-    local widgetTags = {"Input", "TextInput"}
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.Input", "widget.TextInput"}
     if tags then
-        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
     end
 
     -- Register with events module
@@ -559,6 +637,80 @@ function ui.textInput(id, x, y, w, text, placeholder, tags)
     end
 
     return text
+end
+
+-- =============================================================================
+-- Active Tags Viewer Widget (Debug)
+-- Displays all currently active tags in real-time
+-- =============================================================================
+function ui.activeTagsViewer(id, x, y, w, h, activeTags, tags)
+    -- Build widget tags (namespaced)
+    local widgetTags = {"widget.ActiveTagsViewer", "widget.DebugWidget", "widget.Panel"}
+    if tags then
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
+    end
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
+    local lineH = getLineHeight()
+    local padding = 8
+
+    -- Draw panel background
+    drawRoundedRect(x, y, w, h, 4, 0.08, 0.08, 0.12, 1.0)
+    drawRectOutline(x, y, w, h, 0.2, 0.2, 0.25, 1.0, 1.0)
+
+    -- Draw title
+    drawText(x + padding, y + padding, "Active Tags", 0.6, 0.7, 0.9, 1.0)
+
+    -- Sort and display active tags
+    local sortedTags = {}
+    if activeTags then
+        for tagName, _ in pairs(activeTags) do
+            table.insert(sortedTags, tagName)
+        end
+        table.sort(sortedTags)
+    end
+
+    -- Draw each tag
+    local textY = y + padding + lineH + 8
+    local maxLines = math.floor((h - padding * 2 - lineH - 8) / (lineH + 2))
+
+    for i, tagName in ipairs(sortedTags) do
+        if i > maxLines then
+            -- Show overflow indicator
+            drawText(x + padding, textY, "..." .. (#sortedTags - maxLines + 1) .. " more", 0.5, 0.5, 0.55, 1.0)
+            break
+        end
+
+        -- Color code by namespace prefix
+        local r, g, b = 0.7, 0.7, 0.75  -- Default gray
+        if tagName:match("^event%.") then
+            r, g, b = 1.0, 0.4, 0.4  -- Red for transient events
+        elseif tagName:match("^widget%.") then
+            r, g, b = 0.4, 0.9, 0.4  -- Green for widget tags
+        elseif tagName:match("^state%.") then
+            r, g, b = 0.9, 0.4, 0.9  -- Magenta for state tags
+        elseif tagName:match("^input%.") then
+            r, g, b = 0.2, 0.8, 0.9  -- Cyan for input/held tags
+        elseif tagName:match("^layout%.") then
+            r, g, b = 0.9, 0.7, 0.3  -- Orange for layout tags
+        end
+
+        drawText(x + padding, textY, tagName, r, g, b, 1.0)
+        textY = textY + lineH + 2
+    end
+
+    -- Show tag count at bottom
+    local countText = string.format("%d tags", #sortedTags)
+    local countW = measureText(countText)
+    drawText(x + w - padding - countW, y + h - padding - lineH, countText, 0.5, 0.5, 0.55, 1.0)
 end
 
 return ui

@@ -1,10 +1,11 @@
 --[[
-    events.lua - SetBox-based Event Dispatch System
+    events.lua - SetBox-based Event Dispatch System (Unified Tag Architecture)
 
-    Routes input events through SetBox rules based on tags for:
-    - Event type (MouseDown, KeyDown, etc.)
-    - Widget under mouse
-    - Modifier keys (Shift, Ctrl, Alt)
+    Routes input events through SetBox rules based on namespaced tags:
+    - event.*  : Event type (event.MouseDown-LEFT, event.KeyDown-H, etc.)
+    - widget.* : Widget type and identity (widget.Button, widget.VFOControl, etc.)
+    - state.*  : Widget/app state (state.Hovered, state.FreqEntryMode, etc.)
+    - input.*  : Held inputs (input.SHIFT, input.CTRL, input.MouseLEFT, etc.)
 
     Events bubble from the deepest widget up through parents until handled.
     Handlers return true to stop bubbling, false to continue.
@@ -25,7 +26,7 @@
             type = events.Type.MOUSE_WHEEL,
             x = mouseX, y = mouseY,
             delta = wheelDelta,
-            modifiers = {"Shift"},
+            modifiers = {"input.SHIFT"},
         })
 ]]
 
@@ -44,6 +45,8 @@ Events.Type = {
     KEY_UP = "KeyUp",
     TEXT_INPUT = "TextInput",
     WINDOW_RESIZE = "WindowResize",
+    WINDOW_MAPPED = "WindowMapped",
+    WINDOW_UNMAPPED = "WindowUnmapped",
     FOCUS_IN = "FocusIn",
     FOCUS_OUT = "FocusOut",
 }
@@ -341,7 +344,7 @@ function Events.dispatch(event)
     end
 
     -- No widget handled the event - try global unhandled handler
-    local unhandledTags = {"Event", event.type, "Unhandled"}
+    local unhandledTags = {"event.Unhandled"}
     Events._addModifierTags(event, unhandledTags)
 
     local props = Events._resolveHandler(unhandledTags)
@@ -392,8 +395,8 @@ function Events.dispatchKey(event)
         print("[Events] -> no handler")
     end
 
-    -- If not handled, try with "Unhandled" tag
-    table.insert(tags, "Unhandled")
+    -- If not handled, try with "event.Unhandled" tag
+    table.insert(tags, "event.Unhandled")
     props = Events._resolveHandler(tags)
     if props and props.handler and Events.handlers[props.handler] then
         pcall(Events.handlers[props.handler], event, widget, props)
@@ -444,36 +447,37 @@ end
 -- Internal Functions
 -- ============================================================================
 
---- Build tags array for event resolution
+--- Build tags array for event resolution (namespaced)
 -- @param event the event
 -- @param widget current widget (may be nil)
 -- @return tags array
 function Events._buildEventTags(event, widget)
-    local tags = {"Event", event.type}
+    local tags = {}
 
-    -- Add button for click/release events (e.g., "Left", "Right", "Middle")
+    -- Build event tag: event.MouseDown-LEFT, event.KeyDown-H, event.MouseWheel, etc.
+    local eventTag = "event." .. event.type
     if event.button then
-        table.insert(tags, event.button)
+        -- Mouse button events: event.MouseDown-LEFT, event.MouseUp-RIGHT, etc.
+        eventTag = eventTag .. "-" .. event.button
+    elseif event.key then
+        -- Keyboard events: event.KeyDown-H, event.KeyUp-ESC, etc.
+        eventTag = eventTag .. "-" .. event.key
     end
+    table.insert(tags, eventTag)
 
-    -- Add key name for keyboard events (e.g., "Escape", "Enter", "F")
-    if event.key then
-        table.insert(tags, event.key)
-    end
-
-    -- Add widget tags
+    -- Add widget tags (already namespaced from widgets.lua)
     if widget and widget.tags then
         for _, tag in ipairs(widget.tags) do
             table.insert(tags, tag)
         end
     end
 
-    -- Add mode tags (e.g., FreqEntryMode)
+    -- Add mode tags (state.* namespace)
     for modeTag, _ in pairs(Events.modeTags) do
         table.insert(tags, modeTag)
     end
 
-    -- Add modifier tags last (Shift, Ctrl, Alt, plus held buttons for motion)
+    -- Add modifier tags last (input.SHIFT, input.CTRL, input.ALT, plus held buttons)
     Events._addModifierTags(event, tags)
 
     return tags
@@ -490,17 +494,20 @@ function Events._addModifierTags(event, tags)
 end
 
 -- All possible modifier tags (for two-phase resolution)
--- Includes generic (Shift) and specific (LShift, RShift) variants
+-- Includes generic (SHIFT) and specific (LSHIFT, RSHIFT) variants
+-- All use input.* namespace
 local MODIFIER_TAGS = {
     -- Generic modifiers (derived from specific)
-    Shift = true, Ctrl = true, Alt = true,
+    ["input.SHIFT"] = true, ["input.CTRL"] = true, ["input.ALT"] = true,
     -- Specific modifier keys
-    LShift = true, RShift = true,
-    LCtrl = true, RCtrl = true,
-    LAlt = true, RAlt = true,
-    LGui = true, RGui = true,
+    ["input.LSHIFT"] = true, ["input.RSHIFT"] = true,
+    ["input.LCTRL"] = true, ["input.RCTRL"] = true,
+    ["input.LALT"] = true, ["input.RALT"] = true,
+    ["input.LGUI"] = true, ["input.RGUI"] = true,
     -- Mouse buttons (held buttons act as modifiers for motion)
-    Left = true, Middle = true, Right = true,
+    ["input.MouseLEFT"] = true, ["input.MouseMIDDLE"] = true, ["input.MouseRIGHT"] = true,
+    -- Single letter keys held as modifiers (e.g., H for fine tune)
+    ["input.H"] = true,
 }
 
 --- Query SetBox for all handler-related properties with given tags
@@ -594,17 +601,17 @@ function Events.createEvent(eventType, data)
         end
     end
 
-    -- Build modifiers array from C++ functions if available
+    -- Build modifiers array from C++ functions if available (namespaced)
     if not event.modifiers then
         event.modifiers = {}
         if isShiftDown and isShiftDown() then
-            table.insert(event.modifiers, "Shift")
+            table.insert(event.modifiers, "input.SHIFT")
         end
         if isCtrlDown and isCtrlDown() then
-            table.insert(event.modifiers, "Ctrl")
+            table.insert(event.modifiers, "input.CTRL")
         end
         if isAltDown and isAltDown() then
-            table.insert(event.modifiers, "Alt")
+            table.insert(event.modifiers, "input.ALT")
         end
     end
 

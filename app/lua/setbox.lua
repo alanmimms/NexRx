@@ -37,6 +37,27 @@ local changeCallbacks = {}
 local nativeCallbacks = {}  -- Callbacks from C++ (registered via _registerNativeCallback)
 local nextRuleOrder = 0
 
+-- Input and state rule registries (for unified tag architecture)
+local inputRules = {}
+local stateRules = {}
+
+-- =============================================================================
+-- Tag Parsing (supports @N priority suffix)
+-- =============================================================================
+
+--- Parse a tag string, extracting name and priority
+-- "widget.Button" -> "widget.Button", 1
+-- "widget.Button@5" -> "widget.Button", 5
+-- @param tagStr The tag string to parse
+-- @return name, priority
+local function parseTag(tagStr)
+    local name, pri = tagStr:match("^(.-)@(%d+)$")
+    if name and pri then
+        return name, tonumber(pri)
+    end
+    return tagStr, 1  -- Default priority is 1
+end
+
 -- =============================================================================
 -- Tag Management
 -- =============================================================================
@@ -130,9 +151,9 @@ end
 
 --- Register a rule
 -- @param def Rule definition table with:
---   tags: List of required tags (optional, empty = global default)
+--   tags: List of required tags with optional @N priority suffix
 --   tag: Single tag string (alternative to tags)
---   priority: Number (default 0, higher wins)
+--   priority: Number (default 0, added to tag priorities for tie-breaking)
 --   when: Function(ctx) -> bool for dynamic conditions
 --   enabled: Boolean (default true)
 --   id: String identifier (auto-generated if missing)
@@ -141,23 +162,25 @@ end
 function SetBox.rule(def)
     local rule = {
         id = def.id or ("rule_" .. tostring(nextRuleOrder)),
-        tags = {},
+        tags = {},           -- tag name -> priority (parsed from @N suffix)
         condition = def["when"],
-        priority = def.priority or 0,
+        priority = def.priority or 0,  -- Base priority added to tag sum
         enabled = def.enabled ~= false,
         properties = {},
         declarationOrder = nextRuleOrder,
     }
     nextRuleOrder = nextRuleOrder + 1
 
-    -- Extract tags
+    -- Extract tags with priority parsing
     if def.tags then
-        for _, tag in ipairs(def.tags) do
-            rule.tags[tag] = true
+        for _, tagStr in ipairs(def.tags) do
+            local name, pri = parseTag(tagStr)
+            rule.tags[name] = pri
         end
     end
     if def.tag then
-        rule.tags[def.tag] = true
+        local name, pri = parseTag(def.tag)
+        rule.tags[name] = pri
     end
 
     -- Extract properties from 'apply' table
@@ -187,19 +210,23 @@ end
 -- =============================================================================
 
 --- Calculate match score for a rule
--- @return 0 if no match, otherwise number of matching tags (min 1)
+-- Score = sum of tag priorities + rule base priority
+-- @return 0 if no match, otherwise sum of priorities (min 1)
 local function matchScore(rule)
     if not rule.enabled then
         return 0
     end
 
     -- All rule tags must be present in active tags
-    local tagCount = 0
-    for tag in pairs(rule.tags) do
-        tagCount = tagCount + 1
-        if not activeTags[tag] then
-            return 0
+    -- Score is sum of tag priorities
+    local prioritySum = 0
+    local hasAnyTags = false
+    for tagName, tagPriority in pairs(rule.tags) do
+        hasAnyTags = true
+        if not activeTags[tagName] then
+            return 0  -- Tag not active, rule doesn't match
         end
+        prioritySum = prioritySum + tagPriority
     end
 
     -- Evaluate condition if present
@@ -210,25 +237,20 @@ local function matchScore(rule)
         end
     end
 
+    -- Add rule's base priority
+    prioritySum = prioritySum + rule.priority
+
     -- Return at least 1 for rules with empty tags (global defaults)
-    return tagCount > 0 and tagCount or 1
+    return hasAnyTags and prioritySum or 1
 end
 
---- Compare rules for sorting by specificity
--- More specific (more tags) > higher priority > later declaration
-local function compareRules(a, b)
-    local aTagCount = 0
-    for _ in pairs(a.tags) do aTagCount = aTagCount + 1 end
-    local bTagCount = 0
-    for _ in pairs(b.tags) do bTagCount = bTagCount + 1 end
-
-    -- More tags = more specific = wins
-    if aTagCount ~= bTagCount then
-        return aTagCount > bTagCount
-    end
-    -- Higher priority wins
-    if a.priority ~= b.priority then
-        return a.priority > b.priority
+--- Compare rules for sorting by score
+-- Higher score (sum of tag priorities + base priority) wins
+-- Ties broken by declaration order (later wins)
+local function compareRules(a, b, scoreA, scoreB)
+    -- Higher score wins
+    if scoreA ~= scoreB then
+        return scoreA > scoreB
     end
     -- Later declaration wins
     return a.declarationOrder > b.declarationOrder
@@ -244,22 +266,25 @@ function SetBox.resolve()
         return cachedProperties
     end
 
-    -- Collect matching rules
+    -- Collect matching rules with their scores
     local matching = {}
     for _, rule in ipairs(rules) do
-        if matchScore(rule) > 0 then
-            table.insert(matching, rule)
+        local score = matchScore(rule)
+        if score > 0 then
+            table.insert(matching, { rule = rule, score = score })
         end
     end
 
-    -- Sort by specificity (most specific first)
-    table.sort(matching, compareRules)
+    -- Sort by score (highest first), then declaration order
+    table.sort(matching, function(a, b)
+        return compareRules(a.rule, b.rule, a.score, b.score)
+    end)
 
-    -- Merge properties (later in sorted order = higher priority = wins)
-    -- So we iterate in reverse to let high-priority rules override
+    -- Merge properties (later in sorted order = higher score = wins)
+    -- So we iterate in reverse to let high-score rules override
     local result = {}
     for i = #matching, 1, -1 do
-        for name, value in pairs(matching[i].properties) do
+        for name, value in pairs(matching[i].rule.properties) do
             result[name] = value
         end
     end
@@ -387,16 +412,24 @@ function SetBox.getRules()
     return rules
 end
 
---- Get matching rules for current tags
+--- Get matching rules for current tags (with scores)
 function SetBox.getMatchingRules()
     local matching = {}
     for _, rule in ipairs(rules) do
-        if matchScore(rule) > 0 then
-            table.insert(matching, rule)
+        local score = matchScore(rule)
+        if score > 0 then
+            table.insert(matching, { rule = rule, score = score })
         end
     end
-    table.sort(matching, compareRules)
-    return matching
+    table.sort(matching, function(a, b)
+        return compareRules(a.rule, b.rule, a.score, b.score)
+    end)
+    -- Return just rules for API compatibility
+    local result = {}
+    for _, m in ipairs(matching) do
+        table.insert(result, m.rule)
+    end
+    return result
 end
 
 --- Clear all rules (for testing)
@@ -408,16 +441,88 @@ function SetBox._clear()
     cacheValid = false
     changeCallbacks = {}
     nativeCallbacks = {}
+    inputRules = {}
+    stateRules = {}
     nextRuleOrder = 0
+end
+
+-- =============================================================================
+-- Input Rules (SDL event to tag mapping)
+-- =============================================================================
+
+--- Register an input mapping rule
+-- @param def Input rule definition:
+--   sdl: { type = "MOUSEBUTTONDOWN", button = 1, ... }
+--   emit: { tag = "event.MouseDown-LEFT", properties = { "x", "y" } }
+--   hold: { tag = "input.MouseLEFT" } (persists until release)
+--   also: { tag = "input.SHIFT" } (derived tag, added with hold)
+function SetBox.inputRule(def)
+    table.insert(inputRules, {
+        sdl = def.sdl,
+        emit = def.emit,
+        hold = def.hold,
+        also = def.also,
+    })
+end
+
+--- Get all input rules
+function SetBox.getInputRules()
+    return inputRules
+end
+
+-- =============================================================================
+-- State Rules (property value to tag mapping)
+-- =============================================================================
+
+--- Register a state-to-tag mapping rule
+-- @param def State rule definition:
+--   when: { property = "currentMode", equals = "USB" }
+--   activate: { "state.Mode-USB", "state.Mode-SSB" }
+function SetBox.stateRule(def)
+    table.insert(stateRules, {
+        when = def.when,
+        activate = def.activate,
+    })
+end
+
+--- Evaluate all state rules against a state table
+-- @param stateTable Table of property name -> value
+-- @return Table of tag name -> true for all activated tags
+function SetBox.evaluateStateRules(stateTable)
+    local stateTags = {}
+    for _, rule in ipairs(stateRules) do
+        local prop = rule.when.property
+        local expected = rule.when.equals
+        local actual = stateTable[prop]
+        if actual == expected then
+            for _, tag in ipairs(rule.activate) do
+                stateTags[tag] = true
+            end
+        end
+    end
+    return stateTags
+end
+
+--- Get all state rules
+function SetBox.getStateRules()
+    return stateRules
 end
 
 -- =============================================================================
 -- Global Exports
 -- =============================================================================
 
--- Make rule() available globally so config files can use it
+-- Make rule(), inputRule(), stateRule() available globally so config files can use them
 _G.rule = function(def)
     SetBox.rule(def)
+end
+
+_G.inputRule = function(def)
+    SetBox.inputRule(def)
+end
+
+_G.stateRule = function(def)
+    SetBox.stateRule(def)
 end
 
 -- Make setbox available globally (for C++ verification and direct access)

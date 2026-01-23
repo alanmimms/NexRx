@@ -17,6 +17,7 @@ package.path = basePath .. "?.lua;" .. basePath .. "?/init.lua;" .. package.path
 local ui = require("ui.widgets")
 local theme = require("ui.theme")
 local layout = require("ui.layout")
+local uiState = require("ui.state")
 
 -- Load new architecture modules
 local bands = require("bands")
@@ -31,6 +32,11 @@ local modeHelper = require("modes")
 -- Load S-meter calculations (Lua owns signal calculations)
 local smeter = require("smeter")
 
+-- Load reactive property system
+local R = require("reactive")
+local AppState = require("app_state")
+local Edit = require("edit")
+
 -- Global state
 local frameCount = 0
 local fps = 0
@@ -41,7 +47,8 @@ local fpsFrames = 0
 local lastMouseX, lastMouseY = 0, 0
 
 -- Button names for tags (SDL: 0=left, 1=middle, 2=right)
-local BUTTON_NAMES = {"Left", "Middle", "Right"}
+-- Use UPPERCASE as per unified tag architecture
+local BUTTON_NAMES = {"LEFT", "MIDDLE", "RIGHT"}
 
 -- Application state (all loaded from SetBox in init())
 local rxActive = false
@@ -99,6 +106,68 @@ local spectrumData = {}  -- runtime buffer
 local keyStates = {}     -- scancode -> true if key was down last frame
 local activeTags = {}    -- tag name -> true for all currently active tags (held keys, held buttons, etc.)
 
+-- Get ALL active tags for debugging - EVERYTHING in the system
+-- Shows complete tag state: all widgets, all inputs, all modes
+-- All tags use unified namespaces: input.*, state.*, widget.*, event.*
+local function getAllActiveTags()
+    local allTags = {}
+
+    -- 1. Raw held keys and mouse buttons (already namespaced as input.*)
+    for tagName, _ in pairs(activeTags) do
+        allTags[tagName] = true
+    end
+
+    -- 2. Derived generic modifiers (input.SHIFT from input.LSHIFT/input.RSHIFT, etc.)
+    if activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"] then
+        allTags["input.SHIFT"] = true
+    end
+    if activeTags["input.LCTRL"] or activeTags["input.RCTRL"] then
+        allTags["input.CTRL"] = true
+    end
+    if activeTags["input.LALT"] or activeTags["input.RALT"] then
+        allTags["input.ALT"] = true
+    end
+
+    -- 3. Mode tags from events module (state.FreqEntryMode, etc.)
+    if events and events.modeTags then
+        for tagName, _ in pairs(events.modeTags) do
+            allTags[tagName] = true
+        end
+    end
+
+    -- 4. ALL registered widget tags (every widget in the UI)
+    if events and events.widgets then
+        for widgetId, widget in pairs(events.widgets) do
+            if widget.tags then
+                for _, tag in ipairs(widget.tags) do
+                    allTags[tag] = true
+                end
+            end
+        end
+    end
+
+    -- 5. Hovered widget state
+    local mouseX, mouseY = getMousePos()
+    local hoveredWidget = events.getWidgetAt(mouseX, mouseY)
+    if hoveredWidget then
+        allTags["state.Hovered"] = true
+        -- Show which widget is hovered
+        if hoveredWidget.id then
+            allTags["state.Hovered:" .. hoveredWidget.id] = true
+        end
+    end
+
+    -- 6. Pressed state (if mouse button held)
+    if activeTags["input.MouseLEFT"] and hoveredWidget then
+        allTags["state.Pressed"] = true
+        if hoveredWidget.id then
+            allTags["state.Pressed:" .. hoveredWidget.id] = true
+        end
+    end
+
+    return allTags
+end
+
 -- Hardware connection state (loaded from SetBox)
 local hwSettings = {
     host = nil,
@@ -148,7 +217,7 @@ local hwFramesReceived = 0
 local lastVfoFreq = 0  -- Track VFO changes for hardware control
 -- Note: useHwSpectrum replaced by dispatch module
 
--- Frequency entry state (mode is managed via events.hasModeTag("FreqEntryMode"))
+-- Frequency entry state (mode is managed via events.hasModeTag("state.FreqEntryMode"))
 local freqEntryText = ""
 local freqEntryBlink = 0
 
@@ -452,8 +521,8 @@ function init()
                 newVal = current + delta * props.step
             else
                 -- Fall back to default step calculation
-                local ctrl = hasModifier(event, "Ctrl")
-                local shift = hasModifier(event, "Shift")
+                local ctrl = hasModifier(event, "input.CTRL")
+                local shift = hasModifier(event, "input.SHIFT")
                 newVal = defaultStepFn(current, delta, minVal, maxVal, ctrl, shift)
             end
             newVal = math.max(minVal, math.min(maxVal, newVal))
@@ -470,6 +539,15 @@ function init()
             return true
         end
     end
+
+    -- Slider click activation (sets widget as active for drag tracking)
+    events.registerHandler("slider_activate", function(event, widget)
+        if widget and widget.id then
+            uiState.setActive(widget.id)
+            return true
+        end
+        return false
+    end)
 
     -- Linear slider: steps as fractions of range (default behavior)
     -- default=1%, ctrl=0.1%, shift=10%, ctrl+shift=25%
@@ -570,8 +648,8 @@ function init()
 
     -- Start frequency entry mode (F key or click on frequency display)
     events.registerHandler("freq_entry_start", function(event, widget)
-        if not events.hasModeTag("FreqEntryMode") then
-            events.addModeTag("FreqEntryMode")
+        if not events.hasModeTag("state.FreqEntryMode") then
+            events.addModeTag("state.FreqEntryMode")
             freqEntryText = ""
             return true
         end
@@ -580,7 +658,7 @@ function init()
 
     -- Cancel frequency entry (ESC in FreqEntryMode)
     events.registerHandler("freq_entry_cancel", function(event, widget)
-        events.removeModeTag("FreqEntryMode")
+        events.removeModeTag("state.FreqEntryMode")
         freqEntryText = ""
         return true
     end)
@@ -593,7 +671,7 @@ function init()
             if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
             bands.setCurrent(state.frequency * 1e6)
         end
-        events.removeModeTag("FreqEntryMode")
+        events.removeModeTag("state.FreqEntryMode")
         freqEntryText = ""
         return true
     end)
@@ -741,7 +819,14 @@ function init()
     -- Initialize animation system (nothing to configure, just ready to use)
     print("[Lua] Animation system ready")
 
-    print("[Lua] NexRx UI initialized with layout system")
+    -- Initialize reactive state system
+    AppState.init()
+
+    -- Initialize editing handlers (Ctrl+Alt+drag to resize/move)
+    Edit.init(events, AppState)
+
+    print("[Lua] NexRx UI initialized with layout system + reactive properties")
+    print("[Lua] Ctrl+Alt+Left drag edge to resize, Ctrl+Alt+Middle drag to move")
 end
 
 -- Generate simulated spectrum data
@@ -798,7 +883,7 @@ function update(dt)
     animate.update(dt)
 
     -- Frequency entry mode handling (blink cursor)
-    -- freqEntryMode is now managed via events.hasModeTag("FreqEntryMode")
+    -- freqEntryMode is now managed via events.hasModeTag("state.FreqEntryMode")
     freqEntryBlink = freqEntryBlink + dt
     if freqEntryBlink > 1.0 then freqEntryBlink = 0 end
 
@@ -809,30 +894,30 @@ function update(dt)
     local mouseX, mouseY = getMousePos()
 
     -- Return all currently active tags (held keys, held buttons, mode tags)
-    -- Derives generic modifiers (Shift, Ctrl, Alt) from specific keys (LShift/RShift, etc.)
+    -- All tags use namespaced format: input.SHIFT, input.CTRL, etc.
     local function getActiveTags()
         local tags = {}
         for tagName, _ in pairs(activeTags) do
             table.insert(tags, tagName)
         end
         -- Derive generic modifier tags from specific keys
-        -- (allows rules to match "Shift" for either LShift or RShift)
-        if activeTags["LShift"] or activeTags["RShift"] then
-            table.insert(tags, "Shift")
+        -- (allows rules to match "input.SHIFT" for either input.LSHIFT or input.RSHIFT)
+        if activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"] then
+            table.insert(tags, "input.SHIFT")
         end
-        if activeTags["LCtrl"] or activeTags["RCtrl"] then
-            table.insert(tags, "Ctrl")
+        if activeTags["input.LCTRL"] or activeTags["input.RCTRL"] then
+            table.insert(tags, "input.CTRL")
         end
-        if activeTags["LAlt"] or activeTags["RAlt"] then
-            table.insert(tags, "Alt")
+        if activeTags["input.LALT"] or activeTags["input.RALT"] then
+            table.insert(tags, "input.ALT")
         end
         return tags
     end
 
     -- Booleans for handlers that still use them (legacy, prefer tags)
-    local shift = activeTags["LShift"] or activeTags["RShift"]
-    local ctrl = activeTags["LCtrl"] or activeTags["RCtrl"]
-    local alt = activeTags["LAlt"] or activeTags["RAlt"]
+    local shift = activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"]
+    local ctrl = activeTags["input.LCTRL"] or activeTags["input.RCTRL"]
+    local alt = activeTags["input.LALT"] or activeTags["input.RALT"]
 
     -- Dispatch mouse wheel events
     local wheel = getMouseWheel()
@@ -850,15 +935,16 @@ function update(dt)
     end
 
     -- Dispatch mouse button events (all buttons)
-    -- Track held buttons in activeTags (same as held keys)
+    -- Track held buttons in activeTags (namespaced as input.MouseLEFT, etc.)
     for btn = 0, 2 do
-        local button = BUTTON_NAMES[btn + 1]
+        local button = BUTTON_NAMES[btn + 1]  -- LEFT, MIDDLE, RIGHT
+        local inputTag = "input.Mouse" .. button  -- input.MouseLEFT, etc.
         local clicked = isMouseClicked(btn)
         local released = isMouseReleased(btn)
 
         if clicked then
             -- Button just pressed - add to active tags and dispatch MouseDown
-            activeTags[button] = true
+            activeTags[inputTag] = true
             events.dispatch(events.createEvent(events.Type.MOUSE_DOWN, {
                 x = mouseX, y = mouseY, button = button,
                 modifiers = getActiveTags(),
@@ -866,7 +952,7 @@ function update(dt)
             }))
         elseif released then
             -- Button just released - remove from active tags and dispatch MouseUp
-            activeTags[button] = nil
+            activeTags[inputTag] = nil
             events.dispatch(events.createEvent(events.Type.MOUSE_UP, {
                 x = mouseX, y = mouseY, button = button,
                 modifiers = getActiveTags(),
@@ -895,11 +981,11 @@ function update(dt)
     -- Check ALL keys for KeyDown and KeyUp events (including modifiers)
     -- =======================================================================
 
-    -- Build modifiers array once for all key events
+    -- Build modifiers array once for all key events (namespaced)
     local modifiers = {}
-    if shift then table.insert(modifiers, "Shift") end
-    if ctrl then table.insert(modifiers, "Ctrl") end
-    if alt then table.insert(modifiers, "Alt") end
+    if shift then table.insert(modifiers, "input.SHIFT") end
+    if ctrl then table.insert(modifiers, "input.CTRL") end
+    if alt then table.insert(modifiers, "input.ALT") end
 
     -- Check ALL keys for dispatch - rules decide what's handled, not hardcoded lists
     for _, scancode in ipairs(keys.getAllScancodes()) do
@@ -907,13 +993,15 @@ function update(dt)
         local wasDown = keyStates[scancode]
 
         local keyName = keys.getName(scancode)
+        -- Namespace the key tag as input.* (e.g., input.H, input.LSHIFT)
+        local inputTag = keyName and ("input." .. keyName) or nil
 
         if isDown and not wasDown then
             -- Key just pressed - add to active tags and dispatch KeyDown
-            if keyName then activeTags[keyName] = true end
+            if inputTag then activeTags[inputTag] = true end
             local keyEvent = events.createEvent(events.Type.KEY_DOWN, {
                 scancode = scancode,
-                key = keyName,
+                key = keyName,  -- Keep key name without namespace for event.KeyDown-H format
                 char = keys.getChar(scancode),
                 isModifier = keys.isModifier(scancode),
                 x = mouseX,
@@ -926,10 +1014,10 @@ function update(dt)
             events.dispatchKey(keyEvent)
         elseif wasDown and not isDown then
             -- Key just released - remove from active tags and dispatch KeyUp
-            if keyName then activeTags[keyName] = nil end
+            if inputTag then activeTags[inputTag] = nil end
             local keyEvent = events.createEvent(events.Type.KEY_UP, {
                 scancode = scancode,
-                key = keyName,
+                key = keyName,  -- Keep key name without namespace for event.KeyUp-H format
                 char = keys.getChar(scancode),
                 isModifier = keys.isModifier(scancode),
                 x = mouseX,
@@ -946,9 +1034,9 @@ function update(dt)
         keyStates[scancode] = isDown
     end
 
-    -- Dispatch text input (for frequency entry mode - handled via FreqEntryMode tag)
+    -- Dispatch text input (for frequency entry mode - handled via state.FreqEntryMode tag)
     local textIn = getTextInput()
-    if #textIn > 0 and events.hasModeTag("FreqEntryMode") then
+    if #textIn > 0 and events.hasModeTag("state.FreqEntryMode") then
         local textEvent = events.createEvent(events.Type.TEXT_INPUT, {
             text = textIn,
             x = mouseX,
@@ -1108,7 +1196,7 @@ function draw()
     -- =========================================
     -- LEFT SIDEBAR - Controls
     -- =========================================
-    layout.dock("left", 260)
+    layout.dock("left", AppState.get("leftSidebarWidth"))
     do
         local x, y, w, h = layout.getRect()
         ui.panel("left-sidebar", x, y, w, h, {"Sidebar"})
@@ -1331,7 +1419,7 @@ function draw()
     -- =========================================
     -- RIGHT SIDEBAR - S-Meter and Band
     -- =========================================
-    layout.dock("right", 200)
+    layout.dock("right", AppState.get("rightSidebarWidth"))
     do
         local x, y, w, h = layout.getRect()
         ui.panel("right-sidebar", x, y, w, h, {"Sidebar"})
@@ -1458,6 +1546,18 @@ function draw()
     layout.endDock()
 
     -- =========================================
+    -- DEBUG PANEL - Active Tags Viewer (far right)
+    -- =========================================
+    layout.dock("right", AppState.get("debugPanelWidth"))
+    do
+        local x, y, w, h = layout.getRect()
+        -- Get ALL active tags (held keys, derived modifiers, mode tags)
+        local allTags = getAllActiveTags()
+        ui.activeTagsViewer("active-tags", x + 8, y + 8, w - 16, h - 16, allTags)
+    end
+    layout.endDock()
+
+    -- =========================================
     -- CENTER - Spectrum and Waterfall Display
     -- =========================================
     do
@@ -1474,7 +1574,7 @@ function draw()
         -- Title bar with frequency info (or entry field)
         local freqStr
         local freqColor = {0.2, 0.9, 0.4}
-        local inFreqEntry = events.hasModeTag("FreqEntryMode")
+        local inFreqEntry = events.hasModeTag("state.FreqEntryMode")
         if inFreqEntry then
             -- Show entry text with blinking cursor
             local cursor = freqEntryBlink < 0.5 and "_" or ""
@@ -1540,6 +1640,16 @@ function draw()
         local spanKHz = 96  -- Simulated span
         drawText(px + 5, vizY + vizH - 16, string.format("-%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
         drawText(px + pw - 55, vizY + vizH - 16, string.format("+%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
+    end
+
+    -- =========================================
+    -- EDIT HANDLES - Draw when Ctrl+Alt held
+    -- =========================================
+    local allTags = getAllActiveTags()
+    local editModifierHeld = Edit.isEditModifierHeld(allTags)
+    if editModifierHeld then
+        local hoveredWidget = events.getWidgetAt(mouseX, mouseY)
+        Edit.drawHandles(mouseX, mouseY, hoveredWidget, editModifierHeld)
     end
 
     layout.finish()

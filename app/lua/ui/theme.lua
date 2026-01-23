@@ -3,6 +3,10 @@
 
   Queries SetBox for widget styles based on dynamic tags.
   Caches resolved styles per frame for performance.
+
+  Tag namespaces:
+  - widget.* : Widget type and variant (Button, Primary, Slider, etc.)
+  - state.*  : Widget state (Hovered, Pressed, Active, Focused, Checked, Disabled)
 ]]
 
 local theme = {}
@@ -32,8 +36,16 @@ local function cacheKey(tags)
     return table.concat(tags, ",")
 end
 
+-- Helper: Add namespace prefix if not already present
+local function addNamespace(tag, defaultNs)
+    if tag:find("%.") then
+        return tag  -- Already namespaced
+    end
+    return defaultNs .. "." .. tag
+end
+
 -- Get style for a widget with given tags
--- tags: array of strings like {"Button", "Primary", "Hovered"}
+-- tags: array of strings like {"widget.Button", "widget.Primary", "state.Hovered"}
 function theme.getStyle(tags)
     local key = cacheKey(tags)
     if styleCache[key] then
@@ -67,79 +79,79 @@ end
 
 -- Get button style with state-based tags
 function theme.getButtonStyle(baseTags, isHot, isActive, isDisabled)
-    local tags = {"Button"}
+    local tags = {"widget.Button"}
     for _, t in ipairs(baseTags or {}) do
-        table.insert(tags, t)
+        table.insert(tags, addNamespace(t, "widget"))
     end
     if isDisabled then
-        table.insert(tags, "Disabled")
+        table.insert(tags, "state.Disabled")
     elseif isActive then
-        table.insert(tags, "Pressed")
+        table.insert(tags, "state.Pressed")
     elseif isHot then
-        table.insert(tags, "Hovered")
+        table.insert(tags, "state.Hovered")
     end
     return theme.getStyle(tags)
 end
 
 -- Get panel style
 function theme.getPanelStyle(baseTags)
-    local tags = {"Panel"}
+    local tags = {"widget.Panel"}
     for _, t in ipairs(baseTags or {}) do
-        table.insert(tags, t)
+        table.insert(tags, addNamespace(t, "widget"))
     end
     return theme.getStyle(tags)
 end
 
 -- Get slider style
 function theme.getSliderStyle(baseTags, isHot, isActive)
-    local tags = {"Slider"}
+    local tags = {"widget.Slider"}
     for _, t in ipairs(baseTags or {}) do
-        table.insert(tags, t)
+        table.insert(tags, addNamespace(t, "widget"))
     end
     if isActive then
-        table.insert(tags, "Active")
+        table.insert(tags, "state.Active")
     elseif isHot then
-        table.insert(tags, "Hovered")
+        table.insert(tags, "state.Hovered")
     end
     return theme.getStyle(tags)
 end
 
 -- Get text input style
 function theme.getInputStyle(baseTags, isHot, isFocused)
-    local tags = {"Input"}
+    local tags = {"widget.Input"}
     for _, t in ipairs(baseTags or {}) do
-        table.insert(tags, t)
+        table.insert(tags, addNamespace(t, "widget"))
     end
     if isFocused then
-        table.insert(tags, "Focused")
+        table.insert(tags, "state.Focused")
     elseif isHot then
-        table.insert(tags, "Hovered")
+        table.insert(tags, "state.Hovered")
     end
     return theme.getStyle(tags)
 end
 
 -- Get checkbox style
 function theme.getCheckboxStyle(baseTags, isHot, isActive, isChecked)
-    local tags = {"Checkbox"}
+    local tags = {"widget.Checkbox"}
     for _, t in ipairs(baseTags or {}) do
-        table.insert(tags, t)
+        table.insert(tags, addNamespace(t, "widget"))
     end
     if isChecked then
-        table.insert(tags, "Checked")
+        table.insert(tags, "state.Checked")
     end
     if isActive then
-        table.insert(tags, "Pressed")
+        table.insert(tags, "state.Pressed")
     elseif isHot then
-        table.insert(tags, "Hovered")
+        table.insert(tags, "state.Hovered")
     end
     return theme.getStyle(tags)
 end
 
 -- Get label style
 function theme.getLabelStyle(baseTags)
-    local tags = {"Label"}
+    local tags = {"widget.Label"}
     for _, t in ipairs(baseTags or {}) do
-        table.insert(tags, t)
+        table.insert(tags, addNamespace(t, "widget"))
     end
     return theme.getStyle(tags)
 end

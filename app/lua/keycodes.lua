@@ -144,8 +144,9 @@ Keys.SC_RGUI = 231
 -- Scan Code to Name Mapping
 -- =============================================================================
 
+-- UPPERCASE for all key names as per unified tag architecture
 local codeToName = {
-    -- Letters
+    -- Letters (UPPERCASE)
     [4] = "A", [5] = "B", [6] = "C", [7] = "D", [8] = "E",
     [9] = "F", [10] = "G", [11] = "H", [12] = "I", [13] = "J",
     [14] = "K", [15] = "L", [16] = "M", [17] = "N", [18] = "O",
@@ -157,41 +158,41 @@ local codeToName = {
     [30] = "1", [31] = "2", [32] = "3", [33] = "4", [34] = "5",
     [35] = "6", [36] = "7", [37] = "8", [38] = "9", [39] = "0",
 
-    -- Special
-    [40] = "Enter", [41] = "Escape", [42] = "Backspace",
-    [43] = "Tab", [44] = "Space",
+    -- Special (UPPERCASE)
+    [40] = "ENTER", [41] = "ESC", [42] = "BACKSPACE",
+    [43] = "TAB", [44] = "SPACE",
 
-    -- Punctuation
-    [45] = "Minus", [46] = "Equals", [47] = "LeftBracket",
-    [48] = "RightBracket", [49] = "Backslash", [51] = "Semicolon",
-    [52] = "Apostrophe", [53] = "Grave", [54] = "Comma",
-    [55] = "Period", [56] = "Slash",
+    -- Punctuation (UPPERCASE)
+    [45] = "MINUS", [46] = "EQUALS", [47] = "LEFTBRACKET",
+    [48] = "RIGHTBRACKET", [49] = "BACKSLASH", [51] = "SEMICOLON",
+    [52] = "APOSTROPHE", [53] = "GRAVE", [54] = "COMMA",
+    [55] = "PERIOD", [56] = "SLASH",
 
-    -- Lock keys
-    [57] = "CapsLock", [71] = "ScrollLock", [83] = "NumLock",
+    -- Lock keys (UPPERCASE)
+    [57] = "CAPSLOCK", [71] = "SCROLLLOCK", [83] = "NUMLOCK",
 
-    -- Function keys
+    -- Function keys (already uppercase-ish)
     [58] = "F1", [59] = "F2", [60] = "F3", [61] = "F4",
     [62] = "F5", [63] = "F6", [64] = "F7", [65] = "F8",
     [66] = "F9", [67] = "F10", [68] = "F11", [69] = "F12",
 
-    -- Navigation
-    [70] = "PrintScreen", [72] = "Pause", [73] = "Insert",
-    [74] = "Home", [75] = "PageUp", [76] = "Delete",
-    [77] = "End", [78] = "PageDown",
-    [79] = "Right", [80] = "Left", [81] = "Down", [82] = "Up",
+    -- Navigation (UPPERCASE)
+    [70] = "PRINTSCREEN", [72] = "PAUSE", [73] = "INSERT",
+    [74] = "HOME", [75] = "PAGEUP", [76] = "DELETE",
+    [77] = "END", [78] = "PAGEDOWN",
+    [79] = "RIGHT", [80] = "LEFT", [81] = "DOWN", [82] = "UP",
 
-    -- Numpad
-    [84] = "KP_Divide", [85] = "KP_Multiply", [86] = "KP_Minus",
-    [87] = "KP_Plus", [88] = "KP_Enter",
+    -- Numpad (UPPERCASE)
+    [84] = "KP_DIVIDE", [85] = "KP_MULTIPLY", [86] = "KP_MINUS",
+    [87] = "KP_PLUS", [88] = "KP_ENTER",
     [89] = "KP_1", [90] = "KP_2", [91] = "KP_3",
     [92] = "KP_4", [93] = "KP_5", [94] = "KP_6",
     [95] = "KP_7", [96] = "KP_8", [97] = "KP_9",
-    [98] = "KP_0", [99] = "KP_Period",
+    [98] = "KP_0", [99] = "KP_PERIOD",
 
-    -- Modifiers
-    [224] = "LCtrl", [225] = "LShift", [226] = "LAlt", [227] = "LGui",
-    [228] = "RCtrl", [229] = "RShift", [230] = "RAlt", [231] = "RGui",
+    -- Modifiers (UPPERCASE)
+    [224] = "LCTRL", [225] = "LSHIFT", [226] = "LALT", [227] = "LGUI",
+    [228] = "RCTRL", [229] = "RSHIFT", [230] = "RALT", [231] = "RGUI",
 }
 
 -- Build reverse mapping (name -> code)

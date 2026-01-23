@@ -1,52 +1,72 @@
 --[[
-    NexRx Event Handler Rules
+    NexRx Event Handler Rules (Unified Tag Architecture)
 
-    Defines SetBox rules that map event + widget + modifier + mode combinations
-    to handler function names. The events.lua module resolves these rules
-    to dispatch events appropriately.
+    Defines SetBox rules that map event + widget + modifier combinations
+    to handler function names.
 
-    Tag structure:
-    - "Event" - Always present for event rules
-    - Event type: "MouseDown", "MouseUp", "MouseMove", "MouseWheel", "KeyDown", "TextInput"
-    - Button name: "Left", "Middle", "Right" (for mouse click/release events)
-    - Key name: "Escape", "Enter", "F", "Q", etc. (for keyboard events)
-    - Widget tags: "Button", "Checkbox", "Toggle", "Slider", etc.
-    - Control tags: "VFOControl" (behavior tags - any widget with this tag tunes VFO)
-    - Custom tags: "VfoA", "RxToggle", "ModeUSB", etc.
-    - Mode tags: "FreqEntryMode" (added/removed dynamically)
-    - Modifiers: "Shift", "Ctrl", "Alt" (keyboard) + "Left", "Middle", "Right" (held buttons for motion)
+    Tag namespaces:
+    - event.*   : Transient event tags (MouseDown-LEFT, KeyDown-H, etc.)
+    - widget.*  : Widget type and identity (Button, Slider, VFOControl, etc.)
+    - state.*   : Widget/app state (Hovered, Active, Mode-USB, etc.)
+    - input.*   : Held inputs (SHIFT, CTRL, ALT, MouseLEFT, etc.)
 
-    Two-phase matching:
-    1. First try with ALL tags (including modifiers) - most specific
-    2. If no match, try WITHOUT modifier tags - general fallback
+    Event tag format:
+    - event.MouseDown-LEFT, event.MouseDown-MIDDLE, event.MouseDown-RIGHT
+    - event.MouseUp-LEFT, event.MouseUp-MIDDLE, event.MouseUp-RIGHT
+    - event.MouseWheel
+    - event.KeyDown-H, event.KeyDown-ESC, event.KeyDown-ENTER
+    - event.KeyUp-H
+    - event.TextInput
 
-    Generic handlers use SetBox properties:
-    - wheel_increment: property, step, step_ctrl, step_shift, step_ctrl_shift, min, max
-    - set_value: property, value
-    - toggle_property: property
+    Key/button names are UPPERCASE: LEFT, MIDDLE, RIGHT, H, ESC, ENTER, Q, F
+    Modifiers are UPPERCASE: SHIFT, CTRL, ALT, LSHIFT, RSHIFT
 
-    More specific rules (more tags, higher priority) take precedence.
+    Scoring: Sum of tag priorities (default @1), higher wins.
+    Use @N suffix for explicit priority: "widget.VFOControl@20"
 ]]
 
 -- =============================================================================
--- Generic Slider Controls (wheel and arrow keys)
+-- Generic Slider Controls
 -- Handler gets min/max/property from widget.data, calculates steps as % of range
 -- Steps: default=1%, ctrl=0.1%, shift=10%, ctrl+shift=25%
 -- =============================================================================
 
+-- Slider click to activate (start drag)
+rule {
+    id = "event-slider-click",
+    tags = {"event.MouseDown-LEFT", "widget.Slider"},
+    apply = { handler = "slider_activate" }
+}
+
 -- Generic slider wheel (matches any Slider widget with property in widget.data)
 rule {
     id = "event-slider-wheel",
-    tags = {"Event", "MouseWheel", "Slider"},
-    priority = 0,
+    tags = {"event.MouseWheel", "widget.Slider"},
     apply = { handler = "slider_adjust" }
 }
 
 -- Generic slider arrow keys
 rule {
-    id = "event-slider-arrow",
-    tags = {"Event", "KeyDown", "Slider"},
-    priority = 0,
+    id = "event-slider-arrow-right",
+    tags = {"event.KeyDown-RIGHT", "widget.Slider"},
+    apply = { handler = "slider_adjust" }
+}
+
+rule {
+    id = "event-slider-arrow-left",
+    tags = {"event.KeyDown-LEFT", "widget.Slider"},
+    apply = { handler = "slider_adjust" }
+}
+
+rule {
+    id = "event-slider-arrow-up",
+    tags = {"event.KeyDown-UP", "widget.Slider"},
+    apply = { handler = "slider_adjust" }
+}
+
+rule {
+    id = "event-slider-arrow-down",
+    tags = {"event.KeyDown-DOWN", "widget.Slider"},
     apply = { handler = "slider_adjust" }
 }
 
@@ -54,14 +74,7 @@ rule {
 -- Uses multiplicative factors: default=1.5x, ctrl=1.1x, shift=2x, ctrl+shift=5x
 rule {
     id = "event-slider-log-wheel",
-    tags = {"Event", "MouseWheel", "Slider", "LogScale"},
-    priority = 10,
-    apply = { handler = "slider_adjust_log" }
-}
-
-rule {
-    id = "event-slider-log-arrow",
-    tags = {"Event", "KeyDown", "Slider", "LogScale"},
+    tags = {"event.MouseWheel", "widget.Slider", "widget.LogScale"},
     priority = 10,
     apply = { handler = "slider_adjust_log" }
 }
@@ -75,59 +88,59 @@ rule {
 -- VFOControl base: 1 kHz steps (no modifiers)
 rule {
     id = "event-vfo-wheel",
-    tags = {"Event", "MouseWheel", "VFOControl"},
+    tags = {"event.MouseWheel", "widget.VFOControl"},
     priority = 20,
     apply = { handler = "vfo_control", step = 0.001 }
 }
 
 rule {
-    id = "event-vfo-arrow",
-    tags = {"Event", "KeyDown", "VFOControl"},
+    id = "event-vfo-arrow-right",
+    tags = {"event.KeyDown-RIGHT", "widget.VFOControl"},
     priority = 20,
     apply = { handler = "vfo_control", step = 0.001 }
 }
 
--- VFOControl + Ctrl: 10 kHz steps
+rule {
+    id = "event-vfo-arrow-left",
+    tags = {"event.KeyDown-LEFT", "widget.VFOControl"},
+    priority = 20,
+    apply = { handler = "vfo_control", step = -0.001 }
+}
+
+rule {
+    id = "event-vfo-arrow-up",
+    tags = {"event.KeyDown-UP", "widget.VFOControl"},
+    priority = 20,
+    apply = { handler = "vfo_control", step = 0.001 }
+}
+
+rule {
+    id = "event-vfo-arrow-down",
+    tags = {"event.KeyDown-DOWN", "widget.VFOControl"},
+    priority = 20,
+    apply = { handler = "vfo_control", step = -0.001 }
+}
+
+-- VFOControl + CTRL: 10 kHz steps
 rule {
     id = "event-vfo-wheel-ctrl",
-    tags = {"Event", "MouseWheel", "VFOControl", "Ctrl"},
+    tags = {"event.MouseWheel", "widget.VFOControl", "input.CTRL"},
     priority = 30,
     apply = { handler = "vfo_control", step = 0.01 }
 }
 
-rule {
-    id = "event-vfo-arrow-ctrl",
-    tags = {"Event", "KeyDown", "VFOControl", "Ctrl"},
-    priority = 30,
-    apply = { handler = "vfo_control", step = 0.01 }
-}
-
--- VFOControl + Shift: 1 MHz steps
+-- VFOControl + SHIFT: 1 MHz steps
 rule {
     id = "event-vfo-wheel-shift",
-    tags = {"Event", "MouseWheel", "VFOControl", "Shift"},
+    tags = {"event.MouseWheel", "widget.VFOControl", "input.SHIFT"},
     priority = 30,
     apply = { handler = "vfo_control", step = 1.0 }
 }
 
-rule {
-    id = "event-vfo-arrow-shift",
-    tags = {"Event", "KeyDown", "VFOControl", "Shift"},
-    priority = 30,
-    apply = { handler = "vfo_control", step = 1.0 }
-}
-
--- VFOControl + Ctrl + Shift: 100 kHz steps
+-- VFOControl + CTRL + SHIFT: 100 kHz steps
 rule {
     id = "event-vfo-wheel-ctrl-shift",
-    tags = {"Event", "MouseWheel", "VFOControl", "Ctrl", "Shift"},
-    priority = 40,
-    apply = { handler = "vfo_control", step = 0.1 }
-}
-
-rule {
-    id = "event-vfo-arrow-ctrl-shift",
-    tags = {"Event", "KeyDown", "VFOControl", "Ctrl", "Shift"},
+    tags = {"event.MouseWheel", "widget.VFOControl", "input.CTRL", "input.SHIFT"},
     priority = 40,
     apply = { handler = "vfo_control", step = 0.1 }
 }
@@ -135,38 +148,23 @@ rule {
 -- VFOControl + H: 10 Hz fine tuning
 rule {
     id = "event-vfo-wheel-h",
-    tags = {"Event", "MouseWheel", "VFOControl", "H"},
+    tags = {"event.MouseWheel", "widget.VFOControl", "input.H"},
     priority = 30,
     apply = { handler = "vfo_control", step = 0.00001 }
 }
 
-rule {
-    id = "event-vfo-arrow-h",
-    tags = {"Event", "KeyDown", "VFOControl", "H"},
-    priority = 30,
-    apply = { handler = "vfo_control", step = 0.00001 }
-}
-
--- VFOControl + Shift + H: 100 Hz fine tuning
+-- VFOControl + SHIFT + H: 100 Hz fine tuning
 rule {
     id = "event-vfo-wheel-shift-h",
-    tags = {"Event", "MouseWheel", "VFOControl", "Shift", "H"},
-    priority = 40,
-    apply = { handler = "vfo_control", step = 0.0001 }
-}
-
-rule {
-    id = "event-vfo-arrow-shift-h",
-    tags = {"Event", "KeyDown", "VFOControl", "Shift", "H"},
+    tags = {"event.MouseWheel", "widget.VFOControl", "input.SHIFT", "input.H"},
     priority = 40,
     apply = { handler = "vfo_control", step = 0.0001 }
 }
 
 -- KeyUp on VFOControl widgets - silently consume (keys used as modifiers)
 rule {
-    id = "event-vfo-keyup",
-    tags = {"Event", "KeyUp", "VFOControl"},
-    priority = 0,
+    id = "event-vfo-keyup-h",
+    tags = {"event.KeyUp-H", "widget.VFOControl"},
     apply = { handler = "noop" }
 }
 
@@ -176,42 +174,40 @@ rule {
 
 rule {
     id = "event-freq-entry-start-f",
-    tags = {"Event", "KeyDown", "F"},
-    priority = 0,
+    tags = {"event.KeyDown-F"},
     apply = { handler = "freq_entry_start" }
 }
 
 rule {
     id = "event-freq-entry-start-click",
-    tags = {"Event", "MouseDown", "Left", "FrequencyDisplay"},
-    priority = 0,
+    tags = {"event.MouseDown-LEFT", "widget.FrequencyDisplay"},
     apply = { handler = "freq_entry_start" }
 }
 
 rule {
     id = "event-freq-entry-cancel",
-    tags = {"Event", "KeyDown", "Escape", "FreqEntryMode"},
+    tags = {"event.KeyDown-ESC", "state.FreqEntryMode"},
     priority = 100,
     apply = { handler = "freq_entry_cancel" }
 }
 
 rule {
     id = "event-freq-entry-confirm",
-    tags = {"Event", "KeyDown", "Enter", "FreqEntryMode"},
+    tags = {"event.KeyDown-ENTER", "state.FreqEntryMode"},
     priority = 100,
     apply = { handler = "freq_entry_confirm" }
 }
 
 rule {
     id = "event-freq-entry-backspace",
-    tags = {"Event", "KeyDown", "Backspace", "FreqEntryMode"},
+    tags = {"event.KeyDown-BACKSPACE", "state.FreqEntryMode"},
     priority = 100,
     apply = { handler = "freq_entry_backspace" }
 }
 
 rule {
     id = "event-freq-entry-text",
-    tags = {"Event", "TextInput", "FreqEntryMode"},
+    tags = {"event.TextInput", "state.FreqEntryMode"},
     priority = 100,
     apply = { handler = "freq_entry_text" }
 }
@@ -222,14 +218,14 @@ rule {
 
 rule {
     id = "event-app-quit",
-    tags = {"Event", "KeyDown", "Q", "Ctrl"},
+    tags = {"event.KeyDown-Q", "input.CTRL"},
     priority = 1000,
     apply = { handler = "app_quit" }
 }
 
 rule {
     id = "event-debug-toggle",
-    tags = {"Event", "KeyDown", "D", "Ctrl"},
+    tags = {"event.KeyDown-D", "input.CTRL"},
     priority = 1000,
     apply = { handler = "debug_toggle" }
 }
@@ -240,21 +236,21 @@ rule {
 
 rule {
     id = "event-vfo-a-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "VfoA"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.VfoA"},
     priority = 10,
     apply = { handler = "vfo_a_click" }
 }
 
 rule {
     id = "event-vfo-b-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "VfoB"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.VfoB"},
     priority = 10,
     apply = { handler = "vfo_b_click" }
 }
 
 rule {
     id = "event-vfo-swap-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "VfoSwap"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.VfoSwap"},
     priority = 10,
     apply = { handler = "vfo_swap_click" }
 }
@@ -265,28 +261,28 @@ rule {
 
 rule {
     id = "event-mode-usb-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "ModeUSB"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.ModeUSB"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedMode", value = "USB" }
 }
 
 rule {
     id = "event-mode-lsb-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "ModeLSB"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.ModeLSB"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedMode", value = "LSB" }
 }
 
 rule {
     id = "event-mode-cw-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "ModeCW"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.ModeCW"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedMode", value = "CW" }
 }
 
 rule {
     id = "event-mode-am-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "ModeAM"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.ModeAM"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedMode", value = "AM" }
 }
@@ -297,35 +293,35 @@ rule {
 
 rule {
     id = "event-bandpass-toggle",
-    tags = {"Event", "MouseDown", "Left", "Checkbox", "Bandpass"},
+    tags = {"event.MouseDown-LEFT", "widget.Checkbox", "widget.Bandpass"},
     priority = 10,
     apply = { handler = "toggle_property", property = "bandpassEnabled" }
 }
 
 rule {
     id = "event-notch-toggle",
-    tags = {"Event", "MouseDown", "Left", "Checkbox", "Notch"},
+    tags = {"event.MouseDown-LEFT", "widget.Checkbox", "widget.Notch"},
     priority = 10,
     apply = { handler = "toggle_property", property = "notchEnabled" }
 }
 
 rule {
     id = "event-agc-toggle",
-    tags = {"Event", "MouseDown", "Left", "Checkbox", "AGC"},
+    tags = {"event.MouseDown-LEFT", "widget.Checkbox", "widget.AGC"},
     priority = 10,
     apply = { handler = "toggle_property", property = "agcEnabled" }
 }
 
 rule {
     id = "event-nr-toggle",
-    tags = {"Event", "MouseDown", "Left", "Checkbox", "NR"},
+    tags = {"event.MouseDown-LEFT", "widget.Checkbox", "widget.NR"},
     priority = 10,
     apply = { handler = "toggle_property", property = "nrEnabled" }
 }
 
 rule {
     id = "event-nb-toggle",
-    tags = {"Event", "MouseDown", "Left", "Checkbox", "NB"},
+    tags = {"event.MouseDown-LEFT", "widget.Checkbox", "widget.NB"},
     priority = 10,
     apply = { handler = "toggle_property", property = "nbEnabled" }
 }
@@ -336,21 +332,21 @@ rule {
 
 rule {
     id = "event-mute-toggle",
-    tags = {"Event", "MouseDown", "Left", "Checkbox", "Mute"},
+    tags = {"event.MouseDown-LEFT", "widget.Checkbox", "widget.Mute"},
     priority = 10,
     apply = { handler = "toggle_property", property = "muteEnabled" }
 }
 
 rule {
     id = "event-test-tone-toggle",
-    tags = {"Event", "MouseDown", "Left", "Button", "TestTone"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.TestTone"},
     priority = 10,
     apply = { handler = "toggle_property", property = "testToneEnabled" }
 }
 
 rule {
     id = "event-wav-record-toggle",
-    tags = {"Event", "MouseDown", "Left", "Button", "WavRecord"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.WavRecord"},
     priority = 10,
     apply = { handler = "wav_record_toggle" }
 }
@@ -361,7 +357,7 @@ rule {
 
 rule {
     id = "event-rx-toggle-click",
-    tags = {"Event", "MouseDown", "Left", "Toggle", "RxToggle"},
+    tags = {"event.MouseDown-LEFT", "widget.Toggle", "widget.RxToggle"},
     priority = 10,
     apply = { handler = "rx_toggle_click" }
 }
@@ -372,42 +368,42 @@ rule {
 
 rule {
     id = "event-band-160m-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "Band160m"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.Band160m"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedBand", value = "160m" }
 }
 
 rule {
     id = "event-band-80m-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "Band80m"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.Band80m"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedBand", value = "80m" }
 }
 
 rule {
     id = "event-band-40m-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "Band40m"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.Band40m"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedBand", value = "40m" }
 }
 
 rule {
     id = "event-band-20m-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "Band20m"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.Band20m"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedBand", value = "20m" }
 }
 
 rule {
     id = "event-band-15m-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "Band15m"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.Band15m"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedBand", value = "15m" }
 }
 
 rule {
     id = "event-band-10m-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "Band10m"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.Band10m"},
     priority = 10,
     apply = { handler = "set_value", property = "selectedBand", value = "10m" }
 }
@@ -418,35 +414,35 @@ rule {
 
 rule {
     id = "event-cmap-viridis-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "CmapViridis"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.CmapViridis"},
     priority = 10,
     apply = { handler = "set_value", property = "wfColormap", value = "viridis" }
 }
 
 rule {
     id = "event-cmap-plasma-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "CmapPlasma"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.CmapPlasma"},
     priority = 10,
     apply = { handler = "set_value", property = "wfColormap", value = "plasma" }
 }
 
 rule {
     id = "event-cmap-inferno-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "CmapInferno"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.CmapInferno"},
     priority = 10,
     apply = { handler = "set_value", property = "wfColormap", value = "inferno" }
 }
 
 rule {
     id = "event-cmap-green-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "CmapGreen"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.CmapGreen"},
     priority = 10,
     apply = { handler = "set_value", property = "wfColormap", value = "green" }
 }
 
 rule {
     id = "event-cmap-blue-click",
-    tags = {"Event", "MouseDown", "Left", "Button", "CmapBlue"},
+    tags = {"event.MouseDown-LEFT", "widget.Button", "widget.CmapBlue"},
     priority = 10,
     apply = { handler = "set_value", property = "wfColormap", value = "blue" }
 }
@@ -457,8 +453,7 @@ rule {
 
 rule {
     id = "event-waterfall-click",
-    tags = {"Event", "MouseDown", "Left", "Waterfall"},
-    priority = 0,
+    tags = {"event.MouseDown-LEFT", "widget.Waterfall"},
     apply = { handler = "waterfall_click" }
 }
 
@@ -468,30 +463,86 @@ rule {
 
 rule {
     id = "event-button-mouseup",
-    tags = {"Event", "MouseUp", "Left", "Button"},
-    priority = 0,
+    tags = {"event.MouseUp-LEFT", "widget.Button"},
     apply = { handler = "noop" }
 }
 
 rule {
     id = "event-toggle-mouseup",
-    tags = {"Event", "MouseUp", "Left", "Toggle"},
-    priority = 0,
+    tags = {"event.MouseUp-LEFT", "widget.Toggle"},
     apply = { handler = "noop" }
 }
 
 rule {
     id = "event-checkbox-mouseup",
-    tags = {"Event", "MouseUp", "Left", "Checkbox"},
-    priority = 0,
+    tags = {"event.MouseUp-LEFT", "widget.Checkbox"},
     apply = { handler = "noop" }
 }
 
 rule {
     id = "event-slider-mouseup",
-    tags = {"Event", "MouseUp", "Left", "Slider"},
-    priority = 0,
+    tags = {"event.MouseUp-LEFT", "widget.Slider"},
     apply = { handler = "noop" }
+}
+
+-- =============================================================================
+-- UI Editing (Ctrl+Alt + mouse to resize/move/edit)
+-- No mode - always available via modifier keys
+-- =============================================================================
+
+-- Ctrl+Alt+Left on widget edge = start resize
+rule {
+    id = "event-edit-resize-start",
+    tags = {"event.MouseDown-LEFT", "input.CTRL", "input.ALT"},
+    priority = 900,
+    apply = { handler = "edit_resize_start" }
+}
+
+-- Ctrl+Alt+Middle = start move
+rule {
+    id = "event-edit-move-start",
+    tags = {"event.MouseDown-MIDDLE", "input.CTRL", "input.ALT"},
+    priority = 900,
+    apply = { handler = "edit_move_start" }
+}
+
+-- Continue drag (resize or move) while Ctrl+Alt held
+rule {
+    id = "event-edit-drag-left",
+    tags = {"event.MouseMove", "input.CTRL", "input.ALT", "input.MouseLEFT"},
+    priority = 900,
+    apply = { handler = "edit_drag" }
+}
+
+rule {
+    id = "event-edit-drag-middle",
+    tags = {"event.MouseMove", "input.CTRL", "input.ALT", "input.MouseMIDDLE"},
+    priority = 900,
+    apply = { handler = "edit_drag" }
+}
+
+-- End resize (left button release)
+rule {
+    id = "event-edit-resize-end",
+    tags = {"event.MouseUp-LEFT", "input.CTRL", "input.ALT"},
+    priority = 900,
+    apply = { handler = "edit_drag_end" }
+}
+
+-- End move (middle button release)
+rule {
+    id = "event-edit-move-end",
+    tags = {"event.MouseUp-MIDDLE", "input.CTRL", "input.ALT"},
+    priority = 900,
+    apply = { handler = "edit_drag_end" }
+}
+
+-- Ctrl+Alt+Right = context menu (for styling, delete, etc.)
+rule {
+    id = "event-edit-context-menu",
+    tags = {"event.MouseDown-RIGHT", "input.CTRL", "input.ALT"},
+    priority = 900,
+    apply = { handler = "edit_context_menu" }
 }
 
 -- =============================================================================
@@ -500,16 +551,9 @@ rule {
 
 rule {
     id = "event-unhandled",
-    tags = {"Event", "Unhandled"},
+    tags = {"event.Unhandled"},
     priority = -1000,
     apply = { handler = "log_unhandled" }
 }
 
-rule {
-    id = "event-default",
-    tags = {"Event"},
-    priority = -1000,
-    apply = { handler = nil }
-}
-
-print("[events.lua] Event handler rules loaded")
+print("[events.lua] Event handler rules loaded (with Design Mode)")
