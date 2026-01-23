@@ -550,6 +550,17 @@ private:
             return std::make_tuple(windowWidth_, windowHeight_);
         });
 
+        lua_.set_function("setWindowSize", [this](int width, int height) {
+            if (width > 0 && height > 0 && window_) {
+                SDL_SetWindowSize(window_, width, height);
+                windowWidth_ = width;
+                windowHeight_ = height;
+                // OpenGL viewport updated in render loop based on window size
+                return true;
+            }
+            return false;
+        });
+
         // Input
         lua_.set_function("getMousePos", [this]() {
             return std::make_tuple(input_.mouseX, input_.mouseY);
@@ -1070,6 +1081,9 @@ private:
             if (!loadFile("config/events.lua").get<bool>()) {
                 std::cerr << "Warning: Failed to load config/events.lua" << std::endl;
             }
+            if (!loadFile("config/constraints.lua").get<bool>()) {
+                std::cerr << "Warning: Failed to load config/constraints.lua" << std::endl;
+            }
         } else {
             std::cerr << "Error: setbox.loadFile not available" << std::endl;
             return false;
@@ -1182,6 +1196,9 @@ private:
     }
 
     void setup2DProjection() {
+        // Update viewport to current window size (important when window is resized
+        // programmatically via setWindowSize() - the SDL event won't arrive until next frame)
+        glViewport(0, 0, windowWidth_, windowHeight_);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(0, windowWidth_, windowHeight_, 0, -1, 1);

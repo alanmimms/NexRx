@@ -18,6 +18,8 @@ local ui = require("ui.widgets")
 local theme = require("ui.theme")
 local layout = require("ui.layout")
 local uiState = require("ui.state")
+local constraints = require("ui.constraints")
+local container = require("ui.container")
 
 -- Load new architecture modules
 local bands = require("bands")
@@ -36,6 +38,7 @@ local smeter = require("smeter")
 local R = require("reactive")
 local AppState = require("app_state")
 local Edit = require("edit")
+local layoutOverrides = require("layout_overrides")
 
 -- Global state
 local frameCount = 0
@@ -823,7 +826,7 @@ function init()
     AppState.init()
 
     -- Initialize editing handlers (Ctrl+Alt+drag to resize/move)
-    Edit.init(events, AppState)
+    Edit.init(events)
 
     print("[Lua] NexRx UI initialized with layout system + reactive properties")
     print("[Lua] Ctrl+Alt+Left drag edge to resize, Ctrl+Alt+Middle drag to move")
@@ -1115,6 +1118,56 @@ local function drawFilterControls(prefix, enabledProp, centerProp, widthProp, w)
     drawPropertySlider(prefix .. "-width", "Width", widthProp, w, "%.0f Hz")
 end
 
+-- Query layout size from SetBox constraints given widget tags and optional widgetId
+-- Checks layout_overrides first, then falls back to SetBox constraints
+-- Returns evaluated size (width or height) with min/max applied
+local function getLayoutSize(tags, sizeKey, parent, widgetId)
+    -- Check overrides first
+    if widgetId then
+        local override = layoutOverrides.get(widgetId, sizeKey)
+        if override then return override end
+    end
+
+    local cons = constraints.query(tags)
+    if not cons[sizeKey] then return nil end
+
+    local ctx = {
+        parent = parent,
+        window = {width = parent.width, height = parent.height},
+        math = math,
+    }
+
+    -- Evaluate the size expression
+    local expr = cons[sizeKey]
+    local size
+    if type(expr) == "number" then
+        size = expr
+    else
+        local num = tonumber(expr)
+        if num then
+            size = num
+        else
+            local fn = load("return " .. expr, "constraint", "t", ctx)
+            if fn then
+                local ok, result = pcall(fn)
+                size = ok and result or nil
+            end
+        end
+    end
+
+    if not size then return nil end
+
+    -- Apply min/max
+    local minKey = sizeKey == "width" and "minWidth" or "minHeight"
+    local maxKey = sizeKey == "width" and "maxWidth" or "maxHeight"
+    local minVal = cons[minKey] and tonumber(cons[minKey])
+    local maxVal = cons[maxKey] and tonumber(cons[maxKey])
+    if minVal then size = math.max(minVal, size) end
+    if maxVal then size = math.min(maxVal, size) end
+
+    return size
+end
+
 -- Draw
 function draw()
     local winW, winH = getWindowSize()
@@ -1127,12 +1180,16 @@ function draw()
     ui.beginFrame()
     layout.begin(0, 0, winW, winH)
 
+    -- Solve all widget regions at once
+    local regions = container.solve(winW, winH)
+
     -- =========================================
     -- TOP BAR - Status and branding
     -- =========================================
-    layout.dock("top", 32)
     do
-        local x, y, w, h = layout.getRect()
+        local r = regions["top-bar"]
+        local x, y, w, h = r.x, r.y, r.w, r.h
+        layout.setRegion(x, y, w, h, "top-bar")
 
         -- Register top bar for event dispatch
         events.registerWidget("top_bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
@@ -1170,15 +1227,16 @@ function draw()
         local statusText = string.format("FPS: %.0f", fps)
         local statusW = measureText(statusText)
         drawText(x + w - statusW - 10, y + 8, statusText, 0.5, 0.5, 0.55, 1.0)
+        layout.endRegion()
     end
-    layout.endDock()
 
     -- =========================================
     -- BOTTOM BAR - Status info
     -- =========================================
-    layout.dock("bottom", 28)
     do
-        local x, y, w, h = layout.getRect()
+        local r = regions["bottom-bar"]
+        local x, y, w, h = r.x, r.y, r.w, r.h
+        layout.setRegion(x, y, w, h, "bottom-bar")
 
         -- Register bottom bar for event dispatch
         events.registerWidget("bottom_bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
@@ -1190,15 +1248,16 @@ function draw()
         local info = string.format("Band: %s | Mode: %s | %s | Mouse: %d, %d",
                                    bands.getCurrent() or "OOB", state.selectedMode, bpInfo, mouseX, mouseY)
         drawText(x + 10, y + 6, info, 0.5, 0.5, 0.55, 1.0)
+        layout.endRegion()
     end
-    layout.endDock()
 
     -- =========================================
     -- LEFT SIDEBAR - Controls
     -- =========================================
-    layout.dock("left", AppState.get("leftSidebarWidth"))
     do
-        local x, y, w, h = layout.getRect()
+        local r = regions["left-sidebar"]
+        local x, y, w, h = r.x, r.y, r.w, r.h
+        layout.setRegion(x, y, w, h, "left-sidebar")
         ui.panel("left-sidebar", x, y, w, h, {"Sidebar"})
         layout.pad(12)
 
@@ -1255,8 +1314,7 @@ function draw()
         layout.newLine(24)
 
         layout.beginHorizontal(4)
-        local modes = {"USB", "LSB", "CW", "AM"}
-        for _, mode in ipairs(modes) do
+        for _, mode in ipairs(modeHelper.names) do
             local mx, my = layout.reserveSpace(50, 26)
             local activeTags = state.selectedMode == mode and {"Active"} or {}
             local modeTags = {"Mode" .. mode}
@@ -1413,15 +1471,23 @@ function draw()
             drawText(recBtnX + 78, recBtnY + 6, durText, 1.0, 0.3, 0.3, 1.0)
         end
         layout.newLine(28)
+        layout.endRegion()
     end
-    layout.endDock()
 
     -- =========================================
     -- RIGHT SIDEBAR - S-Meter and Band
     -- =========================================
-    layout.dock("right", AppState.get("rightSidebarWidth"))
     do
-        local x, y, w, h = layout.getRect()
+        local r = regions["right-sidebar"]
+        local x, y, w, h = r.x, r.y, r.w, r.h
+        -- Debug: print on width change
+        if not _lastRSW or _lastRSW ~= w then
+            print(string.format("[main] right-sidebar: x=%d w=%d (from container.solve)", x, w))
+            _lastRSW = w
+        end
+        layout.setRegion(x, y, w, h, "right-sidebar")
+        -- DEBUG: Draw bright red rect at exact container.solve() coords
+        drawRect(x, y, w, 10, 1.0, 0.0, 0.0, 1.0)
         ui.panel("right-sidebar", x, y, w, h, {"Sidebar"})
         layout.pad(12)
 
@@ -1542,26 +1608,29 @@ function draw()
         local maxText = string.format("%.0f dB", state.wfMaxDb)
         drawText(lx + w - 60, ly - 2, maxText, 0.5, 0.5, 0.55, 1.0)
         layout.newLine(24)
+        layout.endRegion()
     end
-    layout.endDock()
 
     -- =========================================
     -- DEBUG PANEL - Active Tags Viewer (far right)
     -- =========================================
-    layout.dock("right", AppState.get("debugPanelWidth"))
     do
-        local x, y, w, h = layout.getRect()
+        local r = regions["active-tags"]
+        local x, y, w, h = r.x, r.y, r.w, r.h
+        layout.setRegion(x, y, w, h, "active-tags")
         -- Get ALL active tags (held keys, derived modifiers, mode tags)
         local allTags = getAllActiveTags()
         ui.activeTagsViewer("active-tags", x + 8, y + 8, w - 16, h - 16, allTags)
+        layout.endRegion()
     end
-    layout.endDock()
 
     -- =========================================
     -- CENTER - Spectrum and Waterfall Display
     -- =========================================
     do
-        local x, y, w, h = layout.getRect()
+        local r = regions["center"]
+        local x, y, w, h = r.x, r.y, r.w, r.h
+        layout.setRegion(x, y, w, h, "center")
         layout.pad(8)
         local cx, cy, cw, ch = layout.getRect()
 
@@ -1640,6 +1709,7 @@ function draw()
         local spanKHz = 96  -- Simulated span
         drawText(px + 5, vizY + vizH - 16, string.format("-%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
         drawText(px + pw - 55, vizY + vizH - 16, string.format("+%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
+        layout.endRegion()
     end
 
     -- =========================================

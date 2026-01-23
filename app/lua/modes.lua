@@ -4,6 +4,9 @@
   Lua owns mode definitions. C++ just accepts integer mode IDs.
   Mode IDs match the C++ Demodulator::Mode enum order.
 
+  SINGLE SOURCE OF TRUTH: The 'names' array below defines all modes.
+  All other tables and constants are derived from it.
+
   Usage:
     local modes = require("modes")
     modes.setMode("USB")
@@ -12,34 +15,21 @@
 
 local Modes = {}
 
--- Mode ID constants (match C++ Demodulator::Mode enum)
-Modes.USB = 0
-Modes.LSB = 1
-Modes.AM = 2
-Modes.CW = 3
-
--- Mode name lookup tables
-Modes.nameToId = {
-    USB = 0,
-    LSB = 1,
-    AM = 2,
-    CW = 3,
-    -- Allow lowercase too
-    usb = 0,
-    lsb = 1,
-    am = 2,
-    cw = 3,
-}
-
-Modes.idToName = {
-    [0] = "USB",
-    [1] = "LSB",
-    [2] = "AM",
-    [3] = "CW",
-}
-
--- All available mode names (for UI iteration)
+-- SINGLE SOURCE OF TRUTH: Mode names in ID order (index 1 = ID 0)
+-- Order must match C++ Demodulator::Mode enum
 Modes.names = {"USB", "LSB", "AM", "CW"}
+
+-- Derive all other tables from names
+Modes.nameToId = {}
+Modes.idToName = {}
+
+for id, name in ipairs(Modes.names) do
+    local modeId = id - 1  -- Lua arrays are 1-based, mode IDs are 0-based
+    Modes.nameToId[name] = modeId
+    Modes.nameToId[name:lower()] = modeId  -- Allow lowercase
+    Modes.idToName[modeId] = name
+    Modes[name] = modeId  -- Constants: Modes.USB = 0, etc.
+end
 
 --- Set demodulator mode by name
 -- @param name Mode name (USB, LSB, AM, CW)
@@ -54,10 +44,10 @@ function Modes.setMode(name)
 end
 
 --- Set demodulator mode by ID
--- @param id Mode ID (0-3)
+-- @param id Mode ID (0 to #names-1)
 -- @return true if mode was set
 function Modes.setModeId(id)
-    if id >= 0 and id <= 3 and rx and rx.setModeId then
+    if id >= 0 and id < #Modes.names and rx and rx.setModeId then
         rx.setModeId(id)
         return true
     end

@@ -144,18 +144,6 @@ test("batch: groups updates", function()
 end)
 
 -- =============================================================================
--- Layout Computeds
--- =============================================================================
-
-test("computed: mainAreaX depends on leftSidebarWidth", function()
-    AppState.set("leftSidebarWidth", 300)
-    assertEqual(AppState.get("mainAreaX"), 300)
-
-    AppState.set("leftSidebarWidth", 260)
-    assertEqual(AppState.get("mainAreaX"), 260)
-end)
-
--- =============================================================================
 -- Metatable Access
 -- =============================================================================
 

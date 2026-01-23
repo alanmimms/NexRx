@@ -25,7 +25,8 @@ local Edit = {}
 
 -- Dependencies
 local events = nil
-local AppState = nil
+local layoutOverrides = require("layout_overrides")
+local constraints = require("ui.constraints")
 
 -- Drag state (only while actively dragging)
 local dragState = nil
@@ -46,9 +47,11 @@ local currentEdge = nil
 -- Initialization
 -- =============================================================================
 
-function Edit.init(eventsModule, appStateModule)
+function Edit.init(eventsModule)
     events = eventsModule
-    AppState = appStateModule
+
+    -- Load any existing layout overrides
+    layoutOverrides.load()
 
     Edit._registerHandlers()
     print("[Edit] Handlers registered (Ctrl+Alt+drag to resize/move)")
@@ -62,22 +65,38 @@ function Edit._registerHandlers()
         local edge = Edit._detectEdge(event.x, event.y, widget)
         if not edge then return false end
 
+        local properties = Edit._getWidgetProperties(widget.id, edge)
+        if not properties then return false end
+
+        local b = widget.bounds
+        local winW, winH = getWindowSize()
+
+        -- Get current layout sizes from override or actual bounds
+        local currentW = layoutOverrides.get(widget.id, "width") or b.w
+        local currentH = layoutOverrides.get(widget.id, "height") or b.h
+
+        print(string.format("[Edit] dragStart: bounds=(%d,%d,%d,%d) win=%dx%d currentW=%d",
+            b.x, b.y, b.w, b.h, winW, winH, currentW))
+
         dragState = {
+            startWindowW = winW,
+            startWindowH = winH,
+            initialWidth = currentW,
+            initialHeight = currentH,
             action = "resize",
             edge = edge,
             widgetId = widget.id,
             startX = event.x,
             startY = event.y,
-            startBounds = {
-                x = widget.bounds.x,
-                y = widget.bounds.y,
-                w = widget.bounds.w,
-                h = widget.bounds.h,
-            },
+            startBounds = { x = b.x, y = b.y, w = b.w, h = b.h },
+            currentWidth = currentW,
+            currentHeight = currentH,
+            properties = properties,
+            atRight = b.x + b.w >= winW - 20,
+            atBottom = b.y + b.h >= winH - 20,
+            atLeft = b.x <= 20,
+            atTop = b.y <= 20,
         }
-
-        -- Map widget to reactive property if it's a sidebar
-        dragState.property = Edit._getWidgetProperty(widget.id, edge)
 
         print(string.format("[Edit] Resize start: %s edge=%s", widget.id, edge))
         return true
@@ -108,6 +127,10 @@ function Edit._registerHandlers()
     events.registerHandler("edit_drag", function(event, widget)
         if not dragState then return false end
 
+        -- Store current mouse position for _applyResize
+        dragState.currentMouseX = event.x
+        dragState.currentMouseY = event.y
+
         local dx = event.x - dragState.startX
         local dy = event.y - dragState.startY
 
@@ -124,11 +147,14 @@ function Edit._registerHandlers()
     events.registerHandler("edit_drag_end", function(event, widget)
         if not dragState then return false end
 
-        print(string.format("[Edit] %s end: %s", dragState.action, dragState.widgetId))
+        local winW, winH = getWindowSize()
+        local overrideW = layoutOverrides.get(dragState.widgetId, "width")
+        print(string.format("[Edit] %s end: %s, override=%s, window=%dx%d",
+            dragState.action, dragState.widgetId,
+            overrideW and tostring(overrideW) or "nil",
+            winW, winH))
 
-        -- Serialize changes
         Edit._serialize()
-
         dragState = nil
         return true
     end)
@@ -173,17 +199,28 @@ end
 -- Widget to Property Mapping
 -- =============================================================================
 
-function Edit._getWidgetProperty(widgetId, edge)
-    -- Map known widgets to their reactive properties
-    local mapping = {
-        ["left-sidebar"] = { right = "leftSidebarWidth" },
-        ["right-sidebar"] = { left = "rightSidebarWidth" },
-        ["active-tags"] = { left = "debugPanelWidth" },
-    }
+function Edit._getWidgetProperties(widgetId, edge)
+    -- Map edge/corner to size properties
+    -- Returns { width = bool, height = bool, widthSign = 1/-1, heightSign = 1/-1 }
+    -- Sign indicates whether positive drag increases or decreases the dimension
+    -- All edges are always resizable
 
-    local widgetMap = mapping[widgetId]
-    if widgetMap and widgetMap[edge] then
-        return widgetMap[edge]
+    if edge == "left" then
+        return { width = true, height = false, widthSign = -1, heightSign = 1 }
+    elseif edge == "right" then
+        return { width = true, height = false, widthSign = 1, heightSign = 1 }
+    elseif edge == "top" then
+        return { width = false, height = true, widthSign = 1, heightSign = -1 }
+    elseif edge == "bottom" then
+        return { width = false, height = true, widthSign = 1, heightSign = 1 }
+    elseif edge == "top-left" then
+        return { width = true, height = true, widthSign = -1, heightSign = -1 }
+    elseif edge == "top-right" then
+        return { width = true, height = true, widthSign = 1, heightSign = -1 }
+    elseif edge == "bottom-left" then
+        return { width = true, height = true, widthSign = -1, heightSign = 1 }
+    elseif edge == "bottom-right" then
+        return { width = true, height = true, widthSign = 1, heightSign = 1 }
     end
 
     return nil
@@ -196,30 +233,45 @@ end
 function Edit._applyResize(dx, dy)
     if not dragState or dragState.action ~= "resize" then return end
 
+    local props = dragState.properties
     local edge = dragState.edge
-    local property = dragState.property
+    local winW, winH = getWindowSize()
+    local widgetId = dragState.widgetId
 
-    -- If we have a direct property mapping, use it
-    if property and AppState then
-        local delta = 0
+    if props.width then
+        -- Calculate total mouse movement from drag start
+        local totalDx = dragState.currentMouseX - dragState.startX
 
-        if edge == "left" then
-            delta = -dx  -- Dragging left edge left = increase width
-        elseif edge == "right" then
-            delta = dx   -- Dragging right edge right = increase width
-        elseif edge == "top" then
-            delta = -dy
-        elseif edge == "bottom" then
-            delta = dy
+        if (edge == "right" or edge == "top-right" or edge == "bottom-right") and dragState.atRight then
+            -- At right edge: resize both window and widget
+            dragState.currentWidth = dragState.initialWidth + totalDx
+            setWindowSize(dragState.startWindowW + totalDx, winH)
+        elseif (edge == "left" or edge == "top-left" or edge == "bottom-left") and dragState.atLeft then
+            dragState.currentWidth = dragState.initialWidth - totalDx
+            setWindowSize(dragState.startWindowW - totalDx, winH)
+        else
+            -- Not at window edge: resize widget using total delta from start
+            dragState.currentWidth = dragState.initialWidth + totalDx * props.widthSign
         end
+        layoutOverrides.set(widgetId, "width", dragState.currentWidth)
+    end
 
-        local current = AppState.get(property)
-        if current then
-            AppState.set(property, current + delta)
-            -- Update start position for continuous dragging
-            dragState.startX = dragState.startX + dx
-            dragState.startY = dragState.startY + dy
+    if props.height then
+        local totalDy = dragState.currentMouseY - dragState.startY
+
+        if (edge == "bottom" or edge == "bottom-left" or edge == "bottom-right") and dragState.atBottom then
+            dragState.currentHeight = dragState.initialHeight + totalDy
+            local curWinW = select(1, getWindowSize())
+            setWindowSize(curWinW, dragState.startWindowH + totalDy)
+        elseif (edge == "top" or edge == "top-left" or edge == "top-right") and dragState.atTop then
+            dragState.currentHeight = dragState.initialHeight - totalDy
+            local curWinW = select(1, getWindowSize())
+            setWindowSize(curWinW, dragState.startWindowH - totalDy)
+        else
+            -- Not at window edge: resize widget using total delta from start
+            dragState.currentHeight = dragState.initialHeight + totalDy * props.heightSign
         end
+        layoutOverrides.set(widgetId, "height", dragState.currentHeight)
     end
 end
 
@@ -240,33 +292,7 @@ end
 -- =============================================================================
 
 function Edit._serialize()
-    if not AppState then return end
-
-    local layout = {
-        leftSidebarWidth = AppState.get("leftSidebarWidth"),
-        rightSidebarWidth = AppState.get("rightSidebarWidth"),
-        debugPanelWidth = AppState.get("debugPanelWidth"),
-    }
-
-    local lines = {
-        "-- config/layout.lua - Layout configuration",
-        "-- Modified: " .. os.date("%Y-%m-%d %H:%M:%S"),
-        "",
-        "return {",
-        string.format("    leftSidebarWidth = %d,", layout.leftSidebarWidth),
-        string.format("    rightSidebarWidth = %d,", layout.rightSidebarWidth),
-        string.format("    debugPanelWidth = %d,", layout.debugPanelWidth),
-        "}",
-        "",
-    }
-
-    local path = "config/layout.lua"
-    local file = io.open(path, "w")
-    if file then
-        file:write(table.concat(lines, "\n"))
-        file:close()
-        print("[Edit] Saved: " .. path)
-    end
+    layoutOverrides.save()
 end
 
 -- =============================================================================

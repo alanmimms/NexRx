@@ -64,11 +64,7 @@ local specs = {
     wfMinDb        = { min = -140, max = -60 },
     wfMaxDb        = { min = -100, max = -20 },
     wfColormap     = {},
-
-    -- Layout (reactive!)
-    leftSidebarWidth  = { min = 200, max = 400 },
-    rightSidebarWidth = { min = 150, max = 350 },
-    debugPanelWidth   = { min = 200, max = 400 },
+    -- Layout constraints are NOT here - widgets query SetBox directly via their tags
 }
 
 -- =============================================================================
@@ -112,47 +108,42 @@ end
 -- =============================================================================
 
 function AppState.init()
-    -- Load defaults from SetBox (or use hardcoded defaults)
+    -- Load defaults from SetBox
     local defaults = {
         -- Radio
-        frequency = (setbox and setbox.getNumber("defaultFrequency", 14.200e6) or 14.200e6) / 1e6,
-        vfoA = (setbox and setbox.getNumber("vfoA", 14.200e6) or 14.200e6) / 1e6,
-        vfoB = (setbox and setbox.getNumber("vfoB", 7.050e6) or 7.050e6) / 1e6,
-        activeVFO = setbox and setbox.getString("activeVFO", "A") or "A",
-        selectedMode = setbox and setbox.getString("defaultMode", "USB") or "USB",
-        selectedBand = setbox and setbox.getString("defaultBand", "20m") or "20m",
+        frequency = setbox.getNumber("defaultFrequency", 14.200e6) / 1e6,
+        vfoA = setbox.getNumber("vfoA", 14.200e6) / 1e6,
+        vfoB = setbox.getNumber("vfoB", 7.050e6) / 1e6,
+        activeVFO = setbox.getString("activeVFO", "A"),
+        selectedMode = setbox.getString("defaultMode", "USB"),
+        selectedBand = setbox.getString("defaultBand", "20m"),
 
         -- DSP toggles
-        bandpassEnabled = setbox and setbox.getBool("bandpassEnabled", false) or false,
-        notchEnabled = setbox and setbox.getBool("notchEnabled", false) or false,
-        agcEnabled = setbox and setbox.getBool("agcEnabled", true) or true,
-        nrEnabled = setbox and setbox.getBool("nrEnabled", false) or false,
-        nbEnabled = setbox and setbox.getBool("nbEnabled", false) or false,
-        muteEnabled = setbox and setbox.getBool("muted", false) or false,
+        bandpassEnabled = setbox.getBool("bandpassEnabled", false),
+        notchEnabled = setbox.getBool("notchEnabled", false),
+        agcEnabled = setbox.getBool("agcEnabled", true),
+        nrEnabled = setbox.getBool("nrEnabled", false),
+        nbEnabled = setbox.getBool("nbEnabled", false),
+        muteEnabled = setbox.getBool("muted", false),
         testToneEnabled = false,
 
         -- DSP parameters
-        bandpassCenter = setbox and setbox.getNumber("bandpassCenter", 700) or 700,
-        bandpassWidth = setbox and setbox.getNumber("bandpassWidth", 500) or 500,
-        notchCenter = setbox and setbox.getNumber("notchCenter", 0) or 0,
-        notchWidth = setbox and setbox.getNumber("notchWidth", 100) or 100,
-        volumeDb = setbox and setbox.getNumber("volumeDb", -20) or -20,
-        squelch = setbox and setbox.getNumber("squelch", 0.3) or 0.3,
-        lmsMu = setbox and setbox.getNumber("lmsMu", 0.001) or 0.001,
+        bandpassCenter = setbox.getNumber("bandpassCenter", 700),
+        bandpassWidth = setbox.getNumber("bandpassWidth", 500),
+        notchCenter = setbox.getNumber("notchCenter", 0),
+        notchWidth = setbox.getNumber("notchWidth", 100),
+        volumeDb = setbox.getNumber("volumeDb", -20),
+        squelch = setbox.getNumber("squelch", 0.3),
+        lmsMu = setbox.getNumber("lmsMu", 0.001),
 
         -- Hardware
-        qsdOffsetK = setbox and setbox.getNumber("qsdOffsetK", 12.0) or 12.0,
-        rfAttenDb = math.floor(setbox and setbox.getNumber("rfAttenDb", 0) or 0),
+        qsdOffsetK = setbox.getNumber("qsdOffsetK", 12.0),
+        rfAttenDb = math.floor(setbox.getNumber("rfAttenDb", 0)),
 
         -- Display
-        wfMinDb = setbox and setbox.getNumber("wfMinDb", -120) or -120,
-        wfMaxDb = setbox and setbox.getNumber("wfMaxDb", -40) or -40,
-        wfColormap = setbox and setbox.getString("wfColormap", "viridis") or "viridis",
-
-        -- Layout
-        leftSidebarWidth = 260,
-        rightSidebarWidth = 200,
-        debugPanelWidth = 280,
+        wfMinDb = setbox.getNumber("wfMinDb", -120),
+        wfMaxDb = setbox.getNumber("wfMaxDb", -40),
+        wfColormap = setbox.getString("wfColormap", "viridis"),
     }
 
     -- Create observables for all properties
@@ -173,20 +164,6 @@ end
 local computeds = {}
 
 function AppState._createComputeds()
-    -- Main area position depends on sidebar widths
-    computeds.mainAreaX = R.computed(function()
-        return observables.leftSidebarWidth:get()
-    end)
-
-    -- Main area width depends on both sidebars and debug panel
-    computeds.mainAreaWidth = R.computed(function()
-        local winW = getWindowSize and getWindowSize() or 1600
-        local left = observables.leftSidebarWidth:get()
-        local right = observables.rightSidebarWidth:get()
-        local debug = observables.debugPanelWidth:get()
-        return winW - left - right - debug
-    end)
-
     -- VFO display string
     computeds.frequencyDisplay = R.computed(function()
         return string.format("%.6f", observables.frequency:get())

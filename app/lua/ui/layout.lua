@@ -172,6 +172,30 @@ local function popRegion()
     return currentRegion
 end
 
+-- Set current region directly (for container-based layout)
+-- Unlike dock(), does not affect parent region
+function layout.setRegion(x, y, w, h, name)
+    local region = createRegion(x, y, w, h, name)
+    table.insert(regionStack, region)
+    currentRegion = region
+
+    if eventsModule and eventsModule.pushLayoutParent then
+        eventsModule.pushLayoutParent(region.id)
+    end
+end
+
+-- End a region set by setRegion()
+function layout.endRegion()
+    if eventsModule and eventsModule.popLayoutParent then
+        eventsModule.popLayoutParent()
+    end
+
+    if #regionStack > 1 then
+        table.remove(regionStack)
+        currentRegion = regionStack[#regionStack]
+    end
+end
+
 -- Dock a region to a side
 -- side: "top", "bottom", "left", "right"
 -- size: height for top/bottom, width for left/right
