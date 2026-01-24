@@ -109,6 +109,21 @@ local spectrumData = {}  -- runtime buffer
 local keyStates = {}     -- scancode -> true if key was down last frame
 local activeTags = {}    -- tag name -> true for all currently active tags (held keys, held buttons, etc.)
 
+-- Property accessor registry (populated in init(), used by drawPropertySlider)
+local propertyAccessors = {}
+
+-- Get/set property values (works after init() populates propertyAccessors)
+local function getProperty(name)
+    local accessor = propertyAccessors[name]
+    if accessor then return accessor.get() end
+    return nil
+end
+
+local function setProperty(name, value)
+    local accessor = propertyAccessors[name]
+    if accessor then accessor.set(value) end
+end
+
 -- Get ALL active tags for debugging - EVERYTHING in the system
 -- Shows complete tag state: all widgets, all inputs, all modes
 -- All tags use unified namespaces: input.*, state.*, widget.*, event.*
@@ -418,8 +433,8 @@ function init()
         return accessors
     end
 
-    -- Auto-generate accessors from specs
-    local propertyAccessors = generateAccessors(propertySpecs)
+    -- Auto-generate accessors from specs (populates module-level propertyAccessors)
+    propertyAccessors = generateAccessors(propertySpecs)
 
     -- Special-case properties with custom logic (not auto-generated)
     local bandFreqs = {
@@ -463,17 +478,6 @@ function init()
             applyColormap(v)
         end,
     }
-
-    local function getProperty(name)
-        local accessor = propertyAccessors[name]
-        if accessor then return accessor.get() end
-        return nil
-    end
-
-    local function setProperty(name, value)
-        local accessor = propertyAccessors[name]
-        if accessor then accessor.set(value) end
-    end
 
     -- =======================================================================
     -- Generic Event Handlers
@@ -1191,8 +1195,8 @@ function draw()
         local x, y, w, h = r.x, r.y, r.w, r.h
         layout.setRegion(x, y, w, h, "top-bar")
 
-        -- Register top bar for event dispatch
-        events.registerWidget("top_bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
+        -- Register top bar for event dispatch (ID must match container.lua's widgetOrder)
+        events.registerWidget("top-bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
 
         drawRect(x, y, w, h, 0.08, 0.08, 0.12, 1.0)
         drawLine(x, y + h, x + w, y + h, 0.2, 0.2, 0.25, 1.0, 1.0)
@@ -1238,8 +1242,8 @@ function draw()
         local x, y, w, h = r.x, r.y, r.w, r.h
         layout.setRegion(x, y, w, h, "bottom-bar")
 
-        -- Register bottom bar for event dispatch
-        events.registerWidget("bottom_bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
+        -- Register bottom bar for event dispatch (ID must match container.lua's widgetOrder)
+        events.registerWidget("bottom-bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
 
         drawRect(x, y, w, h, 0.08, 0.08, 0.1, 1.0)
         drawLine(x, y, x + w, y, 0.2, 0.2, 0.25, 1.0, 1.0)
@@ -1283,15 +1287,17 @@ function draw()
         local freqStr = string.format("%.6f", state.frequency)
         local freqW = measureText(freqStr)
         local fx, fy = layout.getCursor()
-        local freqBoxW, freqBoxH = w - 24, 36
+        local sidebarParent = {width = w, height = h}
+        local freqBoxW = getLayoutSize({"widget.FrequencyDisplay"}, "width", sidebarParent, "sidebar-freq-display") or (w - 24)
+        local freqBoxH = getLayoutSize({"widget.FrequencyDisplay"}, "height", sidebarParent, "sidebar-freq-display") or 36
         drawRoundedRect(fx, fy, freqBoxW, freqBoxH, 4, 0.1, 0.1, 0.15, 1.0)
-        drawText(fx + (freqBoxW - freqW) / 2, fy + 10, freqStr, 0.2, 0.9, 0.4, 1.0)
+        drawText(fx + (freqBoxW - freqW) / 2, fy + (freqBoxH - 16) / 2, freqStr, 0.2, 0.9, 0.4, 1.0)
         -- Register for wheel tuning and click to enter frequency
         events.registerWidget("sidebar-freq-display",
             {x = fx, y = fy, w = freqBoxW, h = freqBoxH},
             {"FrequencyDisplay", "VFOControl"},
             nil)
-        layout.newLine(40)
+        layout.newLine(freqBoxH + 4)
 
         -- Frequency slider (wheel/arrow handled via VFOControl rules in events.lua)
         local sx, sy = layout.getCursor()
@@ -1500,8 +1506,9 @@ function draw()
         layout.newLine(24)
 
         local mx, my = layout.getCursor()
-        local mw = w - 24
-        local mh = 28
+        local meterParent = {width = w, height = h}
+        local mw = getLayoutSize({"widget.SMeter"}, "width", meterParent, "s-meter") or (w - 24)
+        local mh = getLayoutSize({"widget.SMeter"}, "height", meterParent, "s-meter") or 28
 
         -- Register S-meter as a widget
         events.registerWidget("s-meter", {x=mx, y=my, w=mw, h=mh}, {"Meter", "SMeter"}, nil)
@@ -1514,9 +1521,12 @@ function draw()
         -- Map S-units to bar display (0-9 = bars 0-8, 9+ = bars 9+)
         -- Bar 0-8 = S1-S9, bar 9 = S9+10, etc
         local barCount = 12  -- S1-S9 + S9+10, +20, +30
-        local barW = (mw - 8) / barCount - 2
+        local barPad = 4
+        local barGap = 2
+        local barW = (mw - barPad * 2 - barGap * (barCount - 1)) / barCount
+        local barH = mh - barPad * 2
         for i = 0, barCount - 1 do
-            local barX = mx + 4 + i * (barW + 2)
+            local barX = mx + barPad + i * (barW + barGap)
             local barThreshold
             if i < 9 then
                 barThreshold = i + 1  -- S1 through S9
@@ -1528,20 +1538,28 @@ function draw()
                 local r, g, b = 0.2, 0.8, 0.3  -- Green for S1-S5
                 if i >= 9 then r, g, b = 0.9, 0.3, 0.2 end  -- Red for S9+
                 if i >= 6 and i < 9 then r, g, b = 0.9, 0.7, 0.2 end  -- Yellow for S6-S9
-                drawRect(barX, my + 4, barW, 20, r, g, b, 1.0)
+                drawRect(barX, my + barPad, barW, barH, r, g, b, 1.0)
             else
-                drawRect(barX, my + 4, barW, 20, 0.2, 0.2, 0.25, 1.0)
+                drawRect(barX, my + barPad, barW, barH, 0.2, 0.2, 0.25, 1.0)
             end
         end
-        layout.newLine(40)
+        layout.newLine(mh + 12)
 
         -- Display S-meter reading (text comes from smeter module)
-        local sx, sy = layout.center(measureText(sig.sText), 16)
+        local tx, ty = layout.getCursor()
+        local textParent = {width = mw, height = h}  -- inherit meter width for context
+        local textW = getLayoutSize({"widget.SMeterText"}, "width", textParent, "smeter-text") or mw
+        local textH = getLayoutSize({"widget.SMeterText"}, "height", textParent, "smeter-text") or 20
         -- Register S-meter text display as widget
-        events.registerWidget("smeter-text", {x=sx-30, y=layout.getCursor()-8, w=100, h=16}, {"Label", "SMeterText"}, nil)
-        drawText(sx - 20, layout.getCursor() - 8, sig.sText, 0.9, 0.9, 0.95, 1.0)
-        drawText(sx + 30, layout.getCursor() - 8, sig.dBmText, 0.5, 0.5, 0.55, 1.0)
-        layout.newLine(16)
+        events.registerWidget("smeter-text", {x=tx, y=ty, w=textW, h=textH}, {"Label", "SMeterText"}, nil)
+        -- Center text within the widget bounds
+        local sTextW = measureText(sig.sText)
+        local dBmTextW = measureText(sig.dBmText)
+        local totalTextW = sTextW + 10 + dBmTextW
+        local textStartX = tx + (textW - totalTextW) / 2
+        drawText(textStartX, ty + 2, sig.sText, 0.9, 0.9, 0.95, 1.0)
+        drawText(textStartX + sTextW + 10, ty + 2, sig.dBmText, 0.5, 0.5, 0.55, 1.0)
+        layout.newLine(textH + 4)
 
         sepX, sepY = layout.getCursor()
         ui.separator("sep-smeter-band", sepX, sepY, w - 24)
@@ -1654,24 +1672,37 @@ function draw()
             {"FrequencyDisplay", "VFOControl"},
             nil)
 
-        -- Colormap selector (right side of title)
+        -- Colormap selector (right side of title, wraps if needed)
         -- Uses colormaps from config/colormaps.lua when available
         local cmapNames = {"viridis", "plasma", "inferno", "green", "blue"}
-        local cmapX = px + pw - 280
+        local btnW, btnH, btnGap = 52, 20, 4
+        local totalBtnW = #cmapNames * (btnW + btnGap) - btnGap
+        local availableW = pw - freqW - 40  -- Space after frequency text
+        local cmapX = px + pw - math.min(totalBtnW, availableW)
+        local cmapY = py - 2
+        local rowX = cmapX
         for i, cmap in ipairs(cmapNames) do
-            local btnX = cmapX + (i - 1) * 55
+            -- Wrap to next row if button would exceed panel width
+            if rowX + btnW > px + pw then
+                rowX = cmapX
+                cmapY = cmapY + btnH + 2
+            end
             -- Tag format: "CmapViridis", "CmapPlasma" etc. (capitalize first letter)
             local cmapTag = "Cmap" .. cmap:sub(1,1):upper() .. cmap:sub(2)
             local cmapBtnTags = state.wfColormap == cmap and {"Active", cmapTag} or {cmapTag}
-            ui.button("cmap-" .. cmap, cmap, btnX, py - 2, 52, 20, cmapBtnTags)
+            ui.button("cmap-" .. cmap, cmap, rowX, cmapY, btnW, btnH, cmapBtnTags)
+            rowX = rowX + btnW + btnGap
         end
 
         -- Display area
         local vizY = py + 24
         local vizH = ph - 30
 
-        -- Spectrum (top 35%)
-        local specH = math.floor(vizH * 0.35)
+        -- Spectrum height can be overridden (default 35% of viz area from SetBox rules)
+        local specParent = {width = pw, height = vizH}
+        local defaultSpecH = math.floor(vizH * 0.35)
+        local specH = getLayoutSize({"widget.Spectrum"}, "height", specParent, "spectrum-display") or defaultSpecH
+        specH = math.max(50, math.min(vizH - 50, specH))  -- Clamp to reasonable bounds
         dispatch.renderSpectrum(spectrumData, px, vizY, pw, specH)
 
         -- Register spectrum widget for event dispatch
@@ -1683,7 +1714,7 @@ function draw()
         -- Separator line
         drawLine(px, vizY + specH + 2, px + pw, vizY + specH + 2, 0.3, 0.3, 0.4, 1.0, 1.0)
 
-        -- Waterfall (bottom 65%)
+        -- Waterfall takes remaining space
         local wfY = vizY + specH + 4
         local wfH = vizH - specH - 8
         dispatch.renderWaterfall(px, wfY, pw, wfH)
@@ -1698,10 +1729,26 @@ function draw()
         local centerX = px + pw / 2
         drawLine(centerX, vizY, centerX, vizY + vizH, 0.9, 0.3, 0.3, 0.5, 1.0)
 
-        -- Frequency scale labels (simplified)
+        -- Frequency scale labels
         local spanKHz = 96  -- Simulated span
-        drawText(px + 5, vizY + vizH - 16, string.format("-%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
-        drawText(px + pw - 55, vizY + vizH - 16, string.format("+%.0fkHz", spanKHz/2), 0.5, 0.5, 0.6, 1.0)
+        local lowFreqLabel = string.format("-%.0fkHz", spanKHz/2)
+        local highFreqLabel = string.format("+%.0fkHz", spanKHz/2)
+        local labelY = vizY + vizH - 16
+        local labelH = 16
+
+        -- Register frequency labels as widgets
+        local lowLabelW = measureText(lowFreqLabel) + 10
+        events.registerWidget("freq-label-low",
+            {x = px + 5, y = labelY, w = lowLabelW, h = labelH},
+            {"Label", "FreqLabel"}, nil)
+        drawText(px + 5, labelY, lowFreqLabel, 0.5, 0.5, 0.6, 1.0)
+
+        local highLabelW = measureText(highFreqLabel) + 10
+        events.registerWidget("freq-label-high",
+            {x = px + pw - highLabelW - 5, y = labelY, w = highLabelW, h = labelH},
+            {"Label", "FreqLabel"}, nil)
+        drawText(px + pw - highLabelW, labelY, highFreqLabel, 0.5, 0.5, 0.6, 1.0)
+
         layout.endRegion()
     end
 

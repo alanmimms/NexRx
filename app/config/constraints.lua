@@ -132,11 +132,78 @@ rule { tags = {"widget.Panel"}, apply = {
 }}
 
 -- =============================================================================
--- Buttons (minimal margins)
+-- Widget Type Defaults - ALL sizes come from rules, not hardcoded
 -- =============================================================================
+
+-- Buttons
 rule { tags = {"widget.Button"}, apply = {
+    width = "100",
+    height = "32",
     marginInner = 0.0,
     marginOuter = 0.005,
+}}
+
+-- Toggle buttons (same as regular buttons)
+rule { tags = {"widget.Toggle"}, apply = {
+    width = "100",
+    height = "32",
+}}
+
+-- Checkboxes
+rule { tags = {"widget.Checkbox"}, apply = {
+    height = "18",
+}}
+
+-- Sliders
+rule { tags = {"widget.Slider"}, apply = {
+    height = "8",
+}}
+
+-- Progress bars
+rule { tags = {"widget.ProgressBar"}, apply = {
+    height = "8",
+}}
+
+-- Labels
+rule { tags = {"widget.Label"}, apply = {
+    -- Labels size to content by default, but can be overridden
+}}
+
+-- Text inputs
+rule { tags = {"widget.TextInput"}, apply = {
+    height = "28",
+}}
+
+-- Meters
+rule { tags = {"widget.Meter"}, apply = {
+    height = "28",
+}}
+
+-- Separators
+rule { tags = {"widget.Separator"}, apply = {
+    height = "1",
+}}
+
+-- =============================================================================
+-- Custom Widget Defaults (manually drawn in main.lua)
+-- =============================================================================
+
+-- Frequency display box in sidebar (VFO readout)
+rule { tags = {"widget.FrequencyDisplay"}, apply = {
+    height = "36",
+    -- width is contextual (parent.width - padding), handled by fallback
+}}
+
+-- S-Meter LED bar display
+rule { tags = {"widget.SMeter"}, apply = {
+    height = "28",
+    -- width is contextual (parent.width - padding), handled by fallback
+}}
+
+-- S-Meter text readout
+rule { tags = {"widget.SMeterText"}, apply = {
+    height = "20",
+    -- width matches meter width, handled by fallback
 }}
 
 print("[constraints.lua] Layout constraint rules loaded")

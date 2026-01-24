@@ -17,6 +17,13 @@ function M.get(widgetId, property)
     return overrides[key]
 end
 
+-- Get an override value with default fallback
+-- Usage: local w = overrides.getOr(id, "width", defaultW)
+function M.getOr(widgetId, property, default)
+    local key = widgetId .. ":" .. property
+    return overrides[key] or default
+end
+
 -- Set an override value
 function M.set(widgetId, property, value)
     local key = widgetId .. ":" .. property

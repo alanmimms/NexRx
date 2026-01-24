@@ -18,3 +18,4 @@ sim-stuff/txsim/
 app/build/
 app/build-*/
 build/
+app/config/layout-overrides.lua

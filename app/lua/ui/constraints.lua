@@ -60,10 +60,10 @@ end
 -- Query SetBox for constraint properties given widget tags
 -- Returns table of constraint values (some may be expression strings)
 function constraints.query(tags)
-    -- Build query tags list
-    local queryTags = {}
-    for _, tag in ipairs(tags) do
-        table.insert(queryTags, tag)
+    -- Save current tags and set query tags
+    local prevTags = setbox.getActiveTags and setbox.getActiveTags() or {}
+    if setbox.setActiveTags then
+        setbox.setActiveTags(tags)
     end
 
     -- Properties we care about
@@ -77,18 +77,23 @@ function constraints.query(tags)
 
     local result = {}
     for _, prop in ipairs(props) do
-        local value = setbox.getString(prop, nil, queryTags)
+        local value = setbox.getString(prop, nil)
         if value then
             -- Try to convert to number if it's a plain number
             local num = tonumber(value)
             result[prop] = num or value
         else
             -- Try getNumber for numeric properties
-            local numValue = setbox.getNumber(prop, nil, queryTags)
+            local numValue = setbox.getNumber(prop, nil)
             if numValue then
                 result[prop] = numValue
             end
         end
+    end
+
+    -- Restore previous tags
+    if setbox.setActiveTags then
+        setbox.setActiveTags(prevTags)
     end
 
     return result

@@ -75,8 +75,24 @@ function Edit._registerHandlers()
         local currentW = layoutOverrides.get(widget.id, "width") or b.w
         local currentH = layoutOverrides.get(widget.id, "height") or b.h
 
-        print(string.format("[Edit] dragStart: bounds=(%d,%d,%d,%d) win=%dx%d currentW=%d",
+        print(string.format("[Edit] dragStart: bounds=(%.0f,%.0f,%.0f,%.0f) win=%dx%d currentW=%.0f",
             b.x, b.y, b.w, b.h, winW, winH, currentW))
+
+        -- Only allow window resize for top-level containers (no parent)
+        -- Widgets inside containers should only resize the widget itself
+        local isTopLevel = not widget.parent
+
+        -- For waterfall, get initial spectrum height (they share boundary)
+        local initialSpectrumH = nil
+        if widget.id == "waterfall-display" then
+            initialSpectrumH = layoutOverrides.get("spectrum-display", "height")
+            -- If no override, estimate from waterfall's y position
+            if not initialSpectrumH then
+                -- waterfall y = vizY + specH + 4, so specH ≈ (wfY - some offset)
+                -- We'll use a rough estimate; actual value comes from first frame
+                initialSpectrumH = 150  -- Will be corrected on first drag
+            end
+        end
 
         dragState = {
             startWindowW = winW,
@@ -92,10 +108,11 @@ function Edit._registerHandlers()
             currentWidth = currentW,
             currentHeight = currentH,
             properties = properties,
-            atRight = b.x + b.w >= winW - 20,
-            atBottom = b.y + b.h >= winH - 20,
-            atLeft = b.x <= 20,
-            atTop = b.y <= 20,
+            atRight = isTopLevel and b.x + b.w >= winW - 20,
+            atBottom = isTopLevel and b.y + b.h >= winH - 20,
+            atLeft = isTopLevel and b.x <= 20,
+            atTop = isTopLevel and b.y <= 20,
+            initialSpectrumH = initialSpectrumH,  -- For waterfall top edge drag
         }
 
         print(string.format("[Edit] Resize start: %s edge=%s", widget.id, edge))
@@ -258,6 +275,15 @@ function Edit._applyResize(dx, dy)
 
     if props.height then
         local totalDy = dragState.currentMouseY - dragState.startY
+
+        -- Special case: waterfall top edge controls spectrum height (shared boundary)
+        if widgetId == "waterfall-display" and (edge == "top" or edge == "top-left" or edge == "top-right") then
+            -- Dragging waterfall top = changing spectrum bottom = changing spectrum height
+            local newSpecH = dragState.initialSpectrumH + totalDy
+            newSpecH = math.max(50, newSpecH)  -- Minimum spectrum height
+            layoutOverrides.set("spectrum-display", "height", newSpecH)
+            return  -- Don't modify waterfall height directly
+        end
 
         if (edge == "bottom" or edge == "bottom-left" or edge == "bottom-right") and dragState.atBottom then
             dragState.currentHeight = dragState.initialHeight + totalDy

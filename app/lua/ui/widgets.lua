@@ -32,6 +32,8 @@
 
 local state = require("ui.state")
 local theme = require("ui.theme")
+local layoutOverrides = require("layout_overrides")
+local constraints = require("ui.constraints")
 
 local ui = {}
 
@@ -49,6 +51,37 @@ end
 -- Set layout module for parent hierarchy
 function ui.setLayoutModule(layout)
     layoutModule = layout
+end
+
+-- Internal: Get widget dimensions from the proper hierarchy:
+-- 1. layoutOverrides (user dragged)
+-- 2. constraints/rules (SetBox)
+-- 3. Minimal safety fallback (should never be needed if rules are complete)
+local function getWidgetSize(id, widgetTags, passedW, passedH)
+    -- First priority: user overrides from dragging
+    local w = layoutOverrides.get(id, "width")
+    local h = layoutOverrides.get(id, "height")
+
+    -- Second priority: passed values (caller may have computed from context)
+    if not w then w = passedW end
+    if not h then h = passedH end
+
+    -- Third priority: SetBox rules
+    if not w or not h then
+        local cons = constraints.query(widgetTags)
+        if not w and cons.width then
+            w = constraints.eval(cons.width, {})
+        end
+        if not h and cons.height then
+            h = constraints.eval(cons.height, {})
+        end
+    end
+
+    -- Last resort fallback (rules should cover this, but safety first)
+    w = w or 80
+    h = h or 24
+
+    return w, h
 end
 
 -- Internal: register widget with events module
@@ -83,10 +116,7 @@ end
 -- Purely presentational - click handling via event dispatch
 -- =============================================================================
 function ui.button(id, label, x, y, w, h, tags)
-    w = w or 100
-    h = h or 32
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first (needed for size lookup)
     local widgetTags = {"widget.Button"}
     if tags then
         for _, t in ipairs(tags) do
@@ -98,6 +128,9 @@ function ui.button(id, label, x, y, w, h, tags)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules → fallback
+    w, h = getWidgetSize(id, widgetTags, w, h)
 
     -- Register with events module for SetBox dispatch
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
@@ -137,10 +170,7 @@ end
 -- Like button but displays checked state visually
 -- =============================================================================
 function ui.toggle(id, label, x, y, w, h, checked, tags)
-    w = w or 100
-    h = h or 32
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first (needed for size lookup)
     local widgetTags = {"widget.Toggle", "widget.Button"}
     if tags then
         for _, t in ipairs(tags) do
@@ -154,6 +184,9 @@ function ui.toggle(id, label, x, y, w, h, checked, tags)
     if checked then
         table.insert(widgetTags, "state.Checked")
     end
+
+    -- Get size: overrides → passed values → rules → fallback
+    w, h = getWidgetSize(id, widgetTags, w, h)
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
@@ -202,13 +235,7 @@ end
 -- Checkbox Widget
 -- =============================================================================
 function ui.checkbox(id, label, x, y, checked, tags)
-    local boxSize = 18
-    local spacing = 8
-    local labelW = measureText(label)
-    local totalW = boxSize + spacing + labelW
-    local h = boxSize
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Checkbox"}
     if tags then
         for _, t in ipairs(tags) do
@@ -223,11 +250,21 @@ function ui.checkbox(id, label, x, y, checked, tags)
         table.insert(widgetTags, "state.Checked")
     end
 
+    -- Compute content-based defaults
+    local boxSize = 18
+    local spacing = 8
+    local labelW = measureText(label)
+    local defaultW = boxSize + spacing + labelW
+    local defaultH = boxSize
+
+    -- Get size: overrides → content-based defaults → rules
+    local w, h = getWidgetSize(id, widgetTags, defaultW, defaultH)
+
     -- Register with events module
-    registerWidget(id, {x=x, y=y, w=totalW, h=h}, widgetTags)
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
     -- Track hot/active for visual feedback
-    local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, totalW, h)
+    local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)
     if isHot then
         state.setHot(id)
         if state.mouseDown then
@@ -269,12 +306,7 @@ end
 -- @param tags optional tags array
 -- @param property optional property name for event-based adjustment
 function ui.slider(id, x, y, w, minVal, maxVal, value, tags, property)
-    local h = 8
-    local handleR = 10
-    local hitH = math.max(h, handleR * 2)
-    local hitY = y - (hitH - h) / 2
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Slider"}
     if tags then
         for _, t in ipairs(tags) do
@@ -285,6 +317,14 @@ function ui.slider(id, x, y, w, minVal, maxVal, value, tags, property)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules
+    local h
+    w, h = getWidgetSize(id, widgetTags, w, 8)
+
+    local handleR = 10
+    local hitH = math.max(h, handleR * 2)
+    local hitY = y - (hitH - h) / 2
 
     -- Register with events module, including slider data for generic handlers
     registerWidget(id, {x=x - handleR, y=hitY, w=w + handleR*2, h=hitH}, widgetTags, {
@@ -340,12 +380,7 @@ end
 -- Vertical Slider Widget
 -- =============================================================================
 function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
-    local w = 8
-    local handleR = 10
-    local hitW = math.max(w, handleR * 2)
-    local hitX = x - (hitW - w) / 2
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Slider", "widget.Vertical"}
     if tags then
         for _, t in ipairs(tags) do
@@ -356,6 +391,14 @@ function ui.vslider(id, x, y, h, minVal, maxVal, value, tags)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules
+    local w
+    w, h = getWidgetSize(id, widgetTags, 8, h)
+
+    local handleR = 10
+    local hitW = math.max(w, handleR * 2)
+    local hitX = x - (hitW - w) / 2
 
     -- Register with events module
     registerWidget(id, {x=hitX, y=y - handleR, w=hitW, h=h + handleR*2}, widgetTags)
@@ -405,9 +448,7 @@ end
 
 -- Progress bar
 function ui.progressBar(id, x, y, w, h, value, tags)
-    local t = clamp(value, 0, 1)
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.ProgressBar"}
     if tags then
         for _, tag in ipairs(tags) do
@@ -418,6 +459,11 @@ function ui.progressBar(id, x, y, w, h, value, tags)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules
+    w, h = getWidgetSize(id, widgetTags, w, h)
+
+    local t = clamp(value, 0, 1)
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
@@ -436,7 +482,7 @@ end
 
 -- Label (text display)
 function ui.label(id, x, y, text, tags)
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Label"}
     if tags then
         for _, tag in ipairs(tags) do
@@ -448,9 +494,12 @@ function ui.label(id, x, y, text, tags)
         end
     end
 
-    -- Measure text for bounds
-    local w = measureText(text)
-    local h = getLineHeight()
+    -- Content-based defaults
+    local defaultW = measureText(text)
+    local defaultH = getLineHeight()
+
+    -- Get size: overrides → content-based → rules
+    local w, h = getWidgetSize(id, widgetTags, defaultW, defaultH)
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
@@ -461,7 +510,7 @@ end
 
 -- Panel background
 function ui.panel(id, x, y, w, h, tags)
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Panel"}
     if tags then
         for _, tag in ipairs(tags) do
@@ -473,6 +522,9 @@ function ui.panel(id, x, y, w, h, tags)
         end
     end
 
+    -- Get size: overrides → passed values → rules
+    w, h = getWidgetSize(id, widgetTags, w, h)
+
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
@@ -483,7 +535,7 @@ end
 
 -- Panel with title
 function ui.panelWithTitle(id, x, y, w, h, title, tags)
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Panel", "widget.TitledPanel"}
     if tags then
         for _, tag in ipairs(tags) do
@@ -494,6 +546,9 @@ function ui.panelWithTitle(id, x, y, w, h, title, tags)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules
+    w, h = getWidgetSize(id, widgetTags, w, h)
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
@@ -521,9 +576,7 @@ end
 
 -- Separator line
 function ui.separator(id, x, y, w, tags)
-    local h = 1  -- Separator height for hit testing
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Separator"}
     if tags then
         for _, tag in ipairs(tags) do
@@ -535,6 +588,10 @@ function ui.separator(id, x, y, w, tags)
         end
     end
 
+    -- Get size: overrides → passed values → rules (default height = 1 for separators)
+    local h
+    w, h = getWidgetSize(id, widgetTags, w, 1)
+
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
 
@@ -544,7 +601,7 @@ end
 
 -- Meter widget (like S-meter) - a bar graph display
 function ui.meter(id, x, y, w, h, value, minVal, maxVal, tags)
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Meter"}
     if tags then
         for _, tag in ipairs(tags) do
@@ -555,6 +612,9 @@ function ui.meter(id, x, y, w, h, value, minVal, maxVal, tags)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules
+    w, h = getWidgetSize(id, widgetTags, w, h)
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
@@ -576,10 +636,7 @@ end
 -- Text Input Widget
 -- =============================================================================
 function ui.textInput(id, x, y, w, text, placeholder, tags)
-    local h = 28
-    local padding = 8
-
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.Input", "widget.TextInput"}
     if tags then
         for _, t in ipairs(tags) do
@@ -590,6 +647,12 @@ function ui.textInput(id, x, y, w, text, placeholder, tags)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules
+    local h
+    w, h = getWidgetSize(id, widgetTags, w, 28)
+
+    local padding = 8
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
@@ -644,7 +707,7 @@ end
 -- Displays all currently active tags in real-time
 -- =============================================================================
 function ui.activeTagsViewer(id, x, y, w, h, activeTags, tags)
-    -- Build widget tags (namespaced)
+    -- Build widget tags first
     local widgetTags = {"widget.ActiveTagsViewer", "widget.DebugWidget", "widget.Panel"}
     if tags then
         for _, t in ipairs(tags) do
@@ -655,6 +718,9 @@ function ui.activeTagsViewer(id, x, y, w, h, activeTags, tags)
             end
         end
     end
+
+    -- Get size: overrides → passed values → rules
+    w, h = getWidgetSize(id, widgetTags, w, h)
 
     -- Register with events module
     registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
