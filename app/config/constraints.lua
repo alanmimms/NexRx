@@ -58,29 +58,29 @@ rule { tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = {
 }}
 
 -- =============================================================================
--- Right Sidebar
+-- Right Sidebar (shares right edge with DebugPanel via springs)
 -- =============================================================================
 rule { tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = {
     anchorRight = 1.0,
     anchorTop = 1.0,
     anchorBottom = 1.0,
-    width = "parent.width * 0.12",
-    minWidth = "150",
-    maxWidth = "350",
+    springX = 1.0,  -- Share space proportionally with siblings
+    minWidth = "180",
+    maxWidth = "400",
     marginInner = 0.02,
     marginOuter = 0.0,
 }}
 
 -- =============================================================================
--- Debug Panel (Active Tags Viewer)
+-- Debug Panel (Active Tags Viewer - shares right edge with RightSidebar)
 -- =============================================================================
 rule { tags = {"widget.DebugPanel"}, apply = {
     anchorRight = 1.0,
     anchorTop = 1.0,
     anchorBottom = 1.0,
-    width = "parent.width * 0.14",
+    springX = 1.0,  -- Share space proportionally with siblings
     minWidth = "200",
-    maxWidth = "400",
+    maxWidth = "450",
     marginInner = 0.01,
     marginOuter = 0.0,
 }}

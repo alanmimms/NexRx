@@ -1480,14 +1480,7 @@ function draw()
     do
         local r = regions["right-sidebar"]
         local x, y, w, h = r.x, r.y, r.w, r.h
-        -- Debug: print on width change
-        if not _lastRSW or _lastRSW ~= w then
-            print(string.format("[main] right-sidebar: x=%d w=%d (from container.solve)", x, w))
-            _lastRSW = w
-        end
         layout.setRegion(x, y, w, h, "right-sidebar")
-        -- DEBUG: Draw bright red rect at exact container.solve() coords
-        drawRect(x, y, w, 10, 1.0, 0.0, 0.0, 1.0)
         ui.panel("right-sidebar", x, y, w, h, {"Sidebar"})
         layout.pad(12)
 
