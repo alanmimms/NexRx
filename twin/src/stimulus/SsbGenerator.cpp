@@ -77,22 +77,177 @@ void SsbGenerator::setVoice(std::shared_ptr<TtsEngine> tts, bool repeat) {
     voiceRepeat_ = repeat;
 }
 
+// Two-stage upsampling: 2x FFT (exact, no images) + 5x polyphase sinc
+// This avoids the power-of-2 ratio problem while staying fast
+static std::vector<float> upsampleBuffer(const std::vector<float>& input, double inputRate, double outputRate, bool repeat) {
+    if (input.empty() || inputRate <= 0 || outputRate <= inputRate) {
+        return input;
+    }
+
+    // For 48kHz → 480kHz (10x), do 2x FFT then 5x polyphase
+    // Stage 1: 2x upsample using FFT (perfect, fast)
+    size_t inputLen = input.size();
+    size_t stage1Len = inputLen * 2;
+
+    // Find power-of-2 FFT size for input
+    size_t fftSize = 1;
+    while (fftSize < inputLen) fftSize <<= 1;
+
+    std::vector<double> re(fftSize * 2, 0.0);
+    std::vector<double> im(fftSize * 2, 0.0);
+
+    // Copy input
+    for (size_t i = 0; i < inputLen; ++i) {
+        re[i] = input[i];
+    }
+
+    // In-place radix-2 FFT
+    auto fftInPlace = [](double* re, double* im, size_t n, bool inverse) {
+        for (size_t i = 1, j = 0; i < n; ++i) {
+            size_t bit = n >> 1;
+            while (j & bit) { j ^= bit; bit >>= 1; }
+            j ^= bit;
+            if (i < j) { std::swap(re[i], re[j]); std::swap(im[i], im[j]); }
+        }
+        for (size_t len = 2; len <= n; len <<= 1) {
+            double angle = (inverse ? 2.0 : -2.0) * M_PI / len;
+            double wRe = std::cos(angle), wIm = std::sin(angle);
+            for (size_t i = 0; i < n; i += len) {
+                double uRe = 1.0, uIm = 0.0;
+                for (size_t j = 0; j < len / 2; ++j) {
+                    size_t a = i + j, b = i + j + len / 2;
+                    double tRe = re[b] * uRe - im[b] * uIm;
+                    double tIm = re[b] * uIm + im[b] * uRe;
+                    re[b] = re[a] - tRe; im[b] = im[a] - tIm;
+                    re[a] += tRe; im[a] += tIm;
+                    double newURe = uRe * wRe - uIm * wIm;
+                    uIm = uRe * wIm + uIm * wRe; uRe = newURe;
+                }
+            }
+        }
+        if (inverse) {
+            double scale = 1.0 / n;
+            for (size_t i = 0; i < n; ++i) { re[i] *= scale; im[i] *= scale; }
+        }
+    };
+
+    // Forward FFT
+    fftInPlace(re.data(), im.data(), fftSize, false);
+
+    // Zero-insert for 2x: move negative freqs to new positions
+    std::vector<double> re2(fftSize * 2, 0.0);
+    std::vector<double> im2(fftSize * 2, 0.0);
+    // DC and positive frequencies
+    for (size_t k = 0; k <= fftSize / 2; ++k) {
+        re2[k] = re[k];
+        im2[k] = im[k];
+    }
+    // Negative frequencies
+    for (size_t k = fftSize / 2 + 1; k < fftSize; ++k) {
+        re2[fftSize * 2 - (fftSize - k)] = re[k];
+        im2[fftSize * 2 - (fftSize - k)] = im[k];
+    }
+
+    // Inverse FFT at 2x size
+    fftInPlace(re2.data(), im2.data(), fftSize * 2, true);
+
+    // Extract 2x upsampled result
+    std::vector<float> stage1(stage1Len);
+    for (size_t i = 0; i < stage1Len; ++i) {
+        stage1[i] = static_cast<float>(re2[i] * 2.0);  // Scale by 2 for amplitude
+    }
+
+    // Stage 2: 5x polyphase upsampling
+    // Precompute filter coefficients for all 5 phases
+    const int UPSAMPLE = 5;
+    const int FILTER_HALF = 12;
+    const int TAPS = 2 * FILTER_HALF + 1;  // 25 taps per phase
+    const double KAISER_BETA = 8.0;
+    const double CUTOFF = 0.9 / UPSAMPLE;  // 0.18
+
+    // Precompute Kaiser-windowed sinc for all phases
+    // polyphase[phase][tap] = filter coefficient
+    std::vector<std::vector<double>> polyphase(UPSAMPLE, std::vector<double>(TAPS));
+    std::vector<double> phaseNorm(UPSAMPLE);  // Normalization per phase
+
+    auto bessel_i0 = [](double z) {
+        double sum = 1.0, term = 1.0, z2 = z * z / 4.0;
+        for (int k = 1; k < 25; ++k) {
+            term *= z2 / (k * k);
+            sum += term;
+            if (term < 1e-12) break;
+        }
+        return sum;
+    };
+    double i0_beta = bessel_i0(KAISER_BETA);
+
+    for (int phase = 0; phase < UPSAMPLE; ++phase) {
+        double frac = phase / static_cast<double>(UPSAMPLE);
+        double weightSum = 0.0;
+        for (int tap = 0; tap < TAPS; ++tap) {
+            int k = tap - FILTER_HALF;
+            double t = k - frac;
+            double sinc = (std::abs(t) < 1e-9) ? 1.0 : std::sin(M_PI * t * 2 * CUTOFF) / (M_PI * t);
+            // Kaiser window
+            double x = 2.0 * tap / (TAPS - 1) - 1.0;
+            double window = bessel_i0(KAISER_BETA * std::sqrt(std::max(0.0, 1.0 - x * x))) / i0_beta;
+            polyphase[phase][tap] = sinc * window;
+            weightSum += polyphase[phase][tap];
+        }
+        phaseNorm[phase] = (weightSum > 0) ? 1.0 / weightSum : 0.0;
+    }
+
+    // Apply polyphase filter
+    size_t outputLen = stage1Len * UPSAMPLE;
+    std::vector<float> output(outputLen);
+    int stage1Size = static_cast<int>(stage1.size());
+
+    for (size_t in = 0; in < stage1Len; ++in) {
+        for (int phase = 0; phase < UPSAMPLE; ++phase) {
+            double sum = 0.0;
+            const auto& coeffs = polyphase[phase];
+            for (int tap = 0; tap < TAPS; ++tap) {
+                int srcIdx = static_cast<int>(in) + tap - FILTER_HALF;
+                float srcSample;
+                if (srcIdx < 0 || srcIdx >= stage1Size) {
+                    if (repeat) {
+                        srcIdx = ((srcIdx % stage1Size) + stage1Size) % stage1Size;
+                        srcSample = stage1[srcIdx];
+                    } else {
+                        srcSample = 0.0f;
+                    }
+                } else {
+                    srcSample = stage1[srcIdx];
+                }
+                sum += srcSample * coeffs[tap];
+            }
+            output[in * UPSAMPLE + phase] = static_cast<float>(sum * phaseNorm[phase]);
+        }
+    }
+
+    return output;
+}
+
 void SsbGenerator::setAudioSamples(std::vector<float> samples, double sample_rate, bool repeat) {
     audioSource_ = AudioSource::Samples;
     samplesRepeat_ = repeat;
 
-    // Resample to internal rate (48kHz) at load time with proper anti-alias filtering
-    // This moves all the expensive work out of the real-time path
+    // Step 1: Resample to 48kHz for fast Hilbert computation
     resampleToInternalRate(samples, sample_rate);
 
-    // Pre-compute Hilbert transform on the resampled audio
+    // Step 2: Compute Hilbert transform at 48kHz (fast FFT on ~70k samples)
     precomputeHilbert();
 
-    // Apply crossfade at loop point to prevent transients when audio repeats
-    // This smooths any discontinuity between end and start of the buffer
+    // Step 3: Apply crossfade at loop point (before upsampling)
     if (samplesRepeat_ && !audioSamples_.empty()) {
         applyLoopCrossfade();
     }
+
+    // Step 4: Upsample BOTH I and Q to 480kHz with proper anti-alias filtering
+    // This eliminates runtime interpolation artifacts entirely
+    audioSamples_ = upsampleBuffer(audioSamples_, 48000.0, 480000.0, samplesRepeat_);
+    audioSamplesQ_ = upsampleBuffer(audioSamplesQ_, 48000.0, 480000.0, samplesRepeat_);
+    audioSampleRate_ = 480000.0;
 
     // Reset Hilbert filter state (still used for voice)
     std::fill(hilbertHistory_.begin(), hilbertHistory_.end(), 0.0);
@@ -106,40 +261,73 @@ void SsbGenerator::precomputeHilbert() {
         return;
     }
 
-    // Pre-compute Hilbert transform of entire audio buffer
-    // This converts O(65) per sample at runtime to O(1) lookup
-    audioSamplesQ_.resize(audioSamples_.size());
-    int center = HILBERT_TAPS / 2;
+    // FFT-based Hilbert transform - O(n log n) instead of O(n * taps)
+    // Critical for large buffers (4M+ samples at 480kHz)
+
     size_t n = audioSamples_.size();
 
-    for (size_t i = 0; i < n; ++i) {
-        double result = 0.0;
-        for (size_t k = 0; k < HILBERT_TAPS; ++k) {
-            int offset = static_cast<int>(k) - center;
-            // Use CONVOLUTION (i - offset), not correlation (i + offset)
-            // Hilbert transform is h * x, not h ⋆ x
-            int idx = static_cast<int>(i) - offset;
+    // Find next power of 2
+    size_t fftSize = 1;
+    while (fftSize < n) fftSize <<= 1;
 
-            // Handle wrap-around or zero-pad
-            float sample = 0.0f;
-            if (idx >= 0 && idx < static_cast<int>(n)) {
-                sample = audioSamples_[idx];
-            } else if (samplesRepeat_) {
-                // Wrap around for repeating audio
-                idx = ((idx % static_cast<int>(n)) + static_cast<int>(n)) % static_cast<int>(n);
-                sample = audioSamples_[idx];
-            }
-            result += hilbertCoeffs_[k] * sample;
+    std::vector<double> re(fftSize, 0.0);
+    std::vector<double> im(fftSize, 0.0);
+
+    // Copy audio - for looping audio, use circular extension to avoid edge artifacts
+    for (size_t i = 0; i < fftSize; ++i) {
+        re[i] = (i < n) ? audioSamples_[i] : (samplesRepeat_ ? audioSamples_[i % n] : 0.0);
+    }
+
+    // In-place radix-2 FFT
+    auto fftInPlace = [](double* re, double* im, size_t n, bool inverse) {
+        for (size_t i = 1, j = 0; i < n; ++i) {
+            size_t bit = n >> 1;
+            while (j & bit) { j ^= bit; bit >>= 1; }
+            j ^= bit;
+            if (i < j) { std::swap(re[i], re[j]); std::swap(im[i], im[j]); }
         }
-        audioSamplesQ_[i] = static_cast<float>(result);
+        for (size_t len = 2; len <= n; len <<= 1) {
+            double angle = (inverse ? 2.0 : -2.0) * M_PI / len;
+            double wRe = std::cos(angle), wIm = std::sin(angle);
+            for (size_t i = 0; i < n; i += len) {
+                double uRe = 1.0, uIm = 0.0;
+                for (size_t j = 0; j < len / 2; ++j) {
+                    size_t a = i + j, b = i + j + len / 2;
+                    double tRe = re[b] * uRe - im[b] * uIm;
+                    double tIm = re[b] * uIm + im[b] * uRe;
+                    re[b] = re[a] - tRe; im[b] = im[a] - tIm;
+                    re[a] += tRe; im[a] += tIm;
+                    double newURe = uRe * wRe - uIm * wIm;
+                    uIm = uRe * wIm + uIm * wRe; uRe = newURe;
+                }
+            }
+        }
+        if (inverse) {
+            double scale = 1.0 / n;
+            for (size_t i = 0; i < n; ++i) { re[i] *= scale; im[i] *= scale; }
+        }
+    };
+
+    // Forward FFT
+    fftInPlace(re.data(), im.data(), fftSize, false);
+
+    // Create analytic signal: double positive freq, zero negative freq
+    for (size_t k = 1; k < fftSize / 2; ++k) { re[k] *= 2.0; im[k] *= 2.0; }
+    for (size_t k = fftSize / 2 + 1; k < fftSize; ++k) { re[k] = 0.0; im[k] = 0.0; }
+
+    // Inverse FFT
+    fftInPlace(re.data(), im.data(), fftSize, true);
+
+    // Extract Hilbert transform (imaginary part)
+    audioSamplesQ_.resize(n);
+    for (size_t i = 0; i < n; ++i) {
+        audioSamplesQ_[i] = static_cast<float>(im[i]);
     }
 }
 
 void SsbGenerator::resampleToInternalRate(const std::vector<float>& input, double inputRate) {
-    // Resample audio to internal rate (48kHz) using windowed-sinc interpolation
-    // This provides proper anti-alias filtering during rate conversion.
-    //
-    // All resampling is done at load time - runtime just does simple lookups.
+    // Resample audio to 48kHz using two-stage approach for clean resampling
+    // 8kHz → 48kHz is 6x = 2x (FFT) * 3x (polyphase)
 
     constexpr double INTERNAL_RATE = 48000.0;
 
@@ -156,26 +344,83 @@ void SsbGenerator::resampleToInternalRate(const std::vector<float>& input, doubl
         return;
     }
 
-    // Calculate output size
     double ratio = INTERNAL_RATE / inputRate;
-    size_t outputLen = static_cast<size_t>(input.size() * ratio + 0.5);
-    audioSamples_.resize(outputLen);
     audioSampleRate_ = INTERNAL_RATE;
 
-    // Windowed-sinc interpolation parameters
-    // Filter half-width in input samples (larger = better quality, slower load)
-    constexpr int FILTER_HALF = 16;
+    // In-place radix-2 FFT helper
+    auto fftInPlace = [](double* re, double* im, size_t n, bool inverse) {
+        for (size_t i = 1, j = 0; i < n; ++i) {
+            size_t bit = n >> 1;
+            while (j & bit) { j ^= bit; bit >>= 1; }
+            j ^= bit;
+            if (i < j) { std::swap(re[i], re[j]); std::swap(im[i], im[j]); }
+        }
+        for (size_t len = 2; len <= n; len <<= 1) {
+            double angle = (inverse ? 2.0 : -2.0) * M_PI / len;
+            double wRe = std::cos(angle), wIm = std::sin(angle);
+            for (size_t i = 0; i < n; i += len) {
+                double uRe = 1.0, uIm = 0.0;
+                for (size_t j = 0; j < len / 2; ++j) {
+                    size_t a = i + j, b = i + j + len / 2;
+                    double tRe = re[b] * uRe - im[b] * uIm;
+                    double tIm = re[b] * uIm + im[b] * uRe;
+                    re[b] = re[a] - tRe; im[b] = im[a] - tIm;
+                    re[a] += tRe; im[a] += tIm;
+                    double newURe = uRe * wRe - uIm * wIm;
+                    uIm = uRe * wIm + uIm * wRe; uRe = newURe;
+                }
+            }
+        }
+        if (inverse) {
+            double scale = 1.0 / n;
+            for (size_t i = 0; i < n; ++i) { re[i] *= scale; im[i] *= scale; }
+        }
+    };
 
-    // Cutoff at minimum of input/output Nyquist (with margin)
-    double cutoff = 0.45 * std::min(1.0, 1.0 / ratio);
+    // For 6x (8kHz→48kHz): do 2x FFT then 3x polyphase
+    // For other ratios: use direct polyphase with corrected cutoff
 
-    // Precompute windowed-sinc coefficients for each output position's fractional offset
-    // Use Kaiser window for good stopband attenuation
-    auto kaiser = [](double n, double N, double beta) {
-        if (N <= 0) return 1.0;
-        double x = 2.0 * n / N - 1.0;
-        if (std::abs(x) > 1.0) return 0.0;
-        // I0(beta * sqrt(1 - x^2)) / I0(beta)
+    size_t inputLen = input.size();
+    std::vector<float> current = input;
+
+    // Stage 1: 2x FFT upsampling (if ratio >= 2)
+    if (ratio >= 2.0) {
+        size_t stage1Len = inputLen * 2;
+        size_t fftSize = 1;
+        while (fftSize < inputLen) fftSize <<= 1;
+
+        std::vector<double> re(fftSize * 2, 0.0);
+        std::vector<double> im(fftSize * 2, 0.0);
+        for (size_t i = 0; i < inputLen; ++i) re[i] = current[i];
+
+        fftInPlace(re.data(), im.data(), fftSize, false);
+
+        std::vector<double> re2(fftSize * 2, 0.0);
+        std::vector<double> im2(fftSize * 2, 0.0);
+        for (size_t k = 0; k <= fftSize / 2; ++k) { re2[k] = re[k]; im2[k] = im[k]; }
+        for (size_t k = fftSize / 2 + 1; k < fftSize; ++k) {
+            re2[fftSize * 2 - (fftSize - k)] = re[k];
+            im2[fftSize * 2 - (fftSize - k)] = im[k];
+        }
+
+        fftInPlace(re2.data(), im2.data(), fftSize * 2, true);
+
+        current.resize(stage1Len);
+        for (size_t i = 0; i < stage1Len; ++i) {
+            current[i] = static_cast<float>(re2[i] * 2.0);
+        }
+        inputLen = stage1Len;
+        ratio /= 2.0;
+    }
+
+    // Stage 2: Remaining ratio using polyphase (e.g., 3x for 8kHz→48kHz)
+    if (ratio > 1.01) {
+        int UPSAMPLE = static_cast<int>(ratio + 0.5);
+        const int FILTER_HALF = 12;
+        const int TAPS = 2 * FILTER_HALF + 1;
+        const double KAISER_BETA = 8.0;
+        const double CUTOFF = 0.45;  // Pass 90% of input bandwidth
+
         auto bessel_i0 = [](double z) {
             double sum = 1.0, term = 1.0, z2 = z * z / 4.0;
             for (int k = 1; k < 25; ++k) {
@@ -185,45 +430,55 @@ void SsbGenerator::resampleToInternalRate(const std::vector<float>& input, doubl
             }
             return sum;
         };
-        double arg = beta * std::sqrt(1.0 - x * x);
-        return bessel_i0(arg) / bessel_i0(beta);
-    };
+        double i0_beta = bessel_i0(KAISER_BETA);
 
-    // Resample each output sample
-    for (size_t out = 0; out < outputLen; ++out) {
-        double inPos = out / ratio;  // Position in input
-        int inIdx = static_cast<int>(inPos);
-        double frac = inPos - inIdx;
+        // Precompute polyphase filter coefficients
+        std::vector<std::vector<double>> polyphase(UPSAMPLE, std::vector<double>(TAPS));
+        std::vector<double> phaseNorm(UPSAMPLE);
 
-        double sum = 0.0;
-        double weightSum = 0.0;
-
-        for (int k = -FILTER_HALF; k <= FILTER_HALF; ++k) {
-            int srcIdx = inIdx + k;
-
-            // Handle boundaries
-            float srcSample;
-            if (srcIdx < 0) {
-                srcSample = samplesRepeat_ ? input[(srcIdx % (int)input.size() + input.size()) % input.size()] : 0.0f;
-            } else if (srcIdx >= (int)input.size()) {
-                srcSample = samplesRepeat_ ? input[srcIdx % input.size()] : 0.0f;
-            } else {
-                srcSample = input[srcIdx];
+        for (int phase = 0; phase < UPSAMPLE; ++phase) {
+            double frac = phase / static_cast<double>(UPSAMPLE);
+            double weightSum = 0.0;
+            for (int tap = 0; tap < TAPS; ++tap) {
+                int k = tap - FILTER_HALF;
+                double t = k - frac;
+                double sinc = (std::abs(t) < 1e-9) ? 1.0 : std::sin(M_PI * t * 2 * CUTOFF) / (M_PI * t);
+                double x = 2.0 * tap / (TAPS - 1) - 1.0;
+                double window = bessel_i0(KAISER_BETA * std::sqrt(std::max(0.0, 1.0 - x * x))) / i0_beta;
+                polyphase[phase][tap] = sinc * window;
+                weightSum += polyphase[phase][tap];
             }
-
-            // Sinc value at this offset
-            double t = k - frac;
-            double sinc = (std::abs(t) < 1e-9) ? 1.0 : std::sin(M_PI * t * 2 * cutoff) / (M_PI * t);
-
-            // Kaiser window
-            double window = kaiser(k + FILTER_HALF, 2 * FILTER_HALF, 8.0);
-
-            double weight = sinc * window;
-            sum += srcSample * weight;
-            weightSum += weight;
+            phaseNorm[phase] = (weightSum > 0) ? 1.0 / weightSum : 0.0;
         }
 
-        audioSamples_[out] = static_cast<float>(weightSum > 0 ? sum / weightSum : 0.0);
+        size_t outputLen = inputLen * UPSAMPLE;
+        audioSamples_.resize(outputLen);
+        int currentSize = static_cast<int>(current.size());
+
+        for (size_t in = 0; in < inputLen; ++in) {
+            for (int phase = 0; phase < UPSAMPLE; ++phase) {
+                double sum = 0.0;
+                const auto& coeffs = polyphase[phase];
+                for (int tap = 0; tap < TAPS; ++tap) {
+                    int srcIdx = static_cast<int>(in) + tap - FILTER_HALF;
+                    float srcSample;
+                    if (srcIdx < 0 || srcIdx >= currentSize) {
+                        if (samplesRepeat_) {
+                            srcIdx = ((srcIdx % currentSize) + currentSize) % currentSize;
+                            srcSample = current[srcIdx];
+                        } else {
+                            srcSample = 0.0f;
+                        }
+                    } else {
+                        srcSample = current[srcIdx];
+                    }
+                    sum += srcSample * coeffs[tap];
+                }
+                audioSamples_[in * UPSAMPLE + phase] = static_cast<float>(sum * phaseNorm[phase]);
+            }
+        }
+    } else {
+        audioSamples_ = current;
     }
 }
 
@@ -308,26 +563,21 @@ void SsbGenerator::getAudioIQ(double time_s, double& i, double& q) const {
                 break;
             }
 
-            // Calculate sample index
+            // Audio is pre-upsampled to 480kHz - direct lookup, no interpolation needed
             double sampleTime = time_s * audioSampleRate_;
-            double duration = audioSamples_.size() / audioSampleRate_;
+            size_t n = audioSamples_.size();
 
             if (samplesRepeat_) {
-                sampleTime = std::fmod(sampleTime, static_cast<double>(audioSamples_.size()));
-                if (sampleTime < 0) sampleTime += audioSamples_.size();
-            } else if (time_s >= duration) {
+                sampleTime = std::fmod(sampleTime, static_cast<double>(n));
+                if (sampleTime < 0) sampleTime += n;
+            } else if (time_s >= n / audioSampleRate_) {
                 i = q = 0.0;
                 break;
             }
 
-            // Linear interpolation for both I and Q (pre-computed)
-            size_t idx0 = static_cast<size_t>(sampleTime);
-            size_t idx1 = (idx0 + 1) % audioSamples_.size();
-            double frac = sampleTime - idx0;
-
-            i = audioSamples_[idx0] * (1.0 - frac) + audioSamples_[idx1] * frac;
-            // Use pre-computed Hilbert transform - O(1) instead of O(65)
-            q = audioSamplesQ_[idx0] * (1.0 - frac) + audioSamplesQ_[idx1] * frac;
+            size_t idx = static_cast<size_t>(sampleTime) % n;
+            i = audioSamples_[idx];
+            q = audioSamplesQ_[idx];
             break;
         }
 

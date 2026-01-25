@@ -6,24 +6,37 @@
  * Supports USB, LSB, AM, and CW modes.
  * Includes 50Hz highpass and 5kHz lowpass audio filters.
  *
- * USB demodulation uses the phasing method with FIR Hilbert:
- * - 511-tap FIR Hilbert transform for flat response 200Hz-48kHz
- * - Gain normalized across audio band
+ * SSB demodulation uses FFT-based frequency-domain processing:
+ * - Mathematically perfect image rejection (limited only by float precision)
+ * - 512-sample blocks with 50% overlap-add for continuous audio
+ * - ~5ms latency at 96kHz sample rate
  */
 
 #pragma once
 
 #include <cmath>
 #include <array>
+#include <vector>
 #include <iostream>
 
 class Demodulator {
 public:
     enum class Mode { USB, LSB, AM, CW };
 
+    // FFT block size - 512 gives good frequency resolution with ~5ms latency
+    static constexpr int FFT_SIZE = 512;
+    static constexpr int HOP_SIZE = FFT_SIZE / 2;  // 50% overlap
+
     Demodulator() {
         computeFilterCoeffs();
-        initHilbertCoeffs();
+        initFftWindow();
+        // Pre-size vectors
+        fftRe_.resize(FFT_SIZE);
+        fftIm_.resize(FFT_SIZE);
+        outputBuffer_.resize(HOP_SIZE, 0.0f);
+        overlapBuffer_.resize(HOP_SIZE, 0.0f);
+        inputI_.resize(FFT_SIZE, 0.0f);
+        inputQ_.resize(FFT_SIZE, 0.0f);
     }
 
     void setMode(Mode mode) { mode_ = mode; }
@@ -35,55 +48,77 @@ public:
     void setSampleRate(float rate) {
         sampleRate_ = rate;
         computeFilterCoeffs();
-        initHilbertCoeffs();
+        initFftWindow();
     }
 
     void setFilterEnabled(bool enabled) { filterEnabled_ = enabled; }
 
+    // Process a single I/Q sample, returns audio sample
+    // For SSB modes, uses FFT-based processing with overlap-add
+    // Returns 0 while buffering, then outputs HOP_SIZE samples worth of audio
     float process(float i, float q) {
-        float audio = 0.0f;
-
-        // Apply Hilbert transform to Q and delay I to match
-        float hilbert_q = applyHilbert(q);
-        float delayed_i = applyIDelay(i);
-
-        switch (mode_) {
-            case Mode::USB:
-                audio = delayed_i - hilbert_q;
-                break;
-            case Mode::LSB:
-                audio = delayed_i + hilbert_q;
-                break;
-            case Mode::AM:
-                audio = std::sqrt(i * i + q * q);
-                break;
-            case Mode::CW:
-                {
-                    float bfoPhaseInc = 2.0f * PI * bfoOffset_ / sampleRate_;
-                    float cos_bfo = std::cos(bfoPhase_);
-                    float sin_bfo = std::sin(bfoPhase_);
-                    audio = i * cos_bfo + q * sin_bfo;
-                    bfoPhase_ += bfoPhaseInc;
-                    if (bfoPhase_ > 2.0f * PI) bfoPhase_ -= 2.0f * PI;
-                }
-                break;
+        // AM and CW use simple sample-by-sample processing
+        if (mode_ == Mode::AM) {
+            float audio = std::sqrt(i * i + q * q);
+            return filterEnabled_ ? applyBandpassFilter(audio) : audio;
+        }
+        if (mode_ == Mode::CW) {
+            float bfoPhaseInc = 2.0f * PI * bfoOffset_ / sampleRate_;
+            float cos_bfo = std::cos(bfoPhase_);
+            float sin_bfo = std::sin(bfoPhase_);
+            float audio = i * cos_bfo + q * sin_bfo;
+            bfoPhase_ += bfoPhaseInc;
+            if (bfoPhase_ > 2.0f * PI) bfoPhase_ -= 2.0f * PI;
+            return filterEnabled_ ? applyBandpassFilter(audio) : audio;
         }
 
-        if (filterEnabled_) {
-            audio = applyBandpassFilter(audio);
+        // SSB modes: buffer samples for FFT processing
+        inputI_[inputPos_] = i;
+        inputQ_[inputPos_] = q;
+        inputPos_++;
+
+        // Output from output buffer while we have samples
+        float audio = 0.0f;
+        if (outputPos_ < HOP_SIZE) {
+            audio = outputBuffer_[outputPos_++];
+            if (filterEnabled_) {
+                audio = applyBandpassFilter(audio);
+            }
+        }
+
+        // When we have a full block, process it
+        if (inputPos_ >= FFT_SIZE) {
+            processBlock();
+            inputPos_ = HOP_SIZE;  // Keep last half for overlap
+            // Shift input buffer: copy second half to first half
+            for (int j = 0; j < HOP_SIZE; ++j) {
+                inputI_[j] = inputI_[j + HOP_SIZE];
+                inputQ_[j] = inputQ_[j + HOP_SIZE];
+            }
+            outputPos_ = 0;  // Reset output position
         }
 
         return audio;
+    }
+
+    // Batch processing for efficiency - process multiple samples at once
+    void processBatch(const float* iSamples, const float* qSamples,
+                      float* audioOut, int count) {
+        for (int n = 0; n < count; ++n) {
+            audioOut[n] = process(iSamples[n], qSamples[n]);
+        }
     }
 
     void reset() {
         bfoPhase_ = 0.0f;
         for (auto& s : hpState_) s = {0.0f, 0.0f};
         for (auto& s : lpState_) s = {0.0f, 0.0f};
-        hilbertDelayLine_.fill(0.0f);
-        iDelayLine_.fill(0.0f);
-        hilbertIdx_ = 0;
-        iDelayIdx_ = 0;
+        std::fill(inputI_.begin(), inputI_.end(), 0.0f);
+        std::fill(inputQ_.begin(), inputQ_.end(), 0.0f);
+        std::fill(outputBuffer_.begin(), outputBuffer_.end(), 0.0f);
+        std::fill(overlapBuffer_.begin(), overlapBuffer_.end(), 0.0f);
+        inputPos_ = 0;
+        outputPos_ = HOP_SIZE;  // Start with empty output buffer
     }
 
 private:
@@ -95,108 +130,128 @@ private:
     float bfoPhase_ = 0.0f;
     bool filterEnabled_ = true;
 
-    // 255-tap Hilbert FIR for flat response from ~376 Hz to Nyquist
-    // At 96kHz: -3dB at 96000/255 ≈ 376 Hz
-    // Good balance between rejection and CPU load
-    static constexpr int HILBERT_TAPS = 255;
-    static constexpr int HILBERT_CENTER = HILBERT_TAPS / 2;  // = 127
+    // FFT-based SSB demodulation buffers
+    std::vector<float> inputI_;         // Input I buffer (FFT_SIZE)
+    std::vector<float> inputQ_;         // Input Q buffer (FFT_SIZE)
+    std::vector<float> fftRe_;          // FFT real part
+    std::vector<float> fftIm_;          // FFT imaginary part
+    std::vector<float> outputBuffer_;   // Output audio buffer (HOP_SIZE)
+    std::vector<float> overlapBuffer_;  // Overlap storage for next block (HOP_SIZE)
+    std::array<float, FFT_SIZE> window_ = {};  // Hann window
+    int inputPos_ = 0;                  // Write position in input buffer
+    int outputPos_ = HOP_SIZE;          // Read position in output buffer
 
-    std::array<float, HILBERT_TAPS> hilbertCoeffs_ = {};
-    std::array<float, HILBERT_TAPS> hilbertDelayLine_ = {};
-    std::array<float, HILBERT_CENTER> iDelayLine_ = {};
-    int hilbertIdx_ = 0;
-    int iDelayIdx_ = 0;
-
-    void initHilbertCoeffs() {
-        // Compute ideal Hilbert coefficients with Kaiser window
-        // Kaiser window gives better control over stopband than Blackman
-        float beta = 8.0f;  // Kaiser beta for good stopband rejection
-
-        for (int i = 0; i < HILBERT_TAPS; ++i) {
-            int n = i - HILBERT_CENTER;
-            if (n == 0) {
-                hilbertCoeffs_[i] = 0.0f;
-            } else if (n % 2 == 0) {
-                hilbertCoeffs_[i] = 0.0f;
-            } else {
-                hilbertCoeffs_[i] = 2.0f / (PI * n);
-            }
-
-            // Kaiser window: I0(beta * sqrt(1 - (n/M)^2)) / I0(beta)
-            float M = HILBERT_CENTER;
-            float x = static_cast<float>(n) / M;
-            if (std::abs(x) <= 1.0f) {
-                float arg = beta * std::sqrt(1.0f - x * x);
-                float window = bessel_i0(arg) / bessel_i0(beta);
-                hilbertCoeffs_[i] *= window;
-            } else {
-                hilbertCoeffs_[i] = 0.0f;
-            }
+    void initFftWindow() {
+        // Hann window for overlap-add (satisfies COLA with 50% overlap)
+        for (int n = 0; n < FFT_SIZE; ++n) {
+            window_[n] = 0.5f * (1.0f - std::cos(2.0f * PI * n / FFT_SIZE));
         }
-
-        // Compute gain at multiple frequencies and find average for normalization
-        float totalGain = 0.0f;
-        int numFreqs = 0;
-        for (float freq = 300.0f; freq <= 4000.0f; freq += 100.0f) {
-            float omega = 2.0f * PI * freq / sampleRate_;
-            float sumReal = 0.0f, sumImag = 0.0f;
-            for (int i = 0; i < HILBERT_TAPS; ++i) {
-                float phase = omega * (i - HILBERT_CENTER);
-                sumReal += hilbertCoeffs_[i] * std::cos(phase);
-                sumImag += hilbertCoeffs_[i] * std::sin(phase);
-            }
-            float gain = std::sqrt(sumReal * sumReal + sumImag * sumImag);
-            totalGain += gain;
-            numFreqs++;
-        }
-        float avgGain = totalGain / numFreqs;
-
-        // Normalize
-        if (avgGain > 0.01f) {
-            float scale = 1.0f / avgGain;
-            for (int i = 0; i < HILBERT_TAPS; ++i) {
-                hilbertCoeffs_[i] *= scale;
-            }
-        }
-
-        std::cout << "[Demodulator] " << HILBERT_TAPS << "-tap Hilbert initialized" << std::endl;
+        std::cout << "[Demodulator] FFT-based SSB initialized, block=" << FFT_SIZE
+                  << " (" << (1000.0f * FFT_SIZE / sampleRate_) << "ms)" << std::endl;
     }
 
-    // Bessel I0 function for Kaiser window
-    static float bessel_i0(float x) {
-        float sum = 1.0f;
-        float term = 1.0f;
-        float x2 = x * x / 4.0f;
-        for (int k = 1; k < 20; ++k) {
-            term *= x2 / (k * k);
-            sum += term;
-            if (term < 1e-10f) break;
-        }
-        return sum;
-    }
-
-    float applyHilbert(float q) {
-        hilbertDelayLine_[hilbertIdx_] = q;
-
-        float sum = 0.0f;
-        int idx = hilbertIdx_;
-        for (int i = 0; i < HILBERT_TAPS; ++i) {
-            sum += hilbertCoeffs_[i] * hilbertDelayLine_[idx];
-            idx--;
-            if (idx < 0) idx = HILBERT_TAPS - 1;
+    // In-place radix-2 Cooley-Tukey FFT
+    void fftInPlace(float* re, float* im, int n, bool inverse = false) {
+        // Bit-reversal permutation
+        for (int i = 1, j = 0; i < n; ++i) {
+            int bit = n >> 1;
+            while (j & bit) {
+                j ^= bit;
+                bit >>= 1;
+            }
+            j ^= bit;
+            if (i < j) {
+                std::swap(re[i], re[j]);
+                std::swap(im[i], im[j]);
+            }
         }
 
-        hilbertIdx_++;
-        if (hilbertIdx_ >= HILBERT_TAPS) hilbertIdx_ = 0;
+        // Cooley-Tukey iterative FFT
+        for (int len = 2; len <= n; len <<= 1) {
+            float angle = (inverse ? 2.0f : -2.0f) * PI / len;
+            float wRe = std::cos(angle);
+            float wIm = std::sin(angle);
 
-        return sum;
+            for (int i = 0; i < n; i += len) {
+                float uRe = 1.0f, uIm = 0.0f;
+                for (int j = 0; j < len / 2; ++j) {
+                    int a = i + j;
+                    int b = i + j + len / 2;
+
+                    float tRe = re[b] * uRe - im[b] * uIm;
+                    float tIm = re[b] * uIm + im[b] * uRe;
+
+                    re[b] = re[a] - tRe;
+                    im[b] = im[a] - tIm;
+                    re[a] = re[a] + tRe;
+                    im[a] = im[a] + tIm;
+
+                    float newURe = uRe * wRe - uIm * wIm;
+                    uIm = uRe * wIm + uIm * wRe;
+                    uRe = newURe;
+                }
+            }
+        }
+
+        // Scale for inverse FFT
+        if (inverse) {
+            float scale = 1.0f / n;
+            for (int i = 0; i < n; ++i) {
+                re[i] *= scale;
+                im[i] *= scale;
+            }
+        }
     }
 
-    float applyIDelay(float i) {
-        float delayed = iDelayLine_[iDelayIdx_];
-        iDelayLine_[iDelayIdx_] = i;
-        iDelayIdx_ = (iDelayIdx_ + 1) % HILBERT_CENTER;
-        return delayed;
+    // Process one block of FFT_SIZE samples for SSB demodulation
+    void processBlock() {
+        // Apply window and copy to FFT buffers
+        for (int n = 0; n < FFT_SIZE; ++n) {
+            fftRe_[n] = inputI_[n] * window_[n];
+            fftIm_[n] = inputQ_[n] * window_[n];
+        }
+
+        // Forward FFT
+        fftInPlace(fftRe_.data(), fftIm_.data(), FFT_SIZE, false);
+
+        // Zero out unwanted sideband for perfect image rejection
+        // FFT output: bin 0 = DC, bins 1..N/2-1 = positive freq, bin N/2 = Nyquist,
+        //             bins N/2+1..N-1 = negative freq
+        if (mode_ == Mode::USB) {
+            // Keep positive frequencies (bins 1 to N/2), zero negative (bins N/2+1 to N-1)
+            // DC and Nyquist are real-only, keep them at half amplitude
+            fftRe_[0] *= 0.5f;
+            fftIm_[0] = 0.0f;
+            fftRe_[FFT_SIZE / 2] *= 0.5f;
+            fftIm_[FFT_SIZE / 2] = 0.0f;
+            for (int k = FFT_SIZE / 2 + 1; k < FFT_SIZE; ++k) {
+                fftRe_[k] = 0.0f;
+                fftIm_[k] = 0.0f;
+            }
+        } else {  // LSB
+            // Keep negative frequencies (bins N/2+1 to N-1), zero positive (bins 1 to N/2-1)
+            fftRe_[0] *= 0.5f;
+            fftIm_[0] = 0.0f;
+            for (int k = 1; k < FFT_SIZE / 2; ++k) {
+                fftRe_[k] = 0.0f;
+                fftIm_[k] = 0.0f;
+            }
+            fftRe_[FFT_SIZE / 2] *= 0.5f;
+            fftIm_[FFT_SIZE / 2] = 0.0f;
+        }
+
+        // Inverse FFT
+        fftInPlace(fftRe_.data(), fftIm_.data(), FFT_SIZE, true);
+
+        // Overlap-add: take real part (audio)
+        // Output = previous overlap + new first half (scaled by 2 since we zeroed half spectrum)
+        for (int n = 0; n < HOP_SIZE; ++n) {
+            outputBuffer_[n] = overlapBuffer_[n] + fftRe_[n] * 2.0f;
+        }
+        // Store second half for next overlap
+        for (int n = 0; n < HOP_SIZE; ++n) {
+            overlapBuffer_[n] = fftRe_[n + HOP_SIZE] * 2.0f;
+        }
     }
 
     // Audio bandpass filter
