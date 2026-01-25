@@ -6,7 +6,12 @@ This document outlines the **NexRig Digital Twin** architecture. This environmen
 
 ## 1. Executive Summary
 
-The Digital Twin is a **Software-in-the-Loop (SiL)** simulation environment that combines a high-performance analog solver (Xyce) with a native-compiled instance of the Zephyr RTOS firmware. It treats the PC as the primary "Brain" (DSP/UI) and the simulated hardware as a high-bandwidth interleaved digitizer connected via a virtual 480 Mbps USB-HS link.
+The Digital Twin is a **Software-in-the-Loop (SiL)** simulation
+environment that combines a high-performance analog solver (Xyce) with
+a native-compiled instance of the Zephyr RTOS firmware. It treats the
+PC as the primary "Brain" (DSP/UI) and the simulated hardware as a
+high-bandwidth interleaved digitizer connected via a virtual 480 Mbps
+USB-HS link.
 
 ---
 
@@ -16,17 +21,28 @@ The Digital Twin is a **Software-in-the-Loop (SiL)** simulation environment that
 
 - **Role:** Simulates the analog RF signal path.
     
-- **Implementation:** Linked as a shared library (`libxyce`) into the C++ Orchestrator.
+- **Implementation:** Linked as a shared library (`libxyce`) into the
+  C++ Orchestrator.
     
 - **Key Models:**
     
-    - **Antenna Stimulus:** A C++ class that injects raw RF captures or synthetic multi-tone signals into the `Antenna_In` node.
+    - **Antenna Stimulus:** A C++ class that injects raw RF captures
+      or synthetic multi-tone signals into the `Antenna_In` node. To
+      ensure high fidelity validation, the stimulus generator **must**
+      use an FFT-based Hilbert Transform with Overlap-Save (OLS) for
+      SSB signal synthesis. This avoids sideband leakage caused by,
+      e.g., < 128 tap FIR based Hilbert transformers that result in a
+      mimic of hardware I/Q imbalance, leaing to false-positive
+      "ghost" signals at the receiver's image frequency.
         
-    - **Preselector:** Models the 200Ω switched LC bank using DCR/ESR data from commercial SMD inductors.
+    - **Preselector:** Models the 200Ω switched LC bank using DCR/ESR
+      data from commercial SMD inductors.
         
-    - **Hexafilar Transformer:** A mutual-inductance model ($K$-factors) representing the BN-43-202 core (200Ω to 3×22Ω).
+    - **Hexafilar Transformer:** A mutual-inductance model
+      ($K$-factors) representing the BN-43-202 core (200Ω to 3×22Ω).
         
-    - **Triple-QSD:** Time-varying resistors ($R_{on}/R_{off}$) representing the **TS3A4751** CMOS switches.
+    - **Triple-QSD:** Time-varying resistors ($R_{on}/R_{off}$)
+      representing the **TS3A4751** CMOS switches.
         
 
 ### 2.2 The FPGA Surrogate (NCO Engine)
