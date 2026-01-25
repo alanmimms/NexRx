@@ -10094,10 +10094,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "2e61e9cb-45a8-45ef-a5b5-a66f4dd84f64")
 		(property "Reference" "U302"
-			(at 247.65 54.5398 0)
+			(at 185.674 109.982 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10105,7 +10104,7 @@
 			)
 		)
 		(property "Value" "AK5578EN"
-			(at 247.65 57.0798 0)
+			(at 185.674 112.522 0)
 			(effects
 				(font
 					(size 1.27 1.27)
