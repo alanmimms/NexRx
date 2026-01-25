@@ -1196,7 +1196,7 @@ function draw()
         layout.setRegion(x, y, w, h, "top-bar")
 
         -- Register top bar for event dispatch (ID must match container.lua's widgetOrder)
-        events.registerWidget("top-bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
+        events.registerWidget("top-bar", {x=x, y=y, w=w, h=h}, {"widget.StatusBar", "widget.UIPanel"}, nil)
 
         drawRect(x, y, w, h, 0.08, 0.08, 0.12, 1.0)
         drawLine(x, y + h, x + w, y + h, 0.2, 0.2, 0.25, 1.0, 1.0)
@@ -1243,7 +1243,7 @@ function draw()
         layout.setRegion(x, y, w, h, "bottom-bar")
 
         -- Register bottom bar for event dispatch (ID must match container.lua's widgetOrder)
-        events.registerWidget("bottom-bar", {x=x, y=y, w=w, h=h}, {"StatusBar", "UIPanel"}, nil)
+        events.registerWidget("bottom-bar", {x=x, y=y, w=w, h=h}, {"widget.StatusBar", "widget.UIPanel"}, nil)
 
         drawRect(x, y, w, h, 0.08, 0.08, 0.1, 1.0)
         drawLine(x, y, x + w, y, 0.2, 0.2, 0.25, 1.0, 1.0)
@@ -1295,7 +1295,7 @@ function draw()
         -- Register for wheel tuning and click to enter frequency
         events.registerWidget("sidebar-freq-display",
             {x = fx, y = fy, w = freqBoxW, h = freqBoxH},
-            {"FrequencyDisplay", "VFOControl"},
+            {"widget.FrequencyDisplay", "widget.VFOControl"},
             nil)
         layout.newLine(freqBoxH + 4)
 
@@ -1511,7 +1511,7 @@ function draw()
         local mh = getLayoutSize({"widget.SMeter"}, "height", meterParent, "s-meter") or 28
 
         -- Register S-meter as a widget
-        events.registerWidget("s-meter", {x=mx, y=my, w=mw, h=mh}, {"Meter", "SMeter"}, nil)
+        events.registerWidget("s-meter", {x=mx, y=my, w=mw, h=mh}, {"widget.Meter", "widget.SMeter"}, nil)
 
         drawRoundedRect(mx, my, mw, mh, 4, 0.12, 0.12, 0.15, 1.0)
 
@@ -1551,7 +1551,7 @@ function draw()
         local textW = getLayoutSize({"widget.SMeterText"}, "width", textParent, "smeter-text") or mw
         local textH = getLayoutSize({"widget.SMeterText"}, "height", textParent, "smeter-text") or 20
         -- Register S-meter text display as widget
-        events.registerWidget("smeter-text", {x=tx, y=ty, w=textW, h=textH}, {"Label", "SMeterText"}, nil)
+        events.registerWidget("smeter-text", {x=tx, y=ty, w=textW, h=textH}, {"widget.Label", "widget.SMeterText"}, nil)
         -- Center text within the widget bounds
         local sTextW = measureText(sig.sText)
         local dBmTextW = measureText(sig.dBmText)
@@ -1669,7 +1669,7 @@ function draw()
         -- Register frequency display widget for event dispatch
         events.registerWidget("frequency-display",
             {x = px, y = py - 4, w = freqW + 20, h = 24},
-            {"FrequencyDisplay", "VFOControl"},
+            {"widget.FrequencyDisplay", "widget.VFOControl"},
             nil)
 
         -- Colormap selector (right side of title, wraps if needed)
@@ -1708,7 +1708,7 @@ function draw()
         -- Register spectrum widget for event dispatch
         events.registerWidget("spectrum-display",
             {x = px, y = vizY, w = pw, h = specH},
-            {"Spectrum", "VFOControl"},
+            {"widget.Spectrum", "widget.VFOControl"},
             nil)
 
         -- Separator line
@@ -1722,7 +1722,7 @@ function draw()
         -- Register waterfall widget for event dispatch
         events.registerWidget("waterfall-display",
             {x = px, y = wfY, w = pw, h = wfH},
-            {"Waterfall", "VFOControl"},
+            {"widget.Waterfall", "widget.VFOControl"},
             nil)
 
         -- Center frequency marker
@@ -1740,13 +1740,13 @@ function draw()
         local lowLabelW = measureText(lowFreqLabel) + 10
         events.registerWidget("freq-label-low",
             {x = px + 5, y = labelY, w = lowLabelW, h = labelH},
-            {"Label", "FreqLabel"}, nil)
+            {"widget.Label", "widget.FreqLabel"}, nil)
         drawText(px + 5, labelY, lowFreqLabel, 0.5, 0.5, 0.6, 1.0)
 
         local highLabelW = measureText(highFreqLabel) + 10
         events.registerWidget("freq-label-high",
             {x = px + pw - highLabelW - 5, y = labelY, w = highLabelW, h = labelH},
-            {"Label", "FreqLabel"}, nil)
+            {"widget.Label", "widget.FreqLabel"}, nil)
         drawText(px + pw - highLabelW, labelY, highFreqLabel, 0.5, 0.5, 0.6, 1.0)
 
         layout.endRegion()
