@@ -44,10 +44,10 @@ using namespace nexrx;
 // Command line options
 //=============================================================================
 struct Options {
-    bool functional = false;      // Use fast C++ model instead of Xyce
+    bool functional = true;       // Use fast C++ model instead of Xyce (default: on)
     bool help = false;
     bool verbose = true;
-    bool stream = false;          // Stream I/Q to network for app display
+    bool stream = true;           // Stream I/Q to network for app display (default: on)
     bool spectrum = false;        // Spectrum analysis diagnostic mode
     double spectrum_rate_khz = 500.0;  // Sample rate for spectrum analysis (kHz)
     double duration_ms = 0.0;     // Simulation duration in ms (0 = run forever)
@@ -126,12 +126,11 @@ private:
 void printUsage(const char* prog) {
     std::cout << "Usage: " << prog << " [options]\n"
               << "\n"
-              << "Modes:\n"
-              << "  --functional    Fast C++ functional model (real-time capable)\n"
-              << "  (default)       Full Xyce SPICE physics simulation (slow but accurate)\n"
+              << "Modes (--functional --stream enabled by default):\n"
+              << "  --no-functional Use full Xyce SPICE physics simulation (slow but accurate)\n"
+              << "  --no-stream     Disable network streaming\n"
               << "\n"
               << "Options:\n"
-              << "  --stream        Stream I/Q to network for app display\n"
               << "  --bind ADDR     Bind address (default: 0.0.0.0 = all interfaces)\n"
               << "  --udp-host ADDR Override UDP destination (default: TCP peer IP)\n"
               << "  --control-port  TCP control port (default: 5000)\n"
@@ -147,14 +146,17 @@ void printUsage(const char* prog) {
               << "  --help          Show this help\n"
               << "\n"
               << "Examples:\n"
-              << "  " << prog << " --functional --stream\n"
+              << "  " << prog << "\n"
               << "      Stream with default stimuli (CW beacons, SSB signals, etc.)\n"
               << "\n"
-              << "  " << prog << " --functional --stream --rf 14.025 --lo 14.024\n"
+              << "  " << prog << " --rf 14.025 --lo 14.024\n"
               << "      Stream simple 1kHz tone (no stimulus script)\n"
               << "\n"
-              << "  " << prog << " --functional --stimulus config/stimuli/contest.lua\n"
+              << "  " << prog << " --stimulus config/stimuli/contest.lua\n"
               << "      Use custom stimulus configuration\n"
+              << "\n"
+              << "  " << prog << " --no-functional --netlist custom.cir\n"
+              << "      Full physics simulation with custom netlist\n"
               << std::endl;
 }
 
@@ -166,8 +168,12 @@ Options parseArgs(int argc, char* argv[]) {
             opts.help = true;
         } else if (strcmp(argv[i], "--functional") == 0 || strcmp(argv[i], "-f") == 0) {
             opts.functional = true;
+        } else if (strcmp(argv[i], "--no-functional") == 0) {
+            opts.functional = false;
         } else if (strcmp(argv[i], "--stream") == 0 || strcmp(argv[i], "-s") == 0) {
             opts.stream = true;
+        } else if (strcmp(argv[i], "--no-stream") == 0) {
+            opts.stream = false;
         } else if (strcmp(argv[i], "--quiet") == 0 || strcmp(argv[i], "-q") == 0) {
             opts.verbose = false;
         } else if (strcmp(argv[i], "--duration") == 0 && i + 1 < argc) {
