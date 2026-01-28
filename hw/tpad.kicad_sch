@@ -774,7 +774,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 87.63) (xy 125.73 88.9)
+			(xy 128.27 71.12) (xy 128.27 72.39)
 		)
 		(stroke
 			(width 0)
@@ -811,6 +811,16 @@
 			(type default)
 		)
 		(uuid "55c2e7c4-1501-49e3-908a-192f7ed47053")
+	)
+	(wire
+		(pts
+			(xy 125.73 71.12) (xy 128.27 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "56888fdc-58c4-4ac9-923d-7f06e0485246")
 	)
 	(wire
 		(pts
@@ -904,6 +914,16 @@
 	)
 	(wire
 		(pts
+			(xy 125.73 72.39) (xy 125.73 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ef36542d-bd86-4575-b9fe-ae53e9d2d0d3")
+	)
+	(wire
+		(pts
 			(xy 85.09 77.47) (xy 86.36 77.47)
 		)
 		(stroke
@@ -914,7 +934,7 @@
 	)
 	(hierarchical_label "nEn"
 		(shape input)
-		(at 146.05 77.47 0)
+		(at 146.05 82.55 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -969,7 +989,7 @@
 	)
 	(hierarchical_label "en"
 		(shape input)
-		(at 146.05 82.55 0)
+		(at 146.05 77.47 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2061,6 +2081,7 @@
 	(symbol
 		(lib_id "Library:AS183-92LF")
 		(at 125.73 80.01 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2068,7 +2089,7 @@
 		(dnp no)
 		(uuid "c3bc6c59-f586-423e-be83-1171bdcd1921")
 		(property "Reference" "U802"
-			(at 125.73 71.12 0)
+			(at 125.73 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2076,7 +2097,7 @@
 			)
 		)
 		(property "Value" "AS183-92LF"
-			(at 125.73 73.66 0)
+			(at 125.73 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2084,7 +2105,7 @@
 			)
 		)
 		(property "Footprint" "Library:SOT65P220X110-6N"
-			(at 147.32 174.93 0)
+			(at 147.32 -14.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2094,7 +2115,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.skyworksinc.com/-/media/SkyWorks/Documents/Products/1-100/200177D.pdf"
-			(at 147.32 274.93 0)
+			(at 147.32 -114.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2282,7 +2303,7 @@
 			)
 		)
 		(property "Height" "1.1"
-			(at 147.32 474.93 0)
+			(at 147.32 -314.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2292,7 +2313,7 @@
 			)
 		)
 		(property "Mouser Part Number" "873-AS183-92LF"
-			(at 147.32 574.93 0)
+			(at 147.32 -414.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2302,7 +2323,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Skyworks-Solutions-Inc/AS183-92LF?qs=WMHGlxXAKT9uKJ5iI33IgQ%3D%3D"
-			(at 147.32 674.93 0)
+			(at 147.32 -514.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2312,7 +2333,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "Skyworks"
-			(at 147.32 774.93 0)
+			(at 147.32 -614.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2322,7 +2343,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "AS183-92LF"
-			(at 147.32 874.93 0)
+			(at 147.32 -714.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2737,7 +2758,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 125.73 88.9 0)
+		(at 128.27 72.39 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2746,7 +2767,7 @@
 		(fields_autoplaced yes)
 		(uuid "eff3f95c-194d-4193-ab7b-97845379a43b")
 		(property "Reference" "#PWR0803"
-			(at 125.73 95.25 0)
+			(at 128.27 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2755,7 +2776,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 125.73 93.98 0)
+			(at 128.27 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2764,7 +2785,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 125.73 88.9 0)
+			(at 128.27 72.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2773,7 +2794,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 125.73 88.9 0)
+			(at 128.27 72.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2782,7 +2803,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 125.73 88.9 0)
+			(at 128.27 72.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)

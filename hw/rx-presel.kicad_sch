@@ -1386,6 +1386,16 @@
 	)
 	(wire
 		(pts
+			(xy 242.57 76.2) (xy 243.84 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3484da35-5f7c-4ffd-8e36-4c9de667f232")
+	)
+	(wire
+		(pts
 			(xy 215.9 82.55) (xy 215.9 83.82)
 		)
 		(stroke
@@ -1503,16 +1513,6 @@
 			(type default)
 		)
 		(uuid "48af1d9f-4a19-4405-8cab-a410407322ba")
-	)
-	(wire
-		(pts
-			(xy 243.84 76.2) (xy 243.84 77.47)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "49189226-ed26-46e9-9207-ec6c7c25dcbd")
 	)
 	(wire
 		(pts
@@ -2006,6 +2006,16 @@
 	)
 	(wire
 		(pts
+			(xy 243.84 76.2) (xy 243.84 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ab555fd1-5fc5-4f05-882d-19668ac9ac0c")
+	)
+	(wire
+		(pts
 			(xy 121.92 82.55) (xy 121.92 83.82)
 		)
 		(stroke
@@ -2133,16 +2143,6 @@
 			(type default)
 		)
 		(uuid "c8830284-e596-4301-986d-a5b57ca402fb")
-	)
-	(wire
-		(pts
-			(xy 243.84 76.2) (xy 242.57 76.2)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c9a48af4-3dcd-4783-be46-71f26fbd2073")
 	)
 	(wire
 		(pts
@@ -6548,6 +6548,7 @@
 	(symbol
 		(lib_id "power:GND")
 		(at 243.84 77.47 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)

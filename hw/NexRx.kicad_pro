@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": false,
         "zones": {
-          "min_clearance": 0.1
+          "min_clearance": 0.0
         }
       },
       "diff_pair_dimensions": [
@@ -135,16 +135,16 @@
         "max_error": 0.005,
         "min_clearance": 0.0,
         "min_connection": 0.0,
-        "min_copper_edge_clearance": 0.5,
+        "min_copper_edge_clearance": 0.3,
         "min_groove_width": 0.0,
         "min_hole_clearance": 0.2,
         "min_hole_to_hole": 0.2,
         "min_microvia_diameter": 0.0,
         "min_microvia_drill": 0.0,
         "min_resolved_spokes": 2,
-        "min_silk_clearance": 0.0,
-        "min_text_height": 0.8,
-        "min_text_thickness": 0.08,
+        "min_silk_clearance": 0.15,
+        "min_text_height": 1.0,
+        "min_text_thickness": 0.153,
         "min_through_hole_diameter": 0.3,
         "min_track_width": 0.1,
         "min_via_annular_width": 0.2,
@@ -542,9 +542,7 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 7,
         "schematic_color": "rgb(79, 122, 21)",
-        "track_width": 0.2,
-        "via_diameter": 0.3,
-        "via_drill": 0.15,
+        "track_width": 0.3,
         "wire_width": 20
       },
       {
@@ -594,17 +592,17 @@
       },
       {
         "name": "rf200",
-        "pcb_color": "rgb(162, 255, 16)",
+        "pcb_color": "rgb(255, 0, 0)",
         "priority": 0,
         "schematic_color": "rgb(81, 137, 25)",
-        "track_width": 0.4
+        "track_width": 0.2
       },
       {
         "name": "rf50",
         "pcb_color": "rgb(0, 255, 1)",
         "priority": 1,
         "schematic_color": "rgb(40, 102, 25)",
-        "track_width": 0.16
+        "track_width": 0.2
       }
     ],
     "meta": {
@@ -2280,6 +2278,9 @@
       "Net-(U1002-J2)": [
         "rf200"
       ],
+      "Net-(U1002-J3)": [
+        "rf200"
+      ],
       "Net-(U1004-SW)": [
         "Power"
       ],
@@ -2293,6 +2294,9 @@
         "rf200"
       ],
       "Net-(U1102-J2)": [
+        "rf200"
+      ],
+      "Net-(U1102-J3)": [
         "rf200"
       ],
       "Net-(U1104-SW)": [
@@ -3450,6 +3454,9 @@
       "Net-(U802-J2)": [
         "rf200"
       ],
+      "Net-(U802-J3)": [
+        "rf200"
+      ],
       "Net-(U901-J2)": [
         "rf200"
       ],
@@ -3457,6 +3464,9 @@
         "rf200"
       ],
       "Net-(U902-J2)": [
+        "rf200"
+      ],
+      "Net-(U902-J3)": [
         "rf200"
       ],
       "Veer": [
@@ -3773,6 +3783,10 @@
       {
         "netclass": "power-lite",
         "pattern": "+2V5bias"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+5.7V"
       }
     ]
   },
@@ -4232,6 +4246,30 @@
     [
       "18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641",
       "FPGA"
+    ],
+    [
+      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
+      "PGA1"
+    ],
+    [
+      "32c670c7-05fb-4d6f-b587-f687839b2e31",
+      "PGA2"
+    ],
+    [
+      "32c670c7-05fb-4d6f-b587-f687839b2e31",
+      "PGA2"
+    ],
+    [
+      "32c670c7-05fb-4d6f-b587-f687839b2e31",
+      "PGA2"
+    ],
+    [
+      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
+      "PGA1"
+    ],
+    [
+      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
+      "PGA1"
     ]
   ],
   "text_variables": {
