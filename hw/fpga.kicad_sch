@@ -20827,12 +20827,6 @@
 		(uuid "2197ddde-e12f-4c6a-b77d-685799f34a70")
 	)
 	(junction
-		(at 64.77 118.11)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "3853392d-94d4-44a6-b308-0d3d4df57c35")
-	)
-	(junction
 		(at 90.17 113.03)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -20923,6 +20917,12 @@
 		(uuid "97df670a-6a74-43a0-b234-5e27cac43c1e")
 	)
 	(junction
+		(at 58.42 118.11)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9df4ec9a-221c-417a-a71c-bdb51f1ebbfd")
+	)
+	(junction
 		(at 72.39 109.22)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -20963,12 +20963,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c376fcac-e60e-4d37-b9d9-bf5594c06bc2")
-	)
-	(junction
-		(at 58.42 118.11)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "c3feb20c-67e3-4f38-8557-33abb91d37ba")
 	)
 	(junction
 		(at 36.83 135.89)
@@ -21505,16 +21499,6 @@
 			(type default)
 		)
 		(uuid "0e9d58a2-6a9b-4aec-a96b-3f61e133506e")
-	)
-	(wire
-		(pts
-			(xy 64.77 118.11) (xy 64.77 120.65)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0e9f1257-c264-4eca-8940-a34cedefae85")
 	)
 	(wire
 		(pts
@@ -23188,7 +23172,7 @@
 	)
 	(wire
 		(pts
-			(xy 64.77 107.95) (xy 64.77 118.11)
+			(xy 64.77 107.95) (xy 64.77 120.65)
 		)
 		(stroke
 			(width 0)
@@ -23315,6 +23299,16 @@
 			(type default)
 		)
 		(uuid "ce31a662-d772-470a-8359-d83955a2602c")
+	)
+	(wire
+		(pts
+			(xy 58.42 118.11) (xy 58.42 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cf3fbd5f-4c6c-412d-a713-db2e86221cf0")
 	)
 	(wire
 		(pts
@@ -23645,16 +23639,6 @@
 			(type default)
 		)
 		(uuid "f832ef1c-62aa-4cfc-9a2c-e7ac808b4e85")
-	)
-	(wire
-		(pts
-			(xy 58.42 118.11) (xy 64.77 118.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fa1ebe43-3200-4a34-86c3-72e2310eadad")
 	)
 	(wire
 		(pts
@@ -30891,6 +30875,72 @@
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "Y1301")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 58.42 119.38 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "6a997826-8287-462e-92f2-3ed2cadb5e09")
+		(property "Reference" "#PWR01344"
+			(at 58.42 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 58.166 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 58.42 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 58.42 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 58.42 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0ac2dc43-a910-4d0b-8397-c61c5176a0b8")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
+					(reference "#PWR01344")
 					(unit 1)
 				)
 			)

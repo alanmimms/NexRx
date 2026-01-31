@@ -5372,18 +5372,6 @@
 		)
 		(uuid "5e4ebef5-08f5-4d0f-92df-3ddb5edb3604")
 	)
-	(text "DEBUG"
-		(exclude_from_sim no)
-		(at 229.362 57.404 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(thickness 0.254)
-				(bold yes)
-			)
-		)
-		(uuid "a77dd1ce-a8c6-4115-9ae7-8701e5afa4fe")
-	)
 	(text "ST7789V\n135x240\nLCD"
 		(exclude_from_sim no)
 		(at 183.642 48.768 0)
@@ -9413,10 +9401,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "112bbe1e-6736-4606-9e74-63a730c4ee54")
 		(property "Reference" "J201"
-			(at 182.88 16.51 0)
+			(at 183.134 16.002 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9424,7 +9411,7 @@
 			)
 		)
 		(property "Value" "68710814022"
-			(at 182.88 19.05 0)
+			(at 183.134 18.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9706,13 +9693,12 @@
 				(hide yes)
 			)
 		)
-		(property "label" ""
-			(at 171.45 24.13 0)
+		(property "label" "DISPLAY"
+			(at 182.88 20.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(pin "3"
@@ -18193,13 +18179,12 @@
 				(hide yes)
 			)
 		)
-		(property "label" ""
-			(at 238.76 41.91 0)
+		(property "label" "DEBUG"
+			(at 233.426 27.432 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(pin "8"

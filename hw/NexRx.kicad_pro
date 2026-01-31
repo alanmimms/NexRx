@@ -38,15 +38,15 @@
         "other_text_upright": false,
         "pads": {
           "drill": 0.0,
-          "height": 0.341594,
-          "width": 0.341594
+          "height": 0.58,
+          "width": 0.58
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
         "silk_text_size_h": 0.8,
         "silk_text_size_v": 0.8,
         "silk_text_thickness": 0.15,
-        "silk_text_upright": false,
+        "silk_text_upright": true,
         "zones": {
           "min_clearance": 0.0
         }
@@ -265,7 +265,186 @@
       "mpn": ""
     },
     "layer_pairs": [],
-    "layer_presets": [],
+    "layer_presets": [
+      {
+        "activeLayer": -2,
+        "flipBoard": false,
+        "layers": [
+          0,
+          1,
+          2,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          30,
+          31,
+          32,
+          34,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127
+        ],
+        "name": "alan-bog",
+        "renderLayers": [
+          "vias",
+          "footprint_text",
+          "footprint_anchors",
+          "footprints_front",
+          "footprints_back",
+          "footprint_values",
+          "footprint_references",
+          "tracks",
+          "drc_errors",
+          "drawing_sheet",
+          "bitmaps",
+          "pads",
+          "zones",
+          "drc_warnings",
+          "locked_item_shadows",
+          "conflict_shadows",
+          "shapes"
+        ]
+      },
+      {
+        "activeLayer": -2,
+        "flipBoard": false,
+        "layers": [
+          0,
+          8
+        ],
+        "name": "zone-ranger",
+        "renderLayers": [
+          "vias",
+          "footprint_text",
+          "footprint_anchors",
+          "footprints_front",
+          "footprints_back",
+          "footprint_values",
+          "footprint_references",
+          "tracks",
+          "drc_errors",
+          "drawing_sheet",
+          "bitmaps",
+          "pads",
+          "zones",
+          "drc_warnings",
+          "locked_item_shadows",
+          "conflict_shadows",
+          "shapes"
+        ]
+      }
+    ],
     "viewports": []
   },
   "boards": [],
@@ -530,7 +709,7 @@
         "line_style": 0,
         "name": "GND",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
+        "priority": 4,
         "schematic_color": "rgb(34, 95, 23)",
         "track_width": 0.3,
         "wire_width": 12
@@ -540,7 +719,7 @@
         "line_style": 0,
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 7,
+        "priority": 5,
         "schematic_color": "rgb(79, 122, 21)",
         "track_width": 0.3,
         "wire_width": 20
@@ -548,7 +727,7 @@
       {
         "name": "Rail-low-power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
+        "priority": 2,
         "schematic_color": "rgb(79, 122, 21)"
       },
       {
@@ -556,7 +735,7 @@
         "line_style": 0,
         "name": "diff75",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 9,
+        "priority": 7,
         "schematic_color": "rgb(51, 78, 255)",
         "wire_width": 6
       },
@@ -565,50 +744,44 @@
         "line_style": 0,
         "name": "diff90",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 8,
+        "priority": 6,
         "schematic_color": "rgb(72, 52, 255)",
         "wire_width": 6
       },
       {
-        "name": "fine",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.2
-      },
-      {
         "name": "kelvin",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
+        "priority": 3,
         "schematic_color": "rgb(39, 179, 255)",
         "track_width": 0.1
       },
       {
         "name": "power-lite",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
+        "priority": 1,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.2
       },
       {
         "name": "rf200",
-        "pcb_color": "rgb(255, 0, 0)",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 0,
         "schematic_color": "rgb(81, 137, 25)",
-        "track_width": 0.2
-      },
-      {
-        "name": "rf50",
-        "pcb_color": "rgb(0, 255, 1)",
-        "priority": 1,
-        "schematic_color": "rgb(40, 102, 25)",
         "track_width": 0.2
       }
     ],
     "meta": {
       "version": 4
     },
-    "net_colors": null,
+    "net_colors": {
+      "+3.3V": "rgb(0, 194, 0)",
+      "+3.3V-ON": "rgb(128, 77, 0)",
+      "+3.3VA": "rgb(132, 132, 0)",
+      "+3.3VFPGAIO": "rgb(0, 72, 72)",
+      "+5VA": "rgb(0, 132, 132)",
+      "+VFPGAAUX": "rgb(0, 194, 194)",
+      "+VFPGACORE": "rgb(255, 0, 0)"
+    },
     "netclass_assignments": {
       "+12V": [
         "Power"
@@ -3665,12 +3838,8 @@
         "pattern": "+6V"
       },
       {
-        "netclass": "fine",
+        "netclass": "Default",
         "pattern": "/*/Ctrl.*"
-      },
-      {
-        "netclass": "GND",
-        "pattern": "GND"
       },
       {
         "netclass": "power-lite",
@@ -3689,56 +3858,12 @@
         "pattern": "VUSBPD"
       },
       {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckQSD0"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckQSD1"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckQSD2"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RFDeckQSD0"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RFDeckQSD1"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RFDeckQSD2"
-      },
-      {
         "netclass": "rf200",
         "pattern": "/Rx Front End/RxZ200"
       },
       {
         "netclass": "rf200",
         "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckIn"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/qsd0"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/qsd1"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/qsd2"
-      },
-      {
-        "netclass": "rf50",
-        "pattern": "/Rx Front End/QSD0/rfIn"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/Rx Front End/RxZ200"
       },
       {
         "netclass": "Power",
@@ -4149,6 +4274,11 @@
         },
         {
           "name": "r-power",
+          "url": false,
+          "visible": true
+        },
+        {
+          "name": "label",
           "url": false,
           "visible": true
         }

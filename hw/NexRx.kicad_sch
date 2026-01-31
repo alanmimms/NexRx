@@ -3305,7 +3305,6 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "5f7feb11-4c3e-4f43-8ef6-91bba8568294")
 		(property "Reference" "J101"
 			(at 46.736 64.77 90)
@@ -3384,13 +3383,12 @@
 				(hide yes)
 			)
 		)
-		(property "label" ""
-			(at 48.26 77.47 90)
+		(property "label" "ANT"
+			(at 47.752 74.676 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(pin "1"

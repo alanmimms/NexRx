@@ -7693,7 +7693,7 @@
 		)
 		(uuid "ffa23399-ae64-44ff-8741-51da1295cdc6")
 	)
-	(label "RxI1p"
+	(label "rxI1+"
 		(at 189.23 66.04 180)
 		(effects
 			(font
@@ -7703,7 +7703,7 @@
 		)
 		(uuid "03dd326d-72f1-49e5-b65d-33d4f0c0973c")
 	)
-	(label "RxQ2n"
+	(label "rxQ2-"
 		(at 189.23 91.44 180)
 		(effects
 			(font
@@ -7743,7 +7743,7 @@
 		)
 		(uuid "185230cc-f7b1-469c-93f5-fa6685d3ae73")
 	)
-	(label "RxQ2n"
+	(label "rxQ2-"
 		(at 158.75 106.68 0)
 		(effects
 			(font
@@ -7783,7 +7783,7 @@
 		)
 		(uuid "2abfbad9-d810-49ea-bfe1-f79d99f4993f")
 	)
-	(label "RxQ0p"
+	(label "rxQ0+"
 		(at 158.75 58.42 0)
 		(effects
 			(font
@@ -7793,7 +7793,7 @@
 		)
 		(uuid "2afdd68a-75af-47cc-a95a-a20078205c0e")
 	)
-	(label "RxI2n"
+	(label "rxI2-"
 		(at 189.23 83.82 180)
 		(effects
 			(font
@@ -7883,7 +7883,7 @@
 		)
 		(uuid "4f67afdd-4275-4a94-ade3-c2e29497e9ad")
 	)
-	(label "RxQ0n"
+	(label "rxQ0-"
 		(at 158.75 60.96 0)
 		(effects
 			(font
@@ -7893,7 +7893,7 @@
 		)
 		(uuid "533ebcd2-ea55-4522-b5ad-04bf2f6d6be3")
 	)
-	(label "RxI2p"
+	(label "rxI2+"
 		(at 158.75 97.79 0)
 		(effects
 			(font
@@ -7913,7 +7913,7 @@
 		)
 		(uuid "54c581ad-63fd-44a2-81dd-28008efbaf19")
 	)
-	(label "RxI1n"
+	(label "rxI1-"
 		(at 158.75 78.74 0)
 		(effects
 			(font
@@ -7973,7 +7973,7 @@
 		)
 		(uuid "65329ff0-e7a2-478c-b0ef-6eb20a845204")
 	)
-	(label "RxI0p"
+	(label "rxI0+"
 		(at 213.36 34.29 90)
 		(effects
 			(font
@@ -8003,7 +8003,7 @@
 		)
 		(uuid "760fe5be-b657-402a-9395-d99b432f5f15")
 	)
-	(label "RxI1n"
+	(label "rxI1-"
 		(at 189.23 68.58 180)
 		(effects
 			(font
@@ -8013,7 +8013,7 @@
 		)
 		(uuid "7954de86-54ba-4620-8eae-74ea5982d1d3")
 	)
-	(label "RxI1p"
+	(label "rxI1+"
 		(at 158.75 76.2 0)
 		(effects
 			(font
@@ -8023,7 +8023,7 @@
 		)
 		(uuid "8b1dbc04-db43-49fa-9226-b84e5931a384")
 	)
-	(label "RxI0p"
+	(label "rxI0+"
 		(at 158.75 52.07 0)
 		(effects
 			(font
@@ -8043,7 +8043,7 @@
 		)
 		(uuid "99899574-8b07-4b74-b0c6-5880036acddb")
 	)
-	(label "RxI2n"
+	(label "rxI2-"
 		(at 158.75 100.33 0)
 		(effects
 			(font
@@ -8083,7 +8083,7 @@
 		)
 		(uuid "a3302481-fd63-47fb-b138-97e740d10df7")
 	)
-	(label "RxQ0n"
+	(label "rxQ0-"
 		(at 203.2 34.29 90)
 		(effects
 			(font
@@ -8103,7 +8103,7 @@
 		)
 		(uuid "ad8a008d-8646-45a1-8e06-5c05794c6d5f")
 	)
-	(label "RxQ2p"
+	(label "rxQ2+"
 		(at 189.23 93.98 180)
 		(effects
 			(font
@@ -8113,7 +8113,7 @@
 		)
 		(uuid "b863276e-4c05-408f-ba05-17df27c478ba")
 	)
-	(label "RxQ1p"
+	(label "rxQ1+"
 		(at 158.75 82.55 0)
 		(effects
 			(font
@@ -8133,7 +8133,7 @@
 		)
 		(uuid "bb731813-6cd4-4aa8-bc9b-ebe12d7a1e98")
 	)
-	(label "RxQ2p"
+	(label "rxQ2+"
 		(at 158.75 104.14 0)
 		(effects
 			(font
@@ -8143,7 +8143,7 @@
 		)
 		(uuid "ca5b214f-30f3-4ab0-94da-67c181ece5ec")
 	)
-	(label "RxI2p"
+	(label "rxI2+"
 		(at 189.23 81.28 180)
 		(effects
 			(font
@@ -8153,7 +8153,7 @@
 		)
 		(uuid "d490961f-6c20-4ad1-8e66-bb4d2bfd62f5")
 	)
-	(label "RxQ1p"
+	(label "rxQ1+"
 		(at 189.23 78.74 180)
 		(effects
 			(font
@@ -8163,7 +8163,7 @@
 		)
 		(uuid "d9173759-f6cd-4d73-8c22-f569c5181c6e")
 	)
-	(label "RxI0n"
+	(label "rxI0-"
 		(at 210.82 34.29 90)
 		(effects
 			(font
@@ -8173,7 +8173,7 @@
 		)
 		(uuid "da1327d8-28a1-4773-961f-21cf920741a7")
 	)
-	(label "RxI0n"
+	(label "rxI0-"
 		(at 158.75 54.61 0)
 		(effects
 			(font
@@ -8183,7 +8183,7 @@
 		)
 		(uuid "debaf73c-f460-4fad-b7fd-8e16ee184fda")
 	)
-	(label "RxQ1n"
+	(label "rxQ1-"
 		(at 189.23 76.2 180)
 		(effects
 			(font
@@ -8253,7 +8253,7 @@
 		)
 		(uuid "f4830ae9-06c2-4701-9298-fe0c453ff3cb")
 	)
-	(label "RxQ0p"
+	(label "rxQ0+"
 		(at 200.66 34.29 90)
 		(effects
 			(font
@@ -8263,7 +8263,7 @@
 		)
 		(uuid "f54421aa-360a-4f73-9f6d-1597ffe849c7")
 	)
-	(label "RxQ1n"
+	(label "rxQ1-"
 		(at 158.75 85.09 0)
 		(effects
 			(font
