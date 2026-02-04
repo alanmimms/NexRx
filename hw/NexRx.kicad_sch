@@ -1615,7 +1615,7 @@
 			"qsdSCK" "qsdMOSI" "qsdPh0a" "qsdPh0b" "qsdPh0c" "qsdPh0d" "qsdPh1a" "qsdPh1b"
 			"qsdPh1c" "qsdPh1d" "qsdPh2a" "qsdPh2b" "qsdPh2c" "qsdPh2d" "enable6V"
 			"enable3VA" "enable5VA" "enable3V3" "audioSCL" "audioSDA" "enableFPGAVCORE"
-			"usbCC1adc" "usbCC2adc"
+			"usbCC1adc" "usbCC2adc" "tuneNSS" "tuneSCK" "tuneMOSI" "tuneMISO"
 		)
 	)
 	(text "~25V pk-pk\nprotection"
