@@ -4400,6 +4400,10 @@
     [
       "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
       "PGA1"
+    ],
+    [
+      "01982449-4673-4cb6-80c9-9e93e5a5c4e1",
+      "GPIO Expander"
     ]
   ],
   "text_variables": {

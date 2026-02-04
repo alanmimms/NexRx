@@ -1671,6 +1671,12 @@
 		(uuid "6e5b9d3d-b272-4070-8e8c-a0e18290502a")
 	)
 	(junction
+		(at 171.45 76.2)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "86483477-c519-4423-8365-2d18019ee7ed")
+	)
+	(junction
 		(at 41.91 77.47)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1681,12 +1687,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "ad0d86b7-f287-492f-b340-f5ed97766a7d")
-	)
-	(junction
-		(at 193.04 55.88)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f447472b-20eb-4f63-aabe-8dfe04c85919")
 	)
 	(wire
 		(pts
@@ -1830,23 +1830,13 @@
 	)
 	(bus
 		(pts
-			(xy 171.45 55.88) (xy 193.04 55.88)
+			(xy 171.45 76.2) (xy 180.34 76.2)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "5737d371-4309-46bb-a44c-00e2cb94c195")
-	)
-	(bus
-		(pts
-			(xy 193.04 55.88) (xy 193.04 72.39)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5f06ab90-52e1-4e20-84c3-e3aed1bf4971")
+		(uuid "54b7de84-c1d0-4f68-9ee3-1bd35e52ee7e")
 	)
 	(wire
 		(pts
@@ -1890,7 +1880,7 @@
 	)
 	(bus
 		(pts
-			(xy 171.45 55.88) (xy 171.45 82.55)
+			(xy 171.45 55.88) (xy 171.45 76.2)
 		)
 		(stroke
 			(width 0)
@@ -2030,7 +2020,7 @@
 	)
 	(bus
 		(pts
-			(xy 193.04 55.88) (xy 223.52 55.88)
+			(xy 171.45 55.88) (xy 223.52 55.88)
 		)
 		(stroke
 			(width 0)
@@ -2097,6 +2087,16 @@
 			(type default)
 		)
 		(uuid "e16c2637-0180-47d8-907d-4f238ac4ffb7")
+	)
+	(bus
+		(pts
+			(xy 171.45 76.2) (xy 171.45 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e47df6de-1d85-41a9-91d6-3ceeb028bc3c")
 	)
 	(wire
 		(pts
@@ -4857,13 +4857,13 @@
 			)
 		)
 		(pin "Ctrl{Ctrl}" bidirectional
-			(at 193.04 72.39 90)
+			(at 180.34 76.2 180)
 			(uuid "a0cbde6c-5b53-4df1-b4cf-f11ea90b1809")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 			)
 		)
 		(pin "FPGA{FPGA}" bidirectional
