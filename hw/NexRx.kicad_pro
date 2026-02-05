@@ -133,11 +133,11 @@
       },
       "rules": {
         "max_error": 0.005,
-        "min_clearance": 0.0,
-        "min_connection": 0.0,
+        "min_clearance": 0.127,
+        "min_connection": 0.127,
         "min_copper_edge_clearance": 0.3,
         "min_groove_width": 0.0,
-        "min_hole_clearance": 0.2,
+        "min_hole_clearance": 0.254,
         "min_hole_to_hole": 0.2,
         "min_microvia_diameter": 0.0,
         "min_microvia_drill": 0.0,
@@ -146,9 +146,9 @@
         "min_text_height": 1.0,
         "min_text_thickness": 0.153,
         "min_through_hole_diameter": 0.3,
-        "min_track_width": 0.1,
+        "min_track_width": 0.127,
         "min_via_annular_width": 0.2,
-        "min_via_diameter": 0.2,
+        "min_via_diameter": 0.45,
         "solder_mask_to_copper_clearance": 0.0,
         "use_height_for_length_calcs": true
       },
@@ -199,6 +199,7 @@
       "track_widths": [
         0.0,
         0.1,
+        0.127,
         0.15,
         0.156464,
         0.175,
@@ -688,7 +689,7 @@
     "classes": [
       {
         "bus_width": 12,
-        "clearance": 0.15,
+        "clearance": 0.127,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -709,7 +710,7 @@
         "line_style": 0,
         "name": "GND",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
+        "priority": 3,
         "schematic_color": "rgb(34, 95, 23)",
         "track_width": 0.3,
         "wire_width": 12
@@ -719,7 +720,7 @@
         "line_style": 0,
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
+        "priority": 4,
         "schematic_color": "rgb(79, 122, 21)",
         "track_width": 0.3,
         "wire_width": 20
@@ -733,27 +734,21 @@
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "diff75",
+        "name": "diff100",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 7,
-        "schematic_color": "rgb(51, 78, 255)",
+        "priority": 5,
+        "schematic_color": "rgb(72, 52, 255)",
+        "track_width": 0.15,
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "diff90",
+        "name": "diff75",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 6,
-        "schematic_color": "rgb(72, 52, 255)",
+        "schematic_color": "rgb(51, 78, 255)",
         "wire_width": 6
-      },
-      {
-        "name": "kelvin",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
-        "schematic_color": "rgb(39, 179, 255)",
-        "track_width": 0.1
       },
       {
         "name": "power-lite",
@@ -767,7 +762,7 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 0,
         "schematic_color": "rgb(81, 137, 25)",
-        "track_width": 0.2
+        "track_width": 0.127
       }
     ],
     "meta": {
@@ -3894,11 +3889,11 @@
         "pattern": "+5VA"
       },
       {
-        "netclass": "diff90",
+        "netclass": "diff100",
         "pattern": "/Power/usbDP"
       },
       {
-        "netclass": "diff90",
+        "netclass": "diff100",
         "pattern": "/Power/usbDN"
       },
       {
