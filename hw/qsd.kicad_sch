@@ -1070,6 +1070,12 @@
 		(uuid "40224670-d3eb-4f8d-af9b-11985ba40a7d")
 	)
 	(junction
+		(at 76.2 64.77)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "42bafedc-7972-4da9-bf55-9f087e28603c")
+	)
+	(junction
 		(at 77.47 85.09)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1080,12 +1086,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "93803ca7-c6b0-4c4d-b97d-ebc52287b98d")
-	)
-	(junction
-		(at 76.2 66.04)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "96c3e9f1-c75d-4e20-a986-2879d3e83c03")
 	)
 	(junction
 		(at 63.5 113.03)
@@ -1269,7 +1269,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 67.31) (xy 82.55 66.04)
+			(xy 82.55 67.31) (xy 82.55 64.77)
 		)
 		(stroke
 			(width 0)
@@ -1359,7 +1359,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 64.77) (xy 76.2 66.04)
+			(xy 76.2 63.5) (xy 76.2 64.77)
 		)
 		(stroke
 			(width 0)
@@ -1619,6 +1619,16 @@
 	)
 	(wire
 		(pts
+			(xy 76.2 64.77) (xy 76.2 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cce90cf5-976f-431d-83bf-ec6a1f50092b")
+	)
+	(wire
+		(pts
 			(xy 165.1 100.33) (xy 165.1 101.6)
 		)
 		(stroke
@@ -1719,7 +1729,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 66.04) (xy 82.55 66.04)
+			(xy 76.2 64.77) (xy 82.55 64.77)
 		)
 		(stroke
 			(width 0)
@@ -2553,7 +2563,7 @@
 		(dnp no)
 		(uuid "4ab68a8e-2eff-4175-a079-db39777ce25b")
 		(property "Reference" "R401"
-			(at 77.978 78.74 90)
+			(at 75.184 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2562,7 +2572,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 77.724 67.31 90)
+			(at 75.692 73.406 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2802,7 +2812,7 @@
 	)
 	(symbol
 		(lib_id "power:+1V35")
-		(at 76.2 64.77 0)
+		(at 76.2 63.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2811,7 +2821,7 @@
 		(fields_autoplaced yes)
 		(uuid "55de94ec-fde3-4f79-8d21-21ec9e620337")
 		(property "Reference" "#PWR0403"
-			(at 76.2 68.58 0)
+			(at 76.2 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2820,7 +2830,7 @@
 			)
 		)
 		(property "Value" "+1V65bias"
-			(at 76.2 59.69 0)
+			(at 76.2 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2828,7 +2838,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 76.2 64.77 0)
+			(at 76.2 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2837,7 +2847,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 64.77 0)
+			(at 76.2 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2846,7 +2856,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+1V65bias\""
-			(at 76.2 64.77 0)
+			(at 76.2 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2855,7 +2865,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 76.2 64.77 0)
+			(at 76.2 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2863,7 +2873,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 76.2 64.77 0)
+			(at 76.2 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2900,7 +2910,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "827318c3-f8ec-4a88-b302-28fc53a8ed33")
-		(property "Reference" "#PWR0405"
+		(property "Reference" "#PWR0404"
 			(at 82.55 82.55 0)
 			(effects
 				(font
@@ -2951,15 +2961,15 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874"
-					(reference "#PWR0605")
+					(reference "#PWR0604")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7"
-					(reference "#PWR0505")
+					(reference "#PWR0504")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d"
-					(reference "#PWR0405")
+					(reference "#PWR0404")
 					(unit 1)
 				)
 			)
@@ -2974,7 +2984,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "82ccb756-84da-4669-84fb-83e3cd14235f")
-		(property "Reference" "C406"
+		(property "Reference" "C407"
 			(at 157.734 92.964 0)
 			(effects
 				(font
@@ -3260,15 +3270,15 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874"
-					(reference "C606")
+					(reference "C607")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7"
-					(reference "C506")
+					(reference "C507")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d"
-					(reference "C406")
+					(reference "C407")
 					(unit 1)
 				)
 			)
@@ -3283,7 +3293,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "89e171df-ab95-48c0-87d0-f0d09a8bffd7")
-		(property "Reference" "C407"
+		(property "Reference" "C408"
 			(at 165.354 92.964 0)
 			(effects
 				(font
@@ -3569,15 +3579,15 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874"
-					(reference "C607")
+					(reference "C608")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7"
-					(reference "C507")
+					(reference "C508")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d"
-					(reference "C407")
+					(reference "C408")
 					(unit 1)
 				)
 			)
@@ -3666,7 +3676,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8c9d79dd-eaba-4c47-8a45-4171fc832d1e")
-		(property "Reference" "C405"
+		(property "Reference" "C406"
 			(at 148.844 92.964 0)
 			(effects
 				(font
@@ -3952,15 +3962,15 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874"
-					(reference "C605")
+					(reference "C606")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7"
-					(reference "C505")
+					(reference "C506")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d"
-					(reference "C405")
+					(reference "C406")
 					(unit 1)
 				)
 			)
@@ -3976,7 +3986,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a83d0cfa-9c66-47a9-b203-63fbb28302e2")
-		(property "Reference" "#PWR0404"
+		(property "Reference" "#PWR0405"
 			(at 165.1 107.95 0)
 			(effects
 				(font
@@ -4027,15 +4037,15 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874"
-					(reference "#PWR0604")
+					(reference "#PWR0605")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7"
-					(reference "#PWR0504")
+					(reference "#PWR0505")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d"
-					(reference "#PWR0404")
+					(reference "#PWR0405")
 					(unit 1)
 				)
 			)
@@ -4361,7 +4371,7 @@
 		(dnp no)
 		(uuid "c759de07-e167-4073-bae0-337fc4431605")
 		(property "Reference" "C401"
-			(at 53.594 86.106 0)
+			(at 52.578 83.82 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4369,7 +4379,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 57.912 85.598 0)
+			(at 59.944 83.82 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4730,7 +4740,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d38da9e3-88d6-4a2f-872a-e7b4eb126e80")
-		(property "Reference" "C404"
+		(property "Reference" "C405"
 			(at 138.684 92.964 0)
 			(effects
 				(font
@@ -5016,15 +5026,15 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874"
-					(reference "C604")
+					(reference "C605")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7"
-					(reference "C504")
+					(reference "C505")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d"
-					(reference "C404")
+					(reference "C405")
 					(unit 1)
 				)
 			)
@@ -5114,7 +5124,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f5bfd3ac-5296-4e90-82ff-f25cdc2e1dab")
-		(property "Reference" "C408"
+		(property "Reference" "C404"
 			(at 82.804 68.834 0)
 			(effects
 				(font
@@ -5392,15 +5402,15 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874"
-					(reference "C608")
+					(reference "C604")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7"
-					(reference "C508")
+					(reference "C504")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d"
-					(reference "C408")
+					(reference "C404")
 					(unit 1)
 				)
 			)

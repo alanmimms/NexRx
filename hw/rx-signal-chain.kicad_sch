@@ -10745,7 +10745,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4d6e71d6-13c3-4180-aaf9-247ba164d798")
-		(property "Reference" "#PWR0313"
+		(property "Reference" "#PWR0309"
 			(at 120.65 48.26 0)
 			(effects
 				(font
@@ -10796,7 +10796,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0313")
+					(reference "#PWR0309")
 					(unit 1)
 				)
 			)
@@ -10812,7 +10812,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4f009d56-07b7-4f6a-a1e1-2a79d7deb2ec")
-		(property "Reference" "R305"
+		(property "Reference" "R306"
 			(at 54.356 151.638 90)
 			(effects
 				(font
@@ -11123,7 +11123,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "R305")
+					(reference "R306")
 					(unit 1)
 				)
 			)
@@ -11889,7 +11889,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "59b7c008-6e30-45a8-8a96-49a1a0814aaf")
-		(property "Reference" "R301"
+		(property "Reference" "R302"
 			(at 47.752 144.526 90)
 			(effects
 				(font
@@ -12200,7 +12200,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "R301")
+					(reference "R302")
 					(unit 1)
 				)
 			)
@@ -12646,7 +12646,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5c5dff23-69cb-44ad-8804-7610f08dec7c")
-		(property "Reference" "R306"
+		(property "Reference" "R307"
 			(at 54.356 185.928 90)
 			(effects
 				(font
@@ -12957,7 +12957,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "R306")
+					(reference "R307")
 					(unit 1)
 				)
 			)
@@ -15752,7 +15752,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9900af47-f93c-4e88-a1ac-414e964eb70a")
-		(property "Reference" "R304"
+		(property "Reference" "R305"
 			(at 47.752 188.976 90)
 			(effects
 				(font
@@ -16063,7 +16063,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "R304")
+					(reference "R305")
 					(unit 1)
 				)
 			)
@@ -16213,7 +16213,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9c2030a3-3f07-452e-aee3-427cdbdf0d4d")
-		(property "Reference" "R307"
+		(property "Reference" "R301"
 			(at 43.18 62.992 90)
 			(effects
 				(font
@@ -16267,7 +16267,7 @@
 		(instances
 			(project ""
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "R307")
+					(reference "R301")
 					(unit 1)
 				)
 			)
@@ -16284,7 +16284,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a15686be-76f6-432e-bc49-4f6ec9b03d72")
-		(property "Reference" "#PWR0315"
+		(property "Reference" "#PWR0311"
 			(at 120.65 73.66 0)
 			(effects
 				(font
@@ -16335,7 +16335,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0315")
+					(reference "#PWR0311")
 					(unit 1)
 				)
 			)
@@ -16573,7 +16573,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "abd4750b-51da-4864-be91-cb9c33539238")
-		(property "Reference" "#PWR0311"
+		(property "Reference" "#PWR0314"
 			(at 128.27 187.96 0)
 			(effects
 				(font
@@ -16639,7 +16639,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0311")
+					(reference "#PWR0314")
 					(unit 1)
 				)
 			)
@@ -17640,7 +17640,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ccd4219b-6409-42bb-a6b3-79a8b4a397cf")
-		(property "Reference" "R302"
+		(property "Reference" "R303"
 			(at 47.752 154.686 90)
 			(effects
 				(font
@@ -17951,7 +17951,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "R302")
+					(reference "R303")
 					(unit 1)
 				)
 			)
@@ -18332,7 +18332,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d184c851-b6e0-4386-8283-88e6b3561d80")
-		(property "Reference" "#PWR0310"
+		(property "Reference" "#PWR0313"
 			(at 128.27 170.18 0)
 			(effects
 				(font
@@ -18383,7 +18383,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0310")
+					(reference "#PWR0313")
 					(unit 1)
 				)
 			)
@@ -18466,7 +18466,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d44260d4-0ccc-4274-97a4-6414ba86f21e")
-		(property "Reference" "#PWR0309"
+		(property "Reference" "#PWR0312"
 			(at 128.27 153.67 0)
 			(effects
 				(font
@@ -18532,7 +18532,7 @@
 		(instances
 			(project ""
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0309")
+					(reference "#PWR0312")
 					(unit 1)
 				)
 			)
@@ -19402,7 +19402,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "df6e92ca-b67c-493d-853f-f287d361c802")
-		(property "Reference" "R303"
+		(property "Reference" "R304"
 			(at 47.752 178.816 90)
 			(effects
 				(font
@@ -19713,7 +19713,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "R303")
+					(reference "R304")
 					(unit 1)
 				)
 			)
@@ -20235,7 +20235,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e3ef9553-9c45-4f75-a496-dd207ee8484a")
-		(property "Reference" "#PWR0312"
+		(property "Reference" "#PWR0315"
 			(at 128.27 204.47 0)
 			(effects
 				(font
@@ -20286,7 +20286,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0312")
+					(reference "#PWR0315")
 					(unit 1)
 				)
 			)
@@ -21096,7 +21096,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e55cfd8a-ae31-424c-a3d8-594a6612efd0")
-		(property "Reference" "#PWR0314"
+		(property "Reference" "#PWR0310"
 			(at 120.65 60.96 0)
 			(effects
 				(font
@@ -21147,7 +21147,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0314")
+					(reference "#PWR0310")
 					(unit 1)
 				)
 			)

@@ -2722,7 +2722,7 @@
 		(uuid "1ace1e68-0031-433a-9073-04e3705c7696")
 	)
 	(label "Tune.C7"
-		(at 176.53 160.02 180)
+		(at 224.79 46.99 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2762,7 +2762,7 @@
 		(uuid "2c2b41a9-7c4d-4551-b2ba-348e087d58dc")
 	)
 	(label "Tune.nL1"
-		(at 247.65 87.63 0)
+		(at 199.39 124.46 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2782,7 +2782,7 @@
 		(uuid "3a14048d-04ad-41cb-9dc1-924c69c38a74")
 	)
 	(label "Tune.atten24dB"
-		(at 102.87 127 180)
+		(at 102.87 132.08 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2792,7 +2792,7 @@
 		(uuid "4dd00d73-e798-4aa1-a62b-8d234ff70a3e")
 	)
 	(label "Tune.nC10"
-		(at 247.65 82.55 0)
+		(at 247.65 87.63 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2812,7 +2812,7 @@
 		(uuid "56640678-1078-4cbb-a8dd-c91defc9d9a2")
 	)
 	(label "Tune.C8"
-		(at 224.79 46.99 180)
+		(at 224.79 52.07 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2822,7 +2822,7 @@
 		(uuid "5d5c1ba9-75a0-4b27-8d8e-484cb7b203be")
 	)
 	(label "Tune.n24dB"
-		(at 125.73 127 0)
+		(at 125.73 132.08 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2852,7 +2852,7 @@
 		(uuid "79b60d8c-16dc-4e72-9386-cfd5dbaff79d")
 	)
 	(label "Tune.atten3dB"
-		(at 102.87 95.25 180)
+		(at 102.87 90.17 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2892,7 +2892,7 @@
 		(uuid "8527ba0a-e37a-48d8-a3c4-475e327a1ae2")
 	)
 	(label "Tune.nC5"
-		(at 199.39 124.46 0)
+		(at 199.39 154.94 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2902,7 +2902,7 @@
 		(uuid "8a566ac5-6bfe-4608-b2d1-f417ca9495e5")
 	)
 	(label "Tune.nC6"
-		(at 199.39 154.94 0)
+		(at 199.39 160.02 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2912,7 +2912,7 @@
 		(uuid "8c968364-c3e3-4fa0-adfe-fcef19e048ef")
 	)
 	(label "Tune.L1"
-		(at 224.79 87.63 180)
+		(at 176.53 124.46 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2942,7 +2942,7 @@
 		(uuid "9cfb5324-83fb-44da-b0b5-5f56eec2e20c")
 	)
 	(label "Tune.n12dB"
-		(at 125.73 132.08 0)
+		(at 125.73 127 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2972,7 +2972,7 @@
 		(uuid "ad7f4893-3f89-47ee-a67f-82a31250effa")
 	)
 	(label "Tune.C5"
-		(at 176.53 124.46 180)
+		(at 176.53 154.94 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2992,7 +2992,7 @@
 		(uuid "b7d6f80e-185c-4c7b-a808-81e772e9a25d")
 	)
 	(label "Tune.nC9"
-		(at 247.65 52.07 0)
+		(at 247.65 82.55 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3002,7 +3002,7 @@
 		(uuid "baf8b27c-9f05-4d34-8919-afddd2f322a5")
 	)
 	(label "Tune.n3dB"
-		(at 125.73 95.25 0)
+		(at 125.73 90.17 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3022,7 +3022,7 @@
 		(uuid "c3f7bfad-a080-4c90-837d-8919570d6006")
 	)
 	(label "Tune.n6dB"
-		(at 125.73 90.17 0)
+		(at 125.73 95.25 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3032,7 +3032,7 @@
 		(uuid "c89eb84b-24d2-4502-be47-0908bc69712d")
 	)
 	(label "Tune.nC8"
-		(at 247.65 46.99 0)
+		(at 247.65 52.07 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3052,7 +3052,7 @@
 		(uuid "e0127d26-0805-4bb7-b1c6-993bd7280a32")
 	)
 	(label "Tune.C10"
-		(at 224.79 82.55 180)
+		(at 224.79 87.63 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3082,7 +3082,7 @@
 		(uuid "ea80f86b-dd21-4376-98c2-bd7eb8113a43")
 	)
 	(label "Tune.nC7"
-		(at 199.39 160.02 0)
+		(at 247.65 46.99 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3092,7 +3092,7 @@
 		(uuid "f0c245e3-fdc8-4555-ac96-266d260c0aaa")
 	)
 	(label "Tune.C6"
-		(at 176.53 154.94 180)
+		(at 176.53 160.02 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3102,7 +3102,7 @@
 		(uuid "f13b398c-131a-46d7-86bf-82a182db99ff")
 	)
 	(label "Tune.atten12dB"
-		(at 102.87 132.08 180)
+		(at 102.87 127 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3112,7 +3112,7 @@
 		(uuid "f86e17e7-8cd3-447e-a2c2-684ec44cb356")
 	)
 	(label "Tune.atten6dB"
-		(at 102.87 90.17 180)
+		(at 102.87 95.25 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3122,7 +3122,7 @@
 		(uuid "fb974fb2-5a83-4122-afc1-ce0c4c3b2c83")
 	)
 	(label "Tune.C9"
-		(at 224.79 52.07 180)
+		(at 224.79 82.55 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3206,7 +3206,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "05a5acea-18cb-415c-b985-831173355b66")
-		(property "Reference" "#PWR02002"
+		(property "Reference" "#PWR02003"
 			(at 40.64 40.64 0)
 			(effects
 				(font
@@ -3257,7 +3257,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02002")
+					(reference "#PWR02003")
 					(unit 1)
 				)
 			)
@@ -3273,7 +3273,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1abc4208-b179-4113-95b7-42d8f83fc975")
-		(property "Reference" "#PWR02001"
+		(property "Reference" "#PWR02002"
 			(at 35.56 90.17 0)
 			(effects
 				(font
@@ -3324,7 +3324,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02001")
+					(reference "#PWR02002")
 					(unit 1)
 				)
 			)
@@ -3340,7 +3340,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1c49196a-6936-4319-9962-d0351fe8f427")
-		(property "Reference" "#PWR02012"
+		(property "Reference" "#PWR02016"
 			(at 187.96 39.37 0)
 			(effects
 				(font
@@ -3390,7 +3390,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02012")
+					(reference "#PWR02016")
 					(unit 1)
 				)
 			)
@@ -3406,7 +3406,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1df6079f-ede1-4b40-98ce-fed585494ac0")
-		(property "Reference" "#PWR02017"
+		(property "Reference" "#PWR02008"
 			(at 114.3 82.55 0)
 			(effects
 				(font
@@ -3456,7 +3456,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02017")
+					(reference "#PWR02008")
 					(unit 1)
 				)
 			)
@@ -3472,7 +3472,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "207956c0-3e47-4783-9ede-356fec2c1984")
-		(property "Reference" "#PWR02016"
+		(property "Reference" "#PWR02006"
 			(at 102.87 87.63 0)
 			(effects
 				(font
@@ -3523,7 +3523,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02016")
+					(reference "#PWR02006")
 					(unit 1)
 				)
 			)
@@ -3539,7 +3539,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "23b30418-5702-4a3a-9305-be3d266114d7")
-		(property "Reference" "U2009"
+		(property "Reference" "U2007"
 			(at 190.1033 144.78 0)
 			(effects
 				(font
@@ -3605,7 +3605,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "U2009")
+					(reference "U2007")
 					(unit 1)
 				)
 			)
@@ -3977,7 +3977,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "35235419-15da-4fec-a847-1f46e58f6745")
-		(property "Reference" "#PWR02028"
+		(property "Reference" "#PWR02022"
 			(at 187.96 147.32 0)
 			(effects
 				(font
@@ -4027,7 +4027,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02028")
+					(reference "#PWR02022")
 					(unit 1)
 				)
 			)
@@ -4043,7 +4043,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3e345c90-62a0-47c4-9359-44c10ef71d3a")
-		(property "Reference" "#PWR02026"
+		(property "Reference" "#PWR02021"
 			(at 187.96 139.7 0)
 			(effects
 				(font
@@ -4094,7 +4094,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02026")
+					(reference "#PWR02021")
 					(unit 1)
 				)
 			)
@@ -4110,7 +4110,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "47c0ae01-2b9c-4917-92a1-2436f0c9c96e")
-		(property "Reference" "#PWR02030"
+		(property "Reference" "#PWR02024"
 			(at 224.79 44.45 0)
 			(effects
 				(font
@@ -4161,7 +4161,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02030")
+					(reference "#PWR02024")
 					(unit 1)
 				)
 			)
@@ -4177,7 +4177,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "510c403b-f76d-4f96-b0c7-099314145b67")
-		(property "Reference" "U2005"
+		(property "Reference" "U2002"
 			(at 116.4433 80.01 0)
 			(effects
 				(font
@@ -4243,7 +4243,7 @@
 		(instances
 			(project ""
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "U2005")
+					(reference "U2002")
 					(unit 1)
 				)
 			)
@@ -4259,7 +4259,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "518f93f4-0a34-4ef4-9b50-757f99f374bd")
-		(property "Reference" "#PWR02014"
+		(property "Reference" "#PWR02001"
 			(at 35.56 80.01 0)
 			(effects
 				(font
@@ -4309,7 +4309,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02014")
+					(reference "#PWR02001")
 					(unit 1)
 				)
 			)
@@ -4325,7 +4325,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "54303d7d-4b58-43dc-af31-0a176c752216")
-		(property "Reference" "#PWR02032"
+		(property "Reference" "#PWR02026"
 			(at 236.22 39.37 0)
 			(effects
 				(font
@@ -4375,7 +4375,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02032")
+					(reference "#PWR02026")
 					(unit 1)
 				)
 			)
@@ -4746,7 +4746,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5a141949-5aa4-4ddd-a22b-4953cf121651")
-		(property "Reference" "C2009"
+		(property "Reference" "C2007"
 			(at 178.816 143.764 0)
 			(effects
 				(font
@@ -5087,7 +5087,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "C2009")
+					(reference "C2007")
 					(unit 1)
 				)
 			)
@@ -5103,7 +5103,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "62011eb2-0ba1-45b2-9b55-0fbe085cc1ea")
-		(property "Reference" "#PWR02013"
+		(property "Reference" "#PWR02017"
 			(at 187.96 67.31 0)
 			(effects
 				(font
@@ -5154,7 +5154,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02013")
+					(reference "#PWR02017")
 					(unit 1)
 				)
 			)
@@ -5170,7 +5170,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "641c8e28-2775-4f98-9f03-1dc876805f1b")
-		(property "Reference" "#PWR02022"
+		(property "Reference" "#PWR02019"
 			(at 187.96 102.87 0)
 			(effects
 				(font
@@ -5221,7 +5221,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02022")
+					(reference "#PWR02019")
 					(unit 1)
 				)
 			)
@@ -5237,7 +5237,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "68e9c127-1808-47f2-b1b7-29c35e69a1dc")
-		(property "Reference" "#PWR02020"
+		(property "Reference" "#PWR02011"
 			(at 114.3 147.32 0)
 			(effects
 				(font
@@ -5288,7 +5288,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02020")
+					(reference "#PWR02011")
 					(unit 1)
 				)
 			)
@@ -5303,7 +5303,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "70fdcc51-42ad-46d7-87da-4c6e55f016aa")
-		(property "Reference" "C2008"
+		(property "Reference" "C2006"
 			(at 178.816 108.204 0)
 			(effects
 				(font
@@ -5644,7 +5644,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "C2008")
+					(reference "C2006")
 					(unit 1)
 				)
 			)
@@ -5660,7 +5660,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7561bc2a-1268-4c6a-b04e-8f3df48e3fe5")
-		(property "Reference" "#PWR02018"
+		(property "Reference" "#PWR02007"
 			(at 102.87 124.46 0)
 			(effects
 				(font
@@ -5711,7 +5711,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02018")
+					(reference "#PWR02007")
 					(unit 1)
 				)
 			)
@@ -5727,7 +5727,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8691689d-f3bd-42fa-85a4-cdae065b2874")
-		(property "Reference" "#PWR02019"
+		(property "Reference" "#PWR02010"
 			(at 114.3 119.38 0)
 			(effects
 				(font
@@ -5777,7 +5777,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02019")
+					(reference "#PWR02010")
 					(unit 1)
 				)
 			)
@@ -5793,7 +5793,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8b9fc703-7da1-445e-a1c0-6bf3dabe1d9d")
-		(property "Reference" "#PWR02003"
+		(property "Reference" "#PWR02004"
 			(at 52.07 35.56 0)
 			(effects
 				(font
@@ -5843,7 +5843,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02003")
+					(reference "#PWR02004")
 					(unit 1)
 				)
 			)
@@ -6240,7 +6240,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8df9a9e0-63de-42ba-adef-d5daf50f636a")
-		(property "Reference" "U2007"
+		(property "Reference" "U2005"
 			(at 190.1033 72.39 0)
 			(effects
 				(font
@@ -6306,7 +6306,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "U2007")
+					(reference "U2005")
 					(unit 1)
 				)
 			)
@@ -6321,7 +6321,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8e0fc651-428f-4470-bcc8-f9041587e3fe")
-		(property "Reference" "C2005"
+		(property "Reference" "C2002"
 			(at 105.156 78.994 0)
 			(effects
 				(font
@@ -6662,7 +6662,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "C2005")
+					(reference "C2002")
 					(unit 1)
 				)
 			)
@@ -6678,7 +6678,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9284a130-9c60-4e35-9029-962717c1729f")
-		(property "Reference" "#PWR02034"
+		(property "Reference" "#PWR02028"
 			(at 236.22 74.93 0)
 			(effects
 				(font
@@ -6728,7 +6728,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02034")
+					(reference "#PWR02028")
 					(unit 1)
 				)
 			)
@@ -6744,7 +6744,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "93b24b9d-2d19-4d48-b42e-88001290376c")
-		(property "Reference" "#PWR02021"
+		(property "Reference" "#PWR02013"
 			(at 176.53 80.01 0)
 			(effects
 				(font
@@ -6795,7 +6795,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02021")
+					(reference "#PWR02013")
 					(unit 1)
 				)
 			)
@@ -6811,7 +6811,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "95cca0d0-93e3-43ac-8df2-2495254476fe")
-		(property "Reference" "#PWR02031"
+		(property "Reference" "#PWR02025"
 			(at 224.79 80.01 0)
 			(effects
 				(font
@@ -6862,7 +6862,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02031")
+					(reference "#PWR02025")
 					(unit 1)
 				)
 			)
@@ -6878,7 +6878,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "977080fc-083a-43b0-b40f-2f8697573dab")
-		(property "Reference" "#PWR02024"
+		(property "Reference" "#PWR02014"
 			(at 176.53 116.84 0)
 			(effects
 				(font
@@ -6929,7 +6929,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02024")
+					(reference "#PWR02014")
 					(unit 1)
 				)
 			)
@@ -6944,7 +6944,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9d5c6f6f-1a4c-4767-bb31-e3264c72c09a")
-		(property "Reference" "C2006"
+		(property "Reference" "C2003"
 			(at 105.156 115.824 0)
 			(effects
 				(font
@@ -7285,7 +7285,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "C2006")
+					(reference "C2003")
 					(unit 1)
 				)
 			)
@@ -7301,7 +7301,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9df51834-0063-4263-ab54-95834a361736")
-		(property "Reference" "U2008"
+		(property "Reference" "U2006"
 			(at 190.1033 109.22 0)
 			(effects
 				(font
@@ -7367,7 +7367,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "U2008")
+					(reference "U2006")
 					(unit 1)
 				)
 			)
@@ -7383,7 +7383,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a04f7fc8-1cbf-423c-bae0-828f2421efad")
-		(property "Reference" "#PWR02033"
+		(property "Reference" "#PWR02027"
 			(at 236.22 67.31 0)
 			(effects
 				(font
@@ -7434,7 +7434,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02033")
+					(reference "#PWR02027")
 					(unit 1)
 				)
 			)
@@ -7449,7 +7449,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a51b01dd-a841-4ebc-89c2-38b3773632bd")
-		(property "Reference" "C2010"
+		(property "Reference" "C2008"
 			(at 227.076 35.814 0)
 			(effects
 				(font
@@ -7790,7 +7790,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "C2010")
+					(reference "C2008")
 					(unit 1)
 				)
 			)
@@ -7805,7 +7805,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a8cbbf7f-4b4c-4951-9863-5eb9ebf1134f")
-		(property "Reference" "C2011"
+		(property "Reference" "C2009"
 			(at 227.076 71.374 0)
 			(effects
 				(font
@@ -8146,7 +8146,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "C2011")
+					(reference "C2009")
 					(unit 1)
 				)
 			)
@@ -8162,7 +8162,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aa8c10d2-8be4-4ec3-92a8-e48a9940507f")
-		(property "Reference" "#PWR02025"
+		(property "Reference" "#PWR02020"
 			(at 187.96 111.76 0)
 			(effects
 				(font
@@ -8212,7 +8212,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02025")
+					(reference "#PWR02020")
 					(unit 1)
 				)
 			)
@@ -8228,7 +8228,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "aaa21e69-d9a6-472a-ac30-12873d1f5219")
-		(property "Reference" "U2010"
+		(property "Reference" "U2008"
 			(at 238.3633 36.83 0)
 			(effects
 				(font
@@ -8294,7 +8294,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "U2010")
+					(reference "U2008")
 					(unit 1)
 				)
 			)
@@ -8310,7 +8310,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b2ac8b68-4f8a-4dc3-8725-4fa82e4e869e")
-		(property "Reference" "#PWR02027"
+		(property "Reference" "#PWR02015"
 			(at 176.53 152.4 0)
 			(effects
 				(font
@@ -8361,7 +8361,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02027")
+					(reference "#PWR02015")
 					(unit 1)
 				)
 			)
@@ -8377,7 +8377,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "bbee8c8c-341e-4e82-b2c7-80e524dbdf69")
-		(property "Reference" "#PWR02015"
+		(property "Reference" "#PWR02009"
 			(at 114.3 110.49 0)
 			(effects
 				(font
@@ -8428,7 +8428,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02015")
+					(reference "#PWR02009")
 					(unit 1)
 				)
 			)
@@ -8444,7 +8444,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c7701598-c88f-4535-9ec6-d01f9297d330")
-		(property "Reference" "#PWR02004"
+		(property "Reference" "#PWR02005"
 			(at 55.88 100.33 0)
 			(effects
 				(font
@@ -8495,7 +8495,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02004")
+					(reference "#PWR02005")
 					(unit 1)
 				)
 			)
@@ -8511,7 +8511,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cd3b939d-1c0a-4aef-8519-23ef9fefee3c")
-		(property "Reference" "#PWR02011"
+		(property "Reference" "#PWR02012"
 			(at 176.53 44.45 0)
 			(effects
 				(font
@@ -8562,7 +8562,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02011")
+					(reference "#PWR02012")
 					(unit 1)
 				)
 			)
@@ -8578,7 +8578,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cfd74030-59a2-4694-8de8-5077c4e3bfa4")
-		(property "Reference" "U2006"
+		(property "Reference" "U2003"
 			(at 116.4433 116.84 0)
 			(effects
 				(font
@@ -8644,7 +8644,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "U2006")
+					(reference "U2003")
 					(unit 1)
 				)
 			)
@@ -8660,7 +8660,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cfe8e0c9-94b6-4977-97c8-7bc2c18836db")
-		(property "Reference" "#PWR02035"
+		(property "Reference" "#PWR02029"
 			(at 236.22 102.87 0)
 			(effects
 				(font
@@ -8711,7 +8711,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02035")
+					(reference "#PWR02029")
 					(unit 1)
 				)
 			)
@@ -8727,7 +8727,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e166c789-efca-47a9-a869-94575e0f1aa9")
-		(property "Reference" "U2011"
+		(property "Reference" "U2009"
 			(at 238.3633 72.39 0)
 			(effects
 				(font
@@ -8793,7 +8793,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "U2011")
+					(reference "U2009")
 					(unit 1)
 				)
 			)
@@ -8891,7 +8891,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e6a28442-3cf8-4a1f-868c-8fb44f600e8b")
-		(property "Reference" "#PWR02023"
+		(property "Reference" "#PWR02018"
 			(at 187.96 74.93 0)
 			(effects
 				(font
@@ -8941,7 +8941,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02023")
+					(reference "#PWR02018")
 					(unit 1)
 				)
 			)
@@ -8957,7 +8957,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "eaeffd11-37c0-4f57-9fc9-e690ad76e281")
-		(property "Reference" "#PWR02029"
+		(property "Reference" "#PWR02023"
 			(at 187.96 175.26 0)
 			(effects
 				(font
@@ -9008,7 +9008,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "#PWR02029")
+					(reference "#PWR02023")
 					(unit 1)
 				)
 			)
@@ -9023,7 +9023,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ec16373d-42c0-4d25-bd14-f5846c71fc3f")
-		(property "Reference" "C2007"
+		(property "Reference" "C2005"
 			(at 178.816 71.374 0)
 			(effects
 				(font
@@ -9364,7 +9364,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
-					(reference "C2007")
+					(reference "C2005")
 					(unit 1)
 				)
 			)

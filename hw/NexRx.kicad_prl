@@ -3,8 +3,23 @@
     "active_layer": 0,
     "active_layer_preset": "",
     "auto_track_width": false,
-    "hidden_netclasses": [],
-    "hidden_nets": [],
+    "hidden_netclasses": [
+      "GND",
+      "Power"
+    ],
+    "hidden_nets": [
+      "+3.3V-ON",
+      "+3.3VA",
+      "+5VA",
+      "VBUS",
+      "+3.3V",
+      "+3.3VFPGAIO",
+      "+5.7V",
+      "GND",
+      "+VFPGACORE",
+      "Net-(U1201-SW)",
+      "Net-(U1202-SW)"
+    ],
     "high_contrast_mode": 0,
     "net_color_mode": 2,
     "opacity": {
@@ -20,13 +35,13 @@
       "footprints": true,
       "graphics": true,
       "keepouts": false,
-      "lockedItems": true,
+      "lockedItems": false,
       "otherItems": true,
       "pads": true,
       "text": true,
       "tracks": true,
       "vias": true,
-      "zones": true
+      "zones": false
     },
     "visible_items": [
       "vias",

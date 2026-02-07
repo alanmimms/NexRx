@@ -1,4 +1,4 @@
-27309542605969141
+27313090349512834
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71645,6 +71645,13 @@ Integrated Circuit
 13
 13
 Library
+SON65P300X300X100-9N-D
+DRB0008J _2022
+Integrated Circuit
+0
+9
+9
+Library
 SOP50P640X120-39N
 38 lead tssop
 Integrated Circuit
@@ -71676,6 +71683,13 @@ Library
 SOT65P220X110-6N
 6-Pin SC-70
 Switch
+0
+6
+6
+Library
+SOT95P280X145-6N
+DBV0006A
+Integrated Circuit
 0
 6
 6
