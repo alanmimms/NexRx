@@ -16483,15 +16483,15 @@
 	(footprint "Capacitor_SMD:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "12bf6de9-137f-478d-b666-850326dd20a2")
-		(at -19.67 -260.72 -90)
+		(at -17.59 -264.24)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "C1213"
-			(at 0 -1.16 270)
+			(at 0 -1.16 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(hide yes)
-			(uuid "08fc1571-1274-4b33-8bde-53b00db03f7e")
+			(uuid "a84ec0ea-1ccb-4cbf-b1cf-9b8752ab64fc")
 			(effects
 				(font
 					(size 1 0.8)
@@ -16500,9 +16500,9 @@
 			)
 		)
 		(property "Value" "1uF"
-			(at 0 1.16 90)
+			(at 0 1.16 0)
 			(layer "F.Fab")
-			(uuid "3d4fe30c-9fd5-49ea-aae6-9f8a995df666")
+			(uuid "fb8d3a4c-67e0-4b95-8fce-4788b9a5ac51")
 			(effects
 				(font
 					(size 1 1)
@@ -16511,10 +16511,10 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 0 0 90)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "8da2ee31-81c3-43bd-ba60-5d623c4b32ce")
+			(uuid "994bed80-2179-4d00-9ee4-b3aa56b79bd0")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16523,10 +16523,10 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 0 0 90)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "9da416ae-497e-4eed-857e-94b1ea2b09aa")
+			(uuid "7a788d0e-fb65-45a7-a8c3-d08ece25d09c")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16535,7 +16535,7 @@
 			)
 		)
 		(property "cap-type" "X5R"
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16548,7 +16548,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16561,7 +16561,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16574,7 +16574,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16587,7 +16587,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16600,7 +16600,7 @@
 			)
 		)
 		(property "Mfg" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16613,7 +16613,7 @@
 			)
 		)
 		(property "MfgPart" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16626,7 +16626,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16639,7 +16639,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16652,7 +16652,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16665,7 +16665,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16678,7 +16678,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16691,7 +16691,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16704,7 +16704,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16717,7 +16717,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16730,7 +16730,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16743,7 +16743,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16756,7 +16756,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16769,7 +16769,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16782,7 +16782,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16795,7 +16795,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16808,7 +16808,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16821,7 +16821,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16834,7 +16834,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16847,7 +16847,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16860,7 +16860,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16873,7 +16873,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16886,7 +16886,7 @@
 			)
 		)
 		(property "working-voltage" "25V"
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16899,7 +16899,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "Murata"
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16912,7 +16912,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16925,7 +16925,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16938,7 +16938,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16951,7 +16951,7 @@
 			)
 		)
 		(property "label" ""
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -16969,16 +16969,6 @@
 		(sheetfile "power.kicad_sch")
 		(attr smd)
 		(fp_line
-			(start -0.107836 0.36)
-			(end 0.107836 0.36)
-			(stroke
-				(width 0.15)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "7a58cb24-b889-4ce1-98a7-043812053df6")
-		)
-		(fp_line
 			(start -0.107836 -0.36)
 			(end 0.107836 -0.36)
 			(stroke
@@ -16989,24 +16979,14 @@
 			(uuid "0a4fb3a0-445d-421c-a26f-0f9577e24d24")
 		)
 		(fp_line
-			(start -0.91 0.46)
-			(end -0.91 -0.46)
+			(start -0.107836 0.36)
+			(end 0.107836 0.36)
 			(stroke
-				(width 0.05)
+				(width 0.15)
 				(type solid)
 			)
-			(layer "F.CrtYd")
-			(uuid "54fae255-5570-4c80-a1e1-047939b87cb8")
-		)
-		(fp_line
-			(start 0.91 0.46)
-			(end -0.91 0.46)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "3b36b981-850f-4ac3-b3c3-8e10703d5a8c")
+			(layer "F.SilkS")
+			(uuid "7a58cb24-b889-4ce1-98a7-043812053df6")
 		)
 		(fp_line
 			(start -0.91 -0.46)
@@ -17019,6 +16999,16 @@
 			(uuid "e3c858c4-0c09-480c-9d59-92d977ae5dbc")
 		)
 		(fp_line
+			(start -0.91 0.46)
+			(end -0.91 -0.46)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "54fae255-5570-4c80-a1e1-047939b87cb8")
+		)
+		(fp_line
 			(start 0.91 -0.46)
 			(end 0.91 0.46)
 			(stroke
@@ -17029,24 +17019,14 @@
 			(uuid "f96377f8-d692-437a-b15b-3f208e7e15c1")
 		)
 		(fp_line
-			(start -0.5 0.25)
-			(end -0.5 -0.25)
+			(start 0.91 0.46)
+			(end -0.91 0.46)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "47215aa9-c5bd-4103-adab-b4d05d30c6c3")
-		)
-		(fp_line
-			(start 0.5 0.25)
-			(end -0.5 0.25)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "3204c56a-4227-4dac-8218-c1fee213bf8c")
+			(layer "F.CrtYd")
+			(uuid "3b36b981-850f-4ac3-b3c3-8e10703d5a8c")
 		)
 		(fp_line
 			(start -0.5 -0.25)
@@ -17059,6 +17039,16 @@
 			(uuid "1ade86e2-b592-4ebc-89a4-4e6477f8e041")
 		)
 		(fp_line
+			(start -0.5 0.25)
+			(end -0.5 -0.25)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "47215aa9-c5bd-4103-adab-b4d05d30c6c3")
+		)
+		(fp_line
 			(start 0.5 -0.25)
 			(end 0.5 0.25)
 			(stroke
@@ -17068,8 +17058,18 @@
 			(layer "F.Fab")
 			(uuid "4ca824e2-6ce8-4f57-ab60-bca7630943e4")
 		)
+		(fp_line
+			(start 0.5 0.25)
+			(end -0.5 0.25)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "3204c56a-4227-4dac-8218-c1fee213bf8c")
+		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 270)
+			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "949fda62-5406-4905-a80c-7373d41bdac9")
@@ -17081,7 +17081,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.48 0 270)
+			(at -0.48 0)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -17090,7 +17090,7 @@
 			(uuid "980eb18c-8970-4569-af38-c03a9a737c4f")
 		)
 		(pad "2" smd roundrect
-			(at 0.48 0 270)
+			(at 0.48 0)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -24393,7 +24393,7 @@
 	(footprint "Capacitor_SMD:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "2135e299-915d-4923-842f-2a3afc2c800d")
-		(at -19.585 -262.83)
+		(at -23.99 -264.24 180)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "C1216"
@@ -24444,7 +24444,7 @@
 			)
 		)
 		(property "cap-type" "X5R"
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24457,7 +24457,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24470,7 +24470,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24483,7 +24483,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24496,7 +24496,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24509,7 +24509,7 @@
 			)
 		)
 		(property "Mfg" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24522,7 +24522,7 @@
 			)
 		)
 		(property "MfgPart" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24535,7 +24535,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24548,7 +24548,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24561,7 +24561,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24574,7 +24574,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24587,7 +24587,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24600,7 +24600,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24613,7 +24613,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24626,7 +24626,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24639,7 +24639,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24652,7 +24652,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24665,7 +24665,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24678,7 +24678,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24691,7 +24691,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24704,7 +24704,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24717,7 +24717,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24730,7 +24730,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24743,7 +24743,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24756,7 +24756,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24769,7 +24769,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24782,7 +24782,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24795,7 +24795,7 @@
 			)
 		)
 		(property "working-voltage" "25V"
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24808,7 +24808,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "Murata"
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24821,7 +24821,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24834,7 +24834,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24847,7 +24847,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24860,7 +24860,7 @@
 			)
 		)
 		(property "label" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24878,16 +24878,6 @@
 		(sheetfile "power.kicad_sch")
 		(attr smd)
 		(fp_line
-			(start -0.107836 -0.36)
-			(end 0.107836 -0.36)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "d061b8a8-e565-4c66-886e-b38fe05487e2")
-		)
-		(fp_line
 			(start -0.107836 0.36)
 			(end 0.107836 0.36)
 			(stroke
@@ -24896,6 +24886,16 @@
 			)
 			(layer "F.SilkS")
 			(uuid "17957be4-c870-408b-9c77-021f509be397")
+		)
+		(fp_line
+			(start -0.107836 -0.36)
+			(end 0.107836 -0.36)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "d061b8a8-e565-4c66-886e-b38fe05487e2")
 		)
 		(fp_rect
 			(start -0.91 -0.46)
@@ -24931,7 +24931,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.48 0)
+			(at -0.48 0 180)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -24940,7 +24940,7 @@
 			(uuid "d8813258-7952-44a6-bd99-f454a7e7d605")
 		)
 		(pad "2" smd roundrect
-			(at 0.48 0)
+			(at 0.48 0 180)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -59990,7 +59990,7 @@
 	(footprint "Library:SON65P300X300X100-9N-D"
 		(layer "F.Cu")
 		(uuid "53de8e0e-cbf1-49f5-98de-015889af8357")
-		(at -23.67 -262.715)
+		(at -20.77 -262.715)
 		(descr "DRB0008J _2022")
 		(tags "Integrated Circuit")
 		(property "Reference" "U1207"
@@ -69255,6 +69255,7 @@
 		(property "Reference" "C1302"
 			(at 0 -1.68 270)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "a762de24-763c-49d6-beb9-8bdb1ad3d13b")
 			(effects
 				(font
@@ -82901,6 +82902,7 @@
 		(property "Reference" "C1303"
 			(at 0 -1.43 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "75a9ba86-0dd5-4c75-bc91-4e15d9015a64")
 			(effects
 				(font
@@ -100496,11 +100498,11 @@
 	(footprint "Capacitor_SMD:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "87dadb3c-8787-449d-92a3-791e0caa2fbd")
-		(at -12.81 -259.505)
+		(at -7.82 -262.64 -90)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "C1217"
-			(at 0 -1.16 0)
+			(at 0 -1.16 90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "75e1094c-055e-4f63-83c6-9b954f9a86b9")
@@ -100512,7 +100514,7 @@
 			)
 		)
 		(property "Value" "1uF"
-			(at 0 1.16 0)
+			(at 0 1.16 90)
 			(layer "F.Fab")
 			(uuid "4feb4e68-2006-45e6-b301-2ff02a3bc3ee")
 			(effects
@@ -100523,7 +100525,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3fabbcf4-affd-4592-8940-9ff1162096f1")
@@ -100535,7 +100537,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "632bd8b0-6a03-4e5a-a98f-b5c8a4f3f6fe")
@@ -100547,7 +100549,7 @@
 			)
 		)
 		(property "cap-type" "X5R"
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100560,7 +100562,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100573,7 +100575,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100586,7 +100588,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100599,7 +100601,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100612,7 +100614,7 @@
 			)
 		)
 		(property "Mfg" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100625,7 +100627,7 @@
 			)
 		)
 		(property "MfgPart" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100638,7 +100640,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100651,7 +100653,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100664,7 +100666,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100677,7 +100679,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100690,7 +100692,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100703,7 +100705,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100716,7 +100718,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100729,7 +100731,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100742,7 +100744,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100755,7 +100757,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100768,7 +100770,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100781,7 +100783,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100794,7 +100796,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100807,7 +100809,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100820,7 +100822,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100833,7 +100835,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100846,7 +100848,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100859,7 +100861,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100872,7 +100874,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100885,7 +100887,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100898,7 +100900,7 @@
 			)
 		)
 		(property "working-voltage" "25V"
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100911,7 +100913,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "Murata"
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100924,7 +100926,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100937,7 +100939,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100950,7 +100952,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100963,7 +100965,7 @@
 			)
 		)
 		(property "label" ""
-			(at 0 0 0)
+			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -100981,16 +100983,6 @@
 		(sheetfile "power.kicad_sch")
 		(attr smd)
 		(fp_line
-			(start -0.107836 -0.36)
-			(end 0.107836 -0.36)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "f893ff76-1eb3-47f9-930f-d49fb3ad3ed3")
-		)
-		(fp_line
 			(start -0.107836 0.36)
 			(end 0.107836 0.36)
 			(stroke
@@ -100999,6 +100991,16 @@
 			)
 			(layer "F.SilkS")
 			(uuid "44384479-e8fe-4fb1-a9dd-d50670b8eb93")
+		)
+		(fp_line
+			(start -0.107836 -0.36)
+			(end 0.107836 -0.36)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "f893ff76-1eb3-47f9-930f-d49fb3ad3ed3")
 		)
 		(fp_rect
 			(start -0.91 -0.46)
@@ -101023,7 +101025,7 @@
 			(uuid "6f9c0bce-01ec-4591-92fa-f02c45f2dc65")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(uuid "f2c048b1-5d9e-44db-8c93-5fe76c228723")
 			(effects
@@ -101034,7 +101036,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.48 0)
+			(at -0.48 0 270)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -101043,7 +101045,7 @@
 			(uuid "7ab7ee7b-3877-4448-854c-6eade0e19479")
 		)
 		(pad "2" smd roundrect
-			(at 0.48 0)
+			(at 0.48 0 270)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -112561,7 +112563,7 @@
 	(footprint "Capacitor_SMD:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "97557408-4615-4cdf-98b8-d8fadf4ac74d")
-		(at -8.01 -263.655 -90)
+		(at -9.22 -259.96 -90)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "C1215"
@@ -119056,6 +119058,7 @@
 		(property "Reference" "C1309"
 			(at 0 -1.43 90)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "eb5b1d9c-2281-4ff9-91fb-ddc5ddd6c25e")
 			(effects
 				(font
@@ -121201,6 +121204,7 @@
 		(property "Reference" "C1305"
 			(at 0 -1.43 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "e6e0eb13-caa1-4ac1-8534-e59f02061a43")
 			(effects
 				(font
@@ -122778,6 +122782,7 @@
 		(property "Reference" "C1301"
 			(at 0 -1.16 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "1292a0dc-0a60-4cea-8991-8f739c4b5710")
 			(effects
 				(font
@@ -157431,6 +157436,7 @@
 		(property "Reference" "C1311"
 			(at 0 -1.43 270)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "f3f1c28a-1ce1-4f09-b5d4-0a076f959c15")
 			(effects
 				(font
@@ -165253,7 +165259,7 @@
 	(footprint "Library:SOT95P280X145-6N"
 		(layer "F.Cu")
 		(uuid "ef13d197-320b-4b2e-9276-ed75d93f4fd1")
-		(at -11.62 -262.79)
+		(at -10.47 -262.79)
 		(descr "DBV0006A")
 		(tags "Integrated Circuit")
 		(property "Reference" "U1206"
