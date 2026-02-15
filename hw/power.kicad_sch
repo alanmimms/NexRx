@@ -17102,7 +17102,7 @@
 				)
 			)
 		)
-		(property "Value" "USB C  power + USB2 data"
+		(property "Value" "pwr+data"
 			(at 73.66 143.51 0)
 			(effects
 				(font
