@@ -2077,7 +2077,7 @@
 		)
 		(uuid "ff4735f2-9e61-4c5c-ae0f-dbbf4a3a0679")
 	)
-	(label "Ctrl.qsdSCK"
+	(label "Ctrl.pgaSCK"
 		(at 105.41 86.36 180)
 		(effects
 			(font
@@ -2087,7 +2087,7 @@
 		)
 		(uuid "658b1eac-ae10-4390-b633-9114481f8ba4")
 	)
-	(label "Ctrl.qsdNSS"
+	(label "Ctrl.pgaNSS"
 		(at 105.41 68.58 180)
 		(effects
 			(font
@@ -2097,7 +2097,7 @@
 		)
 		(uuid "743d7b10-865d-49c6-9e98-1dffd78c0b7b")
 	)
-	(label "Ctrl.qsdMOSI"
+	(label "Ctrl.pgaMOSI"
 		(at 105.41 71.12 180)
 		(effects
 			(font
