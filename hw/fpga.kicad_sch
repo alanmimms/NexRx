@@ -3457,8 +3457,8 @@
 		)
 		(uuid "f58a08de-a121-4391-a66e-9aac60ce055a")
 	)
-	(hierarchical_label "fpgaTestInject"
-		(shape input)
+	(hierarchical_label "preselIn"
+		(shape output)
 		(at 86.36 77.47 180)
 		(effects
 			(font

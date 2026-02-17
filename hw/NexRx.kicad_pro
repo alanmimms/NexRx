@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": true,
         "zones": {
-          "min_clearance": 0.1
+          "min_clearance": 0.0
         }
       },
       "diff_pair_dimensions": [
@@ -144,7 +144,7 @@
         "min_resolved_spokes": 2,
         "min_silk_clearance": 0.15,
         "min_text_height": 1.0,
-        "min_text_thickness": 0.153,
+        "min_text_thickness": 0.15,
         "min_through_hole_diameter": 0.25,
         "min_track_width": 0.1,
         "min_via_annular_width": 0.15,
@@ -920,9 +920,6 @@
       "/FPGA/Ctrl{Ctrl}": [
         "rf50"
       ],
-      "/FPGA/fpgaTestInject": [
-        "rf200"
-      ],
       "/Power/Tx EER Envelope Buck-Boost/PA_SENSE": [
         "Power"
       ],
@@ -1045,6 +1042,9 @@
       ],
       "/Rx Front End/nBruene": [
         "rf50"
+      ],
+      "/Rx Front End/preselIn": [
+        "rf200"
       ],
       "/Rx Front End/rf200atten": [
         "rf200"
@@ -3796,6 +3796,18 @@
     },
     "netclass_patterns": [
       {
+        "netclass": "Default",
+        "pattern": "VBUS"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "Veer"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "/*/Ctrl.*"
+      },
+      {
         "netclass": "GND",
         "pattern": "GND*"
       },
@@ -3805,79 +3817,19 @@
       },
       {
         "netclass": "Power",
-        "pattern": "+5V"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "VBUS"
-      },
-      {
-        "netclass": "Rail-low-power",
-        "pattern": "+3.3VA"
+        "pattern": "+MC3VA"
       },
       {
         "netclass": "Power",
-        "pattern": "+6V"
+        "pattern": "+5.7V"
       },
       {
         "netclass": "Power",
-        "pattern": "FPGAVCORE"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "Veer"
-      },
-      {
-        "netclass": "Rail-low-power",
         "pattern": "+5VA"
       },
       {
-        "netclass": "power-lite",
-        "pattern": "+6V"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/*/Ctrl.*"
-      },
-      {
-        "netclass": "power-lite",
-        "pattern": "EthVDDA"
-      },
-      {
-        "netclass": "Rail-low-power",
-        "pattern": "/FPGA/VPP2V5"
-      },
-      {
         "netclass": "Power",
-        "pattern": "+12V"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "VUSBPD"
-      },
-      {
-        "netclass": "rf200",
-        "pattern": "/Rx Front End/RxZ200"
-      },
-      {
-        "netclass": "rf200",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckIn"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+3.3V-ON"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+3.3VA"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+VFPGACORE"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+VFPGAAUX"
+        "pattern": "VBUS"
       },
       {
         "netclass": "Power",
@@ -3885,11 +3837,55 @@
       },
       {
         "netclass": "Power",
-        "pattern": "VBUS"
+        "pattern": "+VFPGAAUX"
       },
       {
         "netclass": "Power",
+        "pattern": "+VFPGACORE"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+3.3VA"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+3.3V-ON"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "FPGAVCORE"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+5V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+6V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VUSBPD"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+12V"
+      },
+      {
+        "netclass": "Rail-low-power",
+        "pattern": "/FPGA/VPP2V5"
+      },
+      {
+        "netclass": "Rail-low-power",
         "pattern": "+5VA"
+      },
+      {
+        "netclass": "Rail-low-power",
+        "pattern": "+3.3VA"
+      },
+      {
+        "netclass": "Rail-low-power",
+        "pattern": "/microcontroller/UC3VA"
       },
       {
         "netclass": "diff100",
@@ -3901,6 +3897,14 @@
       },
       {
         "netclass": "power-lite",
+        "pattern": "EthVDDA"
+      },
+      {
+        "netclass": "power-lite",
+        "pattern": "+6V"
+      },
+      {
+        "netclass": "power-lite",
         "pattern": "+1V65bias"
       },
       {
@@ -3908,16 +3912,12 @@
         "pattern": "+2V5bias"
       },
       {
-        "netclass": "Power",
-        "pattern": "+5.7V"
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckIn"
       },
       {
-        "netclass": "Rail-low-power",
-        "pattern": "/microcontroller/UC3VA"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+MC3VA"
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/RxZ200"
       }
     ]
   },
