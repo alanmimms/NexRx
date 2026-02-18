@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": true,
         "zones": {
-          "min_clearance": 0.0
+          "min_clearance": 0.1
         }
       },
       "diff_pair_dimensions": [
@@ -68,7 +68,104 @@
           "width": 0.225298
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        [
+          "clearance|-18320000|-295740000|8715ee77-f033-45ae-acf8-3ceac8713188|2b487d7b-fb48-49f7-9a98-c6b81f84dec2",
+          ""
+        ],
+        [
+          "clearance|-26120000|-295740000|7af94d3b-f9ca-4d0b-b2c4-57c37d8f1c69|209813d3-1952-43c9-bb34-e04b45a3f7d8",
+          ""
+        ],
+        [
+          "clearance|-26220000|-287840000|543b902d-8094-4339-b204-ea56b0f96e77|8588ae31-3fb7-4f7c-b814-d2a8c008af8e",
+          ""
+        ],
+        [
+          "clearance|-28275001|-316965001|df48d871-879c-49c4-adbc-9c719ad34f8b|62406c04-8501-4ea9-be75-9ff30f05f38c",
+          ""
+        ],
+        [
+          "clearance|-28469937|-315364999|a591190b-9e83-42a5-adfb-66b4c1cab559|71e75e71-c8c0-4948-a4cd-20dbca3ab793",
+          ""
+        ],
+        [
+          "clearance|-29364999|-315164999|3cae07c7-1778-4d92-8d7a-55217b492125|ed924b8d-ddce-4c50-97ba-a6a12a6cac82",
+          ""
+        ],
+        [
+          "clearance|-29364999|-316765001|f5d93dfd-c478-4f24-88a1-197885fa3bca|26691b3e-e585-4df4-9e8e-2fa8aa10ece7",
+          ""
+        ],
+        [
+          "clearance|-3975064|-316955001|f60bdad4-371b-4f94-a09e-3826f30cacf5|a0d0617b-3c8a-4947-aa59-2066e3548012",
+          ""
+        ],
+        [
+          "clearance|-4170000|-315354999|8aa63174-7700-4106-adf3-5c41dc1f11f9|f4f3f7c0-7a3d-4655-ba5e-721eecce8aaf",
+          ""
+        ],
+        [
+          "clearance|-5065062|-315154999|3c13bd04-6ba8-428a-b6ec-7df5f0733fde|ea475eb1-7c33-400e-a1a9-5c668781a245",
+          ""
+        ],
+        [
+          "clearance|-5065062|-316755001|d51da6c0-2714-4043-a2d4-1bbf8109d94d|50ce030a-e884-4b55-87ab-9cd1ca961e7f",
+          ""
+        ],
+        [
+          "clearance|-53200001|-316965001|8f447ba0-7b1c-4fcb-ae47-5fcb458e8671|57953aa6-3680-4423-80f2-e2c32846b241",
+          ""
+        ],
+        [
+          "clearance|-53394937|-315364999|2f5d17a3-4430-475c-8f60-c51f5497642d|03b053c0-a251-4bbf-b76f-cf0f1210eb2e",
+          ""
+        ],
+        [
+          "clearance|-54289999|-315164999|25f7d69a-8806-4fc0-9944-58e0dce45340|3f1048fb-6ad2-411a-8936-de653ceeb31e",
+          ""
+        ],
+        [
+          "clearance|-54289999|-316765001|cf3507f5-96ae-436f-b37e-e68504e2c804|c8fee76d-784f-4a46-9d75-91056400a0e5",
+          ""
+        ],
+        [
+          "clearance|12000000|-346295000|3f9f5c8f-9856-4d10-b414-6ce9a1389a82|0cd730dc-4aac-464f-9869-960b7e2e6d61",
+          ""
+        ],
+        [
+          "clearance|12492500|-316587500|ba246405-c601-4acb-a014-c751c24d55bc|a4cb67ee-5347-4d6c-9649-18dc1d535792",
+          ""
+        ],
+        [
+          "clearance|12892500|-320812500|50610d31-2ed3-489f-9df1-b9f9295e8266|9b47a350-752d-47ca-8892-bd94a324d7a2",
+          ""
+        ],
+        [
+          "clearance|13542500|-320812500|d326c3dc-d100-41e7-ac19-54afa0f4979c|50610d31-2ed3-489f-9df1-b9f9295e8266",
+          ""
+        ],
+        [
+          "clearance|13792500|-316587500|0b342ed4-3ab3-4b53-860c-8517ff83fc62|77ea0d84-d57c-4fc5-9036-e4e3373ae10c",
+          ""
+        ],
+        [
+          "clearance|21780000|-297452500|b684ce1e-a167-4c60-978d-c2e54519c39d|563ac795-0650-463b-ac31-2277e74c1b48",
+          ""
+        ],
+        [
+          "clearance|21780000|-297952500|f6ebe106-34ed-4dbb-932b-9564da2e06d3|b684ce1e-a167-4c60-978d-c2e54519c39d",
+          ""
+        ],
+        [
+          "clearance|23205000|-297127500|81319aaa-4021-4158-8943-bebba7183567|73b05f80-0d23-426d-a717-58e87689bdc0",
+          ""
+        ],
+        [
+          "clearance|23205000|-297627500|73b05f80-0d23-426d-a717-58e87689bdc0|1ad28e82-6822-48ef-a948-95e17bcff639",
+          ""
+        ]
+      ],
       "meta": {
         "version": 2
       },
@@ -149,7 +246,7 @@
         "min_track_width": 0.1,
         "min_via_annular_width": 0.15,
         "min_via_diameter": 0.25,
-        "solder_mask_to_copper_clearance": 0.0,
+        "solder_mask_to_copper_clearance": 0.005,
         "use_height_for_length_calcs": true
       },
       "teardrop_options": [
@@ -919,6 +1016,9 @@
       ],
       "/FPGA/Ctrl{Ctrl}": [
         "rf50"
+      ],
+      "/FPGA/preselIn": [
+        "rf200"
       ],
       "/Power/Tx EER Envelope Buck-Boost/PA_SENSE": [
         "Power"

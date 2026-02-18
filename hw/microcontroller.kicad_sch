@@ -5765,10 +5765,6 @@
 		(uuid "cada5319-4a78-44e3-b7d7-e3a1b6e76e6b")
 	)
 	(no_connect
-		(at 57.15 59.69)
-		(uuid "cd509d31-fc3a-4eb5-828e-85b41fbc1c2c")
-	)
-	(no_connect
 		(at 57.15 77.47)
 		(uuid "d0f65067-301e-4900-a90b-e7f6a99c6c78")
 	)
@@ -6234,6 +6230,16 @@
 	)
 	(wire
 		(pts
+			(xy 55.88 59.69) (xy 57.15 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "26565e1d-7ab5-46e8-84a7-a4f927716bd9")
+	)
+	(wire
+		(pts
 			(xy 261.62 134.62) (xy 254 134.62)
 		)
 		(stroke
@@ -6394,6 +6400,16 @@
 	)
 	(wire
 		(pts
+			(xy 39.37 67.31) (xy 45.72 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "383c4b80-7e7a-41ed-b354-88186b6d8def")
+	)
+	(wire
+		(pts
 			(xy 181.61 74.93) (xy 177.8 74.93)
 		)
 		(stroke
@@ -6471,16 +6487,6 @@
 			(type default)
 		)
 		(uuid "3cefe96f-ca3b-4c99-9dfb-be13ec1ccb9d")
-	)
-	(wire
-		(pts
-			(xy 55.88 67.31) (xy 57.15 67.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3dbbf38d-fe32-4a75-94bf-cba0e7a3790f")
 	)
 	(wire
 		(pts
@@ -7674,6 +7680,16 @@
 	)
 	(wire
 		(pts
+			(xy 50.8 67.31) (xy 57.15 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ba3a09bb-e592-4bc9-94b5-34cdc7fa36ca")
+	)
+	(wire
+		(pts
 			(xy 153.67 76.2) (xy 153.67 74.93)
 		)
 		(stroke
@@ -8342,6 +8358,16 @@
 		)
 		(uuid "2735035e-eb58-48b7-aa0e-0d6bfb40a3a2")
 	)
+	(label "FPGA.DONE"
+		(at 55.88 59.69 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2b843eac-5e67-43b7-a56e-930b48e822be")
+	)
 	(label "usbDATA1"
 		(at 182.88 118.11 0)
 		(effects
@@ -8763,7 +8789,7 @@
 		(uuid "c1d0feaa-6474-4b90-8967-fa7d14667276")
 	)
 	(label "Ctrl.pgaNSS"
-		(at 55.88 67.31 180)
+		(at 39.37 67.31 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11291,6 +11317,108 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0213")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small_US")
+		(at 48.26 67.31 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2c2194c0-e06b-4e73-9d26-dc7217757f8e")
+		(property "Reference" "R212"
+			(at 47.498 65.278 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "22"
+			(at 48.26 69.596 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 48.26 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 48.26 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small US symbol"
+			(at 48.26 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 48.26 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 48.26 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Core" ""
+			(at 48.26 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "label" ""
+			(at 48.26 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d10ccafb-56ef-43b6-816f-e554166fcbd4")
+		)
+		(pin "2"
+			(uuid "845abe1f-265e-40bb-bc47-895c8eefa719")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
+					(reference "R212")
 					(unit 1)
 				)
 			)
