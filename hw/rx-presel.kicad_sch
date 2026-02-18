@@ -3859,6 +3859,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 86.36 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "7a2fa3c5-7bb4-42fe-a186-c9a1515fcf8c")
 		)
@@ -4273,7 +4282,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at 1029.87 97.79 0)
 			(effects
 				(font
@@ -4302,6 +4311,15 @@
 			)
 		)
 		(property "label" ""
+			(at 234.95 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 234.95 76.2 0)
 			(effects
 				(font
@@ -4682,6 +4700,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 53.34 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "13a43cdf-ec8d-4c5a-96bd-cd804bfde7b6")
 		)
@@ -4961,7 +4988,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -592.99 97.79 0)
 			(effects
 				(font
@@ -4990,6 +5017,15 @@
 			)
 		)
 		(property "label" ""
+			(at 201.93 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 201.93 76.2 90)
 			(effects
 				(font
@@ -5490,7 +5526,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -659.03 97.79 0)
 			(effects
 				(font
@@ -5519,6 +5555,15 @@
 			)
 		)
 		(property "label" ""
+			(at 135.89 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 135.89 76.2 90)
 			(effects
 				(font
@@ -5952,7 +5997,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -642.52 97.79 0)
 			(effects
 				(font
@@ -5981,6 +6026,15 @@
 			)
 		)
 		(property "label" ""
+			(at 152.4 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 152.4 76.2 90)
 			(effects
 				(font
@@ -6280,7 +6334,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -675.54 97.79 0)
 			(effects
 				(font
@@ -6309,6 +6363,15 @@
 			)
 		)
 		(property "label" ""
+			(at 119.38 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 119.38 76.2 90)
 			(effects
 				(font
@@ -6877,7 +6940,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -741.58 97.79 0)
 			(effects
 				(font
@@ -6906,6 +6969,15 @@
 			)
 		)
 		(property "label" ""
+			(at 53.34 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 53.34 76.2 90)
 			(effects
 				(font
@@ -7219,6 +7291,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 135.89 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "3ca14b53-1a25-4e78-8880-c34554c10d9f")
 		)
@@ -7504,6 +7585,15 @@
 			)
 		)
 		(property "label" ""
+			(at 168.91 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 168.91 102.87 0)
 			(effects
 				(font
@@ -7858,7 +7948,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -609.5 97.79 0)
 			(effects
 				(font
@@ -7887,6 +7977,15 @@
 			)
 		)
 		(property "label" ""
+			(at 185.42 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 185.42 76.2 90)
 			(effects
 				(font
@@ -8200,6 +8299,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 69.85 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "18731d9e-fe47-4e51-999f-aa8bb8254d51")
 		)
@@ -8485,6 +8593,15 @@
 			)
 		)
 		(property "label" ""
+			(at 201.93 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 201.93 102.87 0)
 			(effects
 				(font
@@ -8920,6 +9037,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 119.38 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "3dd08d67-3ded-40bf-9f19-eb09c21b65f4")
 		)
@@ -9199,7 +9325,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -626.01 97.79 0)
 			(effects
 				(font
@@ -9228,6 +9354,15 @@
 			)
 		)
 		(property "label" ""
+			(at 168.91 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 168.91 76.2 90)
 			(effects
 				(font
@@ -9639,6 +9774,15 @@
 			)
 		)
 		(property "label" ""
+			(at 234.95 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 234.95 101.6 0)
 			(effects
 				(font
@@ -10074,6 +10218,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 218.44 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "555c24d2-6110-4a90-bdeb-c5aff260f48f")
 		)
@@ -10353,7 +10506,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -576.48 97.79 0)
 			(effects
 				(font
@@ -10382,6 +10535,15 @@
 			)
 		)
 		(property "label" ""
+			(at 218.44 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 218.44 76.2 90)
 			(effects
 				(font
@@ -10681,7 +10843,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -708.56 97.79 0)
 			(effects
 				(font
@@ -10710,6 +10872,15 @@
 			)
 		)
 		(property "label" ""
+			(at 86.36 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 86.36 76.2 90)
 			(effects
 				(font
@@ -10987,6 +11158,15 @@
 			)
 		)
 		(property "label" ""
+			(at 234.95 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 234.95 111.76 0)
 			(effects
 				(font
@@ -11347,6 +11527,15 @@
 			)
 		)
 		(property "label" ""
+			(at 185.42 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 185.42 102.87 0)
 			(effects
 				(font
@@ -11768,7 +11957,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -692.05 97.79 0)
 			(effects
 				(font
@@ -11797,6 +11986,15 @@
 			)
 		)
 		(property "label" ""
+			(at 102.87 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 102.87 76.2 90)
 			(effects
 				(font
@@ -12096,7 +12294,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
+		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
 			(at -725.07 97.79 0)
 			(effects
 				(font
@@ -12125,6 +12323,15 @@
 			)
 		)
 		(property "label" ""
+			(at 69.85 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" "C53413616"
 			(at 69.85 76.2 90)
 			(effects
 				(font
@@ -12430,6 +12637,15 @@
 			)
 		)
 		(property "label" ""
+			(at 152.4 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 152.4 102.87 0)
 			(effects
 				(font
@@ -12857,6 +13073,15 @@
 			)
 		)
 		(property "label" ""
+			(at 102.87 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 102.87 102.87 0)
 			(effects
 				(font

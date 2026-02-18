@@ -2197,6 +2197,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 63.5 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a8ee6c0e-1386-46fe-a588-47c9a9662530")
 		)
@@ -2499,6 +2508,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 58.42 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fedac73d-e8f7-4bf7-8c19-e9c8f7f4bd87")
 		)
@@ -2750,6 +2768,15 @@
 		)
 		(property "label" ""
 			(at 76.2 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
+			(at 76.2 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3231,6 +3258,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 157.48 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4cdcf8cf-f058-4702-a540-6cfc66890201")
 		)
@@ -3532,6 +3568,15 @@
 			)
 		)
 		(property "label" ""
+			(at 165.1 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 165.1 95.25 0)
 			(effects
 				(font
@@ -3923,6 +3968,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 148.59 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c81ca51f-89c0-468b-b6f8-cdfa60138ae9")
 		)
@@ -4264,6 +4318,15 @@
 			)
 		)
 		(property "label" ""
+			(at 78.74 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 78.74 82.55 0)
 			(effects
 				(font
@@ -4678,6 +4741,15 @@
 				(hide yes)
 			)
 		)
+		(property "JCLPCBpn" ""
+			(at 55.88 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "3632f429-b548-42f5-a0b4-c6289ddf512c")
 		)
@@ -4979,6 +5051,15 @@
 			)
 		)
 		(property "label" ""
+			(at 138.43 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 138.43 95.25 0)
 			(effects
 				(font
@@ -5355,6 +5436,15 @@
 			)
 		)
 		(property "label" ""
+			(at 82.55 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 82.55 71.12 0)
 			(effects
 				(font
