@@ -24,7 +24,7 @@
 ## Introduction
 
 NexRx is an open-source software-defined radio (SDR) receiver that is
-a subset of the NexRig project -- a full transceiver. NexRx is a
+the receiver portion of the NexRig project—a full transceiver. NexRx is a
 general coverage HF receiver aimed at the ham radio HF bands but it
 covers 1-30 MHz without gaps. Unlike traditional commercial receivers,
 NexRx combines modern computing capabilities with sophisticated RF
@@ -398,14 +398,14 @@ benefit the entire community.
 ### Control and Monitoring
 
 **Microcontroller**: STM32H753, 480 MHz Cortex-M7, 1MB flash, 1MB RAM, Zephyr RTOS
-**FPGA**: Lattice iCE40UP3K, 40 MHz TCXO reference, NCO and clock generation
+**FPGA**: Lattice iCE40UP5K-SG48I, 40 MHz TCXO reference, NCO and clock generation
 **Voltage Monitoring**: USB VBUS input
 
 ---
 
 ## Conclusion
 
-NexRx represents a modern approach to amateur radio transceiver
+NexRx represents a modern approach to amateur radio receiver
 design, combining sophisticated RF engineering with flexible software
 control. The triple-QSD receiver architecture and SetBox configuration
 system provide capabilities typically found only in commercial
@@ -415,7 +415,7 @@ The open-source nature of the project—hardware, firmware, and
 software—encourages experimentation, learning, and community
 contribution. Whether you're an experienced RF engineer, a software
 developer, or an amateur radio operator seeking a powerful and
-flexible transceiver, NexRx offers a platform for exploration and
+flexible receiver, NexRx offers a platform for exploration and
 innovation.
 
 The following documents provide detailed technical information:

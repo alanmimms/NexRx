@@ -1,7 +1,7 @@
-# FPGA Design for NexRig USB SSB Transceiver
+# FPGA Design for NexRx Receiver (NexRig Project)
 
 ## Overview
-This directory contains the SystemVerilog implementation for the FPGA portion of the NexRig transceiver, primarily handling:
+This directory contains the SystemVerilog implementation for the FPGA portion of the NexRx receiver (part of the NexRig project), primarily handling:
 - Numerically Controlled Oscillator (NCO) for Direct Digital Synthesis (DDS)
 - High-speed SPI interface to STM32
 - Real-time phase modulation control
@@ -15,7 +15,7 @@ This directory contains the SystemVerilog implementation for the FPGA portion of
 - `build/` - Build output and bitstreams
 
 ## Target Device
-ICE40UP3K-UWG30 (Ultra Plus FPGA)
+Lattice iCE40UP5K-SG48I (Ultra Plus FPGA)
 
 ## Key Modules
 - NCO/DDS for phase generation

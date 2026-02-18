@@ -484,15 +484,15 @@ sufficient for observing an entire amateur band simultaneously.
 
 ## FPGA Clock Generation
 
-### Lattice iCE40UP3K FPGA
+### Lattice iCE40UP5K-SG48I FPGA
 
 The FPGA generates all QSD clocking signals with precise phase
 relationships:
 
 **FPGA Specifications**:
-- Device: Lattice iCE40UP3K
-- Logic cells: 2,800
-- Block RAM: 1,152 Kbits
+- Device: Lattice iCE40UP5K-SG48I
+- Logic cells: 5,280
+- Block RAM: 1,024 Kbits
 - Clock source: 40 MHz TCXO (external)
 - Power: 3.3V and 1.2V supplies
 
@@ -563,8 +563,8 @@ FPGA output characteristics:
 
 PCB requirements:
 - Controlled impedance: 50Ω
-- Differential pairs for each I/Q set
-- Minimize clock skew (<100ps between I/Q)
+- Differential pairs for each I/Q set (Length matched to ±20mm)
+- Minimize clock skew (<100ps between I/Q, target ±5mm clock trace matching)
 
 **Technical Note on Phase Skew**: While physical trace length matching is targetted at ±5mm (~60ps), the resulting quadrature phase error (approx. 2.4° at 30 MHz RF) is materially significant for image rejection. However, because the iCE40 FPGA lacks sub-nanosecond delay primitives (ODELAY), this static phase offset is intentionally left for correction in the digital domain. The receiver's DSP pipeline implements complex phase rotation to precisely align the I and Q vectors during the calibration phase.
 ```

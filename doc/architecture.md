@@ -27,7 +27,7 @@ graph LR
 
 ### Host PC Interface
 
-The transceiver connects to a host PC running the native control app
+The receiver connects to a host PC running the native control app
 through one of two physical connection options:
 
 **USB 2.0 High-Speed (480 Mbps)**: The STM32 operates as a USB

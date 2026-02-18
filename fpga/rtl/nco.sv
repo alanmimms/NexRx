@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // Title      : Numerically Controlled Oscillator (NCO) for Class E PA
-// Project    : NexRig USB SSB Transceiver
+// Project    : NexRx SDR (NexRig Project)
 //-----------------------------------------------------------------------------
 // File       : nco.sv
 // Author     : NexRig Project

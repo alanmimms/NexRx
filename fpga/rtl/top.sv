@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// Title      : Top Level Module for NexRig FPGA
-// Project    : NexRig USB SSB Transceiver
+// Title      : Top Level Module for NexRx Receiver
+// Project    : NexRx SDR (NexRig Project)
 //-----------------------------------------------------------------------------
 // File       : top.sv
 // Author     : NexRig Project
 // Created    : 2025-01-23
-// Platform   : ICE40UP3K
+// Platform   : ICE40UP5K-SG48I
 //-----------------------------------------------------------------------------
 // Description:
 // Top level module instantiating NCO, SPI interface, and control logic

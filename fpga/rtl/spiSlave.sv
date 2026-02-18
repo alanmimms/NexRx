@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // Title      : SPI Slave Interface
-// Project    : NexRig USB SSB Transceiver
+// Project    : NexRx SDR (NexRig Project)
 //-----------------------------------------------------------------------------
 // File       : spiSlave.sv
 // Author     : NexRig Project
