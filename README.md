@@ -143,3 +143,23 @@ adapts to your preferences, and provides the kind of deep
 configurability that makes ham radio uniquely satisfying - but without
 the traditional complexity that makes advanced features intimidating
 to explore.
+
+
+# MCP Server
+
+To create the Gemini MCP server I use for Kicad collaboration, you
+have to add something like the following to your
+`~/.gemini/settings.json` file:
+
+	{
+
+	...
+
+	  "mcpServers": {
+		"NexRxMCP": {
+		  "command": "/home/yourusername/NexRx/.venv/bin/python3",
+		  "args": ["/home/yourusername/NexRx/tools/mcp-server.py"],
+		  "trust": true
+		}
+	  }
+	}
