@@ -2,72 +2,72 @@
 import json
 import os
 
-DATABASE_FILE = "production/bom_database.json"
+# Paths relative to project root
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATABASE_FILE = os.path.join(PROJECT_ROOT, "production/bom_database.json")
 
-# LCSC Mapping Table (Value, Footprint) -> LCSC Part #
-# Focus on common JLCPCB Basic/Extended parts for cost efficiency
-lcsc_mapping = {
-    # Resistors 0402 1%
-    ("10k", "Resistor_SMD:R_0402_1005Metric"): "C25744",
-    ("1k", "Resistor_SMD:R_0402_1005Metric"): "C21190",
-    ("100", "Resistor_SMD:R_0402_1005Metric"): "C25076",
-    ("33", "Resistor_SMD:R_0402_1005Metric"): "C25092",
-    ("0", "Resistor_SMD:R_0402_1005Metric"): "C17168",
-    ("47k", "Resistor_SMD:R_0402_1005Metric"): "C25790",
-    ("49.9", "Resistor_SMD:R_0402_1005Metric"): "C25119",
-    ("22", "Resistor_SMD:R_0402_1005Metric"): "C25083",
+# Master Mapping: (Value, Footprint) -> Dictionary of Metadata
+master_mapping = {
+    # === Resistors 0402 ===
+    ("10k", "Resistor_SMD:R_0402_1005Metric"): {
+        "LCSC_PN": "C25744", "LCSC_Cost": 0.001,
+        "Mouser_PN": "71-CRCW040210K0FKED", "Mouser_Cost": 0.01
+    },
+    ("1k", "Resistor_SMD:R_0402_1005Metric"): {
+        "LCSC_PN": "C21190", "LCSC_Cost": 0.001,
+        "Mouser_PN": "71-CRCW04021K00FKED", "Mouser_Cost": 0.01
+    },
     
-    # Capacitors 0402 X7R/X5R
-    ("100nF", "Capacitor_SMD:C_0402_1005Metric"): "C1525",
-    ("1uF", "Capacitor_SMD:C_0402_1005Metric"): "C52923",
-    ("10uF", "Capacitor_SMD:C_0603_1608Metric"): "C19702",
-    ("10nF", "Capacitor_SMD:C_0402_1005Metric"): "C1519",
-    ("4.7uF", "Capacitor_SMD:C_0603_1608Metric"): "C19666",
+    # === Capacitors 0603 (RF / NP0) ===
+    ("470pF", "Capacitor_SMD:C_0603_1608Metric"): {
+        "LCSC_PN": "C14691", "LCSC_Cost": 0.006,
+        "Mouser_PN": "810-C1608C0G1H471J", "Mouser_Cost": 0.05
+    },
     
-    # NP0/C0G for RF (Critical)
-    ("470pF", "Capacitor_SMD:C_0402_1005Metric"): "C1550", # NP0 50V
-    ("1nF", "Capacitor_SMD:C_0402_1005Metric"): "C1523",   # NP0 50V
-    ("120pF", "Capacitor_SMD:C_0402_1005Metric"): "C1541",
-    ("15pF", "Capacitor_SMD:C_0402_1005Metric"): "C1548",
-    ("33pF", "Capacitor_SMD:C_0402_1005Metric"): "C1554",
-    ("68pF", "Capacitor_SMD:C_0402_1005Metric"): "C1564",
-    ("250pF", "Capacitor_SMD:C_0402_1005Metric"): "C1546",
-    ("560pF", "Capacitor_SMD:C_1552"): "C1552", # Fixed 560pF 0402 NP0
-    
-    # Specialized ICs
-    ("SN74LVC2G14DBV", "Package_TO_SOT_SMD:SOT-23-6"): ("C131122", 0.15),
-    ("MCP23S17", "Package_DFN_QFN:QFN-28-1EP_6x6mm_P0.65mm_EP4.25x4.25mm"): ("C60341", 1.20),
-    ("TPS22918DBVR", "Package_TO_SOT_SMD:SOT-23-6"): ("C157838", 0.45),
-    ("USB3343", "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.6x2.6mm"): ("C11558", 1.80),
-    ("STM32H753VITx", "Package_QFP:LQFP-100_14x14mm_P0.5mm"): ("C191568", 15.50),
-    ("ICE40UP5K-SG48I", "Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm"): ("C155631", 9.80),
-    ("AK5578EN", "QFN50P900X900X100-65N"): ("GLOBAL_SOURCE", 18.00),
-    ("AS183-92LF", "Library:SOT65P220X110-6N"): ("C152415", 0.85),
-    ("TS3A4751RUCR", "Library:TS3A4751-RUC14"): ("C128911", 1.10),
+    # === Critical ICs ===
+    ("STM32H753VITx", "Package_QFP:LQFP-100_14x14mm_P0.5mm"): {
+        "MF": "STMicroelectronics", "MP": "STM32H753VIT6",
+        "LCSC_PN": "C191568", "LCSC_Cost": 15.50,
+        "Mouser_PN": "497-STM32H753VIT6", "Mouser_Cost": 18.20
+    },
+    ("AK5578EN", "QFN50P900X900X100-65N"): {
+        "MF": "Asahi Kasei", "MP": "AK5578EN",
+        "Mouser_PN": "412-AK5578EN", "Mouser_Cost": 18.50,
+        "LCSC_PN": "GLOBAL_SOURCE", "LCSC_Cost": 18.00
+    },
 }
+
+# Example helper to populate common 0603 values if missing
+def get_generic_passive(val, footprint):
+    if "Resistor" in footprint:
+        return {"cost": 0.002, "Source": "Generic"}
+    if "Capacitor" in footprint:
+        return {"cost": 0.005, "Source": "Generic"}
+    return {}
 
 with open(DATABASE_FILE, 'r') as f:
     db = json.load(f)
 
-count = 0
 for uuid, data in db.items():
     key = (data['value'], data['footprint'])
     
-    # Generic passives cost estimation
-    if not data.get("cost"):
-        if "Resistor" in data['footprint']: db[uuid]["cost"] = 0.001
-        elif "Capacitor" in data['footprint']: db[uuid]["cost"] = 0.005
-        
-    if key in lcsc_mapping:
-        mapping = lcsc_mapping[key]
-        if isinstance(mapping, tuple):
-            db[uuid]["LCSC"] = mapping[0]
-            db[uuid]["cost"] = mapping[1]
-        else:
-            db[uuid]["LCSC"] = mapping
-        count += 1
+    # 1. Apply Master Mapping (Highest Priority)
+    if key in master_mapping:
+        db[uuid].update(master_mapping[key])
+    else:
+        # 2. Apply Generic logic for unsourced parts
+        if "Resistor" in data['footprint']:
+            db[uuid]["cost"] = 0.005
+            db[uuid]["Source"] = "Generic 0.1%"
+        elif "Capacitor" in data['footprint']:
+            db[uuid]["cost"] = 0.01
+            db[uuid]["Source"] = "Generic MLCC"
+        elif not db[uuid].get("cost"):
+            # IC fallback
+            db[uuid]["cost"] = 1.00
+            db[uuid]["Source"] = "IC Est."
 
 with open(DATABASE_FILE, 'w') as f:
     json.dump(db, f, indent=2)
 
-print(f"Enriched {count} components with LCSC part numbers.")
+print("Database Enriched with Multi-Source data.")
