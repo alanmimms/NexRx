@@ -147,7 +147,7 @@ using digitally switched resistive pads:
 - 6 dB pad
 - 3 dB pad
 
-**Implementation**: Each pad uses a **AS169-73LF pHEMT SPDT switch
+**Implementation**: Each pad uses a **AS183-92LF pHEMT SPDT switch
 chip** wired for true bypass. When this switch is "off" , the signal
 routes completely around the pad with minimal insertion loss. When
 "on", the signal passes through the resistive pad network.
@@ -180,7 +180,7 @@ The preselector uses switched inductors and a binary-weighted capacitor bank:
 
 The inductors are simple. There's a 220nH inductor that is always in
 circuit, and a 1.5uH inductor that is sometimes shorted out (by
-AS169-73LF pHEMT switch) for the higher bands, or put into series with
+AS183-92LF pHEMT switch) for the higher bands, or put into series with
 the first inductor for the lower bands.
 
 **Capacitor Bank**:
