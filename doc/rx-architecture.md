@@ -565,6 +565,8 @@ PCB requirements:
 - Controlled impedance: 50Ω
 - Differential pairs for each I/Q set
 - Minimize clock skew (<100ps between I/Q)
+
+**Technical Note on Phase Skew**: While physical trace length matching is targetted at ±5mm (~60ps), the resulting quadrature phase error (approx. 2.4° at 30 MHz RF) is materially significant for image rejection. However, because the iCE40 FPGA lacks sub-nanosecond delay primitives (ODELAY), this static phase offset is intentionally left for correction in the digital domain. The receiver's DSP pipeline implements complex phase rotation to precisely align the I and Q vectors during the calibration phase.
 ```
 
 ---
