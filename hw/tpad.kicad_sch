@@ -1450,7 +1450,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
+		(property "Manufacturer_Part_Number" "AS183-92LF"
 			(at 71.12 874.93 0)
 			(effects
 				(font
@@ -2387,7 +2387,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "AS183-92LF-HX"
+		(property "Manufacturer_Part_Number" "AS183-92LF"
 			(at 147.32 -714.91 0)
 			(effects
 				(font

@@ -49,25 +49,27 @@ def extract_metadata():
             val = get_prop("Value")
             foot = get_prop("Footprint")
             
-            # Extract possible MPN fields
-            mp = get_prop("MP") or get_prop("Manufacturer_Part_Number") or get_prop("Part Number") or get_prop("MfgPart") or get_prop("MPN") or ""
-            mf = get_prop("MF") or get_prop("Manufacturer") or get_prop("Manufacturer_Name") or get_prop("Mfg") or ""
-            lcsc = get_prop("LCSC") or get_prop("JLCPCBpn") or ""
+            # Extract possible MPN fields from schematic
+            mp_sch = get_prop("MP") or get_prop("Manufacturer_Part_Number") or get_prop("Part Number") or get_prop("MfgPart") or get_prop("MPN") or ""
+            mf_sch = get_prop("MF") or get_prop("Manufacturer") or get_prop("Manufacturer_Name") or get_prop("Mfg") or ""
+            lcsc_sch = get_prop("LCSC") or get_prop("JLCPCBpn") or ""
             
             # Initial database entry if new
             if uuid not in db:
                 db[uuid] = {}
             
-            # Update entry with current schematic data
+            # Update basic tracking info
             db[uuid].update({
                 "ref": ref,
                 "value": val,
                 "footprint": foot,
                 "file": os.path.basename(sch_file)
             })
-            if mp: db[uuid]["MP"] = mp
-            if mf: db[uuid]["MF"] = mf
-            if lcsc: db[uuid]["LCSC"] = lcsc
+            
+            # PRESERVE existing database metadata if present, otherwise take from schematic
+            if mp_sch and not db[uuid].get("MP"): db[uuid]["MP"] = mp_sch
+            if mf_sch and not db[uuid].get("MF"): db[uuid]["MF"] = mf_sch
+            if lcsc_sch and not db[uuid].get("LCSC"): db[uuid]["LCSC"] = lcsc_sch
             
             # Capacitor specifics
             ct = get_prop("cap-type")
@@ -93,17 +95,24 @@ def export_csv(db):
                 "Refs": [],
                 "Footprint": data['footprint'],
                 "CapType": data.get("cap-type", ""),
-                "Voltage": data.get("working-voltage", "")
+                "Voltage": data.get("working-voltage", ""),
+                "UnitCost": data.get("cost", 0.0)
             }
         bom[key]["Qty"] += 1
         bom[key]["Refs"].append(data['ref'])
 
+    total_project_cost = 0.0
     with open(CSV_FILE, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["Qty", "Value", "Manufacturer", "Part Number", "LCSC", "Designators", "Footprint", "Cap Type", "Voltage"])
+        writer.writerow(["Qty", "Value", "Manufacturer", "Part Number", "LCSC", "Designators", "Footprint", "Cap Type", "Voltage", "Unit Cost", "Subtotal"])
         for key in sorted(bom.keys()):
             b = bom[key]
-            writer.writerow([b["Qty"], b["Value"], b["MF"], b["MP"], b["LCSC"], ", ".join(sorted(b["Refs"])), b["Footprint"], b["CapType"], b["Voltage"]])
+            subtotal = b["Qty"] * b["UnitCost"]
+            total_project_cost += subtotal
+            writer.writerow([b["Qty"], b["Value"], b["MF"], b["MP"], b["LCSC"], ", ".join(sorted(b["Refs"])), b["Footprint"], b["CapType"], b["Voltage"], f"${b['UnitCost']:.4f}", f"${subtotal:.2f}"])
+        
+        writer.writerow([])
+        writer.writerow(["", "", "", "", "", "", "", "", "TOTAL ESTIMATED COST", "", f"${total_project_cost:.2f}"])
 
 db = extract_metadata()
 export_csv(db)

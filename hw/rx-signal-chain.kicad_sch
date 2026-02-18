@@ -2699,7 +2699,7 @@
 					)
 				)
 			)
-			(property "Value" "BN-43-202, 200 : 3-way 50 ohm, pentafilar 2 turns #30 AWG"
+			(property "Value" "BN-43-202, 200 : 3-way 22 ohm, hexafilar 2 turns #30 AWG"
 				(at 0.635 12.7 0)
 				(effects
 					(font
@@ -22077,7 +22077,7 @@
 				)
 			)
 		)
-		(property "Value" "BN-43-202, 200 : 3-way 50 ohm, pentafilar 2 turns #30 AWG"
+		(property "Value" "BN-43-202, 200 : 3-way 22 ohm, hexafilar 2 turns #30 AWG"
 			(at 109.5375 30.48 0)
 			(effects
 				(font
