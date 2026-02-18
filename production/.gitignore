@@ -1,0 +1,3 @@
+# Ignore generated production outputs
+nexrx_bom.csv
+bom_database.json
