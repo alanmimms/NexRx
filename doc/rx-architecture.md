@@ -299,11 +299,11 @@ The QSD inputs must remain within 0-3.3V. This is achieved through AC
 coupling and DC biasing:
 
 ```
-Transformer Secondary → 100nF DC block → 100k to +1.65V bias → QSD input
+Transformer Secondary → 100nF DC block → 10k to +1.65V bias → QSD input
 
 Bias injection circuit:
 - 100nF AC coupling capacitor from transformer
-- 100k resistor to +1.65V reference (sets DC bias point)
+- 10k resistor to +1.65V reference (sets DC bias point)
 - High-impedance bias doesn't load RF signal
 ```
 
