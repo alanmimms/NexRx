@@ -50920,6 +50920,17 @@
 			(uuid "0535375b-8dae-4919-b3bb-3affb5c72a34")
 		)
 		(embedded_fonts no)
+		(model "/home/alan/ham/NexRx/symbols/XEL4030-102MEC/3D/XEL4030-102MEC.stp"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz -90 -0 -90)
+			)
+		)
 	)
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
@@ -71848,7 +71859,7 @@
 			(uuid "8bd14632-868f-4ea8-b3b3-af8527da0b4d")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/MAX9939AUB+/3D/MAX9939AUB+.stp"
+		(model "${KICAD9_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -157432,7 +157443,7 @@
 			(uuid "4c7b8088-a3e4-4826-ab1e-635b5e832f9d")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/MAX9939AUB+/3D/MAX9939AUB+.stp"
+		(model "${KICAD9_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.step"
 			(offset
 				(xyz 0 0 0)
 			)
