@@ -9372,6 +9372,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 104.14 34.29 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 104.14 34.29 90)
 			(effects
@@ -9440,6 +9449,15 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
+			(at 149.86 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 149.86 146.05 0)
 			(effects
 				(font
@@ -9981,6 +9999,15 @@
 				)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 171.45 24.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 171.45 24.13 0)
 			(effects
@@ -10429,6 +10456,15 @@
 			)
 		)
 		(property "label" ""
+			(at 254 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 254 129.54 90)
 			(effects
 				(font
@@ -11138,6 +11174,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 154.94 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 154.94 99.06 90)
 			(effects
@@ -11446,6 +11491,15 @@
 			)
 		)
 		(property "label" ""
+			(at 48.26 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 48.26 67.31 90)
 			(effects
 				(font
@@ -11819,6 +11873,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 181.61 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 181.61 99.06 90)
 			(effects
@@ -12130,6 +12193,15 @@
 			)
 		)
 		(property "label" ""
+			(at 29.21 44.45 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 29.21 44.45 90)
 			(effects
 				(font
@@ -12494,6 +12566,15 @@
 			)
 		)
 		(property "label" ""
+			(at 55.88 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 55.88 151.13 0)
 			(effects
 				(font
@@ -12867,6 +12948,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 210.82 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 210.82 31.75 0)
 			(effects
@@ -13037,6 +13127,15 @@
 			)
 		)
 		(property "label" ""
+			(at 53.34 72.39 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 53.34 72.39 90)
 			(effects
 				(font
@@ -13281,6 +13380,15 @@
 			)
 		)
 		(property "label" ""
+			(at 114.3 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 114.3 123.19 90)
 			(effects
 				(font
@@ -13644,6 +13752,15 @@
 			)
 		)
 		(property "label" ""
+			(at 236.22 156.21 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 236.22 156.21 90)
 			(effects
 				(font
@@ -14085,6 +14202,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 157.48 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 157.48 80.01 90)
 			(effects
@@ -14441,6 +14567,15 @@
 			)
 		)
 		(property "label" ""
+			(at 246.38 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 246.38 129.54 90)
 			(effects
 				(font
@@ -14813,6 +14948,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 177.8 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 177.8 80.01 90)
 			(effects
@@ -15169,6 +15313,15 @@
 			)
 		)
 		(property "label" ""
+			(at 209.55 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 209.55 129.54 90)
 			(effects
 				(font
@@ -15888,6 +16041,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 223.52 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 223.52 129.54 90)
 			(effects
@@ -15990,6 +16152,15 @@
 			)
 		)
 		(property "label" ""
+			(at 107.95 57.15 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 107.95 57.15 90)
 			(effects
 				(font
@@ -16310,6 +16481,15 @@
 			)
 		)
 		(property "label" ""
+			(at 218.44 152.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 218.44 152.4 90)
 			(effects
 				(font
@@ -16683,6 +16863,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 50.8 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 50.8 151.13 0)
 			(effects
@@ -16902,6 +17091,15 @@
 			)
 		)
 		(property "label" ""
+			(at 137.16 132.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C712894"
 			(at 137.16 132.08 90)
 			(effects
 				(font
@@ -17145,6 +17343,24 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "JLCPCBpn" "C730206"
+			(at 80.01 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "label" ""
+			(at 80.01 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(property "JCLPCBpn" ""
@@ -17805,6 +18021,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 217.17 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 217.17 129.54 90)
 			(effects
@@ -17966,6 +18191,66 @@
 			)
 		)
 		(property "Description" "Hi-Speed USB ULPI Transceiver, QFN-24"
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C633347"
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer_Part_Number" "USB3343-CP-TR"
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "SMSC"
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C633347"
 			(at 166.37 123.19 0)
 			(effects
 				(font
@@ -18407,6 +18692,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 261.62 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 261.62 129.54 90)
 			(effects
@@ -18718,6 +19012,15 @@
 			)
 		)
 		(property "label" ""
+			(at 123.19 54.61 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 123.19 54.61 90)
 			(effects
 				(font
@@ -19224,6 +19527,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 229.87 156.21 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 229.87 156.21 90)
 			(effects
@@ -19582,6 +19894,15 @@
 		)
 		(property "label" ""
 			(at 247.65 25.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
+			(at 247.65 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20087,6 +20408,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 238.76 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 238.76 129.54 90)
 			(effects
@@ -20532,6 +20862,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 224.79 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 224.79 97.79 0)
 			(effects
@@ -20942,6 +21281,15 @@
 				)
 			)
 		)
+		(property "JLCPCBpn" "C5155080"
+			(at 238.76 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 238.76 41.91 0)
 			(effects
@@ -21069,6 +21417,15 @@
 			)
 		)
 		(property "label" ""
+			(at 53.34 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 53.34 49.53 90)
 			(effects
 				(font
@@ -21508,6 +21865,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 232.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 232.41 97.79 0)
 			(effects
@@ -21645,6 +22011,15 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
+			(at 138.43 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 138.43 105.41 0)
 			(effects
 				(font
@@ -22017,6 +22392,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 231.14 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 231.14 129.54 90)
 			(effects
@@ -22380,6 +22764,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 213.36 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 213.36 97.79 0)
 			(effects
@@ -22491,6 +22884,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 43.18 62.23 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 43.18 62.23 90)
 			(effects
@@ -22533,7 +22935,7 @@
 				)
 			)
 		)
-		(property "Value" "25MHz"
+		(property "Value" "26MHz"
 			(at 35.052 44.704 90)
 			(effects
 				(font
@@ -22559,7 +22961,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "25MHz 18pF 10PPM"
+		(property "Description" "26MHz 18pF 10PPM"
 			(at 27.305 33.02 0)
 			(effects
 				(font
@@ -22621,6 +23023,15 @@
 			)
 		)
 		(property "label" ""
+			(at 39.37 46.99 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C712894"
 			(at 39.37 46.99 90)
 			(effects
 				(font
@@ -22993,6 +23404,15 @@
 		)
 		(property "label" ""
 			(at 196.85 46.99 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
+			(at 196.85 46.99 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23512,6 +23932,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 201.93 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 201.93 129.54 90)
 			(effects
@@ -23792,6 +24221,15 @@
 			)
 		)
 		(property "Mouser Part Number" "875-MI0603J601R-10"
+			(at 219.71 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2441365"
 			(at 219.71 91.44 90)
 			(effects
 				(font
@@ -24111,6 +24549,15 @@
 			)
 		)
 		(property "label" ""
+			(at 212.09 152.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 212.09 152.4 90)
 			(effects
 				(font

@@ -920,6 +920,9 @@
       "/FPGA/Ctrl{Ctrl}": [
         "rf50"
       ],
+      "/FPGA/preselIn": [
+        "rf200"
+      ],
       "/Power/Tx EER Envelope Buck-Boost/PA_SENSE": [
         "Power"
       ],
@@ -1145,6 +1148,9 @@
         "Power"
       ],
       "GND": [
+        "rf50"
+      ],
+      "Net-(C101-Pad2)": [
         "rf50"
       ],
       "Net-(C1401-Pad1)": [

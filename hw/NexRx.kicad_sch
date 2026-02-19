@@ -1231,14 +1231,14 @@
 				(pin passive line
 					(at 0 2.54 270)
 					(length 2.54)
-					(name "In"
+					(name "Ext"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "1"
+					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1249,14 +1249,14 @@
 				(pin passive line
 					(at 0 -5.08 90)
 					(length 2.54)
-					(name "Ext"
+					(name "In"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "2"
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1274,7 +1274,7 @@
 							)
 						)
 					)
-					(number "3"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1292,7 +1292,7 @@
 							)
 						)
 					)
-					(number "4"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1310,7 +1310,7 @@
 							)
 						)
 					)
-					(number "5"
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2375,6 +2375,15 @@
 				)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 67.31 181.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 67.31 181.61 0)
 			(effects
@@ -2480,6 +2489,15 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "JLCPCBpn" ""
+			(at 83.82 181.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(property "JCLPCBpn" ""
@@ -2589,6 +2607,15 @@
 				)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 49.53 181.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 49.53 181.61 0)
 			(effects
@@ -2672,6 +2699,15 @@
 			)
 		)
 		(property "label" ""
+			(at 34.29 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 34.29 161.29 0)
 			(effects
 				(font
@@ -2788,6 +2824,15 @@
 			)
 		)
 		(property "label" ""
+			(at 95.25 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 95.25 81.28 90)
 			(effects
 				(font
@@ -2932,6 +2977,15 @@
 			)
 		)
 		(property "label" ""
+			(at 68.58 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C19947197"
 			(at 68.58 88.9 90)
 			(effects
 				(font
@@ -3316,6 +3370,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C2940749"
+			(at 85.09 77.47 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 85.09 77.47 90)
 			(effects
@@ -3433,7 +3496,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Library:RFPCSMA27F"
+		(property "Footprint" "Library:733910083"
 			(at 46.99 77.47 0)
 			(effects
 				(font
@@ -3502,7 +3565,34 @@
 				)
 			)
 		)
+		(property "JLCPCBpn" "C493445"
+			(at 48.26 77.47 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
+			(at 48.26 77.47 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "MOLEX"
+			(at 48.26 77.47 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "733910083"
 			(at 48.26 77.47 90)
 			(effects
 				(font
@@ -3878,6 +3968,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 53.34 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 53.34 161.29 0)
 			(effects
@@ -4024,6 +4123,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 55.88 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 55.88 83.82 0)
 			(effects
@@ -4113,6 +4221,15 @@
 			)
 		)
 		(property "label" ""
+			(at 73.66 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 73.66 161.29 0)
 			(effects
 				(font
@@ -4350,6 +4467,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 93.98 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 93.98 161.29 0)
 			(effects
@@ -4389,7 +4515,7 @@
 				)
 			)
 		)
-		(property "Value" "STS321150B100AH"
+		(property "Value" "TPD1E0B04DPY"
 			(at 117.602 93.726 90)
 			(effects
 				(font
@@ -4397,7 +4523,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:Infineon_SG-WLL-2-3_0.58x0.28_P0.36mm"
+		(property "Footprint" "Diode_SMD:D_SOD-882"
 			(at 127 90.17 0)
 			(effects
 				(font
@@ -4406,7 +4532,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.infineon.com/dgdl/Infineon-ESD131-B1-W0201-DataSheet-v02_00-EN.pdf?fileId=5546d4625cc9456a015ce94850964889"
+		(property "Datasheet" "https://www.ti.com/lit/gpn/TPD1E0B04"
 			(at 127 90.17 0)
 			(effects
 				(font
@@ -4415,7 +4541,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Bidirectional ESD protection diode, ±5.5Vrwm, 0.23pF, SG-WLL-2-3"
+		(property "Description" "0.13-pF, ±3.6-V, ±8-kV ESD protection diode in 0402 & 0201 packages for USB-C & Antenna"
 			(at 127 90.17 0)
 			(effects
 				(font
@@ -4451,13 +4577,29 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
+		(property "JLCPCBpn" "C913830"
 			(at 127 90.17 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 127 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 127 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "2"
@@ -4699,7 +4841,7 @@
 				)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "100V"
 			(at 119.38 83.82 0)
 			(effects
 				(font
@@ -4717,7 +4859,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "GRM31C5C2A104JA01L"
+		(property "Manufacturer_Part_Number" "GRM3195C2A104JA01D"
 			(at 119.38 83.82 0)
 			(effects
 				(font
@@ -4745,6 +4887,15 @@
 			)
 		)
 		(property "label" ""
+			(at 119.38 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2940749"
 			(at 119.38 83.82 0)
 			(effects
 				(font

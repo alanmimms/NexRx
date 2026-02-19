@@ -3255,6 +3255,12 @@
 			(uuid "95d6023c-3f13-4549-8a44-83315767e750")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0103")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02003")
@@ -3322,6 +3328,12 @@
 			(uuid "16cebb29-a627-41f4-84c6-1c52aa03268a")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0102")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02002")
@@ -3388,6 +3400,12 @@
 			(uuid "8c7b4fb5-97c0-4fc1-bdba-3dde6c4cc5fc")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0116")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02016")
@@ -3454,6 +3472,12 @@
 			(uuid "5f571262-55b5-4b1c-baa2-ab9fc3667c68")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0108")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02008")
@@ -3521,6 +3545,12 @@
 			(uuid "4b43ff2a-7281-4665-a8fe-eb2a5421984d")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0106")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02006")
@@ -3584,6 +3614,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 187.96 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 187.96 157.48 0)
 			(effects
@@ -3612,6 +3651,12 @@
 			(uuid "23c5b82c-1867-498e-a4d0-6a46b93ddc67")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U107")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2007")
@@ -3961,6 +4006,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 181.61 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 181.61 36.83 0)
 			(effects
@@ -3977,6 +4031,12 @@
 			(uuid "3ab6e612-2e19-4531-afe1-456c7b59ebd1")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C104")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2004")
@@ -4043,6 +4103,12 @@
 			(uuid "48697a5d-3a36-486a-9a5c-81a6682df789")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0122")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02022")
@@ -4110,6 +4176,12 @@
 			(uuid "39ff6b8a-e954-41c7-a0da-f5c54d80998c")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0121")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02021")
@@ -4177,6 +4249,12 @@
 			(uuid "22716cf6-0a27-4e9f-a9d1-ae1e16b71146")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0124")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02024")
@@ -4240,6 +4318,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 114.3 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 114.3 92.71 0)
 			(effects
@@ -4268,6 +4355,12 @@
 			(uuid "7d1afae0-a7ab-4abe-8d5c-5200a6e826e8")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U102")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2002")
@@ -4334,6 +4427,12 @@
 			(uuid "4f864138-3323-4444-a3ce-acc12f16bed6")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0101")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02001")
@@ -4400,6 +4499,12 @@
 			(uuid "dd44d507-5cf5-42a3-9ac3-80b5dda0fcea")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0126")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02026")
@@ -4749,6 +4854,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 45.72 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 45.72 33.02 0)
 			(effects
@@ -4765,6 +4879,12 @@
 			(uuid "2a588c89-5212-4e16-acfd-e02007502888")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C101")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2001")
@@ -5114,6 +5234,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 181.61 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 181.61 144.78 0)
 			(effects
@@ -5130,6 +5259,12 @@
 			(uuid "828a1c3f-dadd-4f4b-b4ca-97f795b20110")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C107")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2007")
@@ -5197,6 +5332,12 @@
 			(uuid "f2150a33-4aed-4714-b4bc-1ad93b1938e5")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0117")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02017")
@@ -5264,6 +5405,12 @@
 			(uuid "59deca0d-371f-4b1f-87ea-026023c55600")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0119")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02019")
@@ -5331,6 +5478,12 @@
 			(uuid "bb23d415-8adf-4f51-b4dd-953b23f43f99")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0111")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02011")
@@ -5680,6 +5833,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 181.61 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 181.61 109.22 0)
 			(effects
@@ -5696,6 +5858,12 @@
 			(uuid "05c36ea7-6e0e-4a77-a104-2fc418f65344")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C106")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2006")
@@ -5763,6 +5931,12 @@
 			(uuid "f00c4b52-7599-4ffb-ab6a-c1e6943c8f1b")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0107")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02007")
@@ -5829,6 +6003,12 @@
 			(uuid "87e7cece-3240-4087-b8c8-0f66117fd3cb")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0110")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02010")
@@ -5895,6 +6075,12 @@
 			(uuid "b844c7d7-89c6-4314-a8b7-efff8b77ecdd")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0104")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02004")
@@ -6188,6 +6374,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C147896"
+			(at 35.56 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 35.56 49.53 0)
 			(effects
@@ -6285,6 +6480,12 @@
 			(uuid "965710a3-cb24-4078-a933-b5cc7e3b067b")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U101")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2001")
@@ -6348,6 +6549,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 187.96 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 187.96 85.09 0)
 			(effects
@@ -6376,6 +6586,12 @@
 			(uuid "0166e8e0-84cb-45d4-8872-87facff20da6")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U105")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2005")
@@ -6725,6 +6941,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 107.95 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 107.95 80.01 0)
 			(effects
@@ -6741,6 +6966,12 @@
 			(uuid "d36c8a3b-e7ad-4542-ac51-6a447ac76666")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C102")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2002")
@@ -6807,6 +7038,12 @@
 			(uuid "7479e872-23a0-4e62-944b-8377a12c1825")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0128")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02028")
@@ -6874,6 +7111,12 @@
 			(uuid "cde4b963-6f33-49e6-a534-af75fbf62536")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0113")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02013")
@@ -6941,6 +7184,12 @@
 			(uuid "2d52b2a3-a0bd-4823-bcf9-b3790051dbac")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0125")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02025")
@@ -7008,6 +7257,12 @@
 			(uuid "826b449d-cf28-4073-9da5-36d1e0584543")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0114")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02014")
@@ -7357,6 +7612,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 107.95 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 107.95 116.84 0)
 			(effects
@@ -7373,6 +7637,12 @@
 			(uuid "b78c4a2c-3412-4cb9-b385-67b256427539")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C103")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2003")
@@ -7436,6 +7706,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 187.96 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 187.96 121.92 0)
 			(effects
@@ -7464,6 +7743,12 @@
 			(uuid "74839d99-9ff1-4883-90bc-6d854a5c79ae")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U106")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2006")
@@ -7531,6 +7816,12 @@
 			(uuid "4de3329d-923a-4a2a-8a21-4861a167a4d5")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0127")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02027")
@@ -7880,6 +8171,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 229.87 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 229.87 36.83 0)
 			(effects
@@ -7896,6 +8196,12 @@
 			(uuid "8e8029b4-24a9-4430-8046-5b86ece917d7")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C108")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2008")
@@ -8245,6 +8551,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 229.87 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 229.87 72.39 0)
 			(effects
@@ -8261,6 +8576,12 @@
 			(uuid "41922f0a-dcc3-4108-9094-7b69b16fcc71")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C109")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2009")
@@ -8327,6 +8648,12 @@
 			(uuid "4058bb93-361a-4ba6-a9c9-bf0c3d4f8752")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0120")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02020")
@@ -8390,6 +8717,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 236.22 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 236.22 49.53 0)
 			(effects
@@ -8418,6 +8754,12 @@
 			(uuid "582092f2-d9ff-479d-847d-d296e872ee67")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U108")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2008")
@@ -8485,6 +8827,12 @@
 			(uuid "a8bcb17d-ce34-4667-b98d-016fef83aefa")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0115")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02015")
@@ -8552,6 +8900,12 @@
 			(uuid "2ac66394-242e-4677-80c0-2dbcd12defb3")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0109")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02009")
@@ -8619,6 +8973,12 @@
 			(uuid "231fa733-aba1-4f2e-987c-495b532b7d90")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0105")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02005")
@@ -8686,6 +9046,12 @@
 			(uuid "a30ca6be-0b52-453c-acff-7818c9abe969")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0112")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02012")
@@ -8749,6 +9115,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 114.3 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 114.3 129.54 0)
 			(effects
@@ -8777,6 +9152,12 @@
 			(uuid "2c8ee230-0c3d-4487-9309-3f554229b4b9")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U103")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2003")
@@ -8844,6 +9225,12 @@
 			(uuid "e5ae6c1d-3158-4c2f-af21-046ba4db89c3")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0129")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02029")
@@ -8907,6 +9294,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 236.22 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 236.22 85.09 0)
 			(effects
@@ -8935,6 +9331,12 @@
 			(uuid "94bb1b0a-f446-449f-bf7a-9987059044cb")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U109")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2009")
@@ -8998,6 +9400,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C12401"
+			(at 187.96 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 187.96 49.53 0)
 			(effects
@@ -9026,6 +9437,12 @@
 			(uuid "89dca4cd-0557-44a0-971f-afa05ede86a0")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "U104")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "U2004")
@@ -9092,6 +9509,12 @@
 			(uuid "8ac3697b-8a9d-4d1d-8964-f3dd7e903ba1")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0118")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02018")
@@ -9159,6 +9582,12 @@
 			(uuid "2e59417b-1617-4d7c-a5ab-34f6f3227439")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "#PWR0123")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02023")
@@ -9508,6 +9937,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C53084455"
+			(at 181.61 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 181.61 72.39 0)
 			(effects
@@ -9524,6 +9962,12 @@
 			(uuid "c86973a8-9af9-4afe-8351-9e4a2d97a214")
 		)
 		(instances
+			(project "gpio-expander"
+				(path "/1f97d7f9-a4b9-480d-a904-32a668f0a697"
+					(reference "C105")
+					(unit 1)
+				)
+			)
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "C2005")
@@ -9532,4 +9976,10 @@
 			)
 		)
 	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
 )

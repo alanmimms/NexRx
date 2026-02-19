@@ -3859,6 +3859,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 86.36 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 86.36 102.87 0)
 			(effects
@@ -4319,7 +4328,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 234.95 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 234.95 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 234.95 76.2 0)
 			(effects
 				(font
@@ -4700,6 +4727,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 53.34 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 53.34 102.87 0)
 			(effects
@@ -5025,7 +5061,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 201.93 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 201.93 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 201.93 76.2 90)
 			(effects
 				(font
@@ -5563,7 +5617,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 135.89 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 135.89 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 135.89 76.2 90)
 			(effects
 				(font
@@ -6034,7 +6106,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 152.4 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 152.4 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 152.4 76.2 90)
 			(effects
 				(font
@@ -6371,7 +6461,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 119.38 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 119.38 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 119.38 76.2 90)
 			(effects
 				(font
@@ -6977,7 +7085,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 53.34 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 53.34 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 53.34 76.2 90)
 			(effects
 				(font
@@ -7291,6 +7417,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 135.89 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 135.89 102.87 0)
 			(effects
@@ -7585,6 +7720,15 @@
 			)
 		)
 		(property "label" ""
+			(at 168.91 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 168.91 102.87 0)
 			(effects
 				(font
@@ -7985,7 +8129,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 185.42 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 185.42 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 185.42 76.2 90)
 			(effects
 				(font
@@ -8299,6 +8461,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 69.85 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 69.85 102.87 0)
 			(effects
@@ -8593,6 +8764,15 @@
 			)
 		)
 		(property "label" ""
+			(at 201.93 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 201.93 102.87 0)
 			(effects
 				(font
@@ -9037,6 +9217,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 119.38 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 119.38 102.87 0)
 			(effects
@@ -9362,7 +9551,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 168.91 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 168.91 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 168.91 76.2 90)
 			(effects
 				(font
@@ -9774,6 +9981,15 @@
 			)
 		)
 		(property "label" ""
+			(at 234.95 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C286756"
 			(at 234.95 101.6 0)
 			(effects
 				(font
@@ -10218,6 +10434,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" ""
+			(at 218.44 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "JCLPCBpn" ""
 			(at 218.44 102.87 0)
 			(effects
@@ -10543,7 +10768,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 218.44 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 218.44 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 218.44 76.2 90)
 			(effects
 				(font
@@ -10880,7 +11123,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 86.36 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 86.36 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 86.36 76.2 90)
 			(effects
 				(font
@@ -11158,6 +11419,15 @@
 			)
 		)
 		(property "label" ""
+			(at 234.95 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C295117"
 			(at 234.95 111.76 0)
 			(effects
 				(font
@@ -11527,6 +11797,15 @@
 			)
 		)
 		(property "label" ""
+			(at 185.42 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 185.42 102.87 0)
 			(effects
 				(font
@@ -11994,7 +12273,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 102.87 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 102.87 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 102.87 76.2 90)
 			(effects
 				(font
@@ -12331,7 +12628,25 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" "C53413616"
+		(property "JLCPCBpn" "C2654768"
+			(at 69.85 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
+			(at 69.85 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JCLPCBpn" ""
 			(at 69.85 76.2 90)
 			(effects
 				(font
@@ -12637,6 +12952,15 @@
 			)
 		)
 		(property "label" ""
+			(at 152.4 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 152.4 102.87 0)
 			(effects
 				(font
@@ -13073,6 +13397,15 @@
 			)
 		)
 		(property "label" ""
+			(at 102.87 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" ""
 			(at 102.87 102.87 0)
 			(effects
 				(font
