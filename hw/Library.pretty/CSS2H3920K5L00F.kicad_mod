@@ -208,7 +208,7 @@
 		(uuid "df99d087-71ea-4837-9f79-f8745c6ae9c3")
 	)
 	(embedded_fonts no)
-	(model "CSS2H-3920K-5L00F.stp"
+	(model "/home/alan/ham/NexRx/symbols/CSS2H-3920K-5L00F/3D/CSS2H-3920K-5L00F.stp"
 		(offset
 			(xyz -5.039999886 -2.499999962 -0.1399999985)
 		)

@@ -399,7 +399,7 @@
 		(uuid "d9211fc8-b48a-425d-8c85-559a680ef895")
 	)
 	(embedded_fonts no)
-	(model "LTC3779IFE#PBF.stp"
+	(model "/home/alan/ham/NexRx/symbols/LTC3779IFE#PBF/3D/LTC3779IFE#PBF.stp"
 		(offset
 			(xyz 0 0 0)
 		)

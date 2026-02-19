@@ -707,7 +707,7 @@
 		(uuid "9697ad6b-c114-45cf-8c68-d2a89a207f2d")
 	)
 	(embedded_fonts no)
-	(model "RFPC-SMA27-F.stp"
+	(model "/home/alan/ham/NexRx/symbols/RFPC-SMA27-F/3D/RFPC-SMA27-F.stp"
 		(offset
 			(xyz -0.04999999999 0 3.279999922)
 		)

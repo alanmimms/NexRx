@@ -437,7 +437,7 @@
 		(uuid "bc23d723-e510-4aa3-ac34-69408de5c35d")
 	)
 	(embedded_fonts no)
-	(model "10167129-00011LF.stp"
+	(model "/home/alan/ham/NexRx/symbols/10167129-00011LF/3D/10167129-00011LF.stp"
 		(offset
 			(xyz 0.01999999925 -2.059999912 4.999999925)
 		)

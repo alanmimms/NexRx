@@ -340,7 +340,7 @@
 		(uuid "7631a7ad-7236-465a-aa58-e080c82ba4b2")
 	)
 	(embedded_fonts no)
-	(model "MCP23S17T-E_ML.stp"
+	(model "/home/alan/ham/NexRx/symbols/MCP23S17T-E_ML/3D/MCP23S17T-E_ML.stp"
 		(offset
 			(xyz 0 0 0)
 		)

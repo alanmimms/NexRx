@@ -241,7 +241,7 @@
 		(uuid "539b33a3-cfe8-4076-b6e0-58123c8e29b3")
 	)
 	(embedded_fonts no)
-	(model "AS183-92LF.stp"
+	(model "/home/alan/ham/NexRx/symbols/AS183-92LF/3D/AS183-92LF.stp"
 		(offset
 			(xyz 0 0 0)
 		)

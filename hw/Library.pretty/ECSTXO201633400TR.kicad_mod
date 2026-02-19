@@ -211,7 +211,7 @@
 		(uuid "b5e938f4-956e-4722-8877-d89f56c643ae")
 	)
 	(embedded_fonts no)
-	(model "ECS-TXO-2016-33-400-TR.stp"
+	(model "/home/alan/ham/NexRx/symbols/ECS-TXO-2016-33-400-TR/3D/ECS-TXO-2016-33-400-TR.stp"
 		(offset
 			(xyz 0 0 0)
 		)

@@ -244,7 +244,7 @@
 		(uuid "70e4719e-be1d-40d6-97c0-395d85f315e8")
 	)
 	(embedded_fonts no)
-	(model "LM74800QDRRRQ1.stp"
+	(model "/home/alan/ham/NexRx/symbols/LM74800QDRRRQ1/3D/LM74800QDRRRQ1.stp"
 		(offset
 			(xyz 0 0.09000000222 0)
 		)

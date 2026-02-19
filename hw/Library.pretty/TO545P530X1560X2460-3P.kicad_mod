@@ -209,7 +209,7 @@
 		(uuid "113fdcf4-d9d1-40f2-8e41-97182565c16c")
 	)
 	(embedded_fonts no)
-	(model "IRFP250NPBF.stp"
+	(model "/home/alan/ham/NexRx/symbols/IRFP250NPBF/3D/IRFP250NPBF.stp"
 		(offset
 			(xyz 0 0 0)
 		)

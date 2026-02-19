@@ -231,7 +231,7 @@
 		(uuid "09f8f595-4292-4a30-a1b8-a7782a75738e")
 	)
 	(embedded_fonts no)
-	(model "XC8102AA01NR-G.stp"
+	(model "/home/alan/ham/NexRx/symbols/XC8102AA01NR-G/3D/XC8102AA01NR-G.stp"
 		(offset
 			(xyz 0 0 0)
 		)

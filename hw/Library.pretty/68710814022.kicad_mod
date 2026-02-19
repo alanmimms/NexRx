@@ -215,7 +215,7 @@
 		(uuid "8f78cedd-7fcf-4f60-8d40-fb4f5c536adf")
 	)
 	(embedded_fonts no)
-	(model "68710814022.stp"
+	(model "/home/alan/ham/NexRx/symbols/68710814022/3D/68710814022.stp"
 		(offset
 			(xyz 0 -1.299999933 1.049999937)
 		)

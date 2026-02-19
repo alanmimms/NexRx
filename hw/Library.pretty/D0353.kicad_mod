@@ -278,7 +278,7 @@
 		(uuid "32c191ad-0879-4ad9-97b3-8f420efea316")
 	)
 	(embedded_fonts no)
-	(model "${KICAD_3D_MODELS}/EPC_FETs/D0353.step"
+	(model "/home/alan/ham/NexRx/symbols/Ki3DModels/D0353.step"
 		(offset
 			(xyz 0 0 0)
 		)

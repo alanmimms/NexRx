@@ -301,7 +301,7 @@
 		(uuid "9ca814b4-6a81-4bc9-b56e-6e8f9ace7b4e")
 	)
 	(embedded_fonts no)
-	(model "TPIC6C595PWR.stp"
+	(model "/home/alan/ham/NexRx/symbols/TPIC6C595PWR/3D/TPIC6C595PWR.stp"
 		(offset
 			(xyz 0 0 0)
 		)

@@ -177,7 +177,7 @@
 		(uuid "67f1ab7a-ea98-4450-a46f-a7229df6b8d9")
 	)
 	(embedded_fonts no)
-	(model "SDR0805-1R5ML.stp"
+	(model "/home/alan/ham/NexRx/symbols/SDR0805-1R5ML/3D/SDR0805-1R5ML.stp"
 		(offset
 			(xyz 0 0 0)
 		)

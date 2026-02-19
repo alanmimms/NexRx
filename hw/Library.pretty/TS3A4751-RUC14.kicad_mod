@@ -1188,4 +1188,10 @@
 		(uuid "f17c9b54-b0cd-4834-bbeb-6046208b9043")
 	)
 	(embedded_fonts no)
+
+  (model "/home/alan/ham/NexRx/symbols/TS3A4751RUCR/3D/TS3A4751RUCR.stp"
+    (offset (xyz 0 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 0))
+  )
 )

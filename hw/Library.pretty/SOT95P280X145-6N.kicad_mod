@@ -241,7 +241,7 @@
 		(uuid "b9400a1e-e6bd-4603-b4fb-623628865410")
 	)
 	(embedded_fonts no)
-	(model "TPS22918DBVR.stp"
+	(model "/home/alan/ham/NexRx/symbols/TPS22918DBVR/3D/TPS22918DBVR.stp"
 		(offset
 			(xyz 0 0 0)
 		)

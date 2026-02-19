@@ -289,7 +289,7 @@
 		(uuid "35655db4-8ba2-4c5c-8f78-cf54437df15e")
 	)
 	(embedded_fonts no)
-	(model "74HCT125PW,118.stp"
+	(model "/home/alan/ham/NexRx/symbols/74HCT125PW,118/3D/74HCT125PW,118.stp"
 		(offset
 			(xyz 0 0 0)
 		)

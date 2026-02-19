@@ -268,7 +268,7 @@
 		(uuid "6fe998d1-4812-4769-a68d-986a8f0423bb")
 	)
 	(embedded_fonts no)
-	(model "FTSH-105-01-L-DV-K.stp"
+	(model "/home/alan/ham/NexRx/symbols/FTSH-105-01-L-DV-K/3D/FTSH-105-01-L-DV-K.stp"
 		(offset
 			(xyz 0 1.99999997 1.669999932)
 		)

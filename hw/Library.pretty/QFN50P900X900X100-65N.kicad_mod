@@ -556,7 +556,7 @@
 		(uuid "2415d7c5-c656-435c-b631-953ac934eb5a")
 	)
 	(embedded_fonts no)
-	(model "AK5578EN.stp"
+	(model "/home/alan/ham/NexRx/symbols/AK5578EN/3D/AK5578EN.stp"
 		(offset
 			(xyz 0 0 0)
 		)

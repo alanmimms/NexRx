@@ -199,7 +199,7 @@
 		(uuid "543867f1-2f5e-49e4-b75c-6c9defd4f01f")
 	)
 	(embedded_fonts no)
-	(model "DFLS1200-7.stp"
+	(model "/home/alan/ham/NexRx/symbols/DFLS1200-7/3D/DFLS1200-7.stp"
 		(offset
 			(xyz 0 0 0)
 		)
