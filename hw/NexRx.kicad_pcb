@@ -44039,7 +44039,7 @@
 			(uuid "d1ba9d55-158d-4ea9-a60b-e5ff52dbfedd")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/MAX9939AUB+/3D/MAX9939AUB+.stp"
+		(model "${KICAD9_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -62980,7 +62980,7 @@
 			(uuid "c69215c6-1268-407f-89a9-eef40f9106f6")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/MAX9939AUB+/3D/MAX9939AUB+.stp"
+		(model "${KICAD9_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -109878,7 +109878,7 @@
 			(uuid "50ce030a-e884-4b55-87ab-9cd1ca961e7f")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/MAX9939AUB+/3D/MAX9939AUB+.stp"
+		(model "/home/alan/ham/NexRx/symbols/TS3A4751RUCR/3D/TS3A4751RUCR.stp"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -118215,7 +118215,7 @@
 			(uuid "c8fee76d-784f-4a46-9d75-91056400a0e5")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/MAX9939AUB+/3D/MAX9939AUB+.stp"
+		(model "/home/alan/ham/NexRx/symbols/TS3A4751RUCR/3D/TS3A4751RUCR.stp"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -143507,7 +143507,29 @@
 			(uuid "e093da15-35af-4c94-86b9-98ece61aab37")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/MAX9939AUB+/3D/MAX9939AUB+.stp"
+		(model "/home/alan/ham/NexRx/symbols/AS183-92LF/3D/AS183-92LF.stp"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+		(model "/home/alan/ham/NexRx/symbols/AS183-92LF/3D/AS183-92LF.stp"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+		(model "/home/alan/ham/NexRx/symbols/AS183-92LF/3D/AS183-92LF.stp"
 			(offset
 				(xyz 0 0 0)
 			)
