@@ -3950,15 +3950,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 21.59 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "ef070fba-decd-4a10-8f88-aa5809ac29f8")
 		)
@@ -4119,15 +4110,6 @@
 			)
 		)
 		(property "JLCPCBpn" "C2678152"
-			(at 198.12 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 198.12 102.87 0)
 			(effects
 				(font
@@ -4988,15 +4970,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 147.32 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "0d8ae2ed-b097-4c96-8e44-4d518b9d6a13")
 		)
@@ -5090,15 +5063,6 @@
 			)
 		)
 		(property "JLCPCBpn" "C2678152"
-			(at 125.73 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 125.73 77.47 0)
 			(effects
 				(font
@@ -5611,15 +5575,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 194.31 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "919bc34a-f015-41a7-8348-03f1d1720086")
 		)
@@ -6000,15 +5955,6 @@
 			)
 		)
 		(property "JLCPCBpn" "C2451471"
-			(at 29.21 73.66 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 29.21 73.66 0)
 			(effects
 				(font
@@ -6452,15 +6398,6 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 158.75 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 158.75 129.54 0)
 			(effects
 				(font
@@ -6980,15 +6917,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 213.36 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "c07adbab-01a6-4e3f-9ea8-a21e2782c27f")
 		)
@@ -7344,15 +7272,6 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 181.61 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 181.61 96.52 0)
 			(effects
 				(font
@@ -7808,15 +7727,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 27.94 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "9aacbba8-fe7d-4c5d-ada9-d7c911e2aef3")
 		)
@@ -7912,15 +7822,6 @@
 			)
 		)
 		(property "JLCPCBpn" "C2678152"
-			(at 144.78 154.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 144.78 154.94 0)
 			(effects
 				(font
@@ -8810,15 +8711,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 27.94 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "f5231b09-a579-484e-bcf1-7523af8dc704")
 		)
@@ -9323,15 +9215,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 140.97 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "6326c7ca-ed48-40e0-a035-dc66d2b03a67")
 		)
@@ -9762,15 +9645,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 165.1 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "d52b86e0-4558-4df6-8d8a-5963e2cacad7")
 		)
@@ -10135,15 +10009,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 173.99 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "93c780a7-0305-4312-ac9e-ff6db782a631")
 		)
@@ -10321,15 +10186,6 @@
 			)
 		)
 		(property "JLCPCBpn" "C2678152"
-			(at 194.31 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 194.31 52.07 0)
 			(effects
 				(font
@@ -10782,15 +10638,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 95.25 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "a351222b-2443-4b26-aab9-3d43c1698d0f")
 		)
@@ -11146,15 +10993,6 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 182.88 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 182.88 137.16 0)
 			(effects
 				(font
@@ -11526,15 +11364,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 201.93 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "943668f6-61a7-49b3-93c8-aa3a63e38bbf")
 		)
@@ -11799,15 +11628,6 @@
 			)
 		)
 		(property "JLCPCBpn" "C2441365"
-			(at 189.23 130.81 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 189.23 130.81 90)
 			(effects
 				(font
@@ -12179,15 +11999,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 41.91 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "21b2fd7e-6a0e-4f82-bb50-1f8503d385a9")
 		)
@@ -12339,15 +12150,6 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 106.68 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 106.68 77.47 90)
 			(effects
 				(font
@@ -12727,15 +12529,6 @@
 				(hide yes)
 			)
 		)
-		(property "JCLPCBpn" ""
-			(at 207.01 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "2"
 			(uuid "2adfe257-e781-4316-a68d-37aecb04fc84")
 		)
@@ -13091,15 +12884,6 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 189.23 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JCLPCBpn" ""
 			(at 189.23 96.52 0)
 			(effects
 				(font
