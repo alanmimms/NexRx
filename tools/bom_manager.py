@@ -37,36 +37,62 @@ def calculate_tier_cost(unit_cost, target_volume):
 
 def extract_metadata():
     db = load_database()
+    # Match symbols robustly
     symbol_pattern = re.compile(r'\(symbol\s+\(lib_id\s+"[^"]+"\).*?\(uuid\s+"([^"]+)"\)\s+\)', re.DOTALL)
+    
+    current_uuids = set()
     
     for sch_file in glob.glob(SCH_GLOB):
         with open(sch_file, 'r') as f:
             content = f.read()
+            
         matches = symbol_pattern.finditer(content)
         for m in matches:
             block = m.group(0)
             uuid = m.group(1)
+            current_uuids.add(uuid)
+            
             def get_prop(name):
                 p = re.search(r'\(property\s+"' + name + r'"\s+"([^"]*)"', block)
                 return p.group(1) if p else ""
+
             ref = get_prop("Reference")
             if ref.startswith('#') or ref.startswith('GND') or ref.startswith('FID'):
                 continue
+                
             val = get_prop("Value")
             foot = get_prop("Footprint")
+            
             mp_sch = get_prop("MP") or get_prop("Manufacturer_Part_Number") or get_prop("Part Number") or get_prop("MfgPart") or get_prop("MPN") or ""
             mf_sch = get_prop("MF") or get_prop("Manufacturer") or get_prop("Manufacturer_Name") or get_prop("Mfg") or ""
             lcsc_sch = get_prop("LCSC") or get_prop("JLCPCBpn") or ""
             
-            if uuid not in db: db[uuid] = {}
-            db[uuid].update({"ref": ref, "value": val, "footprint": foot, "file": os.path.basename(sch_file)})
+            if uuid not in db:
+                db[uuid] = {}
+            
+            db[uuid].update({
+                "ref": ref,
+                "value": val,
+                "footprint": foot,
+                "file": os.path.basename(sch_file)
+            })
+            
             if mp_sch and not db[uuid].get("MP"): db[uuid]["MP"] = mp_sch
             if mf_sch and not db[uuid].get("MF"): db[uuid]["MF"] = mf_sch
             if lcsc_sch and not db[uuid].get("LCSC_PN"): db[uuid]["LCSC_PN"] = lcsc_sch
+            
             ct = get_prop("cap-type")
             wv = get_prop("working-voltage")
             if ct: db[uuid]["cap-type"] = ct
             if wv: db[uuid]["working-voltage"] = wv
+
+    # PRUNE orphaned UUIDs
+    orphans = [u for u in db if u not in current_uuids]
+    for u in orphans:
+        del db[u]
+    if orphans:
+        print(f"Pruned {len(orphans)} orphaned components from database.")
+
     save_database(db)
     return db
 
@@ -88,6 +114,8 @@ def export_csv(db):
             bom[key]["UnitCost"], bom[key]["Source"] = data["LCSC_Cost"], "LCSC"
         elif data.get("Mouser_Cost"):
             bom[key]["UnitCost"], bom[key]["Source"] = data["Mouser_Cost"], "Mouser"
+        elif data.get("Source"):
+            bom[key]["UnitCost"], bom[key]["Source"] = data.get("cost", 0.0), data["Source"]
         elif data.get("cost"):
             bom[key]["UnitCost"], bom[key]["Source"] = data["cost"], "Manual"
 
