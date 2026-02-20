@@ -1,4 +1,4 @@
-27314869499907028
+27318575699860416
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71470,6 +71470,13 @@ D0353
 4
 4
 Library
+DBV0005A-MFG
+
+PTPS7A2012PDBVR 
+0
+5
+5
+Library
 DCK6
 
 SN74AUP2G04DCKR 
@@ -71812,6 +71819,13 @@ Connector
 0
 18
 18
+Library
+USB_C_Receptacle_HRO_TYPE-C-31-M-12-bursted
+USB Type-C receptacle for USB 2.0 and PD, http://www.krhro.com/uploads/soft/180320/1-1P320120243.pdf
+usb usb-c 2.0 pd
+0
+16
+13
 Library
 WDFN_8NLTAG_ONS
 

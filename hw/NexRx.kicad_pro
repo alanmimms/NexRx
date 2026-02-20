@@ -4017,6 +4017,14 @@
       {
         "netclass": "rf200",
         "pattern": "/Rx Front End/RxZ200"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+5.4V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "/Power/+5.4V-dirty"
       }
     ]
   },
@@ -4355,6 +4363,12 @@
           "group_by": false,
           "label": "MPN",
           "name": "MPN",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "JLCPCBpn",
+          "name": "JLCPCBpn",
           "show": false
         }
       ],
