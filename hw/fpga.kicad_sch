@@ -10352,7 +10352,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 95.25 77.47 270)
+		(at 106.68 77.47 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -10361,7 +10361,7 @@
 		(dnp no)
 		(uuid "ca246c0a-7a5a-41da-8b00-e242008a1045")
 		(property "Reference" "C1305"
-			(at 101.6 76.2 90)
+			(at 113.03 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10370,7 +10370,7 @@
 			)
 		)
 		(property "Value" "120pF"
-			(at 93.726 76.2 90)
+			(at 105.156 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10379,7 +10379,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 91.44 76.5048 0)
+			(at 102.87 76.5048 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10388,7 +10388,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10397,7 +10397,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10406,7 +10406,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10415,7 +10415,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10424,7 +10424,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10433,7 +10433,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10442,7 +10442,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10451,7 +10451,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10460,7 +10460,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10469,7 +10469,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10478,7 +10478,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10487,7 +10487,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10496,7 +10496,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10505,7 +10505,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10514,7 +10514,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10523,7 +10523,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10532,7 +10532,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10541,7 +10541,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10550,7 +10550,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10559,7 +10559,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10568,7 +10568,7 @@
 			)
 		)
 		(property "cap-type" "NP0"
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10576,7 +10576,7 @@
 			)
 		)
 		(property "working-voltage" "50V"
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10585,7 +10585,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "TDK"
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10594,7 +10594,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "CGA3E2C0G1H121J080AA"
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10603,7 +10603,7 @@
 			)
 		)
 		(property "Mouser Part Number" "810-CGA3E2C0G1H121J"
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10612,7 +10612,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10621,7 +10621,7 @@
 			)
 		)
 		(property "label" ""
-			(at 95.25 77.47 0)
+			(at 106.68 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10630,7 +10630,7 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 95.25 77.47 90)
+			(at 106.68 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12098,7 +12098,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 106.68 77.47 270)
+		(at 95.25 77.47 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -12107,7 +12107,7 @@
 		(dnp no)
 		(uuid "f70e4b2f-4c39-4ae3-9a34-843667b0c208")
 		(property "Reference" "R1301"
-			(at 106.426 75.184 90)
+			(at 94.996 75.184 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12115,7 +12115,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 106.172 79.502 90)
+			(at 94.742 79.502 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12123,7 +12123,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 106.426 76.454 90)
+			(at 94.996 76.454 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12132,7 +12132,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 106.68 77.47 0)
+			(at 95.25 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12141,7 +12141,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 106.68 77.47 0)
+			(at 95.25 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12150,7 +12150,7 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 106.68 77.47 90)
+			(at 95.25 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
