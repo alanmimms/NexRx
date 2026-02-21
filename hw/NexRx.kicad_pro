@@ -1013,9 +1013,6 @@
       "/FPGA/Ctrl{Ctrl}": [
         "rf50"
       ],
-      "/FPGA/preselIn": [
-        "rf200"
-      ],
       "/Power/Tx EER Envelope Buck-Boost/PA_SENSE": [
         "Power"
       ],
@@ -1027,6 +1024,9 @@
       ],
       "/Power/VBUSsw": [
         "Power"
+      ],
+      "/Rx Front End/Atten pads/out": [
+        "rf200"
       ],
       "/Rx Front End/Clipper, Attenuator, Preselector/Ctrl.atten12dB": [
         "rf200"
@@ -2419,6 +2419,18 @@
       "Net-(R2603-Pad1)": [
         "rf200"
       ],
+      "Net-(R311-Pad1)": [
+        "rf200"
+      ],
+      "Net-(R318-Pad1)": [
+        "rf200"
+      ],
+      "Net-(R325-Pad1)": [
+        "rf200"
+      ],
+      "Net-(R332-Pad1)": [
+        "rf200"
+      ],
       "Net-(R502-Pad1)": [
         "pwr200"
       ],
@@ -2897,16 +2909,49 @@
         "power-lite"
       ],
       "Net-(U303-J2)": [
-        "rf50"
+        "rf200"
+      ],
+      "Net-(U303-J3)": [
+        "rf200"
+      ],
+      "Net-(U304-J1)": [
+        "rf200"
       ],
       "Net-(U304-J2)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(U305-J2)": [
-        "rf50"
+        "rf200"
+      ],
+      "Net-(U305-J3)": [
+        "rf200"
+      ],
+      "Net-(U306-J1)": [
+        "rf200"
       ],
       "Net-(U306-J2)": [
-        "rf50"
+        "rf200"
+      ],
+      "Net-(U307-J2)": [
+        "rf200"
+      ],
+      "Net-(U307-J3)": [
+        "rf200"
+      ],
+      "Net-(U308-J1)": [
+        "rf200"
+      ],
+      "Net-(U308-J2)": [
+        "rf200"
+      ],
+      "Net-(U309-J2)": [
+        "rf200"
+      ],
+      "Net-(U309-J3)": [
+        "rf200"
+      ],
+      "Net-(U310-J2)": [
+        "rf200"
       ],
       "Net-(U401-NO1)": [
         "rf50"
@@ -3032,6 +3077,9 @@
         "rf200"
       ],
       "Net-(U712-J1)": [
+        "rf200"
+      ],
+      "Net-(U712-J2)": [
         "rf200"
       ],
       "Net-(U712-J3)": [
@@ -4025,6 +4073,22 @@
       {
         "netclass": "Power",
         "pattern": "/Power/+5.4V-dirty"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out24"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out12"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out6"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out3"
       }
     ]
   },
@@ -4473,20 +4537,8 @@
       "Rx Preselector"
     ],
     [
-      "00580834-a893-4f64-96cc-eed31636bfe9",
-      "Tpad 3"
-    ],
-    [
-      "a3931169-68de-4e8b-813d-ff6ffed62146",
-      "Tpad 6"
-    ],
-    [
-      "d4b536b3-8496-4c97-8d52-85d67c75a967",
-      "Tpad 12"
-    ],
-    [
-      "9d22ac7c-7c0b-45c3-a875-a3a1935f96cc",
-      "Tpad 24"
+      "ca8a9774-c53b-4530-a9d0-caebe5942a2e",
+      "VLF-PGA"
     ],
     [
       "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
@@ -4507,6 +4559,10 @@
     [
       "32c670c7-05fb-4d6f-b587-f687839b2e31",
       "PGA2"
+    ],
+    [
+      "17d49d56-c330-4482-93f2-ca1fb53de8e9",
+      "Atten pads"
     ],
     [
       "32c670c7-05fb-4d6f-b587-f687839b2e31",

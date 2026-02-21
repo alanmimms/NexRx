@@ -75,17 +75,21 @@ graph LR
 	TRrelay --> TVS25[25V pk-pk<br/>Limiter]
 	TVS25 --> C[Digital<br/>Attenuator<br/>0-45dB]
     C --> E[Preselector<br/>200Ω LC Tank]
+    E --> VLF[VLF Tap<br/>200Ω Primary]
+    VLF --> VLFPGA[VLF PGA<br/>MAX9939]
+    VLFPGA --> J
     E --> F[Transform<br/>200→3×22Ω]
 	F --> TVS13[13V pk-pk<br/>Limiter]
 	TVS13 --> G[Triple QSD<br/>Array]
     G --> H[6× MAX9939<br/>PGAs]
     H --> I[Anti-Alias<br/>Filters]
-    I --> J[AK5578<br/>ADC (6ch)]
+    I --> J[AK5578<br/>ADC (8ch)]
     J --> K[STM32H753<br/>Processing]
     K --> L[Ethernet to<br/>Host PC]
     
     style E fill:#e3f2fd
     style G fill:#c8e6c9
+    style VLF fill:#fff9c4
     style K fill:#fff3e0
 ```
 
@@ -94,11 +98,12 @@ each optimized for its specific role:
 
 1. **Protection and Attenuation**: Handles strong signals and provides coarse gain control
 2. **Preselector**: Provides band-specific selectivity at 200Ω impedance
-3. **Triple-QSD Demodulation**: Converts RF to baseband with harmonic rejection
-4. **Programmable Gain**: Fine gain control with differential signal processing PGAs
-5. **Digitization**: High-resolution conversion with anti-aliasing
-6. **Digital Processing**: Signal combining and initial DSP in STM32
-7. **Host Processing**: Advanced DSP and demodulation in PC application
+3. **VLF Direct-Sampling**: Bypasses the QSD array for high-fidelity 0-100kHz reception
+4. **Triple-QSD Demodulation**: Converts RF to baseband with harmonic rejection
+5. **Programmable Gain**: Fine gain control with differential signal processing PGAs
+6. **Digitization**: High-resolution conversion with anti-aliasing
+7. **Digital Processing**: Signal combining and initial DSP in STM32
+8. **Host Processing**: Advanced DSP and demodulation in PC application
 
 ---
 
@@ -334,6 +339,34 @@ adapt based on signal conditions.
 
 ---
 
+## VLF Direct-Sampling Mode
+
+### Architecture and Rationale
+
+For frequencies below 100 kHz (VLF), the Triple-QSD architecture is bypassed in favor of a direct-sampling path. This avoids the high-pass roll-off of the ferrite-core QSD transformers and the potential for phase noise or aliasing at very low baseband frequencies.
+
+**Tap Point**: The signal is tapped directly from the **200Ω primary side** of the T301 transformer. This provides the maximum signal voltage (9.5 dB higher than the secondary) and a flat response down to DC.
+
+**Dedicated PGA (MAX9939)**:
+- A seventh MAX9939 is utilized exclusively for the VLF path.
+- Input impedance is >10 GΩ, ensuring zero loading or I/Q imbalance on the HF chain during normal operation.
+- Provides 0-40 dB of independent gain for VLF signals.
+
+**Real-Valued Sampling**:
+- Unlike the HF paths, the VLF mode produces a **single-channel real-valued signal** (not I/Q).
+- The signal is digitized by **AK5578 Channel 7** in a differential configuration (AIN7P/AIN7N).
+- Sampling rate remains 96 kHz, providing a high-fidelity 48 kHz Nyquist bandwidth.
+
+### VLF Operation Mode
+
+When the receiver is placed in VLF mode:
+1. **QSD Parking**: The FPGA stops all QSD phase clocks (`ph0`-`ph3` = all LOW), isolating the sampling capacitors from the signal path.
+2. **Preselector Bypass**: The LC tank is set to its widest possible response (all inductors shorted, all capacitors open).
+3. **PGA Enabling**: The VLF-dedicated MAX9939 is enabled while the HF PGAs are muted or powered down.
+4. **DSP Synthesis**: The host DSP treats the incoming data as a real-valued stream, optionally synthesizing I/Q data via a Hilbert Transform for standard SDR demodulation.
+
+---
+
 ## Programmable Gain Amplifiers
 
 ### MAX9939 Architecture
@@ -426,18 +459,18 @@ components from creating aliases:
 
 **Topology**: Differential RC low-pass filters
 ```
-MAX9939 OUTA → 1kΩ → ADC IN+
+MAX9939 OUTA → 330Ω → ADC IN+
                   ↓
-                4.7nF (to ground)
+                3.3nF (to ground)
                   ↓
-MAX9939 OUTB → 1kΩ → ADC IN-
+MAX9939 OUTB → 330Ω → ADC IN-
 
-Cutoff frequency: fc = 1/(2π×1kΩ×4.7nF) = 34 kHz
+Cutoff frequency: fc = 1/(2π×330Ω×3.3nF) = 146 kHz
 ```
 
-The 34 kHz cutoff provides adequate attenuation at the Nyquist
-frequency (48 kHz) while preserving the entire HF spectrum after
-down-conversion to baseband.
+The 146 kHz cutoff provides RFI suppression and stabilizes the ADC
+sampling interface while relying on the AK5578's internal digital
+decimation filters for primary Nyquist protection.
 
 ### Protection Diodes
 
@@ -466,7 +499,7 @@ The AK5578 provides high-quality analog-to-digital conversion:
 - I²S interface to STM32
 
 **Channel Allocation**:
-| ADC Channel | Signal | QSD Source |
+| ADC Channel | Signal | Source |
 |-------------|--------|------------|
 | CH1 | I (f-k) | QSD0 I output |
 | CH2 | Q (f-k) | QSD0 Q output |
@@ -474,7 +507,7 @@ The AK5578 provides high-quality analog-to-digital conversion:
 | CH4 | Q (f+k) | QSD1 Q output |
 | CH5 | I (f) | QSD2 I output |
 | CH6 | Q (f) | QSD2 Q output |
-| CH7 | Unused | - |
+| CH7 | VLF Signal | VLF PGA output |
 | CH8 | Unused | - |
 
 The 96 kHz sampling rate provides 48 kHz of real-time bandwidth,
