@@ -1,0 +1,234 @@
+(footprint "SP0402BELC01ETG"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "SP0402B-ELC-01ETG-3")
+	(tags "TVS Diode (Bi-directional)")
+	(property "Reference" "D**"
+		(at -0.1 -2.3 0)
+		(layer "F.SilkS")
+		(uuid "60ad223e-6a73-4b38-91dc-9fcb07a06f92")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(property "Value" "SP0402BELC01ETG"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "bad852c7-a671-42e1-930e-ba528b901532")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "cc903cb9-14fe-49f3-af40-99bfabdf61e9")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "6332467c-753e-476d-b2dc-f5f21bf94fda")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -1.2 0)
+		(end -1.2 0)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "310e62bb-2f9c-4eb9-bc0d-c6dc77703ff6")
+	)
+	(fp_line
+		(start -1.2 0)
+		(end -1.2 0)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "c74bdad3-7218-4f02-8737-5b6515c7cb69")
+	)
+	(fp_line
+		(start -1.1 0)
+		(end -1.1 0)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "1a6a8291-a9e5-4c2e-94e9-7759ebfbf683")
+	)
+	(fp_arc
+		(start -1.2 0)
+		(mid -1.15 -0.05)
+		(end -1.1 0)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "36b0ca5b-274e-42f4-8967-e4ab9a5487fe")
+	)
+	(fp_arc
+		(start -1.1 0)
+		(mid -1.15 0.05)
+		(end -1.2 0)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "184854a2-bf2c-4c85-ab5c-e3b44e06177f")
+	)
+	(fp_arc
+		(start -1.1 0)
+		(mid -1.15 0.05)
+		(end -1.2 0)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "734278c1-f864-43db-85b5-23cc111379dd")
+	)
+	(fp_line
+		(start -1.5 -1.325)
+		(end 1.5 -1.325)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "075373dd-a038-40f6-99dc-3d8eac582675")
+	)
+	(fp_line
+		(start -1.5 1.325)
+		(end -1.5 -1.325)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "c505b107-911c-4e02-8a41-ecec77892cca")
+	)
+	(fp_line
+		(start 1.5 -1.325)
+		(end 1.5 1.325)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "f242941c-6000-4a70-a988-6d0d2ab4f3d1")
+	)
+	(fp_line
+		(start 1.5 1.325)
+		(end -1.5 1.325)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "20c0d4ba-a104-49f4-b63e-3c8893c39abd")
+	)
+	(fp_line
+		(start -0.5 -0.3)
+		(end -0.5 0.3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "00edeafb-e475-4e92-a04c-6956f778840b")
+	)
+	(fp_line
+		(start -0.5 0.3)
+		(end 0.5 0.3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "8e74920b-4852-4d1a-bed3-f7f03f21ee95")
+	)
+	(fp_line
+		(start 0.5 -0.3)
+		(end -0.5 -0.3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "beed4a83-740c-4c02-8927-f52eea03c463")
+	)
+	(fp_line
+		(start 0.5 0.3)
+		(end 0.5 -0.3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "6c0e95bc-364b-4b5f-85ef-75b939f3a899")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 3 0)
+		(layer "F.Fab")
+		(uuid "5489e9b4-23a3-4dc0-b6df-986dd9a43354")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at -0.325 0)
+		(size 0.35 0.65)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "c8074300-6286-4880-a991-4e8188ec0e93")
+	)
+	(pad "2" smd rect
+		(at 0.325 0)
+		(size 0.35 0.65)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "409a278e-c05a-4729-81f5-33a186b52dfc")
+	)
+	(embedded_fonts no)
+	(model "SP0402B-ELC-01ETG.stp"
+		(offset
+			(xyz 0 0.01999999925 0.01999999925)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 90 -180 -180)
+		)
+	)
+)
