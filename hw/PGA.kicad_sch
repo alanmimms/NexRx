@@ -148,6 +148,146 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:C_US"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C_US"
+				(at 0.635 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "capacitor, US symbol"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "C_US_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762) (xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.032 -1.27)
+					(mid 0 -0.5572)
+					(end 2.032 -1.27)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_US_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 3.302)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:R_US"
 			(pin_numbers
 				(hide yes)
@@ -1362,6 +1502,12 @@
 		(uuid "1a304a1c-6bf7-4508-8b9d-eb3eba386fae")
 	)
 	(junction
+		(at 82.55 57.15)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "2e60c1c0-79b5-4608-8768-dbf83b40c5a0")
+	)
+	(junction
 		(at 71.12 57.15)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1549,6 +1695,16 @@
 	)
 	(wire
 		(pts
+			(xy 91.44 57.15) (xy 91.44 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "35603f17-5e9e-44f7-b283-73f87565bf91")
+	)
+	(wire
+		(pts
 			(xy 166.37 101.6) (xy 170.18 101.6)
 		)
 		(stroke
@@ -1656,6 +1812,16 @@
 			(type default)
 		)
 		(uuid "5582fede-ddd1-49bb-995a-d1418af1720b")
+	)
+	(wire
+		(pts
+			(xy 82.55 57.15) (xy 91.44 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "57107db5-0b88-4d45-a0d1-7ee4c3f008cd")
 	)
 	(wire
 		(pts
@@ -1786,6 +1952,16 @@
 			(type default)
 		)
 		(uuid "8d08bb59-f103-4f45-8297-5eea483c8bb8")
+	)
+	(wire
+		(pts
+			(xy 91.44 66.04) (xy 91.44 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "92a0c027-9e1c-4afd-84ac-dff6eebfe13c")
 	)
 	(wire
 		(pts
@@ -4175,7 +4351,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
+		(property "Description" "Resistor, 1%, thin film, 0402"
 			(at 71.12 63.5 0)
 			(effects
 				(font
@@ -4373,6 +4549,22 @@
 				(hide yes)
 			)
 		)
+		(property "cap-type" ""
+			(at 71.12 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 71.12 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "2"
 			(uuid "57271bfd-cb45-4932-b8b2-36a59a55f218")
 		)
@@ -4505,6 +4697,93 @@
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
 					(reference "#PWR01801")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 91.44 67.31 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6bcc1e7a-286e-4569-9218-d189a768625b")
+		(property "Reference" "#PWR01407"
+			(at 91.44 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 91.44 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 91.44 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 91.44 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 91.44 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e3132fdd-5c91-4518-b0b5-7f09083e496d")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874/32c670c7-05fb-4d6f-b587-f687839b2e31"
+					(reference "#PWR01707")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
+					(reference "#PWR01407")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7/32c670c7-05fb-4d6f-b587-f687839b2e31"
+					(reference "#PWR01607")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
+					(reference "#PWR01907")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d/32c670c7-05fb-4d6f-b587-f687839b2e31"
+					(reference "#PWR01507")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
+					(reference "#PWR01807")
 					(unit 1)
 				)
 			)
@@ -5617,6 +5896,120 @@
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
 					(reference "#PWR01803")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_US")
+		(at 91.44 62.23 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b68ea679-b2a2-42ec-9428-3ecd7e834890")
+		(property "Reference" "C1410"
+			(at 95.25 61.2139 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10uF"
+			(at 95.25 63.7539 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "capacitor, US symbol"
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" "X7R"
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0b58842d-3e23-4956-a0b8-7713917e34c2")
+		)
+		(pin "2"
+			(uuid "edca0e87-2aee-40b1-878c-1c1560793717")
+		)
+		(instances
+			(project ""
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874/32c670c7-05fb-4d6f-b587-f687839b2e31"
+					(reference "C1710")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
+					(reference "C1410")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7/32c670c7-05fb-4d6f-b587-f687839b2e31"
+					(reference "C1610")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
+					(reference "C1910")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d/32c670c7-05fb-4d6f-b587-f687839b2e31"
+					(reference "C1510")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d/5ffcf0e7-51e5-47a9-8fef-78cb8699aff9"
+					(reference "C1810")
 					(unit 1)
 				)
 			)
@@ -6990,7 +7383,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
+		(property "Description" "Resistor, 1%, thin film, 0402"
 			(at 76.2 63.5 0)
 			(effects
 				(font
@@ -7186,6 +7579,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 76.2 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 76.2 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "2"

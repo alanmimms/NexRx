@@ -38,8 +38,8 @@
         "other_text_upright": false,
         "pads": {
           "drill": 0.0,
-          "height": 0.64,
-          "width": 0.54
+          "height": 0.65,
+          "width": 0.35
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -2419,6 +2419,18 @@
       "Net-(R2603-Pad1)": [
         "rf200"
       ],
+      "Net-(R311-Pad1)": [
+        "rf200"
+      ],
+      "Net-(R318-Pad1)": [
+        "rf200"
+      ],
+      "Net-(R325-Pad1)": [
+        "rf200"
+      ],
+      "Net-(R332-Pad1)": [
+        "rf200"
+      ],
       "Net-(R502-Pad1)": [
         "pwr200"
       ],
@@ -2897,16 +2909,55 @@
         "power-lite"
       ],
       "Net-(U303-J2)": [
-        "rf50"
+        "rf200"
+      ],
+      "Net-(U303-J3)": [
+        "rf200"
+      ],
+      "Net-(U304-J1)": [
+        "rf200"
       ],
       "Net-(U304-J2)": [
         "rf50"
       ],
+      "Net-(U304-J3)": [
+        "rf200"
+      ],
       "Net-(U305-J2)": [
-        "rf50"
+        "rf200"
+      ],
+      "Net-(U305-J3)": [
+        "rf200"
+      ],
+      "Net-(U306-J1)": [
+        "rf200"
       ],
       "Net-(U306-J2)": [
         "rf50"
+      ],
+      "Net-(U306-J3)": [
+        "rf200"
+      ],
+      "Net-(U307-J2)": [
+        "rf200"
+      ],
+      "Net-(U307-J3)": [
+        "rf200"
+      ],
+      "Net-(U308-J1)": [
+        "rf200"
+      ],
+      "Net-(U308-J3)": [
+        "rf200"
+      ],
+      "Net-(U309-J2)": [
+        "rf200"
+      ],
+      "Net-(U309-J3)": [
+        "rf200"
+      ],
+      "Net-(U310-J3)": [
+        "rf200"
       ],
       "Net-(U401-NO1)": [
         "rf50"
@@ -4025,6 +4076,22 @@
       {
         "netclass": "Power",
         "pattern": "/Power/+5.4V-dirty"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out24"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out12"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out6"
+      },
+      {
+        "netclass": "rf200",
+        "pattern": "/Rx Front End/out3"
       }
     ]
   },
@@ -4363,12 +4430,6 @@
           "group_by": false,
           "label": "MPN",
           "name": "MPN",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "JLCPCBpn",
-          "name": "JLCPCBpn",
           "show": false
         }
       ],

@@ -2367,7 +2367,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Library:CDSOD323-TxxC"
+		(symbol "Library:SP0402B-ELC-01ETG"
 			(pin_names
 				(hide yes)
 			)
@@ -2375,52 +2375,44 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "D"
-				(at 7.62 2.54 0)
+				(at 12.7 8.89 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
+					(justify left bottom)
 				)
 			)
-			(property "Value" "CDS0d323-TxxC"
-				(at 7.62 0.635 0)
+			(property "Value" "SP0402B-ELC-01ETG"
+				(at 12.7 6.35 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
+					(justify left bottom)
 				)
 			)
-			(property "Footprint" "Diode_SMD:D_SOD-323"
-				(at 4.572 -30.48 0)
+			(property "Footprint" "SP0402BELC01ETG"
+				(at 12.7 -93.65 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
+					(justify left bottom)
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "https://www.mouser.com/datasheet/3/40/1/cdsod323_txxc.pdf"
-				(at 0.127 -26.035 0)
+			(property "Datasheet" "http://www.littelfuse.com/~/media/electronics/datasheets/tvs_diode_arrays/littelfuse_tvs_diode_array_enhanced_esd_discrete_tvs_datasheet.pdf.pdf"
+				(at 12.7 -193.65 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left bottom)
 					(hide yes)
 				)
 			)
-			(property "Description" "ESD Protection Diodes / TVS Diodes TVS Diode xx VOLT"
-				(at -3.048 -29.21 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "usb esd protection suppression transient"
+			(property "Description" "ESD Suppressor Diode TVS Bi-Dir 7V 2-Pin DFN T/R"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2429,53 +2421,75 @@
 					(hide yes)
 				)
 			)
-			(property "ki_fp_filters" "SOT?353*"
-				(at 0 0 0)
+			(property "Height" "0.55"
+				(at 12.7 -393.65 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left bottom)
 					(hide yes)
 				)
 			)
-			(symbol "CDSOD323-TxxC_0_0"
-				(pin passive line
-					(at 0 5.715 270)
-					(length 2.54)
-					(name "A"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
+			(property "Mouser Part Number" "576-SP0402BELC-01ETG"
+				(at 12.7 -493.65 0)
+				(effects
+					(font
+						(size 1.27 1.27)
 					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
+					(justify left bottom)
+					(hide yes)
 				)
 			)
-			(symbol "CDSOD323-TxxC_0_1"
-				(rectangle
-					(start -3.175 3.175)
-					(end 3.175 -3.429)
+			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Littelfuse/SP0402B-ELC-01ETG?qs=lM4gFlnEeENOCcDe5sglng%3D%3D"
+				(at 12.7 -593.65 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left bottom)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Name" "LITTELFUSE"
+				(at 12.7 -693.65 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left bottom)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Part_Number" "SP0402B-ELC-01ETG"
+				(at 12.7 -793.65 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left bottom)
+					(hide yes)
+				)
+			)
+			(symbol "SP0402B-ELC-01ETG_1_1"
+				(polyline
+					(pts
+						(xy 5.08 2.54) (xy 5.08 -2.54)
+					)
 					(stroke
 						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type background)
+						(type none)
 					)
 				)
 				(polyline
 					(pts
-						(xy -2.794 1.524) (xy -2.54 1.778) (xy -0.508 1.778) (xy -0.254 2.032)
+						(xy 5.08 2.54) (xy 10.16 0)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -2484,10 +2498,10 @@
 				)
 				(polyline
 					(pts
-						(xy -2.54 -1.778) (xy -0.508 -1.778)
+						(xy 9.144 2.54) (xy 10.16 2.032)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -2496,10 +2510,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 1.778) (xy -2.159 0.508) (xy -0.889 0.508) (xy -1.524 1.778)
+						(xy 10.16 0) (xy 5.08 -2.54)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -2508,10 +2522,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 1.778) (xy -1.524 2.54) (xy 1.27 2.54) (xy 1.27 1.778)
+						(xy 10.16 0) (xy 15.24 -2.54)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -2520,10 +2534,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 0.508) (xy -1.524 -0.508)
+						(xy 10.16 -2.032) (xy 10.16 2.032)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -2532,10 +2546,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 -1.778) (xy -2.159 -0.508) (xy -0.889 -0.508) (xy -1.524 -1.778)
+						(xy 10.16 -2.032) (xy 11.176 -2.54)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -2544,10 +2558,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 -1.778) (xy -1.524 -2.54) (xy 1.27 -2.54) (xy 1.27 -1.778)
+						(xy 15.24 2.54) (xy 10.16 0)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
@@ -2556,116 +2570,20 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.794) (xy 0 3.302)
+						(xy 15.24 2.54) (xy 15.24 -2.54)
 					)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type default)
 					)
 					(fill
 						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -1.524) (xy 0.254 -1.778) (xy 2.286 -1.778) (xy 2.54 -2.032)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -3.302) (xy 0 -2.794)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.254 1.778) (xy 2.286 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 1.778) (xy 0.635 0.508) (xy 1.905 0.508) (xy 1.27 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 0.508) (xy 1.27 -0.508)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 -1.778) (xy 0.635 -0.508) (xy 1.905 -0.508) (xy 1.27 -1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "CDSOD323-TxxC_1_1"
-				(circle
-					(center 0 2.54)
-					(radius 0.254)
-					(stroke
-						(width -0.0001)
-						(type solid)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 0 -2.54)
-					(radius 0.254)
-					(stroke
-						(width -0.0001)
-						(type solid)
-					)
-					(fill
-						(type outline)
 					)
 				)
 				(pin passive line
-					(at 0 -5.715 90)
-					(length 2.54)
-					(name "K"
+					(at 0 0 0)
+					(length 5.08)
+					(name "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2673,6 +2591,24 @@
 						)
 					)
 					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 20.32 0 180)
+					(length 5.08)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4532,6 +4468,12 @@
 		(uuid "17af4d71-8152-4a90-90ec-fa50cebd206c")
 	)
 	(junction
+		(at 73.66 33.02)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "1d3f3fbf-6ddd-470c-aeff-ae8bf7f4f154")
+	)
+	(junction
 		(at 213.36 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4704,12 +4646,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b3975564-543c-4d45-8ac4-9cc76643abaa")
-	)
-	(junction
-		(at 87.63 33.02)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b3bc6eae-4a66-4875-abaf-881ff1d094f6")
 	)
 	(junction
 		(at 49.53 149.86)
@@ -5235,16 +5171,6 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 33.02) (xy 99.06 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1df68cda-6e02-4eaf-a799-551a0ccd100a")
-	)
-	(wire
-		(pts
 			(xy 210.82 34.29) (xy 210.82 35.56)
 		)
 		(stroke
@@ -5705,6 +5631,16 @@
 	)
 	(wire
 		(pts
+			(xy 73.66 33.02) (xy 99.06 33.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4ac84559-9025-477d-aa99-eacaf5455a4d")
+	)
+	(wire
+		(pts
 			(xy 120.65 153.67) (xy 120.65 152.4)
 		)
 		(stroke
@@ -5725,7 +5661,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 33.02) (xy 87.63 33.02)
+			(xy 67.31 33.02) (xy 73.66 33.02)
 		)
 		(stroke
 			(width 0)
@@ -5832,16 +5768,6 @@
 			(type default)
 		)
 		(uuid "56df36e2-602e-466f-b59c-6e1fdab60d02")
-	)
-	(wire
-		(pts
-			(xy 87.63 33.02) (xy 87.63 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "586e5b9c-7197-4781-8191-37efcc3f696a")
 	)
 	(wire
 		(pts
@@ -6602,6 +6528,16 @@
 			(type default)
 		)
 		(uuid "a2ea9ce2-ea24-45b5-91a4-876150065a1a")
+	)
+	(wire
+		(pts
+			(xy 73.66 33.02) (xy 73.66 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a69cc79d-ab30-4138-8020-ae90d70bb0eb")
 	)
 	(wire
 		(pts
@@ -7405,7 +7341,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 49.53) (xy 87.63 54.61)
+			(xy 73.66 58.42) (xy 73.66 63.5)
 		)
 		(stroke
 			(width 0)
@@ -9291,127 +9227,6 @@
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
 					(reference "U301")
 					(unit 2)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Library:CDSOD323-TxxC")
-		(at 87.63 43.815 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "20104eb7-6e29-44bc-85e7-dd68c31b39ba")
-		(property "Reference" "D301"
-			(at 88.392 39.243 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "19V"
-			(at 77.47 51.181 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Diode_SMD:D_SOD-323"
-			(at 92.202 74.295 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.mouser.com/datasheet/3/40/1/cdsod323_txxc.pdf"
-			(at 87.757 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "ESD Protection Diodes / TVS Diodes TVS Diode xx VOLT"
-			(at 84.582 73.025 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "cap-type" ""
-			(at 87.63 43.815 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "r-power" ""
-			(at 87.63 43.815 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "JLCPCBpn" "C711705"
-			(at 87.63 43.815 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "label" ""
-			(at 87.63 43.815 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer_Part_Number" "CDSOD323-T03C"
-			(at 87.63 43.815 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" "Bourns"
-			(at 87.63 43.815 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8e78b7bc-d840-4303-830e-7611f0c0db34")
-		)
-		(pin "2"
-			(uuid "ff9c2188-8099-4a18-ad11-0ca6471f8b9f")
-		)
-		(instances
-			(project ""
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "D301")
-					(unit 1)
 				)
 			)
 		)
@@ -11725,7 +11540,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
+		(property "Description" "Resistor, thin film, 0402"
 			(at 99.06 152.4 0)
 			(effects
 				(font
@@ -15320,6 +15135,128 @@
 		)
 	)
 	(symbol
+		(lib_id "Library:SP0402B-ELC-01ETG")
+		(at 73.66 58.42 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "88a8af56-e2f4-4d42-a74b-b1f7810a17c5")
+		(property "Reference" "D301"
+			(at 73.914 41.91 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SP0402B-ELC-01ETG"
+			(at 73.66 54.356 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Library:SP0402BELC01ETG"
+			(at -19.99 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.littelfuse.com/~/media/electronics/datasheets/tvs_diode_arrays/littelfuse_tvs_diode_array_enhanced_esd_discrete_tvs_datasheet.pdf.pdf"
+			(at -119.99 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Description" "ESD Suppressor Diode TVS Bi-Dir 7V 2-Pin DFN T/R"
+			(at 73.66 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "0.55"
+			(at -319.99 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "576-SP0402BELC-01ETG"
+			(at -419.99 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Littelfuse/SP0402B-ELC-01ETG?qs=lM4gFlnEeENOCcDe5sglng%3D%3D"
+			(at -519.99 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "LITTELFUSE"
+			(at -619.99 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "SP0402B-ELC-01ETG"
+			(at -719.99 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2a846404-c1a9-4d5a-838d-bf139a956418")
+		)
+		(pin "2"
+			(uuid "656428a4-8ace-416a-a9ee-df66d798c6de")
+		)
+		(instances
+			(project ""
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
+					(reference "D301")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 196.85 158.75 0)
 		(mirror y)
@@ -16400,7 +16337,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 87.63 54.61 0)
+		(at 73.66 63.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -16409,7 +16346,7 @@
 		(fields_autoplaced yes)
 		(uuid "9aabfe26-dcf5-4f68-a21e-39c907fef171")
 		(property "Reference" "#PWR0307"
-			(at 87.63 60.96 0)
+			(at 73.66 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16418,7 +16355,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 87.63 59.69 0)
+			(at 73.66 68.58 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16427,7 +16364,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 87.63 54.61 0)
+			(at 73.66 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16436,7 +16373,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 87.63 54.61 0)
+			(at 73.66 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16445,7 +16382,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 87.63 54.61 0)
+			(at 73.66 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21555,7 +21492,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
+		(property "Description" "Resistor, thin film, 0402"
 			(at 99.06 186.69 0)
 			(effects
 				(font
@@ -21814,6 +21751,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 99.06 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 99.06 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -23376,7 +23329,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeries" "34"
+		(property "rSeries" "34.4"
 			(at 46.99 53.34 0)
 			(effects
 				(font
@@ -23834,7 +23787,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeries" "174"
+		(property "rSeries" "176"
 			(at 46.99 15.24 0)
 			(effects
 				(font
@@ -23843,7 +23796,7 @@
 				(hide yes)
 			)
 		)
-		(property "rShunt" "24.9"
+		(property "rShunt" "25.5"
 			(at 46.99 15.24 0)
 			(effects
 				(font
@@ -24052,7 +24005,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeries" "121"
+		(property "rSeries" "120"
 			(at 46.99 27.94 0)
 			(effects
 				(font
