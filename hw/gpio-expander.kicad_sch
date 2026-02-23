@@ -1398,6 +1398,394 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Library:SLG46855V"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "IC"
+				(at 26.67 7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Value" "SLG46855V"
+				(at 26.67 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Footprint" "SLG46855V"
+				(at 26.67 -94.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.renesas.com/en/products/slg46855/part-details/slg46855v?srsltid=AfmBOoqX5bgadYNPfnsqEJVmZPiDv01_BiCXM6Vr8BvwI7NzwQRG4_-K"
+				(at 26.67 -194.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Description" "GreenPAK Programmable Mixed-Signal IC, VDD Range: 2.3-5.5V, 12 GPIOs, 4 ACMPs, I2C"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Height" "0.6"
+				(at 26.67 -394.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Name" "Renesas Electronics"
+				(at 26.67 -494.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Part_Number" "SLG46855V"
+				(at 26.67 -594.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Part Number" "724-SLG46855V"
+				(at 26.67 -694.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Renesas-Dialog/SLG46855V?qs=A6eO%252BMLsxmQFoaw0dGiuNw%3D%3D"
+				(at 26.67 -794.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Arrow Part Number" ""
+				(at 26.67 -894.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Arrow Price/Stock" ""
+				(at 26.67 -994.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(symbol "SLG46855V_1_1"
+				(rectangle
+					(start 5.08 2.54)
+					(end 25.4 -17.78)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at 0 0 0)
+					(length 5.08)
+					(name "VDD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 0)
+					(length 5.08)
+					(name "GPI0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -5.08 0)
+					(length 5.08)
+					(name "GPIO0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -7.62 0)
+					(length 5.08)
+					(name "GPIO1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -10.16 0)
+					(length 5.08)
+					(name "GPIO2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -12.7 0)
+					(length 5.08)
+					(name "GPIO3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -15.24 0)
+					(length 5.08)
+					(name "GPO0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 0 180)
+					(length 5.08)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -2.54 180)
+					(length 5.08)
+					(name "GPIO4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -5.08 180)
+					(length 5.08)
+					(name "GPIO5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -7.62 180)
+					(length 5.08)
+					(name "GPIO6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "11"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -10.16 180)
+					(length 5.08)
+					(name "GPIO7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "12"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -12.7 180)
+					(length 5.08)
+					(name "GPIO8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "13"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 30.48 -15.24 180)
+					(length 5.08)
+					(name "GPIO9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "14"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:+3.3V"
 			(power)
 			(pin_numbers
@@ -1816,6 +2204,12 @@
 		(uuid "767a5db8-53ab-4627-bb47-1219a83211be")
 	)
 	(junction
+		(at -7.62 104.14)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "7c9fd6f8-51f1-4811-ba7e-2c04c911f2fc")
+	)
+	(junction
 		(at 234.95 101.6)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1850,6 +2244,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a0b6444d-1bf1-4f6c-9ea9-479d87cdd2aa")
+	)
+	(junction
+		(at -63.5 111.76)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a9a24d10-1c2f-45de-bd1d-8d80e47a1bee")
 	)
 	(junction
 		(at 83.82 45.72)
@@ -2271,6 +2671,16 @@
 	)
 	(wire
 		(pts
+			(xy -7.62 101.6) (xy -7.62 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "112ce292-19b8-4f6f-b535-f8fe1368da9b")
+	)
+	(wire
+		(pts
 			(xy 134.62 176.53) (xy 134.62 175.26)
 		)
 		(stroke
@@ -2521,6 +2931,16 @@
 	)
 	(wire
 		(pts
+			(xy -53.34 109.22) (xy -50.8 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "21f3261b-954d-43de-a9ef-f51cd0d672e7")
+	)
+	(wire
+		(pts
 			(xy 234.95 64.77) (xy 236.22 64.77)
 		)
 		(stroke
@@ -2698,6 +3118,16 @@
 			(type default)
 		)
 		(uuid "2e5edef6-f576-47b6-b22c-ee2101c371eb")
+	)
+	(wire
+		(pts
+			(xy -63.5 111.76) (xy -50.8 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "300ea53c-2da8-44dd-93a7-6fce69fc36bc")
 	)
 	(wire
 		(pts
@@ -3101,6 +3531,16 @@
 	)
 	(wire
 		(pts
+			(xy -53.34 101.6) (xy -50.8 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4f31ad12-2a1f-40a4-bc15-6d251050e360")
+	)
+	(wire
+		(pts
 			(xy 142.24 93.98) (xy 142.24 92.71)
 		)
 		(stroke
@@ -3148,6 +3588,16 @@
 			(type default)
 		)
 		(uuid "53b5d04c-dc8e-400f-86a8-43ae26107fd9")
+	)
+	(wire
+		(pts
+			(xy -20.32 101.6) (xy -7.62 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "544ed130-5330-425e-88e7-a578543bd1f5")
 	)
 	(wire
 		(pts
@@ -3791,6 +4241,16 @@
 	)
 	(wire
 		(pts
+			(xy -20.32 104.14) (xy -7.62 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8358f743-84fd-43b4-a28f-b598597fd71d")
+	)
+	(wire
+		(pts
 			(xy 234.95 67.31) (xy 234.95 64.77)
 		)
 		(stroke
@@ -4191,6 +4651,16 @@
 	)
 	(wire
 		(pts
+			(xy -7.62 104.14) (xy -7.62 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a1053e8c-3cd1-4439-999e-86f59de7448e")
+	)
+	(wire
+		(pts
 			(xy 83.82 33.02) (xy 83.82 31.75)
 		)
 		(stroke
@@ -4281,6 +4751,16 @@
 	)
 	(wire
 		(pts
+			(xy -63.5 104.14) (xy -63.5 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ab7b0418-99fd-498d-b06c-b9b02eaea8ac")
+	)
+	(wire
+		(pts
 			(xy 35.56 80.01) (xy 36.83 80.01)
 		)
 		(stroke
@@ -4358,6 +4838,16 @@
 			(type default)
 		)
 		(uuid "b204ee3c-5f2d-4032-bcac-bbc27a0d8296")
+	)
+	(wire
+		(pts
+			(xy -63.5 104.14) (xy -50.8 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b3e4d796-445c-41b3-955d-49075392dcf6")
 	)
 	(wire
 		(pts
@@ -4711,6 +5201,16 @@
 	)
 	(wire
 		(pts
+			(xy -53.34 99.06) (xy -53.34 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cefa972c-a3ad-4fb1-9e44-18b11adfe090")
+	)
+	(wire
+		(pts
 			(xy 110.49 129.54) (xy 107.95 129.54)
 		)
 		(stroke
@@ -4968,6 +5468,16 @@
 			(type default)
 		)
 		(uuid "e4c76c7b-6f29-4542-a579-09917e82cdef")
+	)
+	(wire
+		(pts
+			(xy -53.34 106.68) (xy -50.8 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e5f73d6a-9e7c-4c17-8195-d7786f297296")
 	)
 	(wire
 		(pts
@@ -5301,6 +5811,16 @@
 	)
 	(wire
 		(pts
+			(xy -63.5 111.76) (xy -63.5 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fe071783-29e9-40e3-b926-0024f9e0a612")
+	)
+	(wire
+		(pts
 			(xy 242.57 64.77) (xy 241.3 64.77)
 		)
 		(stroke
@@ -5558,6 +6078,16 @@
 			(justify left bottom)
 		)
 		(uuid "52cbe001-ec98-47e0-9547-d616a4b25763")
+	)
+	(label "SDA"
+		(at -53.34 109.22 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "5529b854-cb3f-476a-94f4-de011018abf7")
 	)
 	(label "Tune.C8"
 		(at 160.02 93.98 270)
@@ -5878,6 +6408,16 @@
 			(justify left bottom)
 		)
 		(uuid "d263ef99-3882-44a2-ae72-c786451c49ed")
+	)
+	(label "SCL"
+		(at -53.34 106.68 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "dc6454fa-5c01-4559-b9d8-e2a0aedfcbc6")
 	)
 	(label "FPGA.SCK"
 		(at 35.56 45.72 180)
@@ -6909,6 +7449,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at -63.5 120.65 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "14e170d6-6ac3-4d52-9dfa-6c5017e6905b")
+		(property "Reference" "#PWR02064"
+			(at -63.5 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at -63.5 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at -63.5 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at -63.5 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at -63.5 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "54cb8660-2cab-4040-b7a7-c48290c1d494")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
+					(reference "#PWR02064")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C_Small_US")
 		(at 251.46 101.6 90)
 		(unit 1)
@@ -7802,6 +8409,248 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "R2011")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at -53.34 99.06 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "26551eb3-cfd6-40cc-8d1e-712baf0ab17d")
+		(property "Reference" "#PWR02062"
+			(at -53.34 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at -53.34 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at -53.34 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at -53.34 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at -53.34 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d4a7131d-3ad8-4da8-b1c4-9bafabe595ca")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
+					(reference "#PWR02062")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Library:SLG46855V")
+		(at -50.8 101.6 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2a22df21-25a2-4f9d-8add-9f47b0bd47c2")
+		(property "Reference" "IC2001"
+			(at -35.56 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SLG46855V"
+			(at -35.56 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "SLG46855V"
+			(at -24.13 196.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.renesas.com/en/products/slg46855/part-details/slg46855v?srsltid=AfmBOoqX5bgadYNPfnsqEJVmZPiDv01_BiCXM6Vr8BvwI7NzwQRG4_-K"
+			(at -24.13 296.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "GreenPAK Programmable Mixed-Signal IC, VDD Range: 2.3-5.5V, 12 GPIOs, 4 ACMPs, I2C"
+			(at -50.8 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "0.6"
+			(at -24.13 496.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "Renesas Electronics"
+			(at -24.13 596.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "SLG46855V"
+			(at -24.13 696.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "724-SLG46855V"
+			(at -24.13 796.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Renesas-Dialog/SLG46855V?qs=A6eO%252BMLsxmQFoaw0dGiuNw%3D%3D"
+			(at -24.13 896.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Arrow Part Number" ""
+			(at -24.13 996.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Arrow Price/Stock" ""
+			(at -24.13 1096.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "4"
+			(uuid "240d16b3-dc64-4639-a1d5-9cabd2bbbb30")
+		)
+		(pin "7"
+			(uuid "e544595a-fae0-44dd-aaa3-218be35a4854")
+		)
+		(pin "8"
+			(uuid "d59350f7-004a-4b58-ab30-59d25ef9e802")
+		)
+		(pin "9"
+			(uuid "384f8fd1-2a97-4061-b9b8-ebcc75e49739")
+		)
+		(pin "14"
+			(uuid "75ea4d68-33fe-4056-a185-5f97a115070a")
+		)
+		(pin "13"
+			(uuid "10369794-e862-4763-8e33-29ac5c54c113")
+		)
+		(pin "11"
+			(uuid "ec3e8074-5e04-4382-b905-eebf466e33e4")
+		)
+		(pin "12"
+			(uuid "d6f2f463-272e-40e9-aade-2f21a864dadf")
+		)
+		(pin "6"
+			(uuid "75fd2de4-b316-4de9-abb2-81785d34d356")
+		)
+		(pin "3"
+			(uuid "c95150af-f27c-4d91-99aa-dc89b710803f")
+		)
+		(pin "10"
+			(uuid "785f62ec-8035-4d60-818b-978bfa41a657")
+		)
+		(pin "5"
+			(uuid "f995a9e5-d2e0-4172-9c2a-849cb5557c42")
+		)
+		(pin "2"
+			(uuid "c4a530c4-bd64-4edb-b553-807d95a339cc")
+		)
+		(pin "1"
+			(uuid "6072c37f-d9eb-4295-9333-16808c7c4595")
+		)
+		(instances
+			(project ""
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
+					(reference "IC2001")
 					(unit 1)
 				)
 			)
@@ -12519,6 +13368,73 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
 					(reference "#PWR02038")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at -7.62 125.73 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "77d94cf1-f45d-45e7-93e6-260cdae8696a")
+		(property "Reference" "#PWR02063"
+			(at -7.62 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at -7.62 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at -7.62 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at -7.62 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at -7.62 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fe60d6f3-07ca-45a0-9b81-e89168fed911")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641/01982449-4673-4cb6-80c9-9e93e5a5c4e1"
+					(reference "#PWR02063")
 					(unit 1)
 				)
 			)
