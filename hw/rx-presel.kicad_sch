@@ -896,7 +896,7 @@
 			"atten12dB" "atten6dB" "atten3dB" "n24dB" "n12dB" "n6dB" "n3dB" "txrx"
 		)
 	)
-	(text "When L1 is false (nL1 is true),\nthe 1.5uH inductor is bypassed\nleaving only 220nH in the preselector.\nL1 is true, both are in series."
+	(text "When L1 is false (nL1 is true),\nthe 1.5uH inductor is bypassed\nleaving only 220nH in the preselector.\nWhen L1 is true, both are in series."
 		(exclude_from_sim no)
 		(at 204.47 121.412 0)
 		(effects
@@ -941,6 +941,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3229cf8d-f587-4ec8-9cee-4c8d76adbad2")
+	)
+	(junction
+		(at 218.44 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "492f1678-849c-4baf-b764-e985c37566d4")
 	)
 	(junction
 		(at 234.95 106.68)
@@ -989,6 +995,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "98304b58-47d6-431f-a3b1-6ebba118b505")
+	)
+	(junction
+		(at 218.44 99.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9daf7fd2-ea66-45a7-9a43-89a019633ce8")
 	)
 	(junction
 		(at 60.96 76.2)
@@ -1646,6 +1658,16 @@
 	)
 	(wire
 		(pts
+			(xy 214.63 106.68) (xy 218.44 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "69d540b8-e1f7-4620-8c60-d7a62369d983")
+	)
+	(wire
+		(pts
 			(xy 69.85 82.55) (xy 69.85 99.06)
 		)
 		(stroke
@@ -1896,6 +1918,16 @@
 	)
 	(wire
 		(pts
+			(xy 218.44 106.68) (xy 219.71 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "933d3947-a502-4b3a-9e76-e674d0cdbf73")
+	)
+	(wire
+		(pts
 			(xy 55.88 66.04) (xy 72.39 66.04)
 		)
 		(stroke
@@ -1973,6 +2005,16 @@
 			(type default)
 		)
 		(uuid "9ca029b2-042a-42d2-a13f-a63e048edcb1")
+	)
+	(wire
+		(pts
+			(xy 214.63 99.06) (xy 218.44 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9da34389-72f3-42c1-b0b3-def0f7010698")
 	)
 	(wire
 		(pts
@@ -2153,6 +2195,16 @@
 			(type default)
 		)
 		(uuid "cb0a8f08-2c92-4c67-896f-b1a31176d0f4")
+	)
+	(wire
+		(pts
+			(xy 218.44 99.06) (xy 219.71 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cb41a6c4-a056-4c00-854e-6b8443f70621")
 	)
 	(wire
 		(pts
@@ -3599,7 +3651,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "33pF"
+		(property "Value" "32pF"
 			(at 91.694 105.156 0)
 			(effects
 				(font
@@ -3859,7 +3911,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C107047"
 			(at 86.36 102.87 0)
 			(effects
 				(font
@@ -4709,7 +4761,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C1882476"
 			(at 53.34 102.87 0)
 			(effects
 				(font
@@ -7085,7 +7137,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "250pF"
+		(property "Value" "240pF"
 			(at 141.986 104.902 0)
 			(effects
 				(font
@@ -7345,7 +7397,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C519400"
 			(at 135.89 102.87 0)
 			(effects
 				(font
@@ -7647,7 +7699,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C106246"
 			(at 168.91 102.87 0)
 			(effects
 				(font
@@ -8102,7 +8154,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "15pF"
+		(property "Value" "16pF"
 			(at 74.93 105.41 0)
 			(effects
 				(font
@@ -8362,7 +8414,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C327125"
 			(at 69.85 102.87 0)
 			(effects
 				(font
@@ -8664,7 +8716,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C576817"
 			(at 201.93 102.87 0)
 			(effects
 				(font
@@ -8840,7 +8892,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "120pF"
+		(property "Value" "130pF"
 			(at 125.476 104.902 0)
 			(effects
 				(font
@@ -9100,7 +9152,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C519399"
 			(at 119.38 102.87 0)
 			(effects
 				(font
@@ -9946,6 +9998,309 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 214.63 102.87 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "9fe9dfd7-3ac0-4eba-b5cc-9c93ac52af06")
+		(property "Reference" "C712"
+			(at 209.804 100.584 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "4.7nF"
+			(at 208.788 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 213.6648 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Availability" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description_1" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MF" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MP" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Package" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Part Number" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Specifications" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser-part-number" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" "NP0"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "working-voltage" "50V"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "TDK"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "CGA3E2C0G1H822J080AE"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "810-CGA3E2C0G1H822J8"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Core" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "label" ""
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2894191"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "8dc03a48-2651-4296-aca1-aa90edb5fc01")
+		)
+		(pin "1"
+			(uuid "80d01fa7-5c71-40f1-b012-30d897d5c3a3")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/4791d531-dc86-4dad-a3f8-522417f410d3"
+					(reference "C712")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 119.38 107.95 0)
 		(unit 1)
@@ -10014,7 +10369,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 218.44 102.87 0)
+		(at 219.71 102.87 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10022,7 +10377,7 @@
 		(dnp no)
 		(uuid "ae2ba812-b89f-4ac2-93e5-b289b6f5bd23")
 		(property "Reference" "C711"
-			(at 223.266 100.584 0)
+			(at 224.536 100.584 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10030,8 +10385,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "8.2nF"
-			(at 224.282 105.41 0)
+		(property "Value" "3.3nF"
+			(at 225.552 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10040,7 +10395,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 219.4052 106.68 0)
+			(at 220.6752 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10049,7 +10404,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10058,7 +10413,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10067,7 +10422,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10076,7 +10431,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10085,7 +10440,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10094,7 +10449,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10103,7 +10458,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10112,7 +10467,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10121,7 +10476,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10130,7 +10485,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10139,7 +10494,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10148,7 +10503,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10157,7 +10512,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10166,7 +10521,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10175,7 +10530,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10184,7 +10539,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10193,7 +10548,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10202,7 +10557,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10211,7 +10566,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10220,7 +10575,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10229,7 +10584,7 @@
 			)
 		)
 		(property "cap-type" "NP0"
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10237,7 +10592,7 @@
 			)
 		)
 		(property "working-voltage" "50V"
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10246,7 +10601,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "TDK"
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10255,7 +10610,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "CGA3E2C0G1H822J080AE"
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10264,7 +10619,7 @@
 			)
 		)
 		(property "Mouser Part Number" "810-CGA3E2C0G1H822J8"
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10273,7 +10628,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10282,7 +10637,7 @@
 			)
 		)
 		(property "label" ""
-			(at 218.44 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10290,8 +10645,8 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
-			(at 218.44 102.87 0)
+		(property "JLCPCBpn" "C576817"
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11625,7 +11980,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C107043"
 			(at 185.42 102.87 0)
 			(effects
 				(font
@@ -12699,7 +13054,7 @@
 				)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "50V"
 			(at 152.4 102.87 0)
 			(effects
 				(font
@@ -12753,7 +13108,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C107054"
 			(at 152.4 102.87 0)
 			(effects
 				(font
@@ -13189,7 +13544,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C282073"
 			(at 102.87 102.87 0)
 			(effects
 				(font

@@ -2197,7 +2197,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 63.5 107.95 0)
 			(effects
 				(font
@@ -2446,7 +2446,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X5R"
+		(property "cap-type" "X7R"
 			(at 58.42 107.95 0)
 			(effects
 				(font
@@ -2508,7 +2508,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C327087"
 			(at 58.42 107.95 0)
 			(effects
 				(font
@@ -3274,7 +3274,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C106211"
 			(at 157.48 95.25 0)
 			(effects
 				(font
@@ -3592,7 +3592,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C106211"
 			(at 165.1 95.25 0)
 			(effects
 				(font
@@ -3984,7 +3984,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C106211"
 			(at 148.59 95.25 0)
 			(effects
 				(font
@@ -4757,7 +4757,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C170182"
 			(at 55.88 82.55 90)
 			(effects
 				(font
@@ -5075,7 +5075,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C106211"
 			(at 138.43 95.25 0)
 			(effects
 				(font
@@ -5460,7 +5460,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 82.55 71.12 0)
 			(effects
 				(font

@@ -8889,7 +8889,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4983748"
 			(at 246.38 158.75 0)
 			(effects
 				(font
@@ -9530,7 +9530,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C18535241"
 			(at 204.47 137.16 0)
 			(effects
 				(font
@@ -11426,7 +11426,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 245.11 123.19 0)
 			(effects
 				(font
@@ -12215,7 +12215,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 59.9948 193.04 0)
 			(effects
 				(font
@@ -12483,7 +12483,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "20V"
+		(property "working-voltage" "50V"
 			(at 60.96 189.23 0)
 			(effects
 				(font
@@ -12537,7 +12537,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4979223"
 			(at 60.96 189.23 0)
 			(effects
 				(font
@@ -13243,7 +13243,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 199.39 137.16 0)
 			(effects
 				(font
@@ -13697,7 +13697,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C115056"
 			(at 120.65 157.48 0)
 			(effects
 				(font
@@ -14345,7 +14345,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4983748"
 			(at 229.87 158.75 0)
 			(effects
 				(font
@@ -15064,7 +15064,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 220.98 158.75 0)
 			(effects
 				(font
@@ -15627,7 +15627,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4983748"
 			(at 196.85 158.75 0)
 			(effects
 				(font
@@ -15929,7 +15929,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C18535241"
 			(at 226.06 138.43 0)
 			(effects
 				(font
@@ -17344,7 +17344,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 204.47 158.75 0)
 			(effects
 				(font
@@ -17394,7 +17394,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 127.3048 195.58 0)
 			(effects
 				(font
@@ -17662,7 +17662,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "20V"
+		(property "working-voltage" "50V"
 			(at 128.27 191.77 0)
 			(effects
 				(font
@@ -17716,7 +17716,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4979223"
 			(at 128.27 191.77 0)
 			(effects
 				(font
@@ -18493,7 +18493,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4983748"
 			(at 213.36 158.75 0)
 			(effects
 				(font
@@ -19142,7 +19142,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 254 158.75 0)
 			(effects
 				(font
@@ -19259,7 +19259,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 127.3048 161.29 0)
 			(effects
 				(font
@@ -19527,7 +19527,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "20V"
+		(property "working-voltage" "50V"
 			(at 128.27 157.48 0)
 			(effects
 				(font
@@ -19581,7 +19581,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4979223"
 			(at 128.27 157.48 0)
 			(effects
 				(font
@@ -20283,7 +20283,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 237.49 158.75 0)
 			(effects
 				(font
@@ -20549,7 +20549,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 59.9948 158.75 0)
 			(effects
 				(font
@@ -20817,7 +20817,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "20V"
+		(property "working-voltage" "50V"
 			(at 60.96 154.94 0)
 			(effects
 				(font
@@ -20871,7 +20871,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4979223"
 			(at 60.96 154.94 0)
 			(effects
 				(font
@@ -21310,7 +21310,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C115056"
 			(at 120.65 191.77 0)
 			(effects
 				(font
@@ -22084,7 +22084,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 220.98 138.43 0)
 			(effects
 				(font
@@ -22753,7 +22753,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 144.78 168.91 0)
 			(effects
 				(font
@@ -23283,7 +23283,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C301928"
 			(at 237.49 123.19 0)
 			(effects
 				(font

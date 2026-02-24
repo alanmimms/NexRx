@@ -2239,7 +2239,7 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 77.47) (xy 86.36 77.47)
+			(xy 85.09 77.47) (xy 83.82 77.47)
 		)
 		(stroke
 			(width 0)
@@ -2359,7 +2359,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 77.47) (xy 99.06 77.47)
+			(xy 99.06 77.47) (xy 92.71 77.47)
 		)
 		(stroke
 			(width 0)
@@ -2569,7 +2569,7 @@
 	)
 	(wire
 		(pts
-			(xy 110.49 77.47) (xy 113.03 77.47)
+			(xy 106.68 77.47) (xy 113.03 77.47)
 		)
 		(stroke
 			(width 0)
@@ -3419,7 +3419,7 @@
 	)
 	(hierarchical_label "preselIn"
 		(shape output)
-		(at 86.36 77.47 180)
+		(at 83.82 77.47 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3857,7 +3857,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C301928"
 			(at 21.59 82.55 0)
 			(effects
 				(font
@@ -4877,7 +4877,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C115056"
 			(at 147.32 48.26 0)
 			(effects
 				(font
@@ -5482,7 +5482,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 69.85 48.26 0)
 			(effects
 				(font
@@ -6313,7 +6313,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 158.75 129.54 0)
 			(effects
 				(font
@@ -6824,7 +6824,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C115056"
 			(at 213.36 36.83 0)
 			(effects
 				(font
@@ -7187,7 +7187,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 181.61 96.52 0)
 			(effects
 				(font
@@ -7634,7 +7634,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 27.94 82.55 0)
 			(effects
 				(font
@@ -8618,7 +8618,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C18535241"
 			(at 27.94 43.18 0)
 			(effects
 				(font
@@ -9122,7 +9122,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 140.97 48.26 0)
 			(effects
 				(font
@@ -9552,7 +9552,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C115056"
 			(at 165.1 129.54 0)
 			(effects
 				(font
@@ -9916,7 +9916,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C115056"
 			(at 173.99 96.52 0)
 			(effects
 				(font
@@ -10268,7 +10268,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 106.68 77.47 270)
+		(at 102.87 77.47 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -10277,7 +10277,7 @@
 		(dnp no)
 		(uuid "ca246c0a-7a5a-41da-8b00-e242008a1045")
 		(property "Reference" "C1305"
-			(at 113.03 76.2 90)
+			(at 110.236 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10285,8 +10285,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "120pF"
-			(at 105.156 76.2 90)
+		(property "Value" "130pF"
+			(at 99.314 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10295,7 +10295,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 102.87 76.5048 0)
+			(at 99.06 76.5048 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10304,7 +10304,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10313,7 +10313,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10322,7 +10322,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10331,7 +10331,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10340,7 +10340,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10349,7 +10349,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10358,7 +10358,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10367,7 +10367,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10376,7 +10376,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10385,7 +10385,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10394,7 +10394,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10403,7 +10403,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10412,7 +10412,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10421,7 +10421,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10430,7 +10430,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10439,7 +10439,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10448,7 +10448,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10457,7 +10457,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10466,7 +10466,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10475,7 +10475,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10484,7 +10484,7 @@
 			)
 		)
 		(property "cap-type" "NP0"
-			(at 106.68 77.47 0)
+			(at 100.33 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10492,7 +10492,7 @@
 			)
 		)
 		(property "working-voltage" "50V"
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10501,7 +10501,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "TDK"
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10510,7 +10510,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "CGA3E2C0G1H121J080AA"
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10519,7 +10519,7 @@
 			)
 		)
 		(property "Mouser Part Number" "810-CGA3E2C0G1H121J"
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10528,7 +10528,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10537,7 +10537,7 @@
 			)
 		)
 		(property "label" ""
-			(at 106.68 77.47 0)
+			(at 102.87 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10545,8 +10545,8 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
-			(at 106.68 77.47 90)
+		(property "JLCPCBpn" "C519399"
+			(at 102.87 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10908,7 +10908,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 58.42 48.26 0)
 			(effects
 				(font
@@ -11271,7 +11271,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C18535241"
 			(at 77.47 48.26 0)
 			(effects
 				(font
@@ -11906,7 +11906,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C18535241"
 			(at 41.91 43.18 0)
 			(effects
 				(font
@@ -12014,7 +12014,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 95.25 77.47 270)
+		(at 88.9 77.47 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -12023,7 +12023,7 @@
 		(dnp no)
 		(uuid "f70e4b2f-4c39-4ae3-9a34-843667b0c208")
 		(property "Reference" "R1301"
-			(at 94.996 75.184 90)
+			(at 88.646 75.184 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12031,7 +12031,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 94.742 79.502 90)
+			(at 88.392 79.502 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12039,7 +12039,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 94.996 76.454 90)
+			(at 88.646 76.454 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12048,7 +12048,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 95.25 77.47 0)
+			(at 88.9 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12057,7 +12057,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 95.25 77.47 0)
+			(at 88.9 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12066,7 +12066,7 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 95.25 77.47 90)
+			(at 88.9 77.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12436,7 +12436,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C24452"
 			(at 207.01 36.83 0)
 			(effects
 				(font
@@ -12799,7 +12799,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C106246"
 			(at 189.23 96.52 0)
 			(effects
 				(font

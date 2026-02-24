@@ -2150,7 +2150,8 @@
 		(uuid "fd17f587-451c-419a-a3ab-1b37bc453f4b")
 	)
 	(image
-		(at 220.98 97.79)
+		(at 220.98 80.01)
+		(scale 1.79089)
 		(uuid "c2808919-ba26-4a06-96c4-cf0e98a223b1")
 		(data "iVBORw0KGgoAAAANSUhEUgAAAXEAAAILCAIAAACRtDvJAAAAA3NCSVQICAjb4U/gAAAgAElEQVR4"
 			"nO3dd0BTV/8/8JNBCEskCTOpA0VUcLQuWqlQtxTcFRG1KloVB2jdq1gVqziqonWgddQKpVq1LirW"
@@ -2886,7 +2887,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "STM32C011F_4-6_Ux"
+		(property "Value" "STM32C011F4U6TR"
 			(at 92.3133 41.91 0)
 			(effects
 				(font
@@ -2915,6 +2916,57 @@
 			)
 		)
 		(property "Description" "STMicroelectronics Arm Cortex-M0+ MCU, 16-32KB flash, 6KB RAM, 48 MHz, 2.0-3.6V, 18 GPIO, UFQFPN20"
+			(at 90.17 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 90.17 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 90.17 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 90.17 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCBpn" "C5456188"
+			(at 90.17 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "STMicro"
+			(at 90.17 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "ST STM32C011F4U6TR"
 			(at 90.17 64.77 0)
 			(effects
 				(font
@@ -3145,7 +3197,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "STM32C011F_4-6_Ux"
+		(property "Value" "STM32C011F4U6TR"
 			(at 155.8133 118.11 0)
 			(effects
 				(font
@@ -3174,6 +3226,57 @@
 			)
 		)
 		(property "Description" "STMicroelectronics Arm Cortex-M0+ MCU, 16-32KB flash, 6KB RAM, 48 MHz, 2.0-3.6V, 18 GPIO, UFQFPN20"
+			(at 153.67 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 153.67 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 153.67 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 153.67 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCBpn" "C5456188"
+			(at 153.67 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "STMicro"
+			(at 153.67 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "ST STM32C011F4U6TR"
 			(at 153.67 140.97 0)
 			(effects
 				(font
@@ -3337,7 +3440,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "STM32C011F_4-6_Ux"
+		(property "Value" "STM32C011F4U6TR"
 			(at 93.5833 119.38 0)
 			(effects
 				(font
@@ -3366,6 +3469,57 @@
 			)
 		)
 		(property "Description" "STMicroelectronics Arm Cortex-M0+ MCU, 16-32KB flash, 6KB RAM, 48 MHz, 2.0-3.6V, 18 GPIO, UFQFPN20"
+			(at 91.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 91.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 91.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 91.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCBpn" "C5456188"
+			(at 91.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "STMicro"
+			(at 91.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "ST STM32C011F4U6TR"
 			(at 91.44 142.24 0)
 			(effects
 				(font
@@ -3528,7 +3682,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "STM32C011F_4-6_Ux"
+		(property "Value" "STM32C011F4U6TR"
 			(at 157.0833 41.91 0)
 			(effects
 				(font
@@ -3557,6 +3711,57 @@
 			)
 		)
 		(property "Description" "STMicroelectronics Arm Cortex-M0+ MCU, 16-32KB flash, 6KB RAM, 48 MHz, 2.0-3.6V, 18 GPIO, UFQFPN20"
+			(at 154.94 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 154.94 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 154.94 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 154.94 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCBpn" "C5456188"
+			(at 154.94 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "STMicro"
+			(at 154.94 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "ST STM32C011F4U6TR"
 			(at 154.94 64.77 0)
 			(effects
 				(font

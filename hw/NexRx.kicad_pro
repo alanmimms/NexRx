@@ -38,8 +38,8 @@
         "other_text_upright": false,
         "pads": {
           "drill": 0.0,
-          "height": 0.65,
-          "width": 0.35
+          "height": 0.95,
+          "width": 0.9
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -70,7 +70,23 @@
       ],
       "drc_exclusions": [
         [
+          "clearance|-17770000|-330040000|9f6b93df-5fec-4301-91b3-3b30e33faf9d|9e8689f3-08aa-4dd0-b559-2e0a23045fd3",
+          ""
+        ],
+        [
+          "clearance|-18195000|-330715000|78524fc0-d6e2-4ed7-b53d-3130e8ff97ac|9e8689f3-08aa-4dd0-b559-2e0a23045fd3",
+          ""
+        ],
+        [
           "clearance|-18320000|-295740000|8715ee77-f033-45ae-acf8-3ceac8713188|2b487d7b-fb48-49f7-9a98-c6b81f84dec2",
+          ""
+        ],
+        [
+          "clearance|-20195000|-330165000|98dec4d5-e21f-4a0e-a676-1f5a3e431bd3|bf9ef9ba-736f-425b-8c3b-cc485ec8b0bb",
+          ""
+        ],
+        [
+          "clearance|-20320000|-327740000|9d8ff080-25d6-41bd-8f6b-8f2d091f9c49|81cca362-ee78-45fe-837a-8ebf84b12a29",
           ""
         ],
         [
@@ -90,11 +106,39 @@
           ""
         ],
         [
+          "clearance|-28820000|-330365000|85ac7b9d-6e6e-484e-9636-5a458526fb10|c6dd676f-8f2e-4ac0-9c41-dc9197e3395f",
+          ""
+        ],
+        [
           "clearance|-29364999|-315164999|3cae07c7-1778-4d92-8d7a-55217b492125|ed924b8d-ddce-4c50-97ba-a6a12a6cac82",
           ""
         ],
         [
           "clearance|-29364999|-316765001|f5d93dfd-c478-4f24-88a1-197885fa3bca|26691b3e-e585-4df4-9e8e-2fa8aa10ece7",
+          ""
+        ],
+        [
+          "clearance|-31245000|-330490000|0bcd58be-d5d2-40c3-aece-8a0db676fd50|a5c9e32d-4df3-487b-ae97-0d9846e1a759",
+          ""
+        ],
+        [
+          "clearance|-31370000|-328065000|a0021ebc-63c3-4819-96c1-46a5d2a2e8ac|19621325-4ebd-41cc-be2e-03351cb8a9ea",
+          ""
+        ],
+        [
+          "clearance|-31395000|-350915000|73f6afc9-291a-410c-a836-e660786e885b|05217300-771d-4d84-805f-c462c8b70328",
+          ""
+        ],
+        [
+          "clearance|-31520000|-348490000|9e2d392c-4d0a-4775-9477-ae1b899a0a0b|639c12bf-40fa-4834-a99a-469f7b1baf2a",
+          ""
+        ],
+        [
+          "clearance|-33945000|-348615000|fedded29-f627-46db-b95b-42d881ad0570|0cba20af-f859-4090-b0af-129c19271a34",
+          ""
+        ],
+        [
+          "clearance|-34495000|-350615000|b0e4ff5e-ebb7-4aae-8bb3-2f5faf2c6e07|cf66e7f5-d508-42e8-a5d3-13d5ac6649da",
           ""
         ],
         [
@@ -130,6 +174,14 @@
           ""
         ],
         [
+          "clearance|-645000|-351090000|b1a19938-7c35-4475-81ea-9b295e08a532|dc52e44c-a51b-4ec4-95fa-97f2ac13288d",
+          ""
+        ],
+        [
+          "clearance|-645000|-353390000|c5d6d19e-3743-4f26-ae95-6092394d0ccb|5678c6bd-8b33-4411-b43b-5aee1936af35",
+          ""
+        ],
+        [
           "clearance|12492500|-316587500|ba246405-c601-4acb-a014-c751c24d55bc|a4cb67ee-5347-4d6c-9649-18dc1d535792",
           ""
         ],
@@ -143,6 +195,14 @@
         ],
         [
           "clearance|13792500|-316587500|0b342ed4-3ab3-4b53-860c-8517ff83fc62|77ea0d84-d57c-4fc5-9036-e4e3373ae10c",
+          ""
+        ],
+        [
+          "clearance|1780000|-350965000|e42736a7-5e7a-494f-ad00-84e6dda3c5d4|5cf7bddb-a6d3-46c6-8c63-c892840c5dc4",
+          ""
+        ],
+        [
+          "clearance|1905000|-353390000|47464df8-0f8a-45b4-b0a0-3e1ca0592a2c|377fb84d-fe0a-4cc3-a7b2-42ac6cce9ac7",
           ""
         ],
         [
@@ -4262,13 +4322,13 @@
           "group_by": false,
           "label": "Mfg",
           "name": "Mfg",
-          "show": true
+          "show": false
         },
         {
           "group_by": false,
           "label": "MfgPart",
           "name": "MfgPart",
-          "show": true
+          "show": false
         },
         {
           "group_by": false,
@@ -4455,9 +4515,15 @@
           "label": "MPN",
           "name": "MPN",
           "show": false
+        },
+        {
+          "group_by": false,
+          "label": "JLCPCBpn",
+          "name": "JLCPCBpn",
+          "show": true
         }
       ],
-      "filter_string": "",
+      "filter_string": "c",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
