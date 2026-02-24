@@ -6529,6 +6529,16 @@
 		)
 		(uuid "a2ea9ce2-ea24-45b5-91a4-876150065a1a")
 	)
+	(bus
+		(pts
+			(xy 34.29 109.22) (xy 36.83 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a3dfd842-2999-43ad-ad0d-17d8a3581d93")
+	)
 	(wire
 		(pts
 			(xy 73.66 33.02) (xy 73.66 38.1)
@@ -8242,7 +8252,7 @@
 		(uuid "51344173-ba98-47e6-8fa9-6ec19d250c42")
 	)
 	(hierarchical_label "Tune{Tune}"
-		(shape input)
+		(shape bidirectional)
 		(at 25.4 196.85 180)
 		(effects
 			(font
@@ -8251,6 +8261,17 @@
 			(justify right)
 		)
 		(uuid "52edd020-0fd6-4db8-97c5-fe6af1aae8c8")
+	)
+	(hierarchical_label "Tune{Tune}"
+		(shape bidirectional)
+		(at 34.29 109.22 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "54fa82c3-20f8-4f09-bfd9-601dc4e81664")
 	)
 	(hierarchical_label "preselIn"
 		(shape input)
@@ -24210,6 +24231,59 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
 					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 36.83 103.505)
+		(size 29.21 14.605)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "f2486bc2-eba8-4fb8-890d-ac8b4843b7f5")
+		(property "Sheetname" "Tune Control"
+			(at 36.83 102.7934 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "gpio-expander.kicad_sch"
+			(at 36.83 118.6946 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "Tune{Tune}" bidirectional
+			(at 36.83 109.22 180)
+			(uuid "11622a16-f691-4757-b2d2-6fa6331d0ed0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
+					(page "20")
 				)
 			)
 		)

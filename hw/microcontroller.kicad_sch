@@ -5959,10 +5959,6 @@
 		(uuid "b4481dd0-2fa2-4b9c-9ddb-cde9eee242da")
 	)
 	(no_connect
-		(at 102.87 135.89)
-		(uuid "cada5319-4a78-44e3-b7d7-e3a1b6e76e6b")
-	)
-	(no_connect
 		(at 57.15 77.47)
 		(uuid "d0f65067-301e-4900-a90b-e7f6a99c6c78")
 	)
@@ -6516,6 +6512,16 @@
 		)
 		(uuid "26f389db-e5e7-45a2-b1fe-e6b8e0d5bd09")
 	)
+	(bus
+		(pts
+			(xy 26.67 129.54) (xy 30.48 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "282aab24-d9be-4cd0-b0f0-63f19c20d0f7")
+	)
 	(wire
 		(pts
 			(xy 218.44 144.78) (xy 218.44 148.59)
@@ -6765,6 +6771,16 @@
 			(type default)
 		)
 		(uuid "3bdc8785-28c0-4760-b3ba-62c17a0788f1")
+	)
+	(wire
+		(pts
+			(xy 104.14 135.89) (xy 102.87 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c7ebf9b-d5c8-473b-88a5-d8f5bb7b74f0")
 	)
 	(wire
 		(pts
@@ -9496,6 +9512,16 @@
 		)
 		(uuid "e2225a4e-b7f8-4568-b0bd-0d4b12470bbf")
 	)
+	(label "Tune.txrx"
+		(at 104.14 135.89 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e64e60d1-06ed-44fd-8f42-67860287af4c")
+	)
 	(label "usbDATA5"
 		(at 182.88 128.27 0)
 		(effects
@@ -9643,6 +9669,17 @@
 				(hide yes)
 			)
 		)
+	)
+	(hierarchical_label "Tune{Tune}"
+		(shape bidirectional)
+		(at 26.67 129.54 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "4f9c213d-490e-42d2-8e46-b17ba12cc061")
 	)
 	(hierarchical_label "FPGA{FPGA}"
 		(shape bidirectional)

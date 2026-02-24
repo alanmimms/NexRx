@@ -1720,16 +1720,6 @@
 	)
 	(bus
 		(pts
-			(xy 161.29 86.36) (xy 180.34 86.36)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1bb055d6-4daf-4326-b047-b4eeec4ff001")
-	)
-	(bus
-		(pts
 			(xy 171.45 82.55) (xy 171.45 106.68)
 		)
 		(stroke
@@ -1967,6 +1957,16 @@
 			(type default)
 		)
 		(uuid "c2b1c469-7d83-4c50-a324-c5b0eae0ddc7")
+	)
+	(bus
+		(pts
+			(xy 161.29 97.79) (xy 223.52 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c3c07262-03a6-41ef-a022-caaeeeb8eb30")
 	)
 	(wire
 		(pts
@@ -5011,8 +5011,8 @@
 				(justify right)
 			)
 		)
-		(pin "Tune{Tune}" input
-			(at 161.29 86.36 0)
+		(pin "Tune{Tune}" bidirectional
+			(at 161.29 97.79 0)
 			(uuid "77922920-3737-408a-936c-949518790eb7")
 			(effects
 				(font
@@ -5087,16 +5087,6 @@
 		(pin "preselIn" output
 			(at 180.34 88.9 180)
 			(uuid "1669524d-b8b3-4670-81d1-a51a350722b9")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "Tune{Tune}" output
-			(at 180.34 86.36 180)
-			(uuid "7fa272d7-35e0-46c7-bb35-8f52fbfcc3d1")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5180,6 +5170,16 @@
 		(pin "usbDP" bidirectional
 			(at 223.52 104.14 180)
 			(uuid "e5467183-265d-4e51-b08a-672622633e19")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "Tune{Tune}" bidirectional
+			(at 223.52 97.79 180)
+			(uuid "154337d7-cea7-4c9b-ae68-33f79b4c9184")
 			(effects
 				(font
 					(size 1.27 1.27)

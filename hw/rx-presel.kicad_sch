@@ -893,10 +893,10 @@
 	(bus_alias "Tune"
 		(members "C0" "nC0" "C1" "nC1" "C2" "nC2" "C3" "nC3" "C4" "nC4" "C5" "nC5"
 			"C6" "nC6" "C7" "nC7" "C8" "nC8" "C9" "nC9" "C10" "nC10" "L1" "nL1" "atten24dB"
-			"atten12dB" "atten6dB" "atten3dB" "n24dB" "n12dB" "n6dB" "n3dB"
+			"atten12dB" "atten6dB" "atten3dB" "n24dB" "n12dB" "n6dB" "n3dB" "txrx"
 		)
 	)
-	(text "When nL1 is true, the 1.5uH inductor is bypassed\nleaving only 220nH in the preselector.\nL1 is true, both are in series."
+	(text "When L1 is false (nL1 is true),\nthe 1.5uH inductor is bypassed\nleaving only 220nH in the preselector.\nL1 is true, both are in series."
 		(exclude_from_sim no)
 		(at 204.47 121.412 0)
 		(effects

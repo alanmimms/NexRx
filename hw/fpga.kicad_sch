@@ -2877,16 +2877,6 @@
 		)
 		(uuid "ae9af323-0f26-4391-a8db-a46262a4b411")
 	)
-	(bus
-		(pts
-			(xy 26.67 24.13) (xy 30.48 24.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "afb94627-c296-4f4a-8a76-10acd12f650f")
-	)
 	(wire
 		(pts
 			(xy 182.88 59.69) (xy 184.15 59.69)
@@ -2936,16 +2926,6 @@
 			(type default)
 		)
 		(uuid "bfb99e3d-824e-4465-a424-159fe98cdb86")
-	)
-	(bus
-		(pts
-			(xy 30.48 120.65) (xy 34.29 120.65)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c2c04a29-07f9-4023-a7cd-34fc9dd509ec")
 	)
 	(wire
 		(pts
@@ -3056,16 +3036,6 @@
 			(type default)
 		)
 		(uuid "d29cdf43-606b-4401-9260-0fa1f9822d2e")
-	)
-	(bus
-		(pts
-			(xy 30.48 116.84) (xy 34.29 116.84)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d94232a6-2f84-44b0-b6e6-7f3be6aac25a")
 	)
 	(wire
 		(pts
@@ -3196,16 +3166,6 @@
 			(type default)
 		)
 		(uuid "f841d30f-0ec2-4bde-8ced-4f37615ad9e0")
-	)
-	(bus
-		(pts
-			(xy 30.48 124.46) (xy 34.29 124.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f84aa224-592f-4d64-b228-3d0b924ac88f")
 	)
 	(wire
 		(pts
@@ -3470,17 +3430,6 @@
 	)
 	(hierarchical_label "Ctrl{Ctrl}"
 		(shape bidirectional)
-		(at 30.48 116.84 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "5537caec-d532-45a8-b2c9-749ce681873d")
-	)
-	(hierarchical_label "Ctrl{Ctrl}"
-		(shape bidirectional)
 		(at 26.67 16.51 180)
 		(effects
 			(font
@@ -3500,39 +3449,6 @@
 			(justify right)
 		)
 		(uuid "7e26c4ed-fdab-48a3-bc87-7797134dc55a")
-	)
-	(hierarchical_label "Tune{Tune}"
-		(shape output)
-		(at 30.48 124.46 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a13bda30-5b77-42cf-8f7a-56be1aa89a17")
-	)
-	(hierarchical_label "FPGA{FPGA}"
-		(shape bidirectional)
-		(at 30.48 120.65 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "b33807e7-022e-4617-9144-c60a08c37243")
-	)
-	(hierarchical_label "Tune{Tune}"
-		(shape output)
-		(at 26.67 24.13 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ca76f0f1-f181-4334-8125-e922d06e9712")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -12903,79 +12819,6 @@
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1313")
 					(unit 1)
-				)
-			)
-		)
-	)
-	(sheet
-		(at 34.29 112.395)
-		(size 29.21 14.605)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0.0000)
-		)
-		(uuid "01982449-4673-4cb6-80c9-9e93e5a5c4e1")
-		(property "Sheetname" "GPIO Expander"
-			(at 34.29 111.6834 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "gpio-expander.kicad_sch"
-			(at 34.29 127.5846 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(pin "Ctrl{Ctrl}" bidirectional
-			(at 34.29 116.84 180)
-			(uuid "9739e3a6-9f02-44ef-9a2d-60f4b7ea9ef9")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "FPGA{FPGA}" bidirectional
-			(at 34.29 120.65 180)
-			(uuid "5b9d1bb1-89c3-4650-a816-50f9163e606c")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "Tune{Tune}" output
-			(at 34.29 124.46 180)
-			(uuid "4104f091-2c77-435a-9cc8-9c25870e8b55")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(page "20")
 				)
 			)
 		)
