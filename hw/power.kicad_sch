@@ -15601,7 +15601,7 @@
 				)
 			)
 		)
-		(property "Value" "TPS6123"
+		(property "Value" "TPS61023"
 			(at 68.834 114.808 0)
 			(effects
 				(font
@@ -15659,6 +15659,14 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "label" ""
+			(at 74.93 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "3"
