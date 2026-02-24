@@ -8,17 +8,7 @@
       "Power"
     ],
     "hidden_nets": [
-      "+3.3V-ON",
-      "VBUS",
-      "+3.3V",
-      "+3.3VFPGAIO",
-      "+5.4V",
-      "GND",
-      "+VFPGACORE",
-      "Net-(U1201-SW)",
-      "Net-(U1202-SW)",
-      "+MC3VA",
-      "/Power/+5.4V-dirty"
+      ""
     ],
     "high_contrast_mode": 0,
     "net_color_mode": 2,
@@ -41,7 +31,7 @@
       "text": true,
       "tracks": true,
       "vias": true,
-      "zones": true
+      "zones": false
     },
     "visible_items": [
       "vias",

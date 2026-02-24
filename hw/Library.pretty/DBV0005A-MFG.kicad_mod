@@ -188,4 +188,15 @@
 		(uuid "2f2a72e9-03cb-4611-9007-01d4d2ce35ee")
 	)
 	(embedded_fonts no)
+	(model "/home/alan/ham/NexRx/symbols/TPS7A20xxDBVR/DBV0005A.stp"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
 )
