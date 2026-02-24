@@ -1240,7 +1240,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "${rSeriesJLCPCBpn}"
 			(at 114.3 82.55 90)
 			(effects
 				(font
@@ -1873,7 +1873,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "${rShuntJLCPCBpn}"
 			(at 109.22 87.63 90)
 			(effects
 				(font
@@ -2664,7 +2664,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "${rSeriesJLCPCBpn}"
 			(at 104.14 82.55 90)
 			(effects
 				(font

@@ -9924,7 +9924,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 148.844 148.844 90)
 			(effects
 				(font
@@ -9951,7 +9951,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C863964"
 			(at 149.86 148.59 0)
 			(effects
 				(font
@@ -10309,7 +10309,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "710-68710814022"
+		(property "Mouser Part Number" ""
 			(at 168.91 519.05 0)
 			(effects
 				(font
@@ -10329,7 +10329,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Wurth Elektronik"
+		(property "Manufacturer_Name" "MOLEX"
 			(at 168.91 719.05 0)
 			(effects
 				(font
@@ -10339,7 +10339,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "68710814022"
+		(property "Manufacturer_Part_Number" "5034800800"
 			(at 168.91 819.05 0)
 			(effects
 				(font
@@ -10553,7 +10553,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C293338"
 			(at 149.86 24.13 0)
 			(effects
 				(font
@@ -11189,7 +11189,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 46.99 100.33 90)
 			(effects
 				(font
@@ -13090,7 +13090,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 48.26 67.31 90)
 			(effects
 				(font
@@ -13774,7 +13774,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 38.1 190.5 90)
 			(effects
 				(font
@@ -14681,7 +14681,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 53.34 72.39 90)
 			(effects
 				(font
@@ -14993,7 +14993,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 114.3 123.19 90)
 			(effects
 				(font
@@ -15104,7 +15104,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 259.08 46.99 90)
 			(effects
 				(font
@@ -15646,7 +15646,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 119.38 85.09 90)
 			(effects
 				(font
@@ -17444,7 +17444,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 40.64 138.43 90)
 			(effects
 				(font
@@ -18131,7 +18131,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 107.95 57.15 90)
 			(effects
 				(font
@@ -18451,7 +18451,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 214.63 125.73 90)
 			(effects
 				(font
@@ -19196,7 +19196,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 256.54 30.48 90)
 			(effects
 				(font
@@ -19815,7 +19815,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 40.64 102.87 90)
 			(effects
 				(font
@@ -21688,7 +21688,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 123.19 54.61 90)
 			(effects
 				(font
@@ -22805,7 +22805,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 40.64 110.49 90)
 			(effects
 				(font
@@ -24662,7 +24662,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 139.446 105.664 90)
 			(effects
 				(font
@@ -24689,7 +24689,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C284424"
 			(at 138.43 105.41 0)
 			(effects
 				(font
@@ -24800,7 +24800,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 119.38 67.31 90)
 			(effects
 				(font
@@ -24980,7 +24980,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 110.49 69.85 90)
 			(effects
 				(font
@@ -25818,7 +25818,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C4258780"
 			(at 43.18 62.23 90)
 			(effects
 				(font
@@ -27591,7 +27591,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 208.28 125.73 90)
 			(effects
 				(font

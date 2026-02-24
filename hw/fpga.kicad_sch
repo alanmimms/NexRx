@@ -12065,7 +12065,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C728576"
 			(at 88.9 77.47 90)
 			(effects
 				(font

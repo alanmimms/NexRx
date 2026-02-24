@@ -2707,9 +2707,9 @@
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "3e87b917-0864-463e-828a-ac47a8d4b8d2")
 		(property "Reference" "T101"
 			(at 92.71 93.726 90)
@@ -4042,7 +4042,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C2077703"
 			(at 55.88 83.82 0)
 			(effects
 				(font

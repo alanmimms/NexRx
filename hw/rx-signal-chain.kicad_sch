@@ -11031,7 +11031,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854337"
 			(at 54.61 149.86 90)
 			(effects
 				(font
@@ -11799,7 +11799,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854277"
 			(at 99.06 152.4 90)
 			(effects
 				(font
@@ -12135,7 +12135,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854337"
 			(at 49.53 144.78 90)
 			(effects
 				(font
@@ -12910,7 +12910,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854337"
 			(at 54.61 184.15 90)
 			(effects
 				(font
@@ -15232,6 +15232,39 @@
 				(hide yes)
 			)
 		)
+		(property "cap-type" ""
+			(at 73.66 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 73.66 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 73.66 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCBpn" "C1974049"
+			(at 73.66 58.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2a846404-c1a9-4d5a-838d-bf139a956418")
 		)
@@ -16235,7 +16268,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854337"
 			(at 49.53 189.23 90)
 			(effects
 				(font
@@ -18089,7 +18122,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854337"
 			(at 49.53 154.94 90)
 			(effects
 				(font
@@ -19887,7 +19920,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854337"
 			(at 49.53 179.07 90)
 			(effects
 				(font
@@ -21735,7 +21768,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854277"
 			(at 99.06 186.69 90)
 			(effects
 				(font
@@ -22083,9 +22116,9 @@
 		(at 109.22 43.18 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "efcb80a5-5602-4cea-adea-6fd5c4cc07e2")
 		(property "Reference" "T301"
 			(at 109.22 31.496 0)
@@ -23338,6 +23371,24 @@
 				(hide yes)
 			)
 		)
+		(property "rSeriesJLCPCBpn" "C2503774"
+			(at 46.99 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntJLCPCBpn" "C284620"
+			(at 46.99 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "en" input
 			(at 46.99 57.15 180)
 			(uuid "14899499-397a-407e-ad8c-1ca8fe6bd5b5")
@@ -23796,6 +23847,24 @@
 				(hide yes)
 			)
 		)
+		(property "rSeriesJLCPCBpn" "C2500827"
+			(at 46.99 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntJLCPCBpn" "C284460"
+			(at 46.99 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "en" input
 			(at 46.99 22.86 180)
 			(uuid "e8036f2b-f091-4cae-a43b-c44fbdf42262")
@@ -23905,6 +23974,24 @@
 				(hide yes)
 			)
 		)
+		(property "rSeriesJLCPCBpn" "C2533356"
+			(at 46.99 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntJLCPCBpn" "C2532743"
+			(at 46.99 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "en" input
 			(at 46.99 45.72 180)
 			(uuid "dfc95d60-c2bc-4207-8b48-af195949f56d")
@@ -24006,6 +24093,24 @@
 			)
 		)
 		(property "rShunt" "107"
+			(at 46.99 30.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rSeriesJLCPCBpn" "C284306"
+			(at 46.99 30.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntJLCPCBpn" "C2532622"
 			(at 46.99 30.48 0)
 			(effects
 				(font

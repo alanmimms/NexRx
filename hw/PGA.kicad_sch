@@ -2573,7 +2573,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 166.37 76.2 90)
 			(effects
 				(font
@@ -2975,7 +2975,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 174.244 102.616 90)
 			(effects
 				(font
@@ -3182,7 +3182,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854274"
 			(at 173.99 101.6 90)
 			(effects
 				(font
@@ -4540,7 +4540,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 71.12 63.5 90)
 			(effects
 				(font
@@ -5024,7 +5024,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 166.37 92.71 90)
 			(effects
 				(font
@@ -6088,7 +6088,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 174.244 69.596 90)
 			(effects
 				(font
@@ -6295,7 +6295,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C854274"
 			(at 173.99 68.58 90)
 			(effects
 				(font
@@ -7617,7 +7617,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" ""
+		(property "JLCPCBpn" "C723366"
 			(at 76.2 63.5 90)
 			(effects
 				(font

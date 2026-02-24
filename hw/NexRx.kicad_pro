@@ -70,11 +70,11 @@
       ],
       "drc_exclusions": [
         [
-          "clearance|-11770000|-331715000|05217300-771d-4d84-805f-c462c8b70328|73f6afc9-291a-410c-a836-e660786e885b",
+          "clearance|-11770000|-334265000|9e2d392c-4d0a-4775-9477-ae1b899a0a0b|639c12bf-40fa-4834-a99a-469f7b1baf2a",
           ""
         ],
         [
-          "clearance|-11895000|-334140000|639c12bf-40fa-4834-a99a-469f7b1baf2a|9e2d392c-4d0a-4775-9477-ae1b899a0a0b",
+          "clearance|-11895000|-331840000|73f6afc9-291a-410c-a836-e660786e885b|05217300-771d-4d84-805f-c462c8b70328",
           ""
         ],
         [
@@ -182,7 +182,7 @@
           ""
         ],
         [
-          "clearance|-9470000|-334265000|0cba20af-f859-4090-b0af-129c19271a34|fedded29-f627-46db-b95b-42d881ad0570",
+          "clearance|-9345000|-334140000|fedded29-f627-46db-b95b-42d881ad0570|0cba20af-f859-4090-b0af-129c19271a34",
           ""
         ],
         [
@@ -4273,7 +4273,7 @@
           "group_by": true,
           "label": "cap-type",
           "name": "cap-type",
-          "show": true
+          "show": false
         },
         {
           "group_by": true,
@@ -4297,7 +4297,7 @@
           "group_by": true,
           "label": "working-voltage",
           "name": "working-voltage",
-          "show": true
+          "show": false
         },
         {
           "group_by": true,
@@ -4564,7 +4564,7 @@
           "show": true
         }
       ],
-      "filter_string": "c",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
