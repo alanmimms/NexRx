@@ -266,8 +266,8 @@ end
 -- Public API - Event Dispatch
 -- ============================================================================
 
--- Debug flag for event dispatch (set to true to trace tag matching)
-Events.debugDispatch = false
+-- Debug flag for event dispatch (enabled by default for diagnosis)
+Events.debugDispatch = true
 
 --- Dispatch an event through the widget hierarchy
 -- @param event {type, x, y, button, key, delta, modifiers, ...}
@@ -283,20 +283,16 @@ function Events.dispatch(event)
         targetWidget = Events.getWidgetAt(event.x, event.y)
     end
 
-    -- Debug: show what widget was hit (only for click events, not motion)
-    local showDebug = Events.debugDispatch and
-        (event.type == "MouseDown" or event.type == "MouseUp")
-
-    if showDebug then
-        local widgetName = targetWidget and targetWidget.id or "none"
-        local widgetTagsStr = targetWidget and table.concat(targetWidget.tags, ",") or ""
-        print(string.format("[Events] %s widget=%s tags={%s}",
-            event.type, widgetName, widgetTagsStr))
-    end
-
     -- Bubble through widget hierarchy
     local currentWidget = targetWidget
-    local firstBubble = true
+    local handled = false
+    
+    if Events.debugDispatch then
+        local wName = targetWidget and targetWidget.id or "none"
+        print(string.format("[Events] Dispatching %s at (%s,%s) widget=%s", 
+            event.type, event.x or "?", event.y or "?", wName))
+    end
+
     while true do
         -- Build tags for SetBox resolution
         local tags = Events._buildEventTags(event, currentWidget)
@@ -304,14 +300,11 @@ function Events.dispatch(event)
         -- Resolve handler and properties via SetBox
         local props = Events._resolveHandler(tags)
 
-        -- Debug: show resolution result (only on first bubble for target widget)
-        if showDebug and firstBubble then
-            if props and props.handler then
-                print(string.format("[Events] -> handler=%s", props.handler))
-            else
-                print("[Events] -> no handler")
-            end
-            firstBubble = false
+        if Events.debugDispatch then
+            local tagStr = table.concat(tags, ",")
+            local hName = props and props.handler or "NONE"
+            print(string.format("  - bubble widget=%s tags={%s} -> handler=%s", 
+                currentWidget and currentWidget.id or "ROOT", tagStr, hName))
         end
 
         if props and props.handler then
@@ -319,17 +312,12 @@ function Events.dispatch(event)
             if handler then
                 local ok, result = pcall(handler, event, currentWidget, props)
                 if ok and result == true then
-                    -- Event handled, stop bubbling
-                    return true
+                    handled = true
+                    if Events.debugDispatch then print("    [HANDLED]") end
+                    break
                 end
-                -- Handler returned false or errored, continue bubbling
                 if not ok then
                     print(string.format("[Events] Handler '%s' error: %s", props.handler, result))
-                end
-            else
-                -- Handler name resolved but not registered
-                if Events.debugDispatch then
-                    print(string.format("[Events DEBUG] Handler '%s' not registered!", props.handler))
                 end
             end
         end
@@ -338,71 +326,46 @@ function Events.dispatch(event)
         if currentWidget and currentWidget.parent then
             currentWidget = Events.widgets[currentWidget.parent]
         else
-            -- Reached root, try unhandled handler
+            -- Reached root
             break
         end
     end
 
-    -- No widget handled the event - try global unhandled handler
-    local unhandledTags = {"event.Unhandled"}
-    Events._addModifierTags(event, unhandledTags)
-
-    local props = Events._resolveHandler(unhandledTags)
-    if props and props.handler and Events.handlers[props.handler] then
-        -- Pass the original target widget so unhandled handler can log it
-        pcall(Events.handlers[props.handler], event, targetWidget, props)
+    -- If not handled by any widget, try global handlers (tags without widget tags)
+    if not handled then
+        local globalTags = Events._buildEventTags(event, nil)
+        local props = Events._resolveHandler(globalTags)
+        if props and props.handler and Events.handlers[props.handler] then
+            if Events.debugDispatch then
+                print(string.format("  - global fallback tags={%s} -> handler=%s", 
+                    table.concat(globalTags, ","), props.handler))
+            end
+            local ok, result = pcall(Events.handlers[props.handler], event, nil, props)
+            if ok and result == true then
+                handled = true
+                if Events.debugDispatch then print("    [HANDLED GLOBAL]") end
+            end
+        end
     end
 
-    return false
+    -- No widget or global handled the event - try global unhandled handler
+    if not handled then
+        local unhandledTags = {"event.Unhandled"}
+        Events._addModifierTags(event, unhandledTags)
+
+        local props = Events._resolveHandler(unhandledTags)
+        if props and props.handler and Events.handlers[props.handler] then
+            pcall(Events.handlers[props.handler], event, targetWidget, props)
+        end
+    end
+
+    return handled
 end
 
 --- Dispatch a keyboard event
--- Uses same tag-building as mouse events for consistency
--- @param event {type, key, scancode, modifiers, x, y, ...}
--- @return true if handled
+-- Now uses the same bubbling logic as mouse events for consistency
 function Events.dispatchKey(event)
-    if not event or not event.type then
-        return false
-    end
-
-    -- Find widget under cursor (same as mouse events)
-    local widget = nil
-    if event.x and event.y then
-        widget = Events.getWidgetAt(event.x, event.y)
-    end
-
-    -- Build tags using common function (includes widget tags, mode tags, modifiers)
-    local tags = Events._buildEventTags(event, widget)
-
-    -- Debug output for keyboard events
-    if Events.debugDispatch and event.type == "KeyDown" then
-        local widgetName = widget and widget.id or "none"
-        print(string.format("[Events] %s key=%s widget=%s tags={%s}",
-            event.type, event.key or "?", widgetName, table.concat(tags, ",")))
-    end
-
-    -- Try to resolve handler and properties via SetBox
-    local props = Events._resolveHandler(tags)
-    if props and props.handler and Events.handlers[props.handler] then
-        if Events.debugDispatch and event.type == "KeyDown" then
-            print(string.format("[Events] -> handler=%s", props.handler))
-        end
-        local ok, result = pcall(Events.handlers[props.handler], event, widget, props)
-        if ok and result == true then
-            return true
-        end
-    elseif Events.debugDispatch and event.type == "KeyDown" then
-        print("[Events] -> no handler")
-    end
-
-    -- If not handled, try with "event.Unhandled" tag
-    table.insert(tags, "event.Unhandled")
-    props = Events._resolveHandler(tags)
-    if props and props.handler and Events.handlers[props.handler] then
-        pcall(Events.handlers[props.handler], event, widget, props)
-    end
-
-    return false
+    return Events.dispatch(event)
 end
 
 -- ============================================================================
@@ -488,8 +451,16 @@ end
 -- @param tags tags array to modify
 function Events._addModifierTags(event, tags)
     if not event.modifiers then return end
-    for _, mod in ipairs(event.modifiers) do
-        table.insert(tags, mod)
+    
+    -- Handle both array of strings and map of tagName -> true
+    for k, v in pairs(event.modifiers) do
+        if type(k) == "number" then
+            -- Array of strings
+            table.insert(tags, v)
+        elseif v == true then
+            -- Map of tags (like activeTags table)
+            table.insert(tags, k)
+        end
     end
 end
 
@@ -601,18 +572,23 @@ function Events.createEvent(eventType, data)
         end
     end
 
-    -- Build modifiers array from C++ functions if available (namespaced)
+    -- Build modifiers array (namespaced)
+    -- Prefer values passed in data, fall back to global functions
     if not event.modifiers then
         event.modifiers = {}
-        if isShiftDown and isShiftDown() then
-            table.insert(event.modifiers, "input.SHIFT")
-        end
-        if isCtrlDown and isCtrlDown() then
-            table.insert(event.modifiers, "input.CTRL")
-        end
-        if isAltDown and isAltDown() then
-            table.insert(event.modifiers, "input.ALT")
-        end
+        
+        local hasShift = data and data.shift ~= nil and data.shift or (isShiftDown and isShiftDown())
+        local hasCtrl = data and data.ctrl ~= nil and data.ctrl or (isCtrlDown and isCtrlDown())
+        local hasAlt = data and data.alt ~= nil and data.alt or (isAltDown and isAltDown())
+
+        if hasShift then table.insert(event.modifiers, "input.SHIFT") end
+        if hasCtrl then table.insert(event.modifiers, "input.CTRL") end
+        if hasAlt then table.insert(event.modifiers, "input.ALT") end
+        
+        -- Also check for held mouse buttons if passed in data
+        if data and data.mouseLeftHeld then table.insert(event.modifiers, "input.MouseLEFT") end
+        if data and data.mouseMiddleHeld then table.insert(event.modifiers, "input.MouseMIDDLE") end
+        if data and data.mouseRightHeld then table.insert(event.modifiers, "input.MouseRIGHT") end
     end
 
     return event

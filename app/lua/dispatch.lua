@@ -51,7 +51,10 @@ Dispatch.renderSpectrum = function(data, x, y, w, h) end
 -- ============================================================================
 
 -- Send VFO frequency to hardware (no-op if hardware not connected)
-Dispatch.sendVfoToHardware = function(freqHz) end
+Dispatch.setVfo = function(freqHz) end
+
+-- Set receiver active state
+Dispatch.setRxActive = function(active) end
 
 -- Set QSD offset (no-op if hardware not connected)
 Dispatch.setQsdOffset = function(kHz) end
@@ -76,7 +79,22 @@ end
 
 local function hwSendVfo(freqHz)
     if hw and hw.isConnected() then
-        hw.setVfo(freqHz)
+        -- Some hardware uses rx.setVfo, some uses hw.setVfo
+        -- In our C++ app, rx.setVfo is the one that sends to twin
+        if rx and rx.setVfo then
+            rx.setVfo(freqHz)
+        end
+    end
+end
+
+local function hwSetRxActive(active)
+    if hw and hw.isConnected() then
+        -- Tell hardware to start/stop stream if supported
+        if active then
+            if hw.startStream then hw.startStream() end
+        else
+            if hw.stopStream then hw.stopStream() end
+        end
     end
 end
 
@@ -141,7 +159,8 @@ end
 -- Call when hardware connects
 function Dispatch.enableHardware()
     Dispatch.getSpectrum = hwGetSpectrum
-    Dispatch.sendVfoToHardware = hwSendVfo
+    Dispatch.setVfo = hwSendVfo
+    Dispatch.setRxActive = hwSetRxActive
     Dispatch.setQsdOffset = hwSetQsdOffset
     Dispatch.setAttenuation = hwSetAttenuation
     print("[Dispatch] Hardware functions enabled")
@@ -151,7 +170,8 @@ end
 -- Call when hardware disconnects
 function Dispatch.disableHardware()
     Dispatch.getSpectrum = function() return nil end
-    Dispatch.sendVfoToHardware = function(freqHz) end
+    Dispatch.setVfo = function(freqHz) end
+    Dispatch.setRxActive = function(active) end
     Dispatch.setQsdOffset = function(kHz) end
     Dispatch.setAttenuation = function(dB) end
     print("[Dispatch] Hardware functions disabled")

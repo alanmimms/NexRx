@@ -80,83 +80,83 @@ rule {
 }
 
 -- =============================================================================
--- VFO Control (any widget tagged VFOControl responds to VFO tuning)
--- "Control" is a behavior tag - waterfall, spectrum, slider all tune VFO
+-- VFO Control (Global tuning)
 -- Frequency is in MHz, so: 1kHz=0.001, 10kHz=0.01, 100kHz=0.1, 1MHz=1.0
 -- =============================================================================
 
--- VFOControl base: 1 kHz steps (no modifiers)
+-- VFO Wheel: 1 kHz steps (no modifiers)
 rule {
     id = "event-vfo-wheel",
-    tags = {"event.MouseWheel", "widget.VFOControl"},
+    tags = {"event.MouseWheel"},
     priority = 20,
     apply = { handler = "vfo_control", step = 0.001 }
 }
 
+-- VFO Arrows: 1 kHz steps
 rule {
     id = "event-vfo-arrow-right",
-    tags = {"event.KeyDown-RIGHT", "widget.VFOControl"},
+    tags = {"event.KeyDown-RIGHT"},
     priority = 20,
     apply = { handler = "vfo_control", step = 0.001 }
 }
 
 rule {
     id = "event-vfo-arrow-left",
-    tags = {"event.KeyDown-LEFT", "widget.VFOControl"},
+    tags = {"event.KeyDown-LEFT"},
     priority = 20,
     apply = { handler = "vfo_control", step = -0.001 }
 }
 
 rule {
     id = "event-vfo-arrow-up",
-    tags = {"event.KeyDown-UP", "widget.VFOControl"},
+    tags = {"event.KeyDown-UP"},
     priority = 20,
     apply = { handler = "vfo_control", step = 0.001 }
 }
 
 rule {
     id = "event-vfo-arrow-down",
-    tags = {"event.KeyDown-DOWN", "widget.VFOControl"},
+    tags = {"event.KeyDown-DOWN"},
     priority = 20,
     apply = { handler = "vfo_control", step = -0.001 }
 }
 
--- VFOControl + CTRL: 10 kHz steps
+-- VFO + CTRL: 10 kHz steps
 rule {
     id = "event-vfo-wheel-ctrl",
-    tags = {"event.MouseWheel", "widget.VFOControl", "input.CTRL"},
+    tags = {"event.MouseWheel", "input.CTRL"},
     priority = 30,
     apply = { handler = "vfo_control", step = 0.01 }
 }
 
--- VFOControl + SHIFT: 1 MHz steps
+-- VFO + SHIFT: 1 MHz steps
 rule {
     id = "event-vfo-wheel-shift",
-    tags = {"event.MouseWheel", "widget.VFOControl", "input.SHIFT"},
+    tags = {"event.MouseWheel", "input.SHIFT"},
     priority = 30,
     apply = { handler = "vfo_control", step = 1.0 }
 }
 
--- VFOControl + CTRL + SHIFT: 100 kHz steps
+-- VFO + CTRL + SHIFT: 100 kHz steps
 rule {
     id = "event-vfo-wheel-ctrl-shift",
-    tags = {"event.MouseWheel", "widget.VFOControl", "input.CTRL", "input.SHIFT"},
+    tags = {"event.MouseWheel", "input.CTRL", "input.SHIFT"},
     priority = 40,
     apply = { handler = "vfo_control", step = 0.1 }
 }
 
--- VFOControl + H: 10 Hz fine tuning
+-- VFO + H: 10 Hz fine tuning
 rule {
     id = "event-vfo-wheel-h",
-    tags = {"event.MouseWheel", "widget.VFOControl", "input.H"},
+    tags = {"event.MouseWheel", "input.H"},
     priority = 30,
     apply = { handler = "vfo_control", step = 0.00001 }
 }
 
--- VFOControl + SHIFT + H: 100 Hz fine tuning
+-- VFO + SHIFT + H: 100 Hz fine tuning
 rule {
     id = "event-vfo-wheel-shift-h",
-    tags = {"event.MouseWheel", "widget.VFOControl", "input.SHIFT", "input.H"},
+    tags = {"event.MouseWheel", "input.SHIFT", "input.H"},
     priority = 40,
     apply = { handler = "vfo_control", step = 0.0001 }
 }
@@ -228,6 +228,13 @@ rule {
     tags = {"event.KeyDown-D", "input.CTRL"},
     priority = 1000,
     apply = { handler = "debug_toggle" }
+}
+
+rule {
+    id = "event-layout-reset",
+    tags = {"event.KeyDown-R", "input.CTRL", "input.ALT"},
+    priority = 1000,
+    apply = { handler = "layout_reset" }
 }
 
 -- =============================================================================

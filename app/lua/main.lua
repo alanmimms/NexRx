@@ -22,7 +22,8 @@ local constraints = require("ui.constraints")
 local container = require("ui.container")
 
 -- Load new architecture modules
-local bands = require("bands")
+_G.bands = require("bands")
+local bands = _G.bands
 local dispatch = require("dispatch")
 local events = require("events")
 local animate = require("animate")
@@ -53,54 +54,37 @@ local lastMouseX, lastMouseY = 0, 0
 -- Use UPPERCASE as per unified tag architecture
 local BUTTON_NAMES = {"LEFT", "MIDDLE", "RIGHT"}
 
--- Application state (all loaded from SetBox in init())
-local rxActive = false
+-- Application state (bridged to AppState)
+-- Most state is in AppState, but we keep a local proxy for compatibility
+local state = setmetatable({}, {
+    __index = function(_, k)
+        return AppState.get(k)
+    end,
+    __newindex = function(_, k, v)
+        AppState.set(k, v)
+    end
+})
 
--- =======================================================================
--- Property-controlled state
--- All values accessible via getProperty/setProperty using state[name]
--- Specs define min/max/step bounds and C++ setter functions
--- =======================================================================
+-- Get/set property values (bridged to AppState)
+local function getProperty(name)
+    return AppState.get(name)
+end
 
-local state = {}  -- Populated in init() from SetBox
+local function setProperty(name, value)
+    -- Check SetBox if this property should be animated
+    local prevTags = setbox.getActiveTags()
+    setbox.addTag("prop." .. name)
+    local isAnimated = setbox.getBool("animated", false)
+    setbox.setActiveTags(prevTags)
 
--- Property specifications: defines behavior for each property
--- Fields: min, max (bounds), step (quantization), setter (C++ function), requiresHw (conditional)
-local propertySpecs = {
-    -- Boolean toggles (no bounds, just setter)
-    bandpassEnabled = { setter = function(v) rx.setBandpassEnabled(v) end },
-    notchEnabled    = { setter = function(v) rx.setNotchEnabled(v) end },
-    agcEnabled      = { setter = function(v) rx.setAgcEnabled(v) end },
-    nrEnabled       = { setter = function(v) rx.setNrEnabled(v) end },
-    nbEnabled       = { setter = function(v) rx.setNbEnabled(v) end },
-    muteEnabled     = { setter = function(v) rx.setMute(v) end },
-    testToneEnabled = { setter = function(v) audio.setTestTone(v, 440.0) end },
+    if isAnimated then
+        AppState.animateTo(name, value)
+    else
+        AppState.set(name, value)
+    end
+end
 
-    -- Numeric with bounds
-    bandpassCenter = { min = -5000, max = 5000, setter = function(v) rx.setBandpassCenter(v) end },
-    bandpassWidth  = { min = 50, max = 4000, setter = function(v) rx.setBandpassWidth(v) end },
-    notchCenter    = { min = -10000, max = 10000, setter = function(v) rx.setNotchCenter(v) end },
-    notchWidth     = { min = 10, max = 500, setter = function(v) rx.setNotchWidth(v) end },
-    volumeDb       = { min = -60, max = 0, setter = function(v) audio.setVolume(v) end },
-    squelch        = { min = 0, max = 1 },  -- No C++ setter
-    lmsMu          = { min = 0.00001, max = 0.1, setter = function(v) rx.setLmsMu(v) end },
-
-    -- Waterfall range (setters reference other state values)
-    wfMinDb = { min = -140, max = -60, setter = function(v) waterfall.setRange(v, state.wfMaxDb) end },
-    wfMaxDb = { min = -100, max = -20, setter = function(v) waterfall.setRange(state.wfMinDb, v) end },
-
-    -- Hardware-conditional (only call setter if hw connected)
-    qsdOffsetK = { min = 1, max = 24, setter = function(v) hw.setQsdOffset(v) end, requiresHw = true },
-    rfAttenDb  = { min = 0, max = 45, step = 3, setter = function(v) hw.setAttenuation(v) end, requiresHw = true },
-
-    -- Special properties (custom logic in propertyAccessors, not auto-generated)
-    -- frequency, selectedMode, selectedBand, wfColormap, vfoA, vfoB, activeVFO
-}
-
--- VFO state (also in state table but not auto-generated)
--- state.vfoA, state.vfoB, state.activeVFO, state.frequency, state.selectedMode, state.selectedBand, state.wfColormap
-
--- Non-property state (not exposed via property system)
+-- Non-property state (not exposed via AppState)
 local wfBins           -- FFT bins (read-only after init)
 local wfRows           -- history rows (read-only after init)
 local spectrumData = {}  -- runtime buffer
@@ -109,20 +93,8 @@ local spectrumData = {}  -- runtime buffer
 local keyStates = {}     -- scancode -> true if key was down last frame
 local activeTags = {}    -- tag name -> true for all currently active tags (held keys, held buttons, etc.)
 
--- Property accessor registry (populated in init(), used by drawPropertySlider)
+-- Property accessor registry (not used anymore, kept as empty for compatibility)
 local propertyAccessors = {}
-
--- Get/set property values (works after init() populates propertyAccessors)
-local function getProperty(name)
-    local accessor = propertyAccessors[name]
-    if accessor then return accessor.get() end
-    return nil
-end
-
-local function setProperty(name, value)
-    local accessor = propertyAccessors[name]
-    if accessor then accessor.set(value) end
-end
 
 -- Get ALL active tags for debugging - EVERYTHING in the system
 -- Shows complete tag state: all widgets, all inputs, all modes
@@ -130,52 +102,39 @@ end
 local function getAllActiveTags()
     local allTags = {}
 
-    -- 1. Raw held keys and mouse buttons (already namespaced as input.*)
+    -- 1. Raw held keys and mouse buttons (namespaced as input.*)
     for tagName, _ in pairs(activeTags) do
         allTags[tagName] = true
     end
 
-    -- 2. Derived generic modifiers (input.SHIFT from input.LSHIFT/input.RSHIFT, etc.)
-    if activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"] then
-        allTags["input.SHIFT"] = true
-    end
-    if activeTags["input.LCTRL"] or activeTags["input.RCTRL"] then
-        allTags["input.CTRL"] = true
-    end
-    if activeTags["input.LALT"] or activeTags["input.RALT"] then
-        allTags["input.ALT"] = true
-    end
+    -- 2. Derived generic modifiers
+    if activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"] then allTags["input.SHIFT"] = true end
+    if activeTags["input.LCTRL"] or activeTags["input.RCTRL"] then allTags["input.CTRL"] = true end
+    if activeTags["input.LALT"] or activeTags["input.RALT"] then allTags["input.ALT"] = true end
 
     -- 3. Mode tags from events module (state.FreqEntryMode, etc.)
-    if events and events.modeTags then
-        for tagName, _ in pairs(events.modeTags) do
-            allTags[tagName] = true
+    if events and events.getModeTags then
+        for _, modeTag in ipairs(events.getModeTags()) do
+            allTags[modeTag] = true
         end
     end
 
-    -- 4. ALL registered widget tags (every widget in the UI)
-    if events and events.widgets then
-        for widgetId, widget in pairs(events.widgets) do
-            if widget.tags then
-                for _, tag in ipairs(widget.tags) do
-                    allTags[tag] = true
-                end
-            end
-        end
-    end
-
-    -- 5. Hovered widget state
+    -- 4. Tags of the HOVERED widget only
     local mouseX, mouseY = getMousePos()
     local hoveredWidget = events.getWidgetAt(mouseX, mouseY)
     if hoveredWidget then
         allTags["state.Hovered"] = true
-        -- Show which widget is hovered
         if hoveredWidget.id then
             allTags["state.Hovered:" .. hoveredWidget.id] = true
         end
+        if hoveredWidget.tags then
+            for _, tag in ipairs(hoveredWidget.tags) do
+                allTags[tag] = true
+            end
+        end
     end
 
-    -- 6. Pressed state (if mouse button held)
+    -- 5. Pressed state
     if activeTags["input.MouseLEFT"] and hoveredWidget then
         allTags["state.Pressed"] = true
         if hoveredWidget.id then
@@ -205,11 +164,17 @@ local function connectHardware()
     if hw.connect(hwSettings.host, hwSettings.controlPort, hwSettings.streamPort) then
         hwConnected = true
         print("[Lua] Connected to hardware!")
+
+        -- Enable hardware dispatch functions first
+        dispatch.enableHardware()
+
+        -- Sync current state to hardware (direct calls to ensure it happens)
+        dispatch.setVfo(state.frequency * 1e6)
+        dispatch.setRxActive(state.rxActive)
+        
         -- Send initial QSD offset k
         hw.setQsdOffset(state.qsdOffsetK)
         print("[Lua] Set QSD offset k = " .. state.qsdOffsetK .. " kHz")
-        -- Enable hardware dispatch functions
-        dispatch.enableHardware()
         return true
     else
         hwConnected = false
@@ -272,50 +237,25 @@ end
 function init()
     print("[Lua] init() called")
 
-    -- ==========================================================================
-    -- Load all configuration from SetBox into state table
-    -- ==========================================================================
+    -- Ensure all config files are loaded (safe to call multiple times as rules are additive)
+    local configFiles = {
+        "config/bands.lua",
+        "config/colormaps.lua",
+        "config/events.lua",
+        "config/layout.lua",
+        "config/modes.lua",
+        "config/constraints.lua",
+    }
+    for _, file in ipairs(configFiles) do
+        setbox.loadFile(file)
+    end
 
-    -- Radio settings
-    state.frequency = setbox.getNumber("defaultFrequency", 14.200e6) / 1e6  -- Convert Hz to MHz
-    state.selectedMode = setbox.getString("defaultMode", "USB")
-    state.selectedBand = setbox.getString("defaultBand", "20m")
+    -- Initialize reactive state system
+    AppState.init()
 
-    -- VFO state
-    state.vfoA = setbox.getNumber("vfoA", 14.200e6) / 1e6  -- Convert Hz to MHz
-    state.vfoB = setbox.getNumber("vfoB", 7.050e6) / 1e6   -- Convert Hz to MHz
-    state.activeVFO = setbox.getString("activeVFO", "A")
-
-    -- DSP settings
-    state.squelch = setbox.getNumber("squelch", 0.3)
-    state.agcEnabled = setbox.getBool("agcEnabled", true)
-    state.nrEnabled = setbox.getBool("nrEnabled", false)
-    state.nbEnabled = setbox.getBool("nbEnabled", false)
-    state.lmsMu = setbox.getNumber("lmsMu", 0.001)
-
-    -- Audio settings (volume in dB for intuitive config)
-    state.volumeDb = setbox.getNumber("volumeDb", -20)
-    state.muteEnabled = setbox.getBool("muted", false)
-    state.testToneEnabled = false  -- Always start with test tone off
-
-    -- Baseband filter settings (offset from SetBox, or defaults)
-    state.bandpassEnabled = setbox.getBool("bandpassEnabled", false)
-    state.bandpassCenter = setbox.getNumber("bandpassCenter", 700)
-    state.bandpassWidth = setbox.getNumber("bandpassWidth", 500)
-    state.notchEnabled = setbox.getBool("notchEnabled", false)
-    state.notchCenter = setbox.getNumber("notchCenter", 0)
-    state.notchWidth = setbox.getNumber("notchWidth", 100)
-
-    -- Hardware settings
-    state.qsdOffsetK = setbox.getNumber("qsdOffsetK", 12.0)
-    state.rfAttenDb = math.floor(setbox.getNumber("rfAttenDb", 0))
-
-    -- Waterfall/display settings
-    wfBins = math.floor(setbox.getNumber("wfBins", 512))
-    wfRows = math.floor(setbox.getNumber("wfRows", 256))
-    state.wfColormap = setbox.getString("wfColormap", "viridis")
-    state.wfMinDb = setbox.getNumber("wfMinDb", -120)
-    state.wfMaxDb = setbox.getNumber("wfMaxDb", -40)
+    -- Load non-property display settings
+    wfBins = math.floor(state.wfBins or 512)
+    wfRows = math.floor(state.wfRows or 256)
 
     -- Hardware connection settings
     hwSettings.host = setbox.getString("hwHost", "127.0.0.1")
@@ -324,14 +264,6 @@ function init()
 
     print(string.format("[Lua] Config loaded: freq=%.3f MHz, mode=%s, band=%s",
         state.frequency, state.selectedMode, state.selectedBand))
-    print(string.format("[Lua] VFO A=%.3f MHz, B=%.3f MHz, active=%s",
-        state.vfoA, state.vfoB, state.activeVFO))
-    print(string.format("[Lua] DSP: squelch=%.2f, AGC=%s, NR=%s, NB=%s",
-        state.squelch, tostring(state.agcEnabled), tostring(state.nrEnabled), tostring(state.nbEnabled)))
-    print(string.format("[Lua] Hardware: QSD k=%.1f kHz, atten=%d dB",
-        state.qsdOffsetK, state.rfAttenDb))
-    print(string.format("[Lua] Display: waterfall %dx%d, colormap=%s, range=[%d,%d] dB",
-        wfBins, wfRows, state.wfColormap, state.wfMinDb, state.wfMaxDb))
 
     -- ==========================================================================
     -- Initialize subsystems
@@ -342,29 +274,19 @@ function init()
     local r, g, b = hexToRgb(bg)
     setClearColor(r, g, b)
 
-    -- Initialize audio (convert dB to linear gain for C++ audio engine)
+    -- Initialize audio
     if audio.isInitialized() then
-        local linearGain = math.pow(10, state.volumeDb / 20)
-        audio.setVolume(linearGain)
-        audio.setMuted(state.muteEnabled)
         audio.start()
         print("[Lua] Audio started at " .. audio.getSampleRate() .. " Hz")
     else
         print("[Lua] Warning: Audio not initialized")
     end
 
-    -- Initialize baseband filter with current settings
-    rx.setBandpassEnabled(state.bandpassEnabled)
-    rx.setBandpassCenter(state.bandpassCenter)
-    rx.setBandpassWidth(state.bandpassWidth)
-    rx.setNotchEnabled(state.notchEnabled)
-    rx.setNotchCenter(state.notchCenter)
-    rx.setNotchWidth(state.notchWidth)
-
     -- Initialize waterfall
     if waterfall.init(wfBins, wfRows) then
         waterfall.setRange(state.wfMinDb, state.wfMaxDb)
         applyColormap(state.wfColormap)
+        dispatch.enableWaterfall()  -- Enable waterfall functions
         print("[Lua] Waterfall initialized: " .. wfBins .. "x" .. wfRows)
     else
         print("[Lua] Warning: Waterfall init failed")
@@ -382,7 +304,6 @@ function init()
             print("[Lua] Hardware not available - using simulated spectrum")
         end
     else
-        hwConnected = false
         print("[Lua] Hardware auto-connect disabled")
     end
 
@@ -390,10 +311,9 @@ function init()
     -- Initialize new architecture modules
     -- ==========================================================================
 
-    -- Initialize bands module and set initial frequency
+    -- Initialize bands module
     bands.init()
-    bands.setCurrent(state.frequency * 1e6)  -- Pass Hz to bands module
-    print(string.format("[Lua] Band detection initialized, current band: %s", bands.getCurrent() or "OOB"))
+    bands.setCurrent(state.frequency * 1e6)
 
     -- Initialize events module and wire to layout/widgets
     events.init()
@@ -402,82 +322,13 @@ function init()
     ui.setLayoutModule(layout)
 
     -- =======================================================================
-    -- Property Accessor Registry
-    -- Auto-generated from propertySpecs, plus special-case properties
+    -- State Watchers
     -- =======================================================================
 
-    -- Generate accessors from property specs
-    -- Each generated accessor: get() returns state[name], set(v) clamps/steps then stores and calls setter
-    local function generateAccessors(specs)
-        local accessors = {}
-        for name, spec in pairs(specs) do
-            accessors[name] = {
-                get = function() return state[name] end,
-                set = function(v)
-                    -- Clamp to bounds if specified
-                    if spec.min ~= nil then v = math.max(spec.min, v) end
-                    if spec.max ~= nil then v = math.min(spec.max, v) end
-                    -- Quantize to step if specified
-                    if spec.step then v = math.floor(v / spec.step + 0.5) * spec.step end
-                    -- Store value
-                    state[name] = v
-                    -- Call C++ setter if specified (optionally check hardware connection)
-                    if spec.setter then
-                        if not spec.requiresHw or hw.isConnected() then
-                            spec.setter(v)
-                        end
-                    end
-                end,
-            }
-        end
-        return accessors
-    end
-
-    -- Auto-generate accessors from specs (populates module-level propertyAccessors)
-    propertyAccessors = generateAccessors(propertySpecs)
-
-    -- Special-case properties with custom logic (not auto-generated)
-    local bandFreqs = {
-        ["160m"] = 1.9, ["80m"] = 3.5, ["40m"] = 7.0,
-        ["20m"] = 14.0, ["15m"] = 21.0, ["10m"] = 28.0,
-    }
-
-    propertyAccessors.frequency = {
-        get = function() return state.frequency end,
-        set = function(v)
-            state.frequency = clamp(v, 0.1, 30.0)
-            if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-            bands.setCurrent(state.frequency * 1e6)
-        end,
-    }
-
-    propertyAccessors.selectedMode = {
-        get = function() return state.selectedMode end,
-        set = function(v)
-            state.selectedMode = v
-            modeHelper.setMode(v)
-        end,
-    }
-
-    propertyAccessors.selectedBand = {
-        get = function() return state.selectedBand end,
-        set = function(v)
-            if bandFreqs[v] then
-                state.selectedBand = v
-                state.frequency = bandFreqs[v]
-                if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-                bands.setCurrent(state.frequency * 1e6)
-            end
-        end,
-    }
-
-    propertyAccessors.wfColormap = {
-        get = function() return state.wfColormap end,
-        set = function(v)
-            state.wfColormap = v
-            applyColormap(v)
-        end,
-    }
+    -- Watch for waterfall range changes
+    AppState.watch("wfMinDb", function(v) waterfall.setRange(v, state.wfMaxDb) end)
+    AppState.watch("wfMaxDb", function(v) waterfall.setRange(state.wfMinDb, v) end)
+    AppState.watch("wfColormap", function(v) applyColormap(v) end)
 
     -- =======================================================================
     -- Generic Event Handlers
@@ -622,8 +473,8 @@ function init()
         -- Determine delta from wheel or arrow keys
         local delta = event.delta
         if not delta then
-            if event.key == "Right" or event.key == "Up" then delta = 1
-            elseif event.key == "Left" or event.key == "Down" then delta = -1
+            if event.key == "RIGHT" or event.key == "UP" then delta = 1
+            elseif event.key == "LEFT" or event.key == "DOWN" then delta = -1
             else return false end
         end
         if delta == 0 then return false end
@@ -632,18 +483,11 @@ function init()
         local step = props and props.step
         if not step then return false end
 
-        -- Apply to frequency (VFO control always operates on frequency)
-        local current = state.frequency
-        local newVal = current + delta * step
-        newVal = math.max(0.1, math.min(30.0, newVal))
-
-        -- Update state
-        state.frequency = newVal
-        if state.activeVFO == "A" then state.vfoA = newVal else state.vfoB = newVal end
-        bands.setCurrent(newVal * 1e6)
+        -- Update frequency (AppState handles clamping and VFO/Band sync)
+        setProperty("frequency", state.frequency + delta * step)
 
         if events.debugDispatch then
-            print(string.format("[vfo_control] freq=%.6f step=%s delta=%d", newVal, step, delta))
+            print(string.format("[vfo_control] freq=%.6f step=%s delta=%d", state.frequency, step, delta))
         end
 
         return true
@@ -673,10 +517,8 @@ function init()
     -- Confirm frequency entry (Enter in FreqEntryMode)
     events.registerHandler("freq_entry_confirm", function(event, widget)
         local newFreq = tonumber(freqEntryText)
-        if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
-            state.frequency = newFreq
-            if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-            bands.setCurrent(state.frequency * 1e6)
+        if newFreq then
+            setProperty("frequency", newFreq)
         end
         events.removeModeTag("state.FreqEntryMode")
         freqEntryText = ""
@@ -718,6 +560,14 @@ function init()
         return true
     end)
 
+    -- Reset UI layout (Ctrl+Alt+R)
+    events.registerHandler("layout_reset", function(event, widget)
+        layoutOverrides.clear()
+        layoutOverrides.save()
+        print("[Edit] Layout overrides cleared and saved")
+        return true
+    end)
+
     -- Waterfall click to tune (placeholder for future)
     events.registerHandler("waterfall_click", function(event, widget)
         -- TODO: Calculate frequency offset from click position
@@ -730,23 +580,22 @@ function init()
     -- =======================================================================
 
     events.registerHandler("vfo_a_click", function(event, widget)
-        state.activeVFO = "A"
-        state.frequency = state.vfoA
-        bands.setCurrent(state.frequency * 1e6)
+        setProperty("activeVFO", "A")
         return true
     end)
 
     events.registerHandler("vfo_b_click", function(event, widget)
-        state.activeVFO = "B"
-        state.frequency = state.vfoB
-        bands.setCurrent(state.frequency * 1e6)
+        setProperty("activeVFO", "B")
         return true
     end)
 
     events.registerHandler("vfo_swap_click", function(event, widget)
-        state.vfoA, state.vfoB = state.vfoB, state.vfoA
-        state.frequency = state.activeVFO == "A" and state.vfoA or state.vfoB
-        bands.setCurrent(state.frequency * 1e6)
+        local a = getProperty("vfoA")
+        local b = getProperty("vfoB")
+        AppState.batch(function()
+            setProperty("vfoA", b)
+            setProperty("vfoB", a)
+        end)
         return true
     end)
 
@@ -769,7 +618,7 @@ function init()
     -- =======================================================================
 
     events.registerHandler("rx_toggle_click", function(event, widget)
-        rxActive = not rxActive
+        state.rxActive = not state.rxActive
         return true
     end)
 
@@ -895,12 +744,38 @@ function update(dt)
     if freqEntryBlink > 1.0 then freqEntryBlink = 0 end
 
     -- =======================================================================
+    -- Input State Synchronization
+    -- =======================================================================
+
+    -- 1. Sync keyboard state into activeTags
+    for _, scancode in ipairs(keys.getAllScancodes()) do
+        local isDown = isKeyDown(scancode)
+        local keyName = keys.getName(scancode)
+        local inputTag = keyName and ("input." .. keyName) or nil
+        if isDown then
+            if inputTag then activeTags[inputTag] = true end
+        else
+            if inputTag then activeTags[inputTag] = nil end
+        end
+    end
+
+    -- Ensure standard modifier tags are present if any of their specific keys are down
+    if isShiftDown and isShiftDown() then activeTags["input.SHIFT"] = true end
+    if isCtrlDown and isCtrlDown() then activeTags["input.CTRL"] = true end
+    if isAltDown and isAltDown() then activeTags["input.ALT"] = true end
+
+    -- 2. Sync mouse button state into activeTags
+    activeTags["input.MouseLEFT"] = isMouseDown(0) or nil
+    activeTags["input.MouseMIDDLE"] = isMouseDown(1) or nil
+    activeTags["input.MouseRIGHT"] = isMouseDown(2) or nil
+
+    -- =======================================================================
     -- Event dispatch via SetBox
     -- =======================================================================
 
     local mouseX, mouseY = getMousePos()
 
-    -- Return all currently active tags (held keys, held buttons, mode tags)
+    -- 3. Return all currently active tags (held keys, held buttons, mode tags)
     -- All tags use namespaced format: input.SHIFT, input.CTRL, etc.
     local function getActiveTags()
         local tags = {}
@@ -918,6 +793,14 @@ function update(dt)
         if activeTags["input.LALT"] or activeTags["input.RALT"] then
             table.insert(tags, "input.ALT")
         end
+
+        -- Add mode tags from events module
+        if events and events.getModeTags then
+            for _, modeTag in ipairs(events.getModeTags()) do
+                table.insert(tags, modeTag)
+            end
+        end
+
         return tags
     end
 
@@ -983,78 +866,43 @@ function update(dt)
         lastMouseX, lastMouseY = mouseX, mouseY
     end
 
-    -- =======================================================================
-    -- Keyboard event dispatch
-    -- Check ALL keys for KeyDown and KeyUp events (including modifiers)
-    -- =======================================================================
-
-    -- Build modifiers array once for all key events (namespaced)
-    local modifiers = {}
-    if shift then table.insert(modifiers, "input.SHIFT") end
-    if ctrl then table.insert(modifiers, "input.CTRL") end
-    if alt then table.insert(modifiers, "input.ALT") end
-
-    -- Check ALL keys for dispatch - rules decide what's handled, not hardcoded lists
+    -- Dispatch KeyDown/KeyUp events
     for _, scancode in ipairs(keys.getAllScancodes()) do
         local isDown = isKeyDown(scancode)
         local wasDown = keyStates[scancode]
-
         local keyName = keys.getName(scancode)
-        -- Namespace the key tag as input.* (e.g., input.H, input.LSHIFT)
-        local inputTag = keyName and ("input." .. keyName) or nil
 
         if isDown and not wasDown then
-            -- Key just pressed - add to active tags and dispatch KeyDown
-            if inputTag then activeTags[inputTag] = true end
-            local keyEvent = events.createEvent(events.Type.KEY_DOWN, {
-                scancode = scancode,
-                key = keyName,  -- Keep key name without namespace for event.KeyDown-H format
+            events.dispatchKey(events.createEvent(events.Type.KEY_DOWN, {
+                key = keyName, scancode = scancode,
                 char = keys.getChar(scancode),
                 isModifier = keys.isModifier(scancode),
-                x = mouseX,
-                y = mouseY,
+                x = mouseX, y = mouseY,
                 modifiers = getActiveTags(),
-                shift = shift,
-                ctrl = ctrl,
-                alt = alt,
-            })
-            events.dispatchKey(keyEvent)
-        elseif wasDown and not isDown then
-            -- Key just released - remove from active tags and dispatch KeyUp
-            if inputTag then activeTags[inputTag] = nil end
-            local keyEvent = events.createEvent(events.Type.KEY_UP, {
-                scancode = scancode,
-                key = keyName,  -- Keep key name without namespace for event.KeyUp-H format
+                shift = shift, ctrl = ctrl, alt = alt,
+            }))
+        elseif not isDown and wasDown then
+            events.dispatchKey(events.createEvent(events.Type.KEY_UP, {
+                key = keyName, scancode = scancode,
                 char = keys.getChar(scancode),
                 isModifier = keys.isModifier(scancode),
-                x = mouseX,
-                y = mouseY,
+                x = mouseX, y = mouseY,
                 modifiers = getActiveTags(),
-                shift = shift,
-                ctrl = ctrl,
-                alt = alt,
-            })
-            events.dispatchKey(keyEvent)
+                shift = shift, ctrl = ctrl, alt = alt,
+            }))
         end
-
-        -- Update state for next frame
         keyStates[scancode] = isDown
     end
 
-    -- Dispatch text input (for frequency entry mode - handled via state.FreqEntryMode tag)
+    -- Dispatch text input (steering handled via SetBox rules)
     local textIn = getTextInput()
-    if #textIn > 0 and events.hasModeTag("state.FreqEntryMode") then
-        local textEvent = events.createEvent(events.Type.TEXT_INPUT, {
+    if #textIn > 0 then
+        events.dispatchKey(events.createEvent(events.Type.TEXT_INPUT, {
             text = textIn,
-            x = mouseX,
-            y = mouseY,
-            modifiers = modifiers,
-            shift = shift,
-            ctrl = ctrl,
-            alt = alt,
-        })
-        -- Dispatch through SetBox to find handler for FreqEntryMode + TextInput
-        events.dispatchKey(textEvent)
+            x = mouseX, y = mouseY,
+            modifiers = getActiveTags(),
+            shift = shift, ctrl = ctrl, alt = alt,
+        }))
     end
 
     -- Get spectrum data using dispatch module (eliminates conditionals)
@@ -1082,13 +930,6 @@ function update(dt)
 
     -- Update waterfall using dispatch (no-op if not initialized)
     dispatch.updateWaterfall(spectrumData)
-
-    -- Send VFO changes to hardware (frequency is in MHz, convert to Hz)
-    local currentVfoHz = state.frequency * 1e6
-    if currentVfoHz ~= lastVfoFreq then
-        rx.setVfo(currentVfoHz)
-        lastVfoFreq = currentVfoHz
-    end
 end
 
 -- =======================================================================
@@ -1097,20 +938,20 @@ end
 -- =======================================================================
 
 -- Draw a labeled slider that reads/writes from property system
--- Uses propertySpecs for min/max bounds, property system for get/set
+-- Uses AppState specs for min/max bounds, AppState for get/set
 local function drawPropertySlider(id, label, prop, w, fmt)
-    local spec = propertySpecs[prop]
+    local spec = AppState.getSpec(prop)
     local lx, ly = layout.getCursor()
     ui.label(id .. "-label", lx, ly, label .. ":")
     local minVal = spec and spec.min or 0
     local maxVal = spec and spec.max or 1
-    local current = getProperty(prop)
+    local current = getProperty(prop) or 0
     local tags = spec and spec.logScale and {"LogScale"} or nil
     local newVal = ui.slider(id, lx + 55, ly, w - 85, minVal, maxVal, current, tags, prop)
     if newVal ~= current then
         setProperty(prop, newVal)
     end
-    local text = string.format(fmt or "%.0f", newVal)
+    local text = string.format(fmt or "%.0f", current)
     drawText(lx + w - 70, ly - 2, text, 0.5, 0.5, 0.55, 1.0)
     layout.newLine(24)
 end
@@ -1202,20 +1043,28 @@ function draw()
         drawLine(x, y + h, x + w, y + h, 0.2, 0.2, 0.25, 1.0, 1.0)
 
         -- Branding
-        drawText(x + 10, y + 8, "NexRx SDR Receiver", 0.6, 0.7, 0.9, 1.0)
+        local brandX = x + 10
+        drawText(brandX, y + 8, "NexRx SDR Receiver", 0.6, 0.7, 0.9, 1.0)
+        local brandW = measureText("NexRx SDR Receiver")
 
         -- Hardware connection status
         local hwStatus = hwConnected and "HW" or "SIM"
         local hwStatusColor = hwConnected and {0.2, 0.9, 0.4} or {0.6, 0.6, 0.6}
-        drawText(x + 200, y + 8, hwStatus, hwStatusColor[1], hwStatusColor[2], hwStatusColor[3], 1.0)
+        local hwX = brandX + brandW + 30
+        drawText(hwX, y + 8, hwStatus, hwStatusColor[1], hwStatusColor[2], hwStatusColor[3], 1.0)
+        local hwStatusW = measureText(hwStatus)
+        
         if hwConnected then
             local framesText = string.format(" (%d frames)", hwFramesReceived)
-            drawText(x + 200 + measureText(hwStatus) + 4, y + 8, framesText, 0.5, 0.5, 0.55, 1.0)
+            drawText(hwX + hwStatusW + 4, y + 8, framesText, 0.5, 0.5, 0.55, 1.0)
+            local framesW = measureText(framesText)
 
             -- Audio stats for debugging (now includes drops and fill ratio)
             local audioWritten, audioRead, underruns, drops, fillRatio = rx.getAudioStats()
             local audioText = string.format("Buf: %.0f%%", fillRatio * 100)
-            drawText(x + 400, y + 8, audioText, 0.5, 0.7, 0.5, 1.0)
+            local audioX = hwX + hwStatusW + framesW + 40
+            drawText(audioX, y + 8, audioText, 0.5, 0.7, 0.5, 1.0)
+            local audioW = measureText(audioText)
 
             -- Drop rates (IQ and Audio)
             local iqDropRate = hw.getIqDropRate()
@@ -1224,34 +1073,14 @@ function draw()
             -- Color red if drops > 0
             local dropR = (iqDropRate > 0 or audioDropRate > 0) and 1.0 or 0.5
             local dropG = (iqDropRate > 0 or audioDropRate > 0) and 0.3 or 0.7
-            drawText(x + 500, y + 8, dropText, dropR, dropG, 0.5, 1.0)
+            local dropX = audioX + audioW + 40
+            drawText(dropX, y + 8, dropText, dropR, dropG, 0.5, 1.0)
         end
 
-        -- Status
-        local statusText = string.format("FPS: %.0f", fps)
+        -- Status (Mouse and FPS) - Align to right
+        local statusText = string.format("Mouse: %d, %d | FPS: %.0f", mouseX, mouseY, fps)
         local statusW = measureText(statusText)
         drawText(x + w - statusW - 10, y + 8, statusText, 0.5, 0.5, 0.55, 1.0)
-        layout.endRegion()
-    end
-
-    -- =========================================
-    -- BOTTOM BAR - Status info
-    -- =========================================
-    do
-        local r = regions["bottom-bar"]
-        local x, y, w, h = r.x, r.y, r.w, r.h
-        layout.setRegion(x, y, w, h, "bottom-bar")
-
-        -- Register bottom bar for event dispatch (ID must match container.lua's widgetOrder)
-        events.registerWidget("bottom-bar", {x=x, y=y, w=w, h=h}, {"widget.StatusBar", "widget.UIPanel"}, nil)
-
-        drawRect(x, y, w, h, 0.08, 0.08, 0.1, 1.0)
-        drawLine(x, y, x + w, y, 0.2, 0.2, 0.25, 1.0, 1.0)
-
-        local bpInfo = state.bandpassEnabled and string.format("BP: %.0f Hz", state.bandpassWidth) or "BP: Off"
-        local info = string.format("Band: %s | Mode: %s | %s | Mouse: %d, %d",
-                                   bands.getCurrent() or "OOB", state.selectedMode, bpInfo, mouseX, mouseY)
-        drawText(x + 10, y + 6, info, 0.5, 0.5, 0.55, 1.0)
         layout.endRegion()
     end
 
@@ -1284,28 +1113,15 @@ function draw()
         layout.space(8)
 
         -- Frequency display (clickable/scrollable for tuning)
-        local freqStr = string.format("%.6f", state.frequency)
-        local freqW = measureText(freqStr)
         local fx, fy = layout.getCursor()
-        local sidebarParent = {width = w, height = h}
-        local freqBoxW = getLayoutSize({"widget.FrequencyDisplay"}, "width", sidebarParent, "sidebar-freq-display") or (w - 24)
-        local freqBoxH = getLayoutSize({"widget.FrequencyDisplay"}, "height", sidebarParent, "sidebar-freq-display") or 36
-        drawRoundedRect(fx, fy, freqBoxW, freqBoxH, 4, 0.1, 0.1, 0.15, 1.0)
-        drawText(fx + (freqBoxW - freqW) / 2, fy + (freqBoxH - 16) / 2, freqStr, 0.2, 0.9, 0.4, 1.0)
-        -- Register for wheel tuning and click to enter frequency
-        events.registerWidget("sidebar-freq-display",
-            {x = fx, y = fy, w = freqBoxW, h = freqBoxH},
-            {"widget.FrequencyDisplay", "widget.VFOControl"},
-            nil)
-        layout.newLine(freqBoxH + 4)
+        ui.frequencyDisplay("sidebar-freq-display", fx, fy, w - 24, 36, state.frequency, freqEntryText)
+        layout.newLine(40)
 
         -- Frequency slider (wheel/arrow handled via VFOControl rules in events.lua)
         local sx, sy = layout.getCursor()
         local newFreq = ui.slider("freq-slider", sx, sy, w - 24, 1.0, 30.0, state.frequency, {"VFOControl"}, "frequency")
         if newFreq ~= state.frequency then
             state.frequency = newFreq
-            if state.activeVFO == "A" then state.vfoA = state.frequency else state.vfoB = state.frequency end
-            bands.setCurrent(state.frequency * 1e6)
         end
         layout.newLine(20)
 
@@ -1328,6 +1144,25 @@ function draw()
             ui.button("mode-" .. mode:lower(), mode, mx, my, 50, 26, modeTags)
         end
         layout.endHorizontal()
+
+        layout.newLine(12)
+
+        -- Band Selection
+        lx, ly = layout.getCursor()
+        ui.label("band-title", lx, ly, "Band", {"Title"})
+        layout.newLine(24)
+
+        layout.beginHorizontal(4)
+        local bandList = {"160m", "80m", "40m", "20m", "15m", "10m"}
+        for _, bandName in ipairs(bandList) do
+            local bx, by = layout.reserveSpace(40, 26)
+            local activeTags = state.selectedBand == bandName and {"Active"} or {}
+            local bandTags = {"Band" .. (bandName:gsub("m", "")) .. "m"} -- Ensure Band40m format
+            for _, t in ipairs(activeTags) do table.insert(bandTags, t) end
+            ui.button("band-" .. bandName, bandName, bx, by, 40, 26, bandTags)
+        end
+        layout.endHorizontal()
+
 
         layout.space(8)
         sepX, sepY = layout.getCursor()
@@ -1492,8 +1327,8 @@ function draw()
 
         -- RX Toggle (styling controlled by SetBox rules based on Checked tag)
         local toggleX, toggleY = layout.getCursor()
-        local rxLabel = rxActive and "RX ON" or "RX OFF"
-        ui.toggle("rx-toggle", rxLabel, toggleX, toggleY, w - 24, 40, rxActive, {"RxToggle"})
+        local rxLabel = state.rxActive and "RX ON" or "RX OFF"
+        ui.toggle("rx-toggle", rxLabel, toggleX, toggleY, w - 24, 40, state.rxActive, {"RxToggle"})
         layout.newLine(52)
 
         local sepX, sepY = layout.getCursor()
@@ -1506,91 +1341,12 @@ function draw()
         layout.newLine(24)
 
         local mx, my = layout.getCursor()
-        local meterParent = {width = w, height = h}
-        local mw = getLayoutSize({"widget.SMeter"}, "width", meterParent, "s-meter") or (w - 24)
-        local mh = getLayoutSize({"widget.SMeter"}, "height", meterParent, "s-meter") or 28
-
-        -- Register S-meter as a widget
-        events.registerWidget("s-meter", {x=mx, y=my, w=mw, h=mh}, {"widget.Meter", "widget.SMeter"}, nil)
-
-        drawRoundedRect(mx, my, mw, mh, 4, 0.12, 0.12, 0.15, 1.0)
-
-        -- Get signal level from smeter module (Lua calculates from RMS)
         local sig = smeter.getReading()
+        local consumedH = ui.smeter("s-meter", mx, my, w - 24, 28, sig)
+        layout.newLine(consumedH + 12)
 
-        -- Map S-units to bar display (0-9 = bars 0-8, 9+ = bars 9+)
-        -- Bar 0-8 = S1-S9, bar 9 = S9+10, etc
-        local barCount = 12  -- S1-S9 + S9+10, +20, +30
-        local barPad = 4
-        local barGap = 2
-        local barW = (mw - barPad * 2 - barGap * (barCount - 1)) / barCount
-        local barH = mh - barPad * 2
-        for i = 0, barCount - 1 do
-            local barX = mx + barPad + i * (barW + barGap)
-            local barThreshold
-            if i < 9 then
-                barThreshold = i + 1  -- S1 through S9
-            else
-                barThreshold = 9 + (i - 8) * (10/6)  -- S9+10, +20, +30
-            end
-
-            if sig.sUnits >= barThreshold then
-                local r, g, b = 0.2, 0.8, 0.3  -- Green for S1-S5
-                if i >= 9 then r, g, b = 0.9, 0.3, 0.2 end  -- Red for S9+
-                if i >= 6 and i < 9 then r, g, b = 0.9, 0.7, 0.2 end  -- Yellow for S6-S9
-                drawRect(barX, my + barPad, barW, barH, r, g, b, 1.0)
-            else
-                drawRect(barX, my + barPad, barW, barH, 0.2, 0.2, 0.25, 1.0)
-            end
-        end
-        layout.newLine(mh + 12)
-
-        -- Display S-meter reading (text comes from smeter module)
-        local tx, ty = layout.getCursor()
-        local textParent = {width = mw, height = h}  -- inherit meter width for context
-        local textW = getLayoutSize({"widget.SMeterText"}, "width", textParent, "smeter-text") or mw
-        local textH = getLayoutSize({"widget.SMeterText"}, "height", textParent, "smeter-text") or 20
-        -- Register S-meter text display as widget
-        events.registerWidget("smeter-text", {x=tx, y=ty, w=textW, h=textH}, {"widget.Label", "widget.SMeterText"}, nil)
-        -- Center text within the widget bounds
-        local sTextW = measureText(sig.sText)
-        local dBmTextW = measureText(sig.dBmText)
-        local totalTextW = sTextW + 10 + dBmTextW
-        local textStartX = tx + (textW - totalTextW) / 2
-        drawText(textStartX, ty + 2, sig.sText, 0.9, 0.9, 0.95, 1.0)
-        drawText(textStartX + sTextW + 10, ty + 2, sig.dBmText, 0.5, 0.5, 0.55, 1.0)
-        layout.newLine(textH + 4)
-
-        sepX, sepY = layout.getCursor()
-        ui.separator("sep-smeter-band", sepX, sepY, w - 24)
-        layout.newLine(12)
-
-        -- Band Buttons
-        lx, ly = layout.getCursor()
-        ui.label("band-title", lx, ly, "Band", {"Title"})
-        layout.newLine(24)
-
-        local bandNames = {"160m", "80m", "40m", "20m", "15m", "10m"}
-
-        for i, bandName in ipairs(bandNames) do
-            if i % 2 == 1 then
-                layout.beginHorizontal(4)
-            end
-
-            local bx, by = layout.reserveSpace(80, 26)
-            -- Tag format: "Band160m", "Band80m" etc. for SetBox routing
-            local bandTag = "Band" .. bandName
-            local bandBtnTags = bands.getCurrent() == bandName and {"Active", bandTag} or {bandTag}
-            ui.button("band-" .. bandName, bandName, bx, by, 80, 26, bandBtnTags)
-
-            if i % 2 == 0 or i == #bandNames then
-                layout.endHorizontal()
-            end
-        end
-
-        layout.space(8)
-        sepX, sepY = layout.getCursor()
-        ui.separator("sep-band-display", sepX, sepY, w - 24)
+        local sepX, sepY = layout.getCursor()
+        ui.separator("sep-smeter-display", sepX, sepY, w - 24)
         layout.newLine(12)
 
         -- Waterfall Range
@@ -1639,117 +1395,38 @@ function draw()
     -- CENTER - Spectrum and Waterfall Display
     -- =========================================
     do
-        local r = regions["center"]
-        local x, y, w, h = r.x, r.y, r.w, r.h
-        layout.setRegion(x, y, w, h, "center")
-        layout.pad(8)
-        local cx, cy, cw, ch = layout.getRect()
+        local rCenter = regions["center-area"]
+        ui.panel("center-panel", rCenter.x, rCenter.y, rCenter.w, rCenter.h)
+        
+        -- Solve sub-layout for spectrum and waterfall
+        local subRegions = container.solveSublayout(rCenter, {
+            { id = "spectrum-display",  tags = {"widget.Spectrum"},  anchor = "top", group = "center-col" },
+            { id = "waterfall-display", tags = {"widget.Waterfall"}, anchor = "top", group = "center-col" },
+        })
 
-        -- Panel background
-        ui.panel("center-panel", cx, cy, cw, ch)
-        layout.pad(8)
-
-        local px, py, pw, ph = layout.getRect()
-
-        -- Title bar with frequency info (or entry field)
-        local freqStr
-        local freqColor = {0.2, 0.9, 0.4}
-        local inFreqEntry = events.hasModeTag("state.FreqEntryMode")
-        if inFreqEntry then
-            -- Show entry text with blinking cursor
-            local cursor = freqEntryBlink < 0.5 and "_" or ""
-            freqStr = freqEntryText .. cursor .. " MHz [Enter=OK, Esc=Cancel]"
-            freqColor = {1.0, 0.9, 0.2}  -- Yellow when editing
-        else
-            freqStr = string.format("%.6f MHz", state.frequency)
-        end
-        local freqW = measureText(freqStr)
-        drawText(px, py, freqStr, freqColor[1], freqColor[2], freqColor[3], 1.0)
-
-        -- Register frequency display widget for event dispatch
-        events.registerWidget("frequency-display",
-            {x = px, y = py - 4, w = freqW + 20, h = 24},
-            {"widget.FrequencyDisplay", "widget.VFOControl"},
-            nil)
-
-        -- Colormap selector (right side of title, wraps if needed)
-        -- Uses colormaps from config/colormaps.lua when available
-        local cmapNames = {"viridis", "plasma", "inferno", "green", "blue"}
-        local btnW, btnH, btnGap = 52, 20, 4
-        local totalBtnW = #cmapNames * (btnW + btnGap) - btnGap
-        local availableW = pw - freqW - 40  -- Space after frequency text
-        local cmapX = px + pw - math.min(totalBtnW, availableW)
-        local cmapY = py - 2
-        local rowX = cmapX
-        for i, cmap in ipairs(cmapNames) do
-            -- Wrap to next row if button would exceed panel width
-            if rowX + btnW > px + pw then
-                rowX = cmapX
-                cmapY = cmapY + btnH + 2
-            end
-            -- Tag format: "CmapViridis", "CmapPlasma" etc. (capitalize first letter)
-            local cmapTag = "Cmap" .. cmap:sub(1,1):upper() .. cmap:sub(2)
-            local cmapBtnTags = state.wfColormap == cmap and {"Active", cmapTag} or {cmapTag}
-            ui.button("cmap-" .. cmap, cmap, rowX, cmapY, btnW, btnH, cmapBtnTags)
-            rowX = rowX + btnW + btnGap
-        end
-
-        -- Display area
-        local vizY = py + 24
-        local vizH = ph - 30
-
-        -- Spectrum height can be overridden (default 35% of viz area from SetBox rules)
-        local specParent = {width = pw, height = vizH}
-        local defaultSpecH = math.floor(vizH * 0.35)
-        local specH = getLayoutSize({"widget.Spectrum"}, "height", specParent, "spectrum-display") or defaultSpecH
-        specH = math.max(50, math.min(vizH - 50, specH))  -- Clamp to reasonable bounds
-        dispatch.renderSpectrum(spectrumData, px, vizY, pw, specH)
-
-        -- Register spectrum widget for event dispatch
+        -- Spectrum Display
+        local rSpec = subRegions["spectrum-display"]
+        layout.setRegion(rSpec.x, rSpec.y, rSpec.w, rSpec.h, "spectrum-display")
+        dispatch.renderSpectrum(spectrumData, rSpec.x, rSpec.y, rSpec.w, rSpec.h)
         events.registerWidget("spectrum-display",
-            {x = px, y = vizY, w = pw, h = specH},
+            {x = rSpec.x, y = rSpec.y, w = rSpec.w, h = rSpec.h},
             {"widget.Spectrum", "widget.VFOControl"},
             nil)
+        layout.endRegion()
 
-        -- Separator line
-        drawLine(px, vizY + specH + 2, px + pw, vizY + specH + 2, 0.3, 0.3, 0.4, 1.0, 1.0)
-
-        -- Waterfall takes remaining space
-        local wfY = vizY + specH + 4
-        local wfH = vizH - specH - 8
-        dispatch.renderWaterfall(px, wfY, pw, wfH)
-
-        -- Register waterfall widget for event dispatch
+        -- Waterfall Display
+        local rWf = subRegions["waterfall-display"]
+        layout.setRegion(rWf.x, rWf.y, rWf.w, rWf.h, "waterfall-display")
+        dispatch.renderWaterfall(rWf.x, rWf.y, rWf.w, rWf.h)
         events.registerWidget("waterfall-display",
-            {x = px, y = wfY, w = pw, h = wfH},
+            {x = rWf.x, y = rWf.y, w = rWf.w, h = rWf.h},
             {"widget.Waterfall", "widget.VFOControl"},
             nil)
+        layout.endRegion()
 
         -- Center frequency marker
-        local centerX = px + pw / 2
-        drawLine(centerX, vizY, centerX, vizY + vizH, 0.9, 0.3, 0.3, 0.5, 1.0)
-
-        -- Frequency scale labels
-        local spanKHz = 96  -- Simulated span
-        local lowFreqLabel = string.format("-%.0fkHz", spanKHz/2)
-        local highFreqLabel = string.format("+%.0fkHz", spanKHz/2)
-        local labelY = vizY + vizH - 16
-        local labelH = 16
-
-        -- Register frequency labels as widgets
-        local lowLabelW = measureText(lowFreqLabel) + 10
-        events.registerWidget("freq-label-low",
-            {x = px + 5, y = labelY, w = lowLabelW, h = labelH},
-            {"widget.Label", "widget.FreqLabel"}, nil)
-        drawText(px + 5, labelY, lowFreqLabel, 0.5, 0.5, 0.6, 1.0)
-
-        local highLabelW = measureText(highFreqLabel) + 10
-        events.registerWidget("freq-label-high",
-            {x = px + pw - highLabelW - 5, y = labelY, w = highLabelW, h = labelH},
-            {"widget.Label", "widget.FreqLabel"}, nil)
-        drawText(px + pw - highLabelW, labelY, highFreqLabel, 0.5, 0.5, 0.6, 1.0)
-
-        layout.endRegion()
+        local centerX = rSpec.x + rSpec.w / 2
+        drawLine(centerX, rSpec.y, centerX, rWf.y + rWf.h, 0.9, 0.3, 0.3, 0.5, 1.0)
     end
 
     -- =========================================

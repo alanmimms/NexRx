@@ -1,31 +1,17 @@
 --[[
   SetBox - Pure Lua Configuration Engine
-
-  A tag-based property resolution system. Rules map tag combinations
-  to property values. Resolution follows:
-    1. Specificity (more matching tags wins)
-    2. Priority (higher wins)
-    3. Declaration order (later wins)
-
-  Usage:
-    local setbox = require("setbox")
-
-    setbox.rule {
-        tags = {"Button", "Primary"},
-        priority = 10,
-        apply = {
-            color = "#3b82f6",
-            borderRadius = 4,
-        }
-    }
-
-    setbox.addTag("Button")
-    setbox.addTag("Primary")
-
-    local color = setbox.getString("color", "#000000")
 ]]
 
+-- Support singleton behavior when loaded via both safe_script_file and require
+if _G.setbox then
+    return _G.setbox
+end
+
 local SetBox = {}
+
+-- Register in package.loaded so require("setbox") returns this instance
+package.loaded["setbox"] = SetBox
+_G.setbox = SetBox
 
 -- Internal state
 local rules = {}
@@ -211,10 +197,10 @@ end
 
 --- Calculate match score for a rule
 -- Score = sum of tag priorities + rule base priority
--- @return 0 if no match, otherwise sum of priorities (min 1)
+-- @return boolean (matches), score
 local function matchScore(rule)
     if not rule.enabled then
-        return 0
+        return false, 0
     end
 
     -- All rule tags must be present in active tags
@@ -224,7 +210,7 @@ local function matchScore(rule)
     for tagName, tagPriority in pairs(rule.tags) do
         hasAnyTags = true
         if not activeTags[tagName] then
-            return 0  -- Tag not active, rule doesn't match
+            return false, 0  -- Tag not active, rule doesn't match
         end
         prioritySum = prioritySum + tagPriority
     end
@@ -233,15 +219,15 @@ local function matchScore(rule)
     if rule.condition then
         local ok, result = pcall(rule.condition, context)
         if not ok or not result then
-            return 0
+            return false, 0
         end
     end
 
     -- Add rule's base priority
     prioritySum = prioritySum + rule.priority
 
-    -- Return at least 1 for rules with empty tags (global defaults)
-    return hasAnyTags and prioritySum or 1
+    -- Score is just the priority sum. Even negative scores are valid for matching.
+    return true, prioritySum
 end
 
 --- Compare rules for sorting by score
@@ -269,8 +255,8 @@ function SetBox.resolve()
     -- Collect matching rules with their scores
     local matching = {}
     for _, rule in ipairs(rules) do
-        local score = matchScore(rule)
-        if score > 0 then
+        local matches, score = matchScore(rule)
+        if matches then
             table.insert(matching, { rule = rule, score = score })
         end
     end
@@ -412,12 +398,25 @@ function SetBox.getRules()
     return rules
 end
 
+--- Get all rules containing a specific tag
+-- @param tag The tag name to search for
+-- @return Array of rules
+function SetBox.getRulesWithTag(tag)
+    local result = {}
+    for _, rule in ipairs(rules) do
+        if rule.tags[tag] then
+            table.insert(result, rule)
+        end
+    end
+    return result
+end
+
 --- Get matching rules for current tags (with scores)
 function SetBox.getMatchingRules()
     local matching = {}
     for _, rule in ipairs(rules) do
-        local score = matchScore(rule)
-        if score > 0 then
+        local matches, score = matchScore(rule)
+        if matches then
             table.insert(matching, { rule = rule, score = score })
         end
     end

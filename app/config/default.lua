@@ -26,6 +26,7 @@ rule {
         defaultFrequency = 14.200e6,    -- Hz (20m band)
         defaultMode = "USB",
         defaultBand = "20m",
+        rxActive = true,
         vfoA = 14.200e6,                -- Hz
         vfoB = 7.050e6,                 -- Hz
         activeVFO = "A",
@@ -37,8 +38,16 @@ rule {
         agcEnabled = true,
         nrEnabled = false,
         nbEnabled = false,
-        lmsMu = 0.001,                  -- LMS adaptive filter learning rate
+        lmsMu = 0.5,                    -- LMS adaptive filter learning rate
         bfoOffset = 700,                -- Hz (CW sidetone)
+        
+        -- Filter Defaults
+        bandpassEnabled = false,
+        bandpassCenter = 700,
+        bandpassWidth = 500,
+        notchEnabled = false,
+        notchCenter = 0,
+        notchWidth = 100,
 
         -- =================================================================
         -- Hardware Defaults
@@ -52,7 +61,7 @@ rule {
         wfBins = 512,
         wfRows = 256,
         wfColormap = "viridis",
-        wfMinDb = -120,
+        wfMinDb = -140,
         wfMaxDb = -40,
         spectrumEmaAlpha = 0.3,         -- Spectrum smoothing
 
@@ -63,25 +72,8 @@ rule {
         windowHeight = 850,
         fontSize = 16,
 
-        -- =================================================================
-        -- Font Search Paths (platform-specific, tried in order)
-        -- =================================================================
-        fontPaths = {
-            -- Windows
-            "C:/Windows/Fonts/segoeui.ttf",
-            "C:/Windows/Fonts/arial.ttf",
-            "C:/Windows/Fonts/tahoma.ttf",
-            -- macOS
-            "/System/Library/Fonts/SFNS.ttf",
-            "/System/Library/Fonts/Helvetica.ttc",
-            "/Library/Fonts/Arial.ttf",
-            -- Linux
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-            "/usr/share/fonts/TTF/DejaVuSans.ttf",
-            -- Fallback (bundled with app)
-            "fonts/DejaVuSans.ttf",
-        },
+        -- Fallback font (bundled with app)
+        fontPaths = { "fonts/DejaVuSans.ttf" },
 
         -- =================================================================
         -- Connection Defaults (hw abstraction layer)
@@ -99,7 +91,7 @@ rule {
         -- =================================================================
         -- Audio Defaults
         -- =================================================================
-        volumeDb = -30,             -- dB, range -60 to 0
+        volumeDb = -40,             -- dB, range -60 to 0
         muted = false,
 
         -- =================================================================
@@ -116,6 +108,78 @@ rule {
         padding = 8,
         margin = 4,
         borderRadius = 4,
+
+        -- =================================================================
+        -- Animation Defaults
+        -- =================================================================
+        anim_duration = 0.2,
+        anim_easing = "easeInOut",
+    }
+}
+
+-- Platform-specific font paths
+rule {
+    id = "fonts-windows",
+    tags = {"platform.Windows"},
+    priority = -90,
+    apply = {
+        fontPaths = {
+            "C:/Windows/Fonts/segoeui.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/tahoma.ttf",
+            "fonts/DejaVuSans.ttf",
+        }
+    }
+}
+
+rule {
+    id = "fonts-macos",
+    tags = {"platform.macOS"},
+    priority = -90,
+    apply = {
+        fontPaths = {
+            "/System/Library/Fonts/SFNS.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/Library/Fonts/Arial.ttf",
+            "fonts/DejaVuSans.ttf",
+        }
+    }
+}
+
+rule {
+    id = "fonts-linux",
+    tags = {"platform.Linux"},
+    priority = -90,
+    apply = {
+        fontPaths = {
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            "fonts/DejaVuSans.ttf",
+        }
+    }
+}
+
+-- Property-specific animation overrides
+rule {
+    id = "audio-animation",
+    tags = {"prop.volumeDb"},
+    priority = -90,
+    apply = {
+        animated = true,
+        anim_duration = 0.3,
+        anim_easing = "easeOut",
+    }
+}
+
+rule {
+    id = "filter-animation",
+    tags = {"prop.bandpassWidth", "prop.bandpassCenter", "prop.notchWidth", "prop.notchCenter"},
+    priority = -90,
+    apply = {
+        animated = true,
+        anim_duration = 0.15,
+        anim_easing = "easeInOut",
     }
 }
 
@@ -382,6 +446,19 @@ rule {
     tags = {"widget.Separator"},
     apply = {
         border = "#4a5568",
+    }
+}
+
+-- S-meter colors
+rule {
+    id = "smeter-style",
+    tags = {"widget.SMeter"},
+    apply = {
+        background = "#1e293b",
+        color_weak = "#22c55e",   -- Green (S1-S5)
+        color_mid = "#eab308",    -- Yellow (S6-S9)
+        color_strong = "#ef4444", -- Red (S9+)
+        color_off = "#334155",    -- Dark blue-gray (inactive)
     }
 }
 

@@ -26,12 +26,11 @@ local layoutOverrides = require("layout_overrides")
 -- Widgets with same anchor+group share space proportionally via springs
 local widgetOrder = {
     { id = "top-bar",       tags = {"widget.TopBar"},                             anchor = "top" },
-    { id = "bottom-bar",    tags = {"widget.BottomBar"},                          anchor = "bottom" },
-    { id = "left-sidebar",  tags = {"widget.Sidebar", "widget.LeftSidebar"},      anchor = "left" },
-    -- Right group: sidebar and debug panel share right edge via springs
-    { id = "right-sidebar", tags = {"widget.Sidebar", "widget.RightSidebar"},     anchor = "right", group = "right" },
-    { id = "active-tags",   tags = {"widget.DebugPanel"},                         anchor = "right", group = "right" },
-    { id = "center",        tags = {"widget.CenterArea"},                         anchor = nil },  -- fills remaining
+    -- Main horizontal row: all components share width via the spring solver
+    { id = "left-sidebar",  tags = {"widget.Sidebar", "widget.LeftSidebar"},      anchor = "left", group = "main-row" },
+    { id = "center-area",   tags = {"widget.CenterArea"},                         anchor = "left", group = "main-row" },
+    { id = "right-sidebar", tags = {"widget.Sidebar", "widget.RightSidebar"},     anchor = "left", group = "main-row" },
+    { id = "active-tags",   tags = {"widget.DebugPanel"},                         anchor = "left", group = "main-row" },
 }
 
 -- Evaluate a constraint property, checking overrides first
@@ -81,25 +80,29 @@ local function getSpring(widgetId, axis, cons, ctx)
     return 1  -- Default spring weight
 end
 
--- Solve layout for all widgets
--- Returns table of regions: { widgetId = {x, y, w, h}, ... }
-function container.solve(winW, winH)
+-- Solve layout for a set of widgets within a specific region
+-- Used for nested layouts (e.g., spectrum+waterfall inside center area)
+function container.solveSublayout(parentRegion, subWidgetOrder)
     local regions = {}
-    local remaining = { x = 0, y = 0, w = winW, h = winH }
-    local window = { width = winW, height = winH }
+    local remaining = {
+        x = parentRegion.x,
+        y = parentRegion.y,
+        w = parentRegion.w,
+        h = parentRegion.h
+    }
+    local window = { width = parentRegion.w, height = parentRegion.h }
     local processedGroups = {}
 
-    -- Collect widgets by group
+    -- Grouping logic
     local groups = {}
-    for _, widget in ipairs(widgetOrder) do
+    for _, widget in ipairs(subWidgetOrder) do
         if widget.group then
             groups[widget.group] = groups[widget.group] or {}
             table.insert(groups[widget.group], widget)
         end
     end
 
-    for _, widget in ipairs(widgetOrder) do
-        -- Skip if already processed as part of a group
+    for _, widget in ipairs(subWidgetOrder) do
         if widget.group and processedGroups[widget.group] then
             goto continue
         end
@@ -111,69 +114,97 @@ function container.solve(winW, winH)
         }
 
         if widget.group then
-            -- Process entire group together with springs
+            -- Process entire group with robust iterative spring solver
             local group = groups[widget.group]
             processedGroups[widget.group] = true
 
-            -- For horizontal anchors (left/right), distribute width via springs
-            -- For vertical anchors (top/bottom), distribute height via springs
+            -- Determine orientation from group anchor
             local isHorizontal = widget.anchor == "left" or widget.anchor == "right"
-
-            -- Calculate total spring weight and min sizes
-            local totalSpring = 0
-            local totalMinSize = 0
+            local availableSpace = isHorizontal and remaining.w or remaining.h
+            
             local widgetData = {}
+            local totalMinSize = 0
 
+            -- Pass 1: Evaluate constraints and identify fixed/flexible widgets
             for _, w in ipairs(group) do
                 local cons = constraints.query(w.tags)
+                
+                -- Evaluate strength (spring weight)
                 local spring = getSpring(w.id, isHorizontal and "x" or "y", cons, ctx)
-                local size = getSize(w.id, isHorizontal and "width" or "height", cons, ctx)
-                local minSize = isHorizontal
-                    and (constraints.eval(cons.minWidth, ctx) or 100)
+                
+                -- Check for manual override
+                local override = layoutOverrides.get(w.id, isHorizontal and "width" or "height")
+                
+                -- Determine min/max boundaries
+                local minVal = isHorizontal
+                    and (constraints.eval(cons.minWidth, ctx) or 50)
                     or (constraints.eval(cons.minHeight, ctx) or 50)
+                local maxVal = isHorizontal
+                    and (constraints.eval(cons.maxWidth, ctx) or 4000)
+                    or (constraints.eval(cons.maxHeight, ctx) or 4000)
+                
+                -- If overridden, treat as fixed size with no strength
+                if override then
+                    minVal, maxVal, spring = override, override, 0
+                end
 
-                totalSpring = totalSpring + spring
-                totalMinSize = totalMinSize + minSize
+                totalMinSize = totalMinSize + minVal
+                
                 table.insert(widgetData, {
                     widget = w,
                     cons = cons,
                     spring = spring,
-                    size = size or minSize,
-                    minSize = minSize,
+                    minSize = minVal,
+                    maxSize = maxVal,
+                    currentSize = minVal,
+                    canGrow = (spring > 0) and (minVal < maxVal)
                 })
             end
 
-            -- Total space available for this group
-            local availableSpace = isHorizontal and remaining.w or remaining.h
-            local springSpace = math.max(0, availableSpace - totalMinSize)
-
-            -- Distribute space and position widgets
-            local cursor = 0
-            for i, wd in ipairs(widgetData) do
-                local w = wd.widget
-                local springShare = (wd.spring / totalSpring) * springSpace
-                local size = math.floor(wd.minSize + springShare)
-
-                -- Apply max constraint
-                local maxSize = isHorizontal
-                    and constraints.eval(wd.cons.maxWidth, ctx)
-                    or constraints.eval(wd.cons.maxHeight, ctx)
-                if maxSize then size = math.min(size, maxSize) end
-
-                -- Check for override (user dragged this widget)
-                local overrideSize = layoutOverrides.get(w.id, isHorizontal and "width" or "height")
-                if overrideSize then
-                    size = overrideSize
+            -- Pass 2: Iteratively distribute remaining space using strength (proportional)
+            local remainingToDistribute = math.max(0, availableSpace - totalMinSize)
+            
+            while remainingToDistribute > 0.5 do
+                local totalStrength = 0
+                for _, wd in ipairs(widgetData) do
+                    if wd.canGrow then
+                        totalStrength = totalStrength + wd.spring
+                    end
                 end
 
+                if totalStrength <= 0 then break end
+
+                local distributedInThisPass = 0
+                for _, wd in ipairs(widgetData) do
+                    if wd.canGrow then
+                        local share = (wd.spring / totalStrength) * remainingToDistribute
+                        local capacity = wd.maxSize - wd.currentSize
+                        local growth = math.min(share, capacity)
+                        
+                        wd.currentSize = wd.currentSize + growth
+                        distributedInThisPass = distributedInThisPass + growth
+                        
+                        if wd.currentSize >= wd.maxSize - 0.1 then
+                            wd.canGrow = false
+                        end
+                    end
+                end
+                
+                remainingToDistribute = remainingToDistribute - distributedInThisPass
+                if distributedInThisPass < 0.1 then break end
+            end
+
+            -- Pass 3: Position widgets
+            local cursor = 0
+            for _, wd in ipairs(widgetData) do
+                local w = wd.widget
+                local size = math.floor(wd.currentSize)
                 local r = { x = remaining.x, y = remaining.y, w = remaining.w, h = remaining.h }
 
                 if widget.anchor == "right" then
-                    -- Right-anchored group: position from right edge, widgets stack left
                     r.x = remaining.x + remaining.w - cursor - size
                     r.w = size
                 elseif widget.anchor == "left" then
-                    -- Left-anchored group: position from left edge
                     r.x = remaining.x + cursor
                     r.w = size
                 elseif widget.anchor == "top" then
@@ -188,60 +219,32 @@ function container.solve(winW, winH)
                 cursor = cursor + size
             end
 
-            -- Reduce remaining space by total group size
-            if widget.anchor == "right" or widget.anchor == "left" then
-                if widget.anchor == "right" then
-                    -- Don't change remaining.x for right anchor
-                else
-                    remaining.x = remaining.x + cursor
-                end
-                remaining.w = remaining.w - cursor
+            -- Adjust remaining space
+            if isHorizontal then
+                if widget.anchor == "left" then remaining.x = remaining.x + cursor end
+                remaining.w = math.max(0, remaining.w - cursor)
             else
-                if widget.anchor == "bottom" then
-                    -- Don't change remaining.y for bottom anchor
-                else
-                    remaining.y = remaining.y + cursor
-                end
-                remaining.h = remaining.h - cursor
+                if widget.anchor == "top" then remaining.y = remaining.y + cursor end
+                remaining.h = math.max(0, remaining.h - cursor)
             end
         else
-            -- Single widget (no group) - original behavior
+            -- Single widget logic
             local cons = constraints.query(widget.tags)
             local r = { x = remaining.x, y = remaining.y, w = remaining.w, h = remaining.h }
 
             if widget.anchor == "top" then
-                local h = getSize(widget.id, "height", cons, ctx)
-                h = clampHeight(h, cons, ctx) or 32
-                r.h = h
-                remaining.y = remaining.y + h
-                remaining.h = remaining.h - h
-
+                local h = getSize(widget.id, "height", cons, ctx) or 32
+                r.h = h; remaining.y = remaining.y + h; remaining.h = remaining.h - h
             elseif widget.anchor == "bottom" then
-                local h = getSize(widget.id, "height", cons, ctx)
-                h = clampHeight(h, cons, ctx) or 28
-                r.y = remaining.y + remaining.h - h
-                r.h = h
-                remaining.h = remaining.h - h
-
+                local h = getSize(widget.id, "height", cons, ctx) or 28
+                r.y = remaining.y + remaining.h - h; r.h = h; remaining.h = remaining.h - h
             elseif widget.anchor == "left" then
-                local w = getSize(widget.id, "width", cons, ctx)
-                w = clampWidth(w, cons, ctx) or 260
-                r.w = w
-                remaining.x = remaining.x + w
-                remaining.w = remaining.w - w
-
+                local w = getSize(widget.id, "width", cons, ctx) or 260
+                r.w = w; remaining.x = remaining.x + w; remaining.w = remaining.w - w
             elseif widget.anchor == "right" then
-                local w = getSize(widget.id, "width", cons, ctx)
-                w = clampWidth(w, cons, ctx) or 200
-                r.x = remaining.x + remaining.w - w
-                r.w = w
-                remaining.w = remaining.w - w
-
-            else
-                -- No anchor = fills remaining (center)
-                -- r already equals remaining
+                local w = getSize(widget.id, "width", cons, ctx) or 200
+                r.x = remaining.x + remaining.w - w; r.w = w; remaining.w = remaining.w - w
             end
-
             regions[widget.id] = r
         end
 
@@ -249,6 +252,12 @@ function container.solve(winW, winH)
     end
 
     return regions
+end
+
+-- Solve layout for all widgets
+-- Returns table of regions: { widgetId = {x, y, w, h}, ... }
+function container.solve(winW, winH)
+    return container.solveSublayout({x = 0, y = 0, w = winW, h = winH}, widgetOrder)
 end
 
 -- Get the widget order (for external iteration)

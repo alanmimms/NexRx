@@ -633,6 +633,125 @@ function ui.meter(id, x, y, w, h, value, minVal, maxVal, tags)
 end
 
 -- =============================================================================
+-- S-Meter Widget
+-- =============================================================================
+function ui.smeter(id, x, y, w, h, reading, tags)
+    -- Build widget tags first
+    local widgetTags = {"widget.SMeter", "widget.Meter"}
+    if tags then
+        for _, tag in ipairs(tags) do
+            if not tag:find("%.") then
+                table.insert(widgetTags, "widget." .. tag)
+            else
+                table.insert(widgetTags, tag)
+            end
+        end
+    end
+
+    -- Get size: overrides → passed values → rules
+    w, h = getWidgetSize(id, widgetTags, w, 28)
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
+    -- Get colors from SetBox
+    local prevTags = setbox.getActiveTags()
+    setbox.setActiveTags(widgetTags)
+    local bgR, bgG, bgB = theme.hexToRgb(setbox.getString("background", "#1e293b"))
+    local weakR, weakG, weakB = theme.hexToRgb(setbox.getString("color_weak", "#22c55e"))
+    local midR, midG, midB = theme.hexToRgb(setbox.getString("color_mid", "#eab308"))
+    local strongR, strongG, strongB = theme.hexToRgb(setbox.getString("color_strong", "#ef4444"))
+    local offR, offG, offB = theme.hexToRgb(setbox.getString("color_off", "#334155"))
+    setbox.setActiveTags(prevTags)
+
+    -- Draw background
+    drawRoundedRect(x, y, w, h, 4, bgR, bgG, bgB, 1.0)
+
+    -- Draw segments
+    local barCount = 12
+    local barPad = 4
+    local barGap = 2
+    local barW = (w - barPad * 2 - barGap * (barCount - 1)) / barCount
+    local barH = h - barPad * 2
+
+    for i = 0, barCount - 1 do
+        local barX = x + barPad + i * (barW + barGap)
+        local barThreshold = (i < 9) and (i + 1) or (9 + (i - 8) * (10/6))
+
+        if reading.sUnits >= barThreshold then
+            local r, g, b = weakR, weakG, weakB
+            if i >= 9 then r, g, b = strongR, strongG, strongB
+            elseif i >= 6 then r, g, b = midR, midG, midB end
+            drawRect(barX, y + barPad, barW, barH, r, g, b, 1.0)
+        else
+            drawRect(barX, y + barPad, barW, barH, offR, offG, offB, 1.0)
+        end
+    end
+
+    -- Draw text info below
+    local ty = y + h + 4
+    local sTextW = measureText(reading.sText)
+    local dBmTextW = measureText(reading.dBmText)
+    local totalTextW = sTextW + 10 + dBmTextW
+    local textStartX = x + (w - totalTextW) / 2
+
+    drawText(textStartX, ty, reading.sText, 0.9, 0.9, 0.95, 1.0)
+    drawText(textStartX + sTextW + 10, ty, reading.dBmText, 0.5, 0.5, 0.55, 1.0)
+
+    return h + 24 -- Approximate height consumed
+end
+
+-- =============================================================================
+-- Frequency Display Widget
+-- =============================================================================
+function ui.frequencyDisplay(id, x, y, w, h, frequency, freqEntryText, tags)
+    -- Build widget tags first
+    local widgetTags = {"widget.FrequencyDisplay", "widget.VFOControl"}
+    if tags then
+        for _, t in ipairs(tags) do
+            if not t:find("%.") then
+                table.insert(widgetTags, "widget." .. t)
+            else
+                table.insert(widgetTags, t)
+            end
+        end
+    end
+
+    -- Get size: overrides → passed values → rules
+    w, h = getWidgetSize(id, widgetTags, w, 36)
+
+    -- Register with events module
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+
+    -- Style from theme
+    local style = theme.getStyle(widgetTags)
+
+    -- Draw background
+    drawRoundedRect(x, y, w, h, 4, 0.1, 0.1, 0.15, 1.0)
+
+    -- Draw frequency text (prefer entry text if available)
+    local displayStr = freqEntryText and freqEntryText ~= "" and freqEntryText or string.format("%.6f", frequency)
+    local textW = measureText(displayStr)
+    local lineH = getLineHeight()
+    local textX = x + (w - textW) / 2
+    local textY = y + (h - lineH) / 2
+
+    -- Greenish color for frequency
+    local r, g, b = 0.2, 0.9, 0.4
+    if freqEntryText and freqEntryText ~= "" then
+        r, g, b = 0.9, 0.9, 0.4 -- Yellow for entry mode
+    end
+
+    drawText(textX, textY, displayStr, r, g, b, 1.0)
+
+    -- Show cursor if in entry mode
+    if freqEntryText and freqEntryText ~= "" then
+        local cursorX = textX + textW
+        drawLine(cursorX, y + 8, cursorX, y + h - 8, r, g, b, 1.0, 1)
+    end
+end
+
+-- =============================================================================
 -- Text Input Widget
 -- =============================================================================
 function ui.textInput(id, x, y, w, text, placeholder, tags)

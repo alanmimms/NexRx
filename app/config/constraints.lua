@@ -43,44 +43,41 @@ rule { tags = {"widget.BottomBar"}, apply = {
     marginOuter = 0.0,
 }}
 
--- =============================================================================
 -- Left Sidebar
 -- =============================================================================
 rule { tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = {
     anchorLeft = 1.0,
     anchorTop = 1.0,
     anchorBottom = 1.0,
-    width = "parent.width * 0.15",
     minWidth = "200",
-    maxWidth = "400",
+    maxWidth = "350",
+    springX = 1.0,  -- Low strength expansion
     marginInner = 0.02,
     marginOuter = 0.0,
 }}
 
--- =============================================================================
--- Right Sidebar (shares right edge with DebugPanel via springs)
+-- Right Sidebar
 -- =============================================================================
 rule { tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = {
     anchorRight = 1.0,
     anchorTop = 1.0,
     anchorBottom = 1.0,
-    springX = 1.0,  -- Share space proportionally with siblings
-    minWidth = "180",
-    maxWidth = "400",
+    minWidth = "150",
+    maxWidth = "300",
+    springX = 1.0,  -- Low strength expansion
     marginInner = 0.02,
     marginOuter = 0.0,
 }}
 
--- =============================================================================
--- Debug Panel (Active Tags Viewer - shares right edge with RightSidebar)
+-- Debug Panel (Active Tags Viewer)
 -- =============================================================================
 rule { tags = {"widget.DebugPanel"}, apply = {
     anchorRight = 1.0,
     anchorTop = 1.0,
     anchorBottom = 1.0,
-    springX = 1.0,  -- Share space proportionally with siblings
-    minWidth = "200",
-    maxWidth = "450",
+    minWidth = "180",
+    maxWidth = "350",
+    springX = 1.0,  -- Low strength expansion
     marginInner = 0.01,
     marginOuter = 0.0,
 }}
@@ -89,38 +86,41 @@ rule { tags = {"widget.DebugPanel"}, apply = {
 -- Center Area (contains Spectrum + Waterfall)
 -- =============================================================================
 rule { tags = {"widget.CenterArea"}, apply = {
-    -- Fills remaining space after sidebars
-    springX = 1.0,
+    -- Takes majority of space via high spring strength
+    minWidth = "400",
+    springX = 10.0, 
     springY = 1.0,
     marginInner = 0.01,
     marginOuter = 0.0,
 }}
 
 -- =============================================================================
--- Spectrum Display
+-- Display Area (Vertical group for Spectrum + Waterfall)
 -- =============================================================================
-rule { tags = {"widget.Spectrum"}, apply = {
+rule { tags = {"widget.DisplayArea"}, apply = {
     anchorTop = 1.0,
     anchorLeft = 1.0,
     anchorRight = 1.0,
-    height = "parent.height * 0.35",
-    minHeight = "100",
+    anchorBottom = 1.0,
+    springX = 1.0,
+    springY = 1.0,
     marginInner = 0.0,
     marginOuter = 0.0,
 }}
 
+-- Spectrum Display
 -- =============================================================================
+rule { tags = {"widget.Spectrum"}, apply = {
+    minHeight = "150",
+    maxHeight = "600",
+    springY = 2.0,  -- High priority for vertical space
+}}
+
 -- Waterfall Display
 -- =============================================================================
 rule { tags = {"widget.Waterfall"}, apply = {
-    anchorBottom = 1.0,
-    anchorLeft = 1.0,
-    anchorRight = 1.0,
-    -- Fills remaining after spectrum
-    springY = 1.0,
-    minHeight = "100",
-    marginInner = 0.0,
-    marginOuter = 0.0,
+    minHeight = "200",
+    springY = 1.0,  -- Shared vertical space
 }}
 
 -- =============================================================================

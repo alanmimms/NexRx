@@ -22,8 +22,70 @@
 ]]
 
 local R = require("reactive")
+local animate = require("animate")
+local setbox = require("setbox")
+local bands = require("bands")
 
 local AppState = {}
+
+-- =============================================================================
+-- Animation Support
+-- =============================================================================
+
+-- Currently active animations: {name -> wrapper}
+local activeAnimations = {}
+
+--- Animate a property to a target value
+-- @param name Property name
+-- @param targetValue Value to animate towards
+-- @param duration Optional duration in seconds (queries SetBox if nil)
+-- @param easing Optional easing name (queries SetBox if nil)
+function AppState.animateTo(name, targetValue, duration, easing)
+    local obs = AppState.observable(name)
+    if not obs then return end
+
+    -- Query SetBox for animation settings if not provided
+    if not duration then
+        local prevTags = setbox.getActiveTags()
+        -- Add property tag for resolution
+        setbox.addTag("prop." .. name)
+        duration = setbox.getNumber("anim_duration", 0.2)
+        easing = easing or setbox.getString("anim_easing", "easeInOut")
+        setbox.setActiveTags(prevTags)
+    end
+
+    if duration <= 0 then
+        obs:set(targetValue)
+        return
+    end
+
+    -- Create or reuse a wrapper for the animation
+    -- The wrapper uses a metatable to update the observable on every frame
+    local wrapper = activeAnimations[name]
+    if wrapper then
+        animate.stopProperty(wrapper, "value")
+    else
+        wrapper = { _name = name }
+        setmetatable(wrapper, {
+            __index = function(t, k)
+                if k == "value" then
+                    return AppState.observable(t._name):get()
+                end
+            end,
+            __newindex = function(t, k, v)
+                if k == "value" then
+                    AppState.observable(t._name):set(v)
+                end
+            end
+        })
+        activeAnimations[name] = wrapper
+    end
+
+    -- Start the animation
+    animate.to(wrapper, "value", obs:get(), targetValue, duration, easing, function()
+        activeAnimations[name] = nil
+    end)
+end
 
 -- =============================================================================
 -- Property Specifications (bounds, steps, setters)
@@ -31,12 +93,37 @@ local AppState = {}
 
 local specs = {
     -- Radio
-    frequency     = { min = 0.1, max = 30.0 },
+    frequency     = { 
+        min = 0.1, max = 30.0, 
+        setter = function(v) 
+            local dispatch = require("dispatch")
+            local freqHz = v * 1e6
+            print(string.format("[AppState] Tuning to %.6f MHz (%.0f Hz)", v, freqHz))
+            -- Update local DSP
+            if rx and rx.setVfo then rx.setVfo(freqHz) end
+            -- Update remote hardware/twin
+            dispatch.setVfo(freqHz)
+        end 
+    },
     vfoA          = { min = 0.1, max = 30.0 },
     vfoB          = { min = 0.1, max = 30.0 },
     activeVFO     = {},  -- "A" or "B"
     selectedMode  = {},  -- "USB", "LSB", "CW", "AM"
     selectedBand  = {},  -- "20m", "40m", etc.
+    rxActive      = { 
+        defaultValue = false,
+        setter = function(v)
+            local dispatch = require("dispatch")
+            print("[AppState] Receiver power: " .. (v and "ON" or "OFF"))
+            if v then
+                if audio and audio.start then audio.start() end
+                dispatch.setRxActive(true)
+            else
+                if audio and audio.stop then audio.stop() end
+                dispatch.setRxActive(false)
+            end
+        end
+    },
 
     -- DSP toggles
     bandpassEnabled = { setter = function(v) rx.setBandpassEnabled(v) end },
@@ -64,6 +151,8 @@ local specs = {
     wfMinDb        = { min = -140, max = -60 },
     wfMaxDb        = { min = -100, max = -20 },
     wfColormap     = {},
+    wfBins         = { min = 128, max = 4096 },
+    wfRows         = { min = 64, max = 1024 },
     -- Layout constraints are NOT here - widgets query SetBox directly via their tags
 }
 
@@ -117,6 +206,7 @@ function AppState.init()
         activeVFO = setbox.getString("activeVFO", "A"),
         selectedMode = setbox.getString("defaultMode", "USB"),
         selectedBand = setbox.getString("defaultBand", "20m"),
+        rxActive = setbox.getBool("rxActive", true),
 
         -- DSP toggles
         bandpassEnabled = setbox.getBool("bandpassEnabled", false),
@@ -144,17 +234,98 @@ function AppState.init()
         wfMinDb = setbox.getNumber("wfMinDb", -120),
         wfMaxDb = setbox.getNumber("wfMaxDb", -40),
         wfColormap = setbox.getString("wfColormap", "viridis"),
+        wfBins = setbox.getNumber("wfBins", 512),
+        wfRows = setbox.getNumber("wfRows", 256),
     }
 
     -- Create observables for all properties
-    for name, spec in pairs(specs) do
-        observables[name] = createObservable(name, spec, defaults[name])
-    end
+    AppState.batch(function()
+        for name, spec in pairs(specs) do
+            local defaultValue = defaults[name]
+            if defaultValue == nil and spec.defaultValue ~= nil then
+                defaultValue = spec.defaultValue
+            end
+            
+            local obs = createObservable(name, spec, defaultValue)
+            observables[name] = obs
+            
+            -- Trigger initial setter call if value exists
+            if defaultValue ~= nil and spec.setter then
+                -- Use untrack to avoid dependency tracking during init
+                R.untrack(function()
+                    local ok, err = pcall(spec.setter, defaultValue)
+                    if not ok then
+                        print("[AppState] Initial setter error for " .. name .. ": " .. tostring(err))
+                    end
+                end)
+            end
+        end
+    end)
 
     -- Create computed properties
     AppState._createComputeds()
 
-    print("[AppState] Initialized with reactive properties")
+    -- =============================================================================
+    -- Synchronization Logic
+    -- =============================================================================
+
+    -- Watch for frequency changes to update active VFO and band
+    AppState.watch("frequency", function(v)
+        -- Update the currently active VFO
+        if observables.activeVFO:peek() == "A" then
+            if observables.vfoA:peek() ~= v then observables.vfoA:set(v) end
+        else
+            if observables.vfoB:peek() ~= v then observables.vfoB:set(v) end
+        end
+        -- Update band detection
+        bands.setCurrent(v * 1e6)
+    end)
+
+    -- Watch for activeVFO change to update main frequency
+    AppState.watch("activeVFO", function(v)
+        local targetFreq = (v == "A") and observables.vfoA:peek() or observables.vfoB:peek()
+        if observables.frequency:peek() ~= targetFreq then
+            observables.frequency:set(targetFreq)
+        end
+    end)
+
+    -- Watch for VFO changes to update main frequency if it's the active one
+    AppState.watch("vfoA", function(v)
+        if observables.activeVFO:peek() == "A" and observables.frequency:peek() ~= v then
+            observables.frequency:set(v)
+        end
+    end)
+
+    AppState.watch("vfoB", function(v)
+        if observables.activeVFO:peek() == "B" and observables.frequency:peek() ~= v then
+            observables.frequency:set(v)
+        end
+    end)
+
+    -- Watch for selectedBand to tune to default frequency
+    AppState.watch("selectedBand", function(bandName)
+        local defaultFreqHz = bands.getDefaultFreq(bandName)
+        if defaultFreqHz then
+            AppState.set("frequency", defaultFreqHz / 1e6)
+        end
+    end)
+
+    -- Watch for selectedMode to update demodulator
+    local modeHelper = require("modes")
+    AppState.watch("selectedMode", function(modeName)
+        modeHelper.setMode(modeName)
+    end)
+
+    -- Watch for waterfall colormap changes
+    AppState.watch("wfColormap", function(cmapName)
+        -- This requires main.lua's applyColormap, or we can just call waterfall directly
+        if waterfall and waterfall.isInitialized and waterfall.isInitialized() then
+            -- We'll need access to the colormaps table, which main.lua owns currently
+            -- For now, let main.lua handle this or move colormaps to a module
+        end
+    end)
+
+    print("[AppState] Initialized with reactive properties and sync logic")
 end
 
 -- =============================================================================
