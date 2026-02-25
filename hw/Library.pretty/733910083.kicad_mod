@@ -286,18 +286,6 @@
 	)
 	(embedded_fonts no)
 	(model "/home/alan/ham/NexRx/symbols/73391-0083/3D/73391-0083.stp"
-		(hide yes)
-		(offset
-			(xyz -20.48999946 -0.009999999626 10.09)
-		)
-		(scale
-			(xyz 1 1 1)
-		)
-		(rotate
-			(xyz -90 0 0)
-		)
-	)
-	(model "/home/alan/ham/NexRx/symbols/73391-0083/3D/73391-0083.stp"
 		(offset
 			(xyz -20.5 0 10)
 		)
