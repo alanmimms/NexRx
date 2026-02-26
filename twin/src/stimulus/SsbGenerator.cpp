@@ -18,14 +18,6 @@ SsbGenerator::SsbGenerator(double carrier_hz, double amplitude_v, Mode mode)
     , mode_(mode)
 {
     initHilbertFilter();
-    initPhaseIncrement();
-}
-
-void SsbGenerator::initPhaseIncrement() {
-    // Precompute phase rotation for 480kHz oversample rate
-    double delta = 2.0 * M_PI * carrier_hz_ / OVERSAMPLE_RATE;
-    phaseDeltaCos_ = std::cos(delta);
-    phaseDeltaSin_ = std::sin(delta);
 }
 
 SsbGenerator::~SsbGenerator() = default;
@@ -534,13 +526,12 @@ void SsbGenerator::applyLoopCrossfade() {
 void SsbGenerator::getAudioIQ(double time_s, double& i, double& q) const {
     switch (audioSource_) {
         case AudioSource::Tones: {
-            // For tones, Hilbert transform is exact: sin → -cos (90° lag)
             i = 0.0;
             q = 0.0;
             for (const auto& tone : tones_) {
                 double phase = 2.0 * M_PI * tone.freq_hz * time_s;
-                i += tone.amplitude * std::sin(phase);
-                q += tone.amplitude * (-std::cos(phase));  // Hilbert of sin = -cos
+                i += tone.amplitude * std::cos(phase);
+                q += tone.amplitude * std::sin(phase);
             }
             break;
         }
@@ -714,36 +705,22 @@ void SsbGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
         return;
     }
 
-    // Get audio I/Q (I = audio, Q = Hilbert(audio))
+    // Get audio I/Q
     double audioI, audioQ;
     getAudioIQ(time_s, audioI, audioQ);
 
-    // Generate RF at carrier frequency using precomputed phase increment
-    // This is O(1) per sample - just 4 muls + 2 adds, no trig calls
-    if (!phaseInitialized_) {
-        // Initialize phase on first call
-        double phase = 2.0 * M_PI * carrier_hz_ * time_s;
-        carrierCos_ = std::cos(phase);
-        carrierSin_ = std::sin(phase);
-        phaseInitialized_ = true;
+    // Accumulate carrier phase
+    if (lastTime_ < 0) {
+        carrierPhase_ = std::fmod(2.0 * M_PI * carrier_hz_ * time_s, 2.0 * M_PI);
     } else {
-        // Incremental rotation using precomputed delta
-        double new_cos = carrierCos_ * phaseDeltaCos_ - carrierSin_ * phaseDeltaSin_;
-        double new_sin = carrierSin_ * phaseDeltaCos_ + carrierCos_ * phaseDeltaSin_;
-        carrierCos_ = new_cos;
-        carrierSin_ = new_sin;
+        double dt = time_s - lastTime_;
+        carrierPhase_ = std::fmod(carrierPhase_ + 2.0 * M_PI * carrier_hz_ * dt, 2.0 * M_PI);
     }
+    lastTime_ = time_s;
 
-    double cosPhase = carrierCos_;
-    double sinPhase = carrierSin_;
+    double cosPhase = std::cos(carrierPhase_);
+    double sinPhase = std::sin(carrierPhase_);
 
-    // SSB modulates audio onto carrier using phasing method:
-    // Audio analytic signal: z = audioI + j*audioQ (where audioQ = Hilbert(audioI))
-    //
-    // USB: RF = z * exp(j*ωc*t) = (audioI + j*audioQ) * exp(j*ωc*t)
-    //      This produces signal at (fc + fa) for audio frequency fa
-    // LSB: RF = z* * exp(j*ωc*t) = (audioI - j*audioQ) * exp(j*ωc*t)
-    //      This produces signal at (fc - fa) for audio frequency fa
     if (mode_ == Mode::USB) {
         // (audioI + j*audioQ) * (cos + j*sin) =
         // (audioI*cos - audioQ*sin) + j*(audioI*sin + audioQ*cos)

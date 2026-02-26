@@ -80,14 +80,6 @@ MorseGenerator::MorseGenerator(double freq_hz, double amplitude_v,
 {
     setWpm(wpm);  // Computes dit duration
     buildSequence();
-    initPhaseIncrement();
-}
-
-void MorseGenerator::initPhaseIncrement() {
-    // Precompute phase rotation for 480kHz oversample rate
-    double delta = 2.0 * M_PI * freq_hz_ / OVERSAMPLE_RATE;
-    phaseDeltaCos_ = std::cos(delta);
-    phaseDeltaSin_ = std::sin(delta);
 }
 
 void MorseGenerator::setText(const std::string& text) {
@@ -276,22 +268,50 @@ double MorseGenerator::getEnvelope(double time_s) const {
 
     // Handle repeat mode
     double effectiveTime = time_s;
+    double cycleTime = totalDuration_s_ + 7.0 * ditDuration_s_;
     if (repeat_ && totalDuration_s_ > 0) {
-        double cycleTime = totalDuration_s_ + 7.0 * ditDuration_s_;
         effectiveTime = std::fmod(time_s, cycleTime);
     }
 
-    // Find which element we're in
-    for (const auto& event : sequence_) {
+    // Fast path: check last known index
+    if (lastEventIdx_ < sequence_.size()) {
+        const auto& event = sequence_[lastEventIdx_];
         if (effectiveTime >= event.startTime &&
             effectiveTime < event.startTime + event.duration) {
-
             if (event.keyDown) {
-                double posInElement = effectiveTime - event.startTime;
-                return getEnvelope(posInElement, event.duration);
-            } else {
-                return 0.0;
+                return getEnvelope(effectiveTime - event.startTime, event.duration);
             }
+            return 0.0;
+        }
+    }
+
+    // Sequential search starting from last index
+    if (effectiveTime < sequence_[lastEventIdx_].startTime) {
+        lastEventIdx_ = 0;
+    }
+
+    for (size_t i = lastEventIdx_; i < sequence_.size(); ++i) {
+        const auto& event = sequence_[i];
+        if (effectiveTime >= event.startTime &&
+            effectiveTime < event.startTime + event.duration) {
+            lastEventIdx_ = i;
+            if (event.keyDown) {
+                return getEnvelope(effectiveTime - event.startTime, event.duration);
+            }
+            return 0.0;
+        }
+    }
+
+    // Fallback: search from beginning
+    for (size_t i = 0; i < lastEventIdx_; ++i) {
+        const auto& event = sequence_[i];
+        if (effectiveTime >= event.startTime &&
+            effectiveTime < event.startTime + event.duration) {
+            lastEventIdx_ = i;
+            if (event.keyDown) {
+                return getEnvelope(effectiveTime - event.startTime, event.duration);
+            }
+            return 0.0;
         }
     }
 
@@ -300,33 +320,23 @@ double MorseGenerator::getEnvelope(double time_s) const {
 
 void MorseGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
     double env = getEnvelope(time_s) * amplitude_v_;
+    
+    // Accumulate phase based on time delta
+    if (lastTime_ < 0) {
+        currentPhase_ = std::fmod(2.0 * M_PI * freq_hz_ * time_s, 2.0 * M_PI);
+    } else {
+        double dt = time_s - lastTime_;
+        currentPhase_ = std::fmod(currentPhase_ + 2.0 * M_PI * freq_hz_ * dt, 2.0 * M_PI);
+    }
+    lastTime_ = time_s;
+
     if (env < 1e-12) {
         out_i = out_q = 0.0;
-        // Still advance phase to stay in sync
-        if (phaseInitialized_) {
-            double new_cos = carrierCos_ * phaseDeltaCos_ - carrierSin_ * phaseDeltaSin_;
-            double new_sin = carrierSin_ * phaseDeltaCos_ + carrierCos_ * phaseDeltaSin_;
-            carrierCos_ = new_cos;
-            carrierSin_ = new_sin;
-        }
         return;
     }
 
-    // Generate analytic RF signal using precomputed phase increment
-    if (!phaseInitialized_) {
-        double phase = 2.0 * M_PI * freq_hz_ * time_s;
-        carrierCos_ = std::cos(phase);
-        carrierSin_ = std::sin(phase);
-        phaseInitialized_ = true;
-    } else {
-        double new_cos = carrierCos_ * phaseDeltaCos_ - carrierSin_ * phaseDeltaSin_;
-        double new_sin = carrierSin_ * phaseDeltaCos_ + carrierCos_ * phaseDeltaSin_;
-        carrierCos_ = new_cos;
-        carrierSin_ = new_sin;
-    }
-
-    out_i = env * carrierCos_;
-    out_q = env * carrierSin_;
+    out_i = env * std::cos(currentPhase_);
+    out_q = env * std::sin(currentPhase_);
 }
 
 } // namespace nexrx

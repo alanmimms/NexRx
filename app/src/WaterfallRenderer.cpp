@@ -151,6 +151,15 @@ void WaterfallRenderer::render(float x, float y, float w, float h) {
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
+
+    // Draw center frequency graticule line over waterfall
+    glLineWidth(2.0f);
+    glColor4f(1.0f, 1.0f, 1.0f, 0.4f); // Semi-transparent white
+    glBegin(GL_LINES);
+    glVertex2f(x + w * 0.5f, y);
+    glVertex2f(x + w * 0.5f, y + h);
+    glEnd();
+    glLineWidth(1.0f);
 }
 
 void WaterfallRenderer::renderSpectrum(const float* data, int count, float x, float y, float w, float h) {
@@ -166,9 +175,9 @@ void WaterfallRenderer::renderSpectrum(const float* data, int count, float x, fl
     glEnd();
 
     // Draw grid lines
-    glColor4f(0.2f, 0.2f, 0.25f, 1.0f);
     glBegin(GL_LINES);
     // Horizontal grid lines (dB levels)
+    glColor4f(0.2f, 0.2f, 0.25f, 0.8f);
     for (int i = 1; i < 5; ++i) {
         float gy = y + h * i / 5.0f;
         glVertex2f(x, gy);
@@ -177,10 +186,19 @@ void WaterfallRenderer::renderSpectrum(const float* data, int count, float x, fl
     // Vertical grid lines
     for (int i = 1; i < 10; ++i) {
         float gx = x + w * i / 10.0f;
+        if (i == 5) {
+            glLineWidth(2.0f);
+            glColor4f(1.0f, 1.0f, 1.0f, 0.8f); // Bright white for center
+        } else {
+            glLineWidth(1.0f);
+            glColor4f(0.2f, 0.2f, 0.25f, 0.8f);
+        }
+        glBegin(GL_LINES);
         glVertex2f(gx, y);
         glVertex2f(gx, y + h);
+        glEnd();
     }
-    glEnd();
+    glLineWidth(1.0f);
 
     // Draw spectrum line
     float range = maxDb_ - minDb_;

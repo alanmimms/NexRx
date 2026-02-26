@@ -65,6 +65,9 @@ public:
     void reset() override;
     [[nodiscard]] bool hasMore(double time_s) const override;
 
+    // Analytic RF signal
+    void getRfIQ(double time_s, double& out_i, double& out_q) const override;
+
     //------------------------------------------------------------------
     // Accessors
     //------------------------------------------------------------------

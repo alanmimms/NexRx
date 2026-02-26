@@ -27,6 +27,7 @@
   things like font path using proper rules.
 
 # UI
+* Parameterize spectrum/waterfall rendering (grid, center lines, colors) via Lua and SetBox rules/tags instead of hard-coded C++ values.
 * Make mode reflected in selector for mode and remove it from status bar.
 * Make band reflected in selector for band and remove it from status bar.
 * Eliminate status bar and/or move some status to title bar.

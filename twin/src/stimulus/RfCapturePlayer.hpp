@@ -174,6 +174,43 @@ public:
         return sample_idx < samples_i_.size();
     }
 
+    // Analytic RF signal
+    void getRfIQ(double time_s, double& out_i, double& out_q) const override {
+        if (samples_i_.empty()) {
+            out_i = out_q = 0.0;
+            return;
+        }
+
+        double sample_idx_f = time_s * sample_rate_hz_;
+        size_t total_samples = samples_i_.size();
+
+        if (loop_) {
+            sample_idx_f = std::fmod(sample_idx_f, static_cast<double>(total_samples));
+            if (sample_idx_f < 0) sample_idx_f += total_samples;
+        } else if (sample_idx_f >= total_samples || sample_idx_f < 0) {
+            out_i = out_q = 0.0;
+            return;
+        }
+
+        size_t idx0 = static_cast<size_t>(sample_idx_f);
+        size_t idx1 = (idx0 + 1) % total_samples;
+        double frac = sample_idx_f - idx0;
+
+        double i_val = samples_i_[idx0] * (1.0 - frac) + samples_i_[idx1] * frac;
+        double q_val = samples_q_[idx0] * (1.0 - frac) + samples_q_[idx1] * frac;
+
+        if (center_freq_hz_ > 0) {
+            double phase = 2.0 * M_PI * center_freq_hz_ * time_s;
+            double cp = std::cos(phase);
+            double sp = std::sin(phase);
+            out_i = (i_val * cp - q_val * sp) * amplitude_v_;
+            out_q = (i_val * sp + q_val * cp) * amplitude_v_;
+        } else {
+            out_i = i_val * amplitude_v_;
+            out_q = q_val * amplitude_v_;
+        }
+    }
+
     // Get duration of loaded capture
     [[nodiscard]] double duration() const {
         return samples_i_.size() * sample_period_s_;

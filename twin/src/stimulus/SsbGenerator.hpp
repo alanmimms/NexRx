@@ -115,21 +115,13 @@ private:
     mutable size_t hilbertIndex_ = 0;
     mutable double lastSampleTime_ = -1.0;
 
+    mutable double carrierPhase_ = 0.0;
+    mutable double lastTime_ = -1.0;
+
     void initHilbertFilter();
     void precomputeHilbert();  // Pre-compute Q channel for samples
     void resampleToInternalRate(const std::vector<float>& input, double inputRate);
     void applyLoopCrossfade();  // Smooth loop boundary to prevent transients
-
-    // Incremental phase tracking for fast carrier generation
-    // Precomputed for 480kHz oversample rate
-    static constexpr double OVERSAMPLE_RATE = 480000.0;
-    double phaseDeltaCos_ = 1.0;  // cos(2*pi*carrier_hz/480000)
-    double phaseDeltaSin_ = 0.0;  // sin(2*pi*carrier_hz/480000)
-    mutable double carrierCos_ = 1.0;
-    mutable double carrierSin_ = 0.0;
-    mutable bool phaseInitialized_ = false;
-
-    void initPhaseIncrement();
 };
 
 } // namespace nexrx

@@ -225,6 +225,24 @@ bool SweepGenerator::hasMore(double time_s) const {
     return true;
 }
 
+void SweepGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
+    if (time_s < 0) {
+        out_i = out_q = 0.0;
+        return;
+    }
+
+    if (repeatMode_ == RepeatMode::OneShot && time_s > sweepDuration_s_) {
+        out_i = out_q = 0.0;
+        return;
+    }
+
+    double phase = getPhase(time_s);
+    double envelope = getEnvelope(time_s) * amplitude_v_;
+
+    out_i = envelope * std::cos(phase);
+    out_q = envelope * std::sin(phase);
+}
+
 // Factory methods
 
 SweepGenerator SweepGenerator::linearSweep(double start_hz, double end_hz,

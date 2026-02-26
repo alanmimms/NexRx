@@ -43,7 +43,7 @@ struct Options {
     bool verbose = true;
     bool stream = true;
     double duration_ms = 0.0;
-    double rf_freq_mhz = 14.201;
+    double rf_freq_mhz = 14.120; 
     double lo_freq_mhz = 14.200;
     double rf_amplitude_mv = 1.0;
     double qsd_offset_khz = 12.0;
@@ -58,8 +58,8 @@ void printUsage(const char* prog) {
               << "Options:\n"
               << "  --help, -h       Show this help\n"
               << "  --quiet          Disable verbose command logging\n"
-              << "  --rf FREQ        Set static RF signal frequency in MHz (default: 14.201)\n"
-              << "  --lo FREQ        Set initial LO frequency in MHz (default: 14.200)\n"
+              << "  --rf FREQ        Set static RF signal frequency in MHz (default: 14.12)\n"
+              << "  --lo FREQ        Set initial LO frequency in MHz (default: 14.20)\n"
               << "  --amplitude MV   Set RF signal amplitude in mV (default: 1.0)\n"
               << "  --qsd-offset KHZ Set QSD offset k in kHz (default: 12.0)\n"
               << "  --stimulus FILE  Load Lua stimulus script (overrides --rf)\n"
@@ -93,7 +93,7 @@ static constexpr BiquadCoeffs ak5578_480k_stages[3] = {
 };
 
 int runFunctionalMode(const Options& opts) {
-    std::cout << "=== NexRx Digital Twin - FUNCTIONAL MODE ===" << std::endl;
+    std::cout << "=== NexRx Digital Twin - FUNCTIONAL MODE (High-Fidelity) ===" << std::endl;
     
     AttenuatorModel attenuator;
     PreselectorModel preselector;
@@ -116,9 +116,7 @@ int runFunctionalMode(const Options& opts) {
     auto control = std::make_unique<TcpControlTransport>(ctlConfig);
     if (!control->connect()) return 1;
     
-    std::cout << "[Control] Listening on " << opts.controlPort << ". Waiting for client..." << std::endl;
     if (!control->acceptClient(std::chrono::milliseconds(0))) return 1;
-    std::cout << "[Control] Client connected from " << control->peerAddress() << std::endl;
 
     UdpStreamConfig streamConfig; streamConfig.host = control->peerIP(); streamConfig.port = opts.streamPort; streamConfig.server = true;
     auto stream = std::make_unique<UdpStreamTransport>(streamConfig);
@@ -130,7 +128,8 @@ int runFunctionalMode(const Options& opts) {
 
     constexpr double sampleRate = 96000.0, samplePeriod = 1.0 / sampleRate;
     const int OVERSAMPLE = 5;
-    const double oversamplePeriod = samplePeriod / OVERSAMPLE;
+    const double oversampleRate = sampleRate * OVERSAMPLE;
+    const double oversamplePeriod = 1.0 / oversampleRate;
     
     double lpf_zi[3][3][2] = {}, lpf_zq[3][3][2] = {};
     auto applyLpf = [&](double x, double z[3][2]) {
@@ -145,24 +144,11 @@ int runFunctionalMode(const Options& opts) {
         return y;
     };
 
-    double lo_phase[3] = {0,0,0}, lo_phase_d[3], current_freqs[3];
-    auto updatePhases = [&](int ch, double f) {
-        lo_phase_d[ch] = 2.0 * M_PI * f * oversamplePeriod;
-        current_freqs[ch] = f;
-        memset(lpf_zi[ch], 0, sizeof(lpf_zi[ch]));
-        memset(lpf_zq[ch], 0, sizeof(lpf_zq[ch]));
-    };
-    for(int ch=0; ch<3; ++ch) updatePhases(ch, ch==0 ? lo-k : (ch==1 ? lo+k : lo));
-
-    // RF Tone State
-    double rf_phase = 0.0, rf_phase_d;
-    { rf_phase_d = 2.0 * M_PI * (opts.rf_freq_mhz * 1e6) * oversamplePeriod; }
-    double rf_amp = opts.rf_amplitude_mv * 1e-3;
-
-    // BIST State
-    double bist_phase = 0.0, bist_phase_d = 0.0, bist_last_freq = -1.0;
+    double current_vfos[3] = {0};
+    double rf_target_hz = opts.rf_freq_mhz * 1e6;
 
     auto startTime = std::chrono::steady_clock::now();
+    auto lastLogTime = startTime;
     size_t outputSample = 0;
     std::vector<IQFrame> batch; batch.reserve(32);
 
@@ -178,38 +164,56 @@ int runFunctionalMode(const Options& opts) {
             continue;
         }
 
+        double max_rf_val = 0;
+
         for (int step=0; step < 960; ++step) {
-            double f_i[3], f_q[3];
+            double f_i[3] = {0}, f_q[3] = {0};
             for (int os=0; os < OVERSAMPLE; ++os) {
                 double t = (outputSample * OVERSAMPLE + os) * oversamplePeriod;
-                double rf_i=0, rf_q=0;
-                
+                double gain = attenuator.getVoltageGain();
+
+                // 1. Get ANALYTIC RF Antenna Signal (Composite of all stimuli)
+                double rf_i = 0, rf_q = 0;
                 if (stimulusManager) {
                     stimulusManager->getRfIQ(t, rf_i, rf_q);
                 } else {
-                    rf_i = rf_amp * cos(rf_phase); rf_q = rf_amp * sin(rf_phase);
-                    rf_phase = fmod(rf_phase + rf_phase_d, 2.0 * M_PI);
-                }
-                
-                if (controlHandler->isBistEnabled()) {
-                    double bf = controlHandler->getBistFreq();
-                    if (std::abs(bf - bist_last_freq) > 1.0) {
-                        bist_phase_d = 2.0 * M_PI * bf * oversamplePeriod;
-                        bist_last_freq = bf;
-                    }
-                    rf_i += 0.000158 * cos(bist_phase); // ~158uV signal
-                    bist_phase = fmod(bist_phase + bist_phase_d, 2.0 * M_PI);
+                    double rf_p = 2.0 * M_PI * rf_target_hz * t;
+                    rf_i = (opts.rf_amplitude_mv * 1e-3) * cos(rf_p);
+                    rf_q = (opts.rf_amplitude_mv * 1e-3) * sin(rf_p);
                 }
 
-                double gain = attenuator.getVoltageGain();
-                rf_i *= gain; rf_q *= gain;
-                
+                max_rf_val = std::max(max_rf_val, std::sqrt(rf_i*rf_i + rf_q*rf_q));
+
+                // 2. Mix with 3 independent LOs
                 for (int ch=0; ch<3; ++ch) {
-                    double c = cos(lo_phase[ch]), s = sin(lo_phase[ch]);
-                    double bi = rf_i*c + rf_q*s, bq = rf_q*c - rf_i*s;
-                    double fi = applyLpf(bi, lpf_zi[ch]), fq = applyLpf(bq, lpf_zq[ch]);
-                    if (os == OVERSAMPLE - 1) { f_i[ch] = fi; f_q[ch] = fq; }
-                    lo_phase[ch] = fmod(lo_phase[ch] + lo_phase_d[ch], 2.0 * M_PI);
+                    double vfo = controlHandler->getQsdVfo(ch);
+                    if (std::abs(vfo - current_vfos[ch]) > 0.1) {
+                        current_vfos[ch] = vfo;
+                        // Reset filters on tune to prevent transients
+                        memset(lpf_zi[ch], 0, sizeof(lpf_zi[ch]));
+                        memset(lpf_zq[ch], 0, sizeof(lpf_zq[ch]));
+                    }
+
+                    // Complex downconversion: (rf_i + j*rf_q) * exp(-j * 2pi * vfo * t)
+                    // This is mathematically exact and avoids aliasing.
+                    double lo_p = 2.0 * M_PI * vfo * t;
+                    double cos_lo = cos(lo_p);
+                    double sin_lo = sin(lo_p);
+                    
+                    double bi = rf_i * cos_lo + rf_q * sin_lo;
+                    double bq = rf_q * cos_lo - rf_i * sin_lo; // Q is -90 deg shift
+
+                    // 3. INTERNAL SIGNAL GENERATOR (ISG) - Injected at baseband
+                    if (controlHandler->isBistEnabled()) {
+                        double bist_f = controlHandler->getBistFreq();
+                        double bist_offset = bist_f - vfo;
+                        double p_bist = 2.0 * M_PI * bist_offset * t;
+                        bi += 0.000158 * cos(p_bist) / gain; // Adjust for gain to keep level constant
+                        bq += 0.000158 * sin(p_bist) / gain;
+                    }
+
+                    f_i[ch] = applyLpf(bi * gain, lpf_zi[ch]);
+                    f_q[ch] = applyLpf(bq * gain, lpf_zq[ch]);
                 }
             }
 
@@ -227,15 +231,17 @@ int runFunctionalMode(const Options& opts) {
         }
 
         auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration<double>(now - lastLogTime).count() > 1.0) {
+            if (opts.verbose) {
+                std::cout << "[Twin] Max RF Input: " << std::fixed << std::setprecision(1) << max_rf_val * 1e6 << " uV" << std::endl;
+            }
+            lastLogTime = now;
+        }
+
         double simTime = outputSample * samplePeriod;
         double elapsed = std::chrono::duration<double>(now - startTime).count();
         if (simTime > elapsed) {
             std::this_thread::sleep_for(std::chrono::microseconds((int)((simTime - elapsed)*1e6)));
-        }
-
-        for (int ch=0; ch<3; ++ch) {
-            double f = controlHandler->getQsdVfo(ch);
-            if (std::abs(f - current_freqs[ch]) > 1.0) { updatePhases(ch, f); lo_phase[ch] = 0; }
         }
     }
     return 0;

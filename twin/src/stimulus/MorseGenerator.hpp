@@ -88,6 +88,10 @@ private:
     // Calculate envelope at given position within element
     double getEnvelope(double posInElement, double elementDuration) const;
 
+    mutable double currentPhase_ = 0.0;
+    mutable double lastTime_ = -1.0;
+    mutable size_t lastEventIdx_ = 0;
+
     double freq_hz_;
     double amplitude_v_;
     std::string text_;
@@ -105,16 +109,6 @@ private:
     };
     std::vector<KeyEvent> sequence_;
     double totalDuration_s_ = 0.0;
-
-    // Incremental phase tracking for fast carrier generation
-    static constexpr double OVERSAMPLE_RATE = 480000.0;
-    double phaseDeltaCos_ = 1.0;
-    double phaseDeltaSin_ = 0.0;
-    mutable double carrierCos_ = 1.0;
-    mutable double carrierSin_ = 0.0;
-    mutable bool phaseInitialized_ = false;
-
-    void initPhaseIncrement();
 };
 
 } // namespace nexrx
