@@ -5001,7 +5001,7 @@
 				(justify right)
 			)
 		)
-		(pin "preselIn" input
+		(pin "intSigGen" input
 			(at 161.29 88.9 0)
 			(uuid "1afb7672-86c9-4666-9eae-ff1ef3e9ffee")
 			(effects
@@ -5084,7 +5084,7 @@
 				(justify right)
 			)
 		)
-		(pin "preselIn" output
+		(pin "intSigGen" output
 			(at 180.34 88.9 180)
 			(uuid "1669524d-b8b3-4670-81d1-a51a350722b9")
 			(effects

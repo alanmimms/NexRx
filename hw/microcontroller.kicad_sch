@@ -5731,6 +5731,10 @@
 		(uuid "5546dbc8-0e7b-4d97-9e8c-396019551764")
 	)
 	(no_connect
+		(at 57.15 125.73)
+		(uuid "58406ede-2746-42ff-b5f8-2345e3fbfd6d")
+	)
+	(no_connect
 		(at 102.87 39.37)
 		(uuid "5aaa0d11-4a1d-4f71-a945-c0ff16a46673")
 	)
@@ -5801,6 +5805,10 @@
 	(no_connect
 		(at 57.15 107.95)
 		(uuid "d7f05f52-baab-4293-acea-54db6e022b99")
+	)
+	(no_connect
+		(at 57.15 128.27)
+		(uuid "da9381a4-9612-4a28-bf26-e57e6617124c")
 	)
 	(no_connect
 		(at 102.87 115.57)
@@ -8382,16 +8390,6 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 128.27) (xy 57.15 128.27)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dfaad5a5-9b68-48bf-b925-ac71abd308a5")
-	)
-	(wire
-		(pts
 			(xy 180.34 74.93) (xy 180.34 76.2)
 		)
 		(stroke
@@ -8409,16 +8407,6 @@
 			(type default)
 		)
 		(uuid "e1d2c72f-0d38-466a-bfd3-87af67099ce9")
-	)
-	(wire
-		(pts
-			(xy 55.88 125.73) (xy 57.15 125.73)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e2cc65a6-b11f-4d27-9b7a-8d41f03b16d3")
 	)
 	(wire
 		(pts
@@ -8940,16 +8928,6 @@
 		)
 		(uuid "590e1ae9-d210-448e-af48-cbc92502e544")
 	)
-	(label "Ctrl.usbCC1adc"
-		(at 55.88 125.73 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "5ddf0dbf-42fb-442c-888e-05791fdd4fe3")
-	)
 	(label "Ctrl.qsdData"
 		(at 34.29 100.33 180)
 		(effects
@@ -9120,7 +9098,7 @@
 		)
 		(uuid "9208533f-a93e-42f2-a2da-5922fa276405")
 	)
-	(label "Tune.txRx"
+	(label "Tune.txrx"
 		(at 104.14 135.89 0)
 		(effects
 			(font
@@ -9209,16 +9187,6 @@
 			(justify left bottom)
 		)
 		(uuid "aebdcff8-056a-42e9-9227-63aad5266943")
-	)
-	(label "Ctrl.usbCC2adc"
-		(at 55.88 128.27 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "afa36254-124e-4d8f-ae07-173008cab7c1")
 	)
 	(label "Ctrl.enable6V"
 		(at 55.88 113.03 180)
