@@ -296,29 +296,15 @@ private:
         
         static uint32_t rnC = 0; if ((++rnC & 0xFFFF) == 0) { auto rn = [](float& c, float& s) { float m = std::sqrt(c*c+s*s); if (m>0) { c/=m; s/=m; } }; rn(shiftCos0_, shiftSin0_); rn(shiftCos1_, shiftSin1_); }
         
-        // Compute adaptive interference estimate
-        float est_i = (lmsW0_r_ * i0_s - lmsW0_i_ * q0_s) + (lmsW1_r_ * i1_s - lmsW1_i_ * q1_s);
-        float est_q = (lmsW0_r_ * q0_s + lmsW0_i_ * i0_s) + (lmsW1_r_ * q1_s + lmsW1_i_ * i1_s);
-        
-        // Error is the part of i2 that matches the side QSDs (interference/images)
-        float err_i = i2 - est_i, err_q = q2 - est_q;
-        
-        // Update LMS weights
-        float p0 = i0_s*i0_s + q0_s*q0_s + 1e-12f, p1 = i1_s*i1_s + q1_s*q1_s + 1e-12f;
-        lmsW0_r_ += (lmsMu_ * (err_i * i0_s + err_q * q0_s)) / p0; lmsW0_i_ += (lmsMu_ * (err_q * i0_s - err_i * q0_s)) / p0;
-        lmsW1_r_ += (lmsMu_ * (err_i * i1_s + err_q * q1_s)) / p1; lmsW1_i_ += (lmsMu_ * (err_q * i1_s - err_i * q1_s)) / p1;
-        
-        auto clW = [](float& wr, float& wi) { float m = std::sqrt(wr*wr+wi*wi); if (m>2.0f) { wr*=2.0f/m; wi*=2.0f/m; } }; 
-        clW(lmsW0_r_, lmsW0_i_); clW(lmsW1_r_, lmsW1_i_);
-        
-        // PRIMARY AUDIO PATH: Use center QSD (i2) directly to ensure volume stability
-        // Use LMS result only for spectrum visualization for now
+        // PRIMARY AUDIO PATH: Use center QSD (i2) directly
         float i_f = i2, q_f = q2;
         
-        basebandFilter_.process(i_f, q_f);
-        
+        // Update spectrum buffer with RAW samples (before selectivity filtering)
         if (iqBuffer_.size() < FFT_SIZE*2) { std::lock_guard<std::mutex> l(spectrumMutex_); if (iqBuffer_.size() < FFT_SIZE*2) iqBuffer_.resize(FFT_SIZE*2, 0.0f); }
         size_t pos = iqBufferWritePos_.load(std::memory_order_relaxed); iqBuffer_[pos*2] = i_f; iqBuffer_[pos*2+1] = q_f; iqBufferWritePos_.store((pos+1)%FFT_SIZE, std::memory_order_release);
+
+        // Now apply selectivity filtering for the audio path
+        basebandFilter_.process(i_f, q_f);
         
         float aOut = demod_.process(i_f, q_f);
         

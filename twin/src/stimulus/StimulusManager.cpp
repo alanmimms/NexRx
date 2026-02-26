@@ -78,10 +78,11 @@ double StimulusManager::getSample(double time_s) const {
     return sum;
 }
 
-void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q) const {
+void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q,
+                               double center_hz, double bandwidth_hz) const {
     // Use fast path if frozen
     if (frozen_.load(std::memory_order_relaxed)) {
-        getRfIQ_fast(time_s, out_i, out_q);
+        getRfIQ_fast(time_s, out_i, out_q, center_hz, bandwidth_hz);
         return;
     }
 
@@ -90,6 +91,14 @@ void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q) const
     out_i = out_q = 0.0;
     for (const auto& [name, entry] : stimuli_) {
         if (entry.enabled && entry.stimulus) {
+            // Roofing Filter: check if stimulus is within passband
+            if (bandwidth_hz > 0) {
+                double f = entry.stimulus->carrierFrequency();
+                if (f != 0 && std::abs(f - center_hz) > bandwidth_hz / 2.0) {
+                    continue; // Out of band
+                }
+            }
+
             double i, q;
             entry.stimulus->getRfIQ(time_s, i, q);
             out_i += i;
@@ -118,10 +127,19 @@ void StimulusManager::unfreeze() {
     frozenStimuli_.clear();
 }
 
-void StimulusManager::getRfIQ_fast(double time_s, double& out_i, double& out_q) const {
+void StimulusManager::getRfIQ_fast(double time_s, double& out_i, double& out_q,
+                                   double center_hz, double bandwidth_hz) const {
     // Lock-free access to frozen snapshot
     out_i = out_q = 0.0;
     for (const auto& stim : frozenStimuli_) {
+        // Roofing Filter: check if stimulus is within passband
+        if (bandwidth_hz > 0) {
+            double f = stim->carrierFrequency();
+            if (f != 0 && std::abs(f - center_hz) > bandwidth_hz / 2.0) {
+                continue; // Out of band
+            }
+        }
+
         double i, q;
         stim->getRfIQ(time_s, i, q);
         out_i += i;
@@ -173,6 +191,20 @@ void StimulusManager::resetAll() {
             entry.stimulus->reset();
         }
     }
+}
+
+bool StimulusManager::isAnyWithin(double center_hz, double bandwidth_hz) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    for (const auto& [name, entry] : stimuli_) {
+        if (entry.enabled && entry.stimulus) {
+            double f = entry.stimulus->carrierFrequency();
+            if (f == 0) continue; // Skip wideband noise
+            if (std::abs(f - center_hz) <= bandwidth_hz / 2.0) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 } // namespace nexrx

@@ -178,18 +178,6 @@ int runFunctionalMode(const Options& opts) {
                 double t = (outputSample * OVERSAMPLE + os) * oversamplePeriod;
                 double gain = attenuator.getVoltageGain();
 
-                // 1. Get ANALYTIC RF Antenna Signal (Composite of all stimuli)
-                double rf_i = 0, rf_q = 0;
-                if (stimulusManager) {
-                    stimulusManager->getRfIQ(t, rf_i, rf_q);
-                } else {
-                    rf_phase = std::fmod(rf_phase + 2.0 * M_PI * rf_target_hz * oversamplePeriod, 2.0 * M_PI);
-                    rf_i = (opts.rf_amplitude_mv * 1e-3) * std::cos(rf_phase);
-                    rf_q = (opts.rf_amplitude_mv * 1e-3) * std::sin(rf_phase);
-                }
-
-                max_rf_val = std::max(max_rf_val, std::sqrt(rf_i*rf_i + rf_q*rf_q));
-
                 // 2. Mix with 3 independent LOs
                 for (int ch=0; ch<3; ++ch) {
                     double vfo = controlHandler->getQsdVfo(ch);
@@ -199,6 +187,20 @@ int runFunctionalMode(const Options& opts) {
                         memset(lpf_zi[ch], 0, sizeof(lpf_zi[ch]));
                         memset(lpf_zq[ch], 0, sizeof(lpf_zq[ch]));
                     }
+
+                    // Get ANALYTIC RF Antenna Signal for THIS channel
+                    // We use a 400kHz window (narrower than 480kHz Nyquist)
+                    // to ensure perfect rejection of aliasing products.
+                    double rf_i = 0, rf_q = 0;
+                    if (stimulusManager) {
+                        stimulusManager->getRfIQ(t, rf_i, rf_q, vfo, 400000.0);
+                    } else {
+                        rf_phase = std::fmod(rf_phase + 2.0 * M_PI * rf_target_hz * oversamplePeriod, 2.0 * M_PI);
+                        rf_i = (opts.rf_amplitude_mv * 1e-3) * std::cos(rf_phase);
+                        rf_q = (opts.rf_amplitude_mv * 1e-3) * std::sin(rf_phase);
+                    }
+
+                    if (ch == 1) max_rf_val = std::max(max_rf_val, std::sqrt(rf_i*rf_i + rf_q*rf_q));
 
                     // Complex downconversion with phase accumulation
                     lo_phase[ch] = std::fmod(lo_phase[ch] + 2.0 * M_PI * vfo * oversamplePeriod, 2.0 * M_PI);

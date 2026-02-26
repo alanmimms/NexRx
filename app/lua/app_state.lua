@@ -55,7 +55,14 @@ local specs = {
     vfoA          = { min = 0.1, max = 30.0 },
     vfoB          = { min = 0.1, max = 30.0 },
     activeVFO     = {},
-    selectedMode  = {},
+    selectedMode  = { setter = function(v) 
+        require("modes").setMode(v) 
+        if v == "AM" then
+            AppState.set("bandpassEnabled", true)
+            AppState.set("bandpassWidth", 6000)
+            AppState.set("bandpassCenter", 0)
+        end
+    end },
     selectedBand  = {},
     rxActive      = { defaultValue = false, setter = function(v)
         local dispatch = require("dispatch")

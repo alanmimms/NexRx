@@ -86,9 +86,10 @@ public:
     double getSample(double time_s) const;
 
     // Get combined analytic RF I/Q from all stimuli (for functional simulation)
-    // Returns complex envelope of RF signal - LO-independent.
-    // The QSD simulation layer mixes this with LO to produce baseband.
-    void getRfIQ(double time_s, double& out_i, double& out_q) const;
+    // ONLY includes stimuli within +/- bandwidth_hz/2 of center_hz.
+    // This acts as a roofing filter to prevent aliasing when sampling at discrete rates.
+    void getRfIQ(double time_s, double& out_i, double& out_q, 
+                 double center_hz = 0, double bandwidth_hz = 0) const;
 
     //------------------------------------------------------------------
     // High-performance batch generation (lock-free after freeze)
@@ -102,7 +103,8 @@ public:
     bool isFrozen() const { return frozen_.load(std::memory_order_relaxed); }
 
     // Lock-free version of getRfIQ - only valid after freeze()
-    void getRfIQ_fast(double time_s, double& out_i, double& out_q) const;
+    void getRfIQ_fast(double time_s, double& out_i, double& out_q,
+                      double center_hz = 0, double bandwidth_hz = 0) const;
 
     // Batch generate RF I/Q samples (most efficient for streaming)
     // Generates 'count' samples starting at 'start_time' with given period.
@@ -122,6 +124,9 @@ public:
 
     // Reset all stimuli (restart playback, etc.)
     void resetAll();
+
+    // Check if any active stimulus is within bandwidth of target frequency
+    bool isAnyWithin(double center_hz, double bandwidth_hz) const;
 
 private:
     struct Entry {

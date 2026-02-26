@@ -67,6 +67,7 @@ public:
 
     // Analytic RF signal
     void getRfIQ(double time_s, double& out_i, double& out_q) const override;
+    [[nodiscard]] double carrierFrequency() const override { return (startFreq_hz_ + endFreq_hz_) / 2.0; }
 
     //------------------------------------------------------------------
     // Accessors

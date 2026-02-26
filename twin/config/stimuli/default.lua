@@ -19,13 +19,13 @@
 print("[Stimulus] Loading default configuration...")
 
 -- Background noise (about S3 level)
-stimulus.addNoise("band_noise", {
+stimulus.addNoise("band-noise", {
     rms = 1e-6,      -- 1µV RMS
     type = "thermal"
 })
 
 -- CW beacon on 14.100 MHz (S7 level)
-stimulus.addMorse("nist_beacon", {
+stimulus.addMorse("VVV-DE-NIST", {
     freq = 14.0750e6,
     amplitude = 12.5e-6,
     text = "VVV DE NIST FORT COLLINS COLORADO",
@@ -34,7 +34,7 @@ stimulus.addMorse("nist_beacon", {
 })
 
 -- CW station calling CQ on 14.025 MHz (S9 level)
-stimulus.addMorse("cq_station", {
+stimulus.addMorse("cq-WA1AW", {
     freq = 14.025e6,
     amplitude = 50e-6,
     text = "CQ CQ CQ DE W1AW W1AW K",
@@ -43,7 +43,7 @@ stimulus.addMorse("cq_station", {
 })
 
 -- SSB two-tone test signal on 14.120 MHz (S9+10)
-stimulus.addSsb("two_tone", {
+stimulus.addSsb("ssb-2tone", {
     freq = 14.120e6,
     amplitude = 150e-6,
     mode = "usb",
@@ -51,7 +51,7 @@ stimulus.addSsb("two_tone", {
 })
 
 -- SSB single tone on 14.150 MHz (S5)
-stimulus.addSsb("ssb_tone", {
+stimulus.addSsb("ssb-1tone", {
     freq = 14.150e6,
     amplitude = 3e-6,
     mode = "usb",
@@ -67,7 +67,7 @@ stimulus.addSsb("voice-id", {
 })
 
 -- AM two-tone beacon on 14.250 MHz (S9+10)
-stimulus.addAm("am_two_tone", {
+stimulus.addAm("am-2tone", {
     freq = 14.250e6,
     amplitude = 150e-6,
     modIndex = 0.8,
@@ -75,15 +75,15 @@ stimulus.addAm("am_two_tone", {
 })
 
 -- AM voice beacon on 14.280 MHz (S9+10)
-stimulus.addAm("am_voice", {
-    freq = 14.280e6,
+stimulus.addAm("wwv15", {
+    freq = 15e6,
     amplitude = 150e-6,
     modIndex = 0.9,
-    audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
+    audioFile = "test/wwv-ident.wav",
     loop = true
 })
 
--- stimulus.addSsb("voice_id", {
+-- stimulus.addSsb("voice-id", {
 --     freq = 14.200e6,
 --     amplitude = 30e-3,
 --     mode = "usb",

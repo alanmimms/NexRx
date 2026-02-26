@@ -62,9 +62,15 @@ public:
     // For SSB modes, uses FFT-based processing with overlap-add
     // Returns 0 while buffering, then outputs HOP_SIZE samples worth of audio
     float process(float i, float q) {
-        // AM and CW use simple sample-by-sample processing
+        // AM uses complex LPF for selectivity before magnitude detection
         if (mode_ == Mode::AM) {
-            float mag = std::sqrt(i * i + q * q);
+            float fi = i, fq = q;
+            // Apply 4th-order complex LPF (3kHz cutoff)
+            for (int s = 0; s < LP_STAGES; ++s) {
+                fi = processBiquad(fi, lpCoeffs_[s], amStateI_[s]);
+                fq = processBiquad(fq, lpCoeffs_[s], amStateQ_[s]);
+            }
+            float mag = std::sqrt(fi * fi + fq * fq);
             updateRms(mag);
             return filterEnabled_ ? applyBandpassFilter(mag) : mag;
         }
@@ -120,6 +126,8 @@ public:
         bfoPhase_ = 0.0f;
         for (auto& s : hpState_) s = {0.0f, 0.0f};
         for (auto& s : lpState_) s = {0.0f, 0.0f};
+        for (auto& s : amStateI_) s = {0.0f, 0.0f};
+        for (auto& s : amStateQ_) s = {0.0f, 0.0f};
         std::fill(inputI_.begin(), inputI_.end(), 0.0f);
         std::fill(inputQ_.begin(), inputQ_.end(), 0.0f);
         std::fill(outputBuffer_.begin(), outputBuffer_.end(), 0.0f);
@@ -315,6 +323,8 @@ private:
     std::array<BiquadState, HP_STAGES> hpState_;
     std::array<BiquadCoeffs, LP_STAGES> lpCoeffs_;
     std::array<BiquadState, LP_STAGES> lpState_;
+    std::array<BiquadState, LP_STAGES> amStateI_;
+    std::array<BiquadState, LP_STAGES> amStateQ_;
 
     static float processBiquad(float x, const BiquadCoeffs& c, BiquadState& s) {
         float y = c.b0 * x + s.z1;
@@ -340,8 +350,8 @@ private:
             hpCoeffs_[0].a2 = (1.0f - alpha) / a0;
         }
 
-        // 5kHz lowpass (4th order)
-        constexpr float fc = 5000.0f;
+        // 3kHz lowpass (4th order)
+        constexpr float fc = 3000.0f;
         constexpr float qValues[LP_STAGES] = {0.5412f, 1.3065f};
 
         for (int stage = 0; stage < LP_STAGES; ++stage) {
