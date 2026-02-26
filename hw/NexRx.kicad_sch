@@ -1615,7 +1615,7 @@
 			"pgaSCK" "pgaMOSI" "qsdPh0a" "qsdPh0b" "qsdPh0c" "qsdPh0d" "qsdPh1a" "qsdPh1b"
 			"qsdPh1c" "qsdPh1d" "qsdPh2a" "qsdPh2b" "qsdPh2c" "qsdPh2d" "enable6V"
 			"enable3VA" "enable5VA" "enable3V3" "audioSCL" "audioSDA" "enableFPGAVCORE"
-			"usbCC1adc" "usbCC2adc" "tuneNSS" "tuneSCK" "tuneMOSI" "tuneMISO"
+			"usbCC1adc" "usbCC2adc"
 		)
 	)
 	(text "~25V pk-pk\nprotection"
@@ -1938,6 +1938,16 @@
 		)
 		(uuid "ae8414fd-299c-4a38-a246-fd8410668bbd")
 	)
+	(bus
+		(pts
+			(xy 161.29 97.79) (xy 223.52 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b1ae5db6-03a0-4c6a-ad3f-42a89902f105")
+	)
 	(wire
 		(pts
 			(xy 53.34 163.83) (xy 53.34 165.1)
@@ -1957,16 +1967,6 @@
 			(type default)
 		)
 		(uuid "c2b1c469-7d83-4c50-a324-c5b0eae0ddc7")
-	)
-	(bus
-		(pts
-			(xy 161.29 97.79) (xy 223.52 97.79)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c3c07262-03a6-41ef-a022-caaeeeb8eb30")
 	)
 	(wire
 		(pts
@@ -5013,7 +5013,7 @@
 		)
 		(pin "Tune{Tune}" bidirectional
 			(at 161.29 97.79 0)
-			(uuid "77922920-3737-408a-936c-949518790eb7")
+			(uuid "9c7a847e-c013-4381-b694-5118a33911fa")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5179,7 +5179,7 @@
 		)
 		(pin "Tune{Tune}" bidirectional
 			(at 223.52 97.79 180)
-			(uuid "154337d7-cea7-4c9b-ae68-33f79b4c9184")
+			(uuid "db213a4f-b704-436d-816a-3f0d0507df37")
 			(effects
 				(font
 					(size 1.27 1.27)

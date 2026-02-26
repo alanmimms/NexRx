@@ -5759,10 +5759,6 @@
 		(uuid "8081fb5b-b186-43a3-975c-7d413264f7d3")
 	)
 	(no_connect
-		(at 57.15 125.73)
-		(uuid "823f7f18-628d-4d77-87d0-0866489166b1")
-	)
-	(no_connect
 		(at 57.15 69.85)
 		(uuid "8a10adc4-8e95-4351-b63c-fc4be8c13d34")
 	)
@@ -5777,10 +5773,6 @@
 	(no_connect
 		(at 102.87 59.69)
 		(uuid "9a0a3043-5e0d-4d33-a8fb-a36d1e24fd34")
-	)
-	(no_connect
-		(at 57.15 128.27)
-		(uuid "a18a3d2a-b765-48fe-b868-28a99687d99b")
 	)
 	(no_connect
 		(at 102.87 95.25)
@@ -6347,16 +6339,6 @@
 			(type default)
 		)
 		(uuid "26f389db-e5e7-45a2-b1fe-e6b8e0d5bd09")
-	)
-	(bus
-		(pts
-			(xy 26.67 129.54) (xy 30.48 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "282aab24-d9be-4cd0-b0f0-63f19c20d0f7")
 	)
 	(wire
 		(pts
@@ -7828,6 +7810,16 @@
 		)
 		(uuid "a75fa675-7fdf-4fda-9a8f-2edcfc550e1e")
 	)
+	(bus
+		(pts
+			(xy 26.67 129.54) (xy 30.48 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a7a4b313-58ed-4b47-80f7-cfabc43ff00d")
+	)
 	(wire
 		(pts
 			(xy 72.39 21.59) (xy 74.93 21.59)
@@ -8390,6 +8382,16 @@
 	)
 	(wire
 		(pts
+			(xy 55.88 128.27) (xy 57.15 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dfaad5a5-9b68-48bf-b925-ac71abd308a5")
+	)
+	(wire
+		(pts
 			(xy 180.34 74.93) (xy 180.34 76.2)
 		)
 		(stroke
@@ -8407,6 +8409,16 @@
 			(type default)
 		)
 		(uuid "e1d2c72f-0d38-466a-bfd3-87af67099ce9")
+	)
+	(wire
+		(pts
+			(xy 55.88 125.73) (xy 57.15 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e2cc65a6-b11f-4d27-9b7a-8d41f03b16d3")
 	)
 	(wire
 		(pts
@@ -8928,6 +8940,16 @@
 		)
 		(uuid "590e1ae9-d210-448e-af48-cbc92502e544")
 	)
+	(label "Ctrl.usbCC1adc"
+		(at 55.88 125.73 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "5ddf0dbf-42fb-442c-888e-05791fdd4fe3")
+	)
 	(label "Ctrl.qsdData"
 		(at 34.29 100.33 180)
 		(effects
@@ -9098,6 +9120,16 @@
 		)
 		(uuid "9208533f-a93e-42f2-a2da-5922fa276405")
 	)
+	(label "Tune.txRx"
+		(at 104.14 135.89 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "926c5f62-a9a3-4bcf-afa9-531d3d064f79")
+	)
 	(label "FPGA.MOSI"
 		(at 104.14 82.55 0)
 		(effects
@@ -9177,6 +9209,16 @@
 			(justify left bottom)
 		)
 		(uuid "aebdcff8-056a-42e9-9227-63aad5266943")
+	)
+	(label "Ctrl.usbCC2adc"
+		(at 55.88 128.27 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "afa36254-124e-4d8f-ae07-173008cab7c1")
 	)
 	(label "Ctrl.enable6V"
 		(at 55.88 113.03 180)
@@ -9348,16 +9390,6 @@
 		)
 		(uuid "e2225a4e-b7f8-4568-b0bd-0d4b12470bbf")
 	)
-	(label "Tune.txrx"
-		(at 104.14 135.89 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e64e60d1-06ed-44fd-8f42-67860287af4c")
-	)
 	(label "usbDATA5"
 		(at 182.88 128.27 0)
 		(effects
@@ -9515,7 +9547,7 @@
 			)
 			(justify right)
 		)
-		(uuid "4f9c213d-490e-42d2-8e46-b17ba12cc061")
+		(uuid "42470436-ef25-46d5-b297-688972307de1")
 	)
 	(hierarchical_label "FPGA{FPGA}"
 		(shape bidirectional)
