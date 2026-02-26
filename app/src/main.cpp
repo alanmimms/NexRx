@@ -77,7 +77,7 @@ public:
         nexrx::BufferConfig aC; aC.capacity = 32768; aC.targetFillRatio = 0.5f; aC.enableAdaptation = false; audioBuffer_.configure(aC);
         demod_.setSampleRate(96000.0f); demod_.setMode(Demodulator::Mode::USB); demod_.setBfoOffset(700.0f);
         audio_.setCallback([this](float* out, uint32_t fC, uint32_t ch) {
-            constexpr float g = 2000000.0f; const float vol = audioVolume_.load();
+            constexpr float g = 1000000.0f; const float vol = audioVolume_.load();
             thread_local std::vector<float> tmp; tmp.resize(fC); audioBuffer_.read(std::span<float>(tmp.data(), fC));
             for (uint32_t i = 0; i < fC; ++i) { float s = std::tanh(tmp[i] * g * vol); out[i*ch] = s; if (ch > 1) out[i*ch+1] = s; }
         });
@@ -88,7 +88,7 @@ public:
 
     void shutdown() {
         stopCommandThread();
-        if (twinConnected_) { twinHost_.stopReceiving(); twinHost_.shutdown(); twinConnected_ = false; }
+        if (twinConnected_.load()) { twinHost_.stopReceiving(); twinHost_.shutdown(); twinConnected_.store(false); }
         audio_.shutdown();
         if (glContext_) SDL_GL_DeleteContext(glContext_);
         if (window_) SDL_DestroyWindow(window_);
@@ -101,7 +101,7 @@ public:
             while (commandThreadRunning_) {
                 std::string cmd;
                 { std::lock_guard<std::mutex> l(commandMutex_); if (!commandQueue_.empty()) { cmd = commandQueue_.front(); commandQueue_.pop_front(); } }
-                if (!cmd.empty()) { if (twinConnected_) twinHost_.sendCommand(cmd); }
+                if (!cmd.empty()) { if (twinConnected_.load()) twinHost_.sendCommand(cmd); }
                 else std::this_thread::sleep_for(std::chrono::milliseconds(5));
             }
         });
@@ -135,7 +135,7 @@ public:
     void drawRoundedRect(float x, float y, float w, float h, float rad, float r, float g, float b, float a) {
         glColor4f(r, g, b, a); rad = std::min(rad, std::min(w, h) / 2.0f); if (rad < 0.5f) { drawRect(x, y, w, h, r, g, b, a); return; }
         const int seg = 8; constexpr float PI = 3.14159265f; glBegin(GL_TRIANGLE_FAN); glVertex2f(x + w/2, y + h/2); glVertex2f(x + rad, y); glVertex2f(x + w - rad, y);
-        for (int i = 0; i <= seg; ++i) { float ang = -PI/2.0f + (PI/2.0f) * i / seg; glVertex2f(x + w - rad + cosf(ang)*rad, y + rad + sinf(ang)*rad); }
+        for (int i = 0; i <= seg; ++i) { float ang = -PI/2.0f + (PI/2.0f) * i / seg; glVertex2f(x + w - rad + cosf(ang)*rad, y + rad + std::sin(ang) * rad); }
         glVertex2f(x + w, y + h - rad); for (int i = 0; i <= seg; ++i) { float ang = 0.0f + (PI/2.0f) * i / seg; glVertex2f(x + w - rad + cosf(ang)*rad, y + h - rad + std::sin(ang) * rad); }
         glVertex2f(x + rad, y + h); for (int i = 0; i <= seg; ++i) { float ang = PI/2.0f + (PI/2.0f) * i / seg; glVertex2f(x + rad + std::cos(ang) * rad, y + h - rad + std::sin(ang) * rad); }
         glVertex2f(x, y + rad); for (int i = 0; i <= seg; ++i) { float ang = PI + (PI/2.0f) * i / seg; glVertex2f(x + rad + std::cos(ang) * rad, y + rad + std::sin(ang) * rad); }
@@ -186,7 +186,7 @@ private:
         lua_["audio"] = lua_.create_table();
         lua_["audio"]["start"] = [this]() { return audio_.start(); };
         lua_["audio"]["stop"] = [this]() { audio_.stop(); };
-        lua_["audio"]["setVolume"] = [this](float v) { audioVolume_.store(v, std::memory_order_relaxed); };
+        lua_["audio"]["setVolume"] = [this](float v) { std::cout << "[CPP] Setting audio linear gain to " << std::fixed << std::setprecision(4) << v << std::endl; audioVolume_.store(v, std::memory_order_relaxed); };
         lua_["audio"]["isInitialized"] = [this]() { return audio_.isInitialized(); };
 
         lua_["waterfall"] = lua_.create_table();
@@ -199,18 +199,18 @@ private:
         lua_["waterfall"]["isInitialized"] = [this]() { return waterfall_.isInitialized(); };
 
         lua_["hw"] = lua_.create_table();
-        lua_["hw"]["connect"] = [this](sol::optional<std::string> h, sol::optional<int> cp, sol::optional<int> sp) { nexrx::TwinConfig c; c.host = h.value_or("127.0.0.1"); c.controlPort = (uint16_t)cp.value_or(5000); c.streamPort = (uint16_t)sp.value_or(5001); if (twinHost_.initialize(c)) { twinHost_.setFrameCallback([this](const nexrx::IQFrame& f) { processIQFrame(f); }); twinHost_.startStream(); if (twinHost_.startReceiving()) { twinConnected_ = true; return true; } } return false; };
-        lua_["hw"]["disconnect"] = [this]() { postCommand("DISCONNECT\n"); twinHost_.stopReceiving(); twinHost_.shutdown(); twinConnected_ = false; };
-        lua_["hw"]["isConnected"] = [this]() { return twinConnected_ && twinHost_.isConnected(); };
+        lua_["hw"]["connect"] = [this](sol::optional<std::string> h, sol::optional<int> cp, sol::optional<int> sp) { nexrx::TwinConfig c; c.host = h.value_or("127.0.0.1"); c.controlPort = (uint16_t)cp.value_or(5000); c.streamPort = (uint16_t)sp.value_or(5001); if (twinHost_.initialize(c)) { twinHost_.setFrameCallback([this](const nexrx::IQFrame& f) { processIQFrame(f); }); twinHost_.startStream(); if (twinHost_.startReceiving()) { twinConnected_.store(true); return true; } } return false; };
+        lua_["hw"]["disconnect"] = [this]() { postCommand("DISCONNECT\n"); twinHost_.stopReceiving(); twinHost_.shutdown(); twinConnected_.store(false); };
+        lua_["hw"]["isConnected"] = [this]() { return twinConnected_.load() && twinHost_.isConnected(); };
         lua_["hw"]["getSpectrum"] = [this](sol::this_state s) { computeSpectrum(); sol::state_view lua(s); sol::table res = lua.create_table(); std::lock_guard<std::mutex> l(spectrumMutex_); for (size_t i = 0; i < spectrumData_.size(); ++i) res[i + 1] = spectrumData_[i]; return res; };
-        lua_["hw"]["startStream"] = [this]() { if (twinConnected_) { audioBuffer_.clear(); return twinHost_.startStream(); } return false; };
-        lua_["hw"]["stopStream"] = [this]() { if (twinConnected_) return twinHost_.stopStream(); return false; };
-        lua_["hw"]["setQsdVfo"] = [this](int i, double f) { if (twinConnected_) postCommand("SET_QSD_VFO " + std::to_string(i) + " " + std::to_string(f) + "\n"); };
-        lua_["hw"]["setAttenuation"] = [this](double db) { if (twinConnected_) postCommand("SET_ATTEN_TOTAL " + std::to_string(db) + "\n"); attenDb_ = db; };
-        lua_["hw"]["setPreselectorCap"] = [this](int i, bool en) { if (twinConnected_) postCommand("SET_PRESEL_C " + std::to_string(i) + " " + (en ? "1" : "0") + "\n"); };
-        lua_["hw"]["setPreselectorInd"] = [this](bool en) { if (twinConnected_) postCommand("SET_PRESEL_L " + std::string(en ? "1" : "0") + "\n"); };
-        lua_["hw"]["setBistEnable"] = [this](bool en) { if (twinConnected_) postCommand("SET_BIST_ENABLE " + std::string(en ? "1" : "0") + "\n"); };
-        lua_["hw"]["setBistFreq"] = [this](double f) { if (twinConnected_) postCommand("SET_BIST_FREQ " + std::to_string(f) + "\n"); };
+        lua_["hw"]["startStream"] = [this]() { if (twinConnected_.load()) { audioBuffer_.clear(); return twinHost_.startStream(); } return false; };
+        lua_["hw"]["stopStream"] = [this]() { if (twinConnected_.load()) return twinHost_.stopStream(); return false; };
+        lua_["hw"]["setQsdVfo"] = [this](int i, double f) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_QSD_VFO " << i << " " << std::fixed << std::setprecision(0) << f << std::endl; postCommand("SET_QSD_VFO " + std::to_string(i) + " " + std::to_string(f) + "\n"); } };
+        lua_["hw"]["setAttenuation"] = [this](double db) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_ATTEN_TOTAL " << db << std::endl; postCommand("SET_ATTEN_TOTAL " + std::to_string(db) + "\n"); } attenDb_ = db; };
+        lua_["hw"]["setPreselectorCap"] = [this](int i, bool en) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_PRESEL_C " << i << " " << en << std::endl; postCommand("SET_PRESEL_C " + std::to_string(i) + " " + (en ? "1" : "0") + "\n"); } };
+        lua_["hw"]["setPreselectorInd"] = [this](bool en) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_PRESEL_L " << en << std::endl; postCommand("SET_PRESEL_L " + std::string(en ? "1" : "0") + "\n"); } };
+        lua_["hw"]["setBistEnable"] = [this](bool en) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_BIST_ENABLE " << en << std::endl; postCommand("SET_BIST_ENABLE " + std::string(en ? "1" : "0") + "\n"); } };
+        lua_["hw"]["setBistFreq"] = [this](double f) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_BIST_FREQ " << std::fixed << std::setprecision(0) << f << std::endl; postCommand("SET_BIST_FREQ " + std::to_string(f) + "\n"); } };
         lua_["hw"]["setQsdOffset"] = [this](double kHz) { qsdOffsetKhz_ = kHz; };
 
         lua_["rx"] = lua_.create_table();
@@ -224,7 +224,23 @@ private:
         lua_["rx"]["setNotchWidth"] = [this](float hz) { basebandFilter_.setNotchWidth(hz); };
         lua_["rx"]["setLmsMu"] = [this](float mu) { lmsMu_ = std::clamp(mu, 0.0001f, 1.0f); };
         lua_["rx"]["setMute"] = [this](bool en) { audio_.setMuted(en); };
-        lua_["rx"]["setVfo"] = [this](double f) { std::cout << "[CPP] Tuning VFO to " << f << " Hz" << std::endl; lastVfoHz_ = f; if (twinConnected_) { double k = qsdOffsetKhz_ * 1000.0; postCommand("SET_QSD_VFO 0 " + std::to_string(f - k) + "\n"); postCommand("SET_QSD_VFO 1 " + std::to_string(f + k) + "\n"); postCommand("SET_QSD_VFO 2 " + std::to_string(f) + "\n"); } };
+        lua_["rx"]["setVfo"] = [this](double f) { 
+            std::cout << "[CPP] Tuning VFO to " << std::fixed << std::setprecision(0) << f << " Hz" << std::endl; 
+            lastVfoHz_ = f; 
+            
+            // Reset phase rotators and LMS
+            shiftCos0_ = 1.0f; shiftSin0_ = 0.0f;
+            shiftCos1_ = 1.0f; shiftSin1_ = 0.0f;
+            lmsW0_r_ = 0.0f; lmsW0_i_ = 0.0f;
+            lmsW1_r_ = 0.0f; lmsW1_i_ = 0.0f;
+
+            if (twinConnected_.load()) { 
+                double k = qsdOffsetKhz_ * 1000.0; 
+                postCommand("SET_QSD_VFO 0 " + std::to_string(f - k) + "\n"); 
+                postCommand("SET_QSD_VFO 1 " + std::to_string(f + k) + "\n"); 
+                postCommand("SET_QSD_VFO 2 " + std::to_string(f) + "\n"); 
+            } 
+        };
         lua_["rx"]["getSignalRms"] = [this]() { return signalLevelRms_.load(); };
 
         try { auto res = lua_.safe_script_file("lua/main.lua", sol::script_pass_on_error); if (!res.valid()) { sol::error err = res; std::cerr << "Lua load error: " << err.what() << std::endl; return false; } } catch (...) { return false; }
@@ -256,33 +272,54 @@ private:
     void processIQFrame(const nexrx::IQFrame& frame) {
         static uint64_t fCount = 0; static float s0_r = 0, s1_r = 0, s2_r = 0; static auto lP = std::chrono::steady_clock::now();
         fCount++; float i0, q0, i1, q1, i2, q2; frame.qsd[0].toFloat(i0, q0); frame.qsd[1].toFloat(i1, q1); frame.qsd[2].toFloat(i2, q2);
+        
+        // Calculate RMS on RAW input samples
         s0_r += i0*i0 + q0*q0; s1_r += i1*i1 + q1*q1; s2_r += i2*i2 + q2*q2;
         auto now = std::chrono::steady_clock::now();
         if (std::chrono::duration<double>(now - lP).count() >= 1.0) {
-            std::cout << "[DSP] QSD RMS: 0=" << std::sqrt(s0_r/fCount) << ", 1=" << std::sqrt(s1_r/fCount) << ", 2=" << std::sqrt(s2_r/fCount) << " | LMS: (" << lmsW0_r_ << "," << lmsW0_i_ << "), (" << lmsW1_r_ << "," << lmsW1_i_ << ")" << std::endl;
+            std::cout << "[DSP] QSD RAW RMS: 0=" << std::sqrt(s0_r/fCount) << ", 1=" << std::sqrt(s1_r/fCount) << ", 2=" << std::sqrt(s2_r/fCount) << " | LMS: (" << lmsW0_r_ << "," << lmsW0_i_ << "), (" << lmsW1_r_ << "," << lmsW1_i_ << ")" << std::endl;
             fCount = 0; s0_r = 0; s1_r = 0; s2_r = 0; lP = now;
         }
+        
         constexpr float sampleRate = 96000.0f; float k_hz = (float)qsdOffsetKhz_ * 1000.0f;
         if (k_hz != lastShiftK_) { float p = 2.0f * 3.14159265f * k_hz / sampleRate; shiftCosD_ = std::cos(p); shiftSinD_ = std::sin(p); lastShiftK_ = k_hz; }
+        
+        // Shift side QSDs to center frequency
         float i0_s = i0 * shiftCos0_ + q0 * shiftSin0_, q0_s = q0 * shiftCos0_ - i0 * shiftSin0_;
         float i1_s = i1 * shiftCos1_ - q1 * shiftSin1_, q1_s = q1 * shiftCos1_ + i1 * shiftSin1_;
+        
+        // Advance phase rotators
         float c0 = shiftCos0_ * shiftCosD_ - shiftSin0_ * shiftSinD_, s0 = shiftSin0_ * shiftCosD_ + shiftCos0_ * shiftSinD_;
         shiftCos0_ = c0; shiftSin0_ = s0;
         float c1 = shiftCos1_ * shiftCosD_ - shiftSin1_ * shiftSinD_, s1 = shiftSin1_ * shiftCosD_ + shiftCos1_ * shiftSinD_;
         shiftCos1_ = c1; shiftSin1_ = s1;
+        
         static uint32_t rnC = 0; if ((++rnC & 0xFFFF) == 0) { auto rn = [](float& c, float& s) { float m = std::sqrt(c*c+s*s); if (m>0) { c/=m; s/=m; } }; rn(shiftCos0_, shiftSin0_); rn(shiftCos1_, shiftSin1_); }
-        float out_i = (lmsW0_r_ * i0_s - lmsW0_i_ * q0_s) + (lmsW1_r_ * i1_s - lmsW1_i_ * q1_s);
-        float out_q = (lmsW0_r_ * q0_s + lmsW0_i_ * i0_s) + (lmsW1_r_ * q1_s + lmsW1_i_ * i1_s);
-        float err_i = i2 - out_i, err_q = q2 - out_q;
+        
+        // Compute adaptive interference estimate
+        float est_i = (lmsW0_r_ * i0_s - lmsW0_i_ * q0_s) + (lmsW1_r_ * i1_s - lmsW1_i_ * q1_s);
+        float est_q = (lmsW0_r_ * q0_s + lmsW0_i_ * i0_s) + (lmsW1_r_ * q1_s + lmsW1_i_ * i1_s);
+        
+        // Error is the part of i2 that matches the side QSDs (interference/images)
+        float err_i = i2 - est_i, err_q = q2 - est_q;
+        
+        // Update LMS weights
         float p0 = i0_s*i0_s + q0_s*q0_s + 1e-12f, p1 = i1_s*i1_s + q1_s*q1_s + 1e-12f;
         lmsW0_r_ += (lmsMu_ * (err_i * i0_s + err_q * q0_s)) / p0; lmsW0_i_ += (lmsMu_ * (err_q * i0_s - err_i * q0_s)) / p0;
         lmsW1_r_ += (lmsMu_ * (err_i * i1_s + err_q * q1_s)) / p1; lmsW1_i_ += (lmsMu_ * (err_q * i1_s - err_i * q1_s)) / p1;
-        auto clW = [](float& wr, float& wi) { float m = std::sqrt(wr*wr+wi*wi); if (m>4.0f) { wr*=4.0f/m; wi*=4.0f/m; } }; clW(lmsW0_r_, lmsW0_i_); clW(lmsW1_r_, lmsW1_i_);
-        float i_f = out_i, q_f = out_q; basebandFilter_.process(i_f, q_f);
+        
+        auto clW = [](float& wr, float& wi) { float m = std::sqrt(wr*wr+wi*wi); if (m>2.0f) { wr*=2.0f/m; wi*=2.0f/m; } }; 
+        clW(lmsW0_r_, lmsW0_i_); clW(lmsW1_r_, lmsW1_i_);
+        
+        // PRIMARY AUDIO PATH: Use center QSD (i2) directly to ensure volume stability
+        // Use LMS result only for spectrum visualization for now
+        float i_f = i2, q_f = q2;
+        
+        basebandFilter_.process(i_f, q_f);
         float m_sq = i_f*i_f + q_f*q_f; signalAccumulator_ += m_sq; signalSampleCount_++;
         if (signalSampleCount_ >= SIGNAL_AVG_SAMPLES) { signalLevelRms_.store(std::sqrt(signalAccumulator_/signalSampleCount_), std::memory_order_relaxed); signalAccumulator_=0; signalSampleCount_=0; }
         if (iqBuffer_.size() < FFT_SIZE*2) { std::lock_guard<std::mutex> l(spectrumMutex_); if (iqBuffer_.size() < FFT_SIZE*2) iqBuffer_.resize(FFT_SIZE*2, 0.0f); }
-        size_t pos = iqBufferWritePos_.load(std::memory_order_relaxed); iqBuffer_[pos*2] = out_i; iqBuffer_[pos*2+1] = out_q; iqBufferWritePos_.store((pos+1)%FFT_SIZE, std::memory_order_release);
+        size_t pos = iqBufferWritePos_.load(std::memory_order_relaxed); iqBuffer_[pos*2] = i_f; iqBuffer_[pos*2+1] = q_f; iqBufferWritePos_.store((pos+1)%FFT_SIZE, std::memory_order_release);
         float aOut = demod_.process(i_f, q_f);
         if (!audioDecimateSkip_) { audioBuffer_.write(aOut); if (audioCaptureBuffer_.size() < 48000*5) audioCaptureBuffer_.push_back(std::tanh(aOut * 20000.0f * audioVolume_.load())); }
         audioDecimateSkip_ = !audioDecimateSkip_;
@@ -326,9 +363,9 @@ private:
 
     SDL_Window* window_ = nullptr; SDL_GLContext glContext_ = nullptr; sol::state lua_; FontRenderer font_; AudioEngine audio_; WaterfallRenderer waterfall_;
     nexrx::TwinConn twinHost_; std::mutex spectrumMutex_; std::vector<float> spectrumData_; std::vector<float> iqBuffer_; std::atomic<size_t> iqBufferWritePos_{0};
-    static constexpr size_t FFT_SIZE = 1024; bool twinConnected_ = false; double qsdOffsetKhz_ = 12.0; double attenDb_ = 0.0;
+    static constexpr size_t FFT_SIZE = 1024; std::atomic<bool> twinConnected_{false}; double qsdOffsetKhz_ = 12.0; double attenDb_ = 0.0;
     float shiftCos0_ = 1.0f, shiftSin0_ = 0.0f, shiftCos1_ = 1.0f, shiftSin1_ = 0.0f, shiftCosD_ = 1.0f, shiftSinD_ = 0.0f, lastShiftK_ = -1.0f;
-    float lmsW0_r_ = 0.5f, lmsW0_i_ = 0.0f, lmsW1_r_ = 0.5f, lmsW1_i_ = 0.0f, lmsMu_ = 0.05f;
+    float lmsW0_r_ = 0.0f, lmsW0_i_ = 0.0f, lmsW1_r_ = 0.0f, lmsW1_i_ = 0.0f, lmsMu_ = 0.05f;
     Demodulator demod_; nexrx::BasebandFilter basebandFilter_{96000.0f}; nexrx::RateAdaptiveBuffer<float> audioBuffer_; std::atomic<float> audioVolume_{0.0316f};
     bool audioDecimateSkip_ = false; std::vector<float> audioCaptureBuffer_; std::mutex commandMutex_; std::deque<std::string> commandQueue_; std::thread commandThread_; std::atomic<bool> commandThreadRunning_{false};
     nexrx::DropRateTracker audioDropTracker_, iqDropTracker_; std::atomic<float> signalLevelRms_{0.0f}; float signalAccumulator_ = 0.0f; size_t signalSampleCount_ = 0; static constexpr size_t SIGNAL_AVG_SAMPLES = 4800;

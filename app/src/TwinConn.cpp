@@ -230,10 +230,15 @@ std::string TwinConn::sendCommand(const std::string& cmd) {
         return "ERROR not connected";
     }
 
+    if (config_.verbose) {
+        std::cout << "[TwinConn] Sending: " << cmd << std::flush;
+    }
+
     std::vector<uint8_t> request(cmd.begin(), cmd.end());
     auto result = control_->sendRequest(request, std::chrono::milliseconds(100));
 
     if (!result.ok()) {
+        if (config_.verbose) std::cerr << "[TwinConn] Command failed: " << cmd << " (timeout)" << std::endl;
         return "ERROR timeout";
     }
 

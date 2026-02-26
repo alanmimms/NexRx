@@ -145,22 +145,22 @@ int runFunctionalMode(const Options& opts) {
         return y;
     };
 
-    double lo_cos[3] = {1,1,1}, lo_sin[3] = {0,0,0}, lo_cos_d[3], lo_sin_d[3], current_freqs[3];
+    double lo_phase[3] = {0,0,0}, lo_phase_d[3], current_freqs[3];
     auto updatePhases = [&](int ch, double f) {
-        double d = 2.0 * M_PI * f * oversamplePeriod;
-        lo_cos_d[ch] = std::cos(d); lo_sin_d[ch] = std::sin(d);
+        lo_phase_d[ch] = 2.0 * M_PI * f * oversamplePeriod;
         current_freqs[ch] = f;
+        memset(lpf_zi[ch], 0, sizeof(lpf_zi[ch]));
+        memset(lpf_zq[ch], 0, sizeof(lpf_zq[ch]));
     };
     for(int ch=0; ch<3; ++ch) updatePhases(ch, ch==0 ? lo-k : (ch==1 ? lo+k : lo));
 
     // RF Tone State
-    double rf_freq = opts.rf_freq_mhz * 1e6;
-    double rf_cos = 1.0, rf_sin = 0.0, rf_cos_d, rf_sin_d;
-    { double d = 2.0 * M_PI * rf_freq * oversamplePeriod; rf_cos_d = std::cos(d); rf_sin_d = std::sin(d); }
+    double rf_phase = 0.0, rf_phase_d;
+    { rf_phase_d = 2.0 * M_PI * (opts.rf_freq_mhz * 1e6) * oversamplePeriod; }
     double rf_amp = opts.rf_amplitude_mv * 1e-3;
 
     // BIST State
-    double bist_cos = 1.0, bist_sin = 0.0, bist_cos_d = 1.0, bist_sin_d = 0.0, bist_last_freq = -1.0;
+    double bist_phase = 0.0, bist_phase_d = 0.0, bist_last_freq = -1.0;
 
     auto startTime = std::chrono::steady_clock::now();
     size_t outputSample = 0;
@@ -178,63 +178,54 @@ int runFunctionalMode(const Options& opts) {
             continue;
         }
 
-        // Process a block of samples
         for (int step=0; step < 960; ++step) {
             double f_i[3], f_q[3];
             for (int os=0; os < OVERSAMPLE; ++os) {
                 double t = (outputSample * OVERSAMPLE + os) * oversamplePeriod;
                 double rf_i=0, rf_q=0;
                 
-                // Static RF Tone or Lua Stimulus
                 if (stimulusManager) {
                     stimulusManager->getRfIQ(t, rf_i, rf_q);
                 } else {
-                    rf_i = rf_amp * rf_cos; rf_q = rf_amp * rf_sin;
-                    double nc = rf_cos*rf_cos_d - rf_sin*rf_sin_d;
-                    double ns = rf_sin*rf_cos_d + rf_cos*rf_sin_d;
-                    rf_cos = nc; rf_sin = ns;
+                    rf_i = rf_amp * cos(rf_phase); rf_q = rf_amp * sin(rf_phase);
+                    rf_phase = fmod(rf_phase + rf_phase_d, 2.0 * M_PI);
                 }
                 
-                // FPGA BIST Signal (inject at preselector input)
                 if (controlHandler->isBistEnabled()) {
                     double bf = controlHandler->getBistFreq();
                     if (std::abs(bf - bist_last_freq) > 1.0) {
-                        double d = 2.0 * M_PI * bf * oversamplePeriod;
-                        bist_cos_d = std::cos(d); bist_sin_d = std::sin(d);
+                        bist_phase_d = 2.0 * M_PI * bf * oversamplePeriod;
                         bist_last_freq = bf;
                     }
-                    double bs_i = 0.005 * bist_cos; // 5mV signal
-                    rf_i += bs_i;
-                    double nc = bist_cos*bist_cos_d - bist_sin*bist_sin_d;
-                    double ns = bist_sin*bist_cos_d + bist_cos*bist_sin_d;
-                    bist_cos = nc; bist_sin = ns;
+                    rf_i += 0.000158 * cos(bist_phase); // ~158uV signal
+                    bist_phase = fmod(bist_phase + bist_phase_d, 2.0 * M_PI);
                 }
 
-                // Apply Attenuator
                 double gain = attenuator.getVoltageGain();
                 rf_i *= gain; rf_q *= gain;
                 
-                // Mixing
                 for (int ch=0; ch<3; ++ch) {
-                    double bi = rf_i*lo_cos[ch] + rf_q*lo_sin[ch], bq = rf_q*lo_cos[ch] - rf_i*lo_sin[ch];
+                    double c = cos(lo_phase[ch]), s = sin(lo_phase[ch]);
+                    double bi = rf_i*c + rf_q*s, bq = rf_q*c - rf_i*s;
                     double fi = applyLpf(bi, lpf_zi[ch]), fq = applyLpf(bq, lpf_zq[ch]);
                     if (os == OVERSAMPLE - 1) { f_i[ch] = fi; f_q[ch] = fq; }
-                    double nc = lo_cos[ch]*lo_cos_d[ch] - lo_sin[ch]*lo_sin_d[ch];
-                    double ns = lo_sin[ch]*lo_cos_d[ch] + lo_cos[ch]*lo_sin_d[ch];
-                    lo_cos[ch] = nc; lo_sin[ch] = ns;
+                    lo_phase[ch] = fmod(lo_phase[ch] + lo_phase_d[ch], 2.0 * M_PI);
                 }
             }
 
             IQFrame frame; frame.timestamp_ns = (uint64_t)(outputSample * samplePeriod * 1e9); frame.sequence = (uint32_t)outputSample;
             static thread_local std::mt19937 rng(std::random_device{}()); static thread_local std::uniform_real_distribution<double> dist(-0.5, 0.5);
-            auto quant = [&](double v) { return (int32_t)std::clamp(std::round(v * 8388607.0/1.65 + dist(rng)+dist(rng)), -8388608.0, 8388607.0); };
+            auto quant = [&](double v) { 
+                double scaled = v * 8388607.0/1.65;
+                if (!std::isfinite(scaled)) return (int32_t)0;
+                return (int32_t)std::clamp(std::round(scaled + dist(rng)+dist(rng)), -8388608.0, 8388607.0); 
+            };
             for (int ch=0; ch<3; ++ch) { frame.qsd[ch].i = quant(f_i[ch]); frame.qsd[ch].q = quant(f_q[ch]); }
             batch.push_back(frame);
             if (batch.size() >= 32) { stream->writeBatch(batch); batch.clear(); }
             outputSample++;
         }
 
-        // Pace to real-time
         auto now = std::chrono::steady_clock::now();
         double simTime = outputSample * samplePeriod;
         double elapsed = std::chrono::duration<double>(now - startTime).count();
@@ -242,10 +233,9 @@ int runFunctionalMode(const Options& opts) {
             std::this_thread::sleep_for(std::chrono::microseconds((int)((simTime - elapsed)*1e6)));
         }
 
-        // Check for VFO updates
         for (int ch=0; ch<3; ++ch) {
             double f = controlHandler->getQsdVfo(ch);
-            if (std::abs(f - current_freqs[ch]) > 1.0) { updatePhases(ch, f); lo_cos[ch]=1; lo_sin[ch]=0; }
+            if (std::abs(f - current_freqs[ch]) > 1.0) { updatePhases(ch, f); lo_phase[ch] = 0; }
         }
     }
     return 0;

@@ -46,10 +46,10 @@ end
 
 local specs = {
     frequency     = { min = 0.1, max = 30.0, setter = function(v) 
-        local dispatch = require("dispatch")
         local freqHz = v * 1e6
+        print(string.format("[AppState] Tuning to %.6f MHz (%.0f Hz)", v, freqHz))
+        -- Update VFO (this binding handles both local and remote)
         if rx and rx.setVfo then rx.setVfo(freqHz) end
-        dispatch.setVfo(freqHz)
         Preselector.tune(freqHz)
     end },
     vfoA          = { min = 0.1, max = 30.0 },
@@ -95,8 +95,21 @@ local specs = {
     wfColormap     = {},
     wfBins         = { min = 128, max = 4096 },
     wfRows         = { min = 64, max = 1024 },
-    bistEnabled    = { setter = function(v) hw.setBistEnable(v) end },
-    bistFrequency  = { min = 0.1, max = 30.0, setter = function(v) hw.setBistFreq(v * 1e6) end },
+    isgEnabled     = { setter = function(v) 
+        hw.setBistEnable(v) 
+        if v then 
+            -- Store previous attenuation to restore later
+            Preselector.lastAtten = AppState.get("rfAttenDb")
+            -- Enable full attenuation (~45dB) for safety when ISG is active
+            AppState.set("rfAttenDb", 45)
+        else
+            -- Restore previous attenuation
+            if Preselector.lastAtten then
+                AppState.set("rfAttenDb", Preselector.lastAtten)
+            end
+        end
+    end },
+    isgFrequency   = { min = 0.1, max = 30.0, setter = function(v) hw.setBistFreq(v * 1e6) end },
     preselectorAuto = { defaultValue = true, setter = function(v) Preselector.auto = v end },
 }
 
@@ -135,7 +148,12 @@ local function createObservable(name, spec, defaultValue)
         if spec.max ~= nil then value = math.min(spec.max, value) end
         if spec.step then value = math.floor(value / spec.step + 0.5) * spec.step end
         local changed = oldSet(self, value)
-        if changed and spec.setter then R.untrack(function() pcall(spec.setter, value) end) end
+        if changed and spec.setter then 
+            R.untrack(function() 
+                local ok, err = pcall(spec.setter, value) 
+                if not ok then print("[AppState] Setter error for " .. name .. ": " .. tostring(err)) end
+            end) 
+        end
         return changed
     end
     return obs
@@ -152,22 +170,27 @@ function AppState.init()
         selectedMode = setbox.getString("defaultMode", "USB"),
         selectedBand = setbox.getString("defaultBand", "20m"),
         rxActive = setbox.getBool("rxActive", true),
-        volumeDb = setbox.getNumber("volumeDb", -20),
+        volumeDb = setbox.getNumber("volumeDb", -40),
         wfMinDb = setbox.getNumber("wfMinDb", -120),
         wfMaxDb = setbox.getNumber("wfMaxDb", -40),
         wfColormap = setbox.getString("wfColormap", "viridis"),
         wfBins = setbox.getNumber("wfBins", 512),
         wfRows = setbox.getNumber("wfRows", 256),
         preselectorAuto = true,
-        bistEnabled = false,
-        bistFrequency = 14.201,
+        isgEnabled = false,
+        isgFrequency = 14.201,
     }
     AppState.batch(function()
         for name, spec in pairs(specs) do
             local defaultValue = defaults[name]
             if defaultValue == nil and spec.defaultValue ~= nil then defaultValue = spec.defaultValue end
             observables[name] = createObservable(name, spec, defaultValue)
-            if defaultValue ~= nil and spec.setter then R.untrack(function() pcall(spec.setter, defaultValue) end) end
+            if defaultValue ~= nil and spec.setter then 
+                R.untrack(function() 
+                    local ok, err = pcall(spec.setter, defaultValue) 
+                    if not ok then print("[AppState] Init setter error for " .. name .. ": " .. tostring(err)) end
+                end) 
+            end
         end
     end)
     AppState.watch("frequency", function(v)
@@ -191,7 +214,14 @@ function AppState.get(name)
     if observables[name] then return observables[name]:get() end
     return nil
 end
-function AppState.set(name, value) if observables[name] then return observables[name]:set(value) end return false end
+function AppState.set(name, value) 
+    if observables[name] then 
+        local changed = observables[name]:set(value) 
+        -- if changed then print("[AppState] Property " .. name .. " changed to " .. tostring(value)) end
+        return changed
+    end 
+    return false 
+end
 function AppState.getSpec(name) return specs[name] end
 function AppState.batch(fn) R.batch(fn) end
 function AppState.watch(name, fn)

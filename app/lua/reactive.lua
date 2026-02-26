@@ -54,7 +54,7 @@ function Reactive.observable(initialValue)
 
     function self:set(newValue)
         if value == newValue then
-            return  -- No change
+            return false -- No change
         end
         value = newValue
 
@@ -67,6 +67,8 @@ function Reactive.observable(initialValue)
         if batchDepth > 0 then
             pendingNotifications[self] = true
         end
+        
+        return true -- Value changed
     end
 
     function self:peek()

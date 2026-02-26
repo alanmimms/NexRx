@@ -39,6 +39,7 @@ local function setProperty(name, v)
     setbox.addTag("prop." .. name)
     local isAnimated = setbox.getBool("animated", false)
     setbox.setActiveTags(prevTags)
+    -- print(string.format("[Main] setProperty(%s, %s) animated=%s", name, tostring(v), tostring(isAnimated)))
     if isAnimated then AppState.animateTo(name, v) else AppState.set(name, v) end
 end
 
@@ -102,7 +103,12 @@ function init()
     end
     events.registerHandler("vfo_control", function(e, w, p)
         local delta = e.delta or (e.key == "RIGHT" and 1 or (e.key == "LEFT" and -1 or 0))
-        if delta ~= 0 and p and p.step then setProperty("frequency", state.frequency + delta * p.step); return true end
+        local prop = p.property or "frequency"
+        if delta ~= 0 and p and p.step then 
+            local newVal = state[prop] + delta * p.step
+            -- print(string.format("[Main] vfo_control: %s -> %s", prop, tostring(newVal)))
+            setProperty(prop, newVal); return true 
+        end
         return false
     end)
     events.registerHandler("toggle_property", function(e, w, p)
@@ -119,7 +125,11 @@ function init()
         if not prop then return false end
         local val = state[prop]
         local step = p.step or (w and w.data and (w.data.max - w.data.min) * 0.01) or 0.01
-        if e.delta then setProperty(prop, val + e.delta * step); return true end
+        if e.delta then 
+            local newVal = val + e.delta * step
+            -- print(string.format("[Main] slider_adjust: %s -> %s", prop, tostring(newVal)))
+            setProperty(prop, newVal); return true 
+        end
         return false
     end)
     events.registerHandler("set_value", function(e, w, p)
@@ -281,11 +291,17 @@ function draw()
             if i % 4 == 3 or i == 10 then layout.endHorizontal() end
         end
         layout.newLine(12)
-        cx, cy = layout.getCursor(); ui.label("bist-t", cx, cy, "FPGA BIST", {"Title"}); layout.newLine(24)
-        cx, cy = layout.getCursor(); ui.checkbox("b-en", "BIST Enabled", cx, cy, state.bistEnabled, {"BistToggle"}, "bistEnabled"); layout.newLine(28)
+        cx, cy = layout.getCursor(); ui.label("isg-t", cx, cy, "Int. Signal Gen.", {"Title"}); layout.newLine(24)
+        
+        -- ISG Frequency Display
         cx, cy = layout.getCursor()
-        local nbF = ui.slider("b-fr", cx, cy, rR.w - 24, 0.1, 30.0, state.bistFrequency, {"BistControl"}, "bistFrequency")
-        if nbF ~= state.bistFrequency then state.bistFrequency = nbF end
+        ui.frequencyDisplay("isg-freq-disp", cx, cy, rR.w - 24, 36, state.isgFrequency, "", {"IsgControl"})
+        layout.newLine(44)
+
+        cx, cy = layout.getCursor(); ui.checkbox("isg-en", "Generator Enabled", cx, cy, state.isgEnabled, {"IsgToggle"}, "isgEnabled"); layout.newLine(28)
+        cx, cy = layout.getCursor()
+        local nbF = ui.slider("isg-fr", cx, cy, rR.w - 24, 0.1, 30.0, state.isgFrequency, {"IsgControl"}, "isgFrequency")
+        if nbF ~= state.isgFrequency then state.isgFrequency = nbF end
         layout.newLine(24)
         layout.endRegion()
     end

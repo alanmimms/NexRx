@@ -179,6 +179,9 @@ private:
                 return "OK\n"; 
             }
         }
+        else if (verb == "GET_STATUS") {
+            return "STATUS lo=" + std::to_string(qsd_freq_hz_[2].load()) + " streaming=" + (streaming_.load() ? "true" : "false") + "\n";
+        }
         return "ERROR\n";
     }
 

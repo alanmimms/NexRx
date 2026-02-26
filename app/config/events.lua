@@ -161,6 +161,31 @@ rule {
     apply = { handler = "vfo_control", step = 0.0001 }
 }
 
+-- =============================================================================
+-- ISG Control (Internal Signal Gen)
+-- =============================================================================
+
+rule {
+    id = "event-isg-wheel",
+    tags = {"event.MouseWheel", "widget.IsgControl"},
+    priority = 100,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.001 }
+}
+
+rule {
+    id = "event-isg-arrow-right",
+    tags = {"event.KeyDown-RIGHT", "widget.IsgControl"},
+    priority = 100,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.001 }
+}
+
+rule {
+    id = "event-isg-arrow-left",
+    tags = {"event.KeyDown-LEFT", "widget.IsgControl"},
+    priority = 100,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = -0.001 }
+}
+
 -- KeyUp on VFOControl widgets - silently consume (keys used as modifiers)
 rule {
     id = "event-vfo-keyup-h",
