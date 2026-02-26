@@ -310,6 +310,7 @@ add_library(twin_stimulus STATIC
     src/stimulus/StimulusManager.cpp
     src/stimulus/MorseGenerator.cpp
     src/stimulus/SsbGenerator.cpp
+    src/stimulus/AmGenerator.cpp
     src/stimulus/SweepGenerator.cpp
     src/stimulus/TtsEngine.cpp
     src/stimulus/StimulusLua.cpp

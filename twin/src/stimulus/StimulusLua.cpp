@@ -5,6 +5,7 @@
 #include "StimulusLua.hpp"
 #include "MorseGenerator.hpp"
 #include "SsbGenerator.hpp"
+#include "AmGenerator.hpp"
 #include "SweepGenerator.hpp"
 #include "TtsEngine.hpp"
 #include "ToneGenerator.hpp"
@@ -23,6 +24,74 @@ StimulusLua::StimulusLua()
 StimulusLua::StimulusLua(std::shared_ptr<StimulusManager> manager)
     : manager_(std::move(manager))
 {}
+
+// Internal helper for WAV loading
+static std::vector<float> loadWavFile(const std::string& path, uint32_t& outSampleRate) {
+    std::ifstream file(path, std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "[Stimulus] Failed to open WAV file: " << path << std::endl;
+        return {};
+    }
+
+    char riff[4];
+    file.read(riff, 4);
+    if (std::strncmp(riff, "RIFF", 4) != 0) {
+        std::cerr << "[Stimulus] Invalid WAV file (not RIFF): " << path << std::endl;
+        return {};
+    }
+
+    file.seekg(8);
+    char wave[4];
+    file.read(wave, 4);
+    if (std::strncmp(wave, "WAVE", 4) != 0) {
+        std::cerr << "[Stimulus] Invalid WAV file (not WAVE): " << path << std::endl;
+        return {};
+    }
+
+    uint16_t audioFormat = 0, numChannels = 0, bitsPerSample = 0;
+    uint32_t sampleRate = 0;
+    std::vector<float> samples;
+
+    while (file.good()) {
+        char chunkId[4];
+        uint32_t chunkSize;
+        file.read(chunkId, 4);
+        file.read(reinterpret_cast<char*>(&chunkSize), 4);
+
+        if (std::strncmp(chunkId, "fmt ", 4) == 0) {
+            file.read(reinterpret_cast<char*>(&audioFormat), 2);
+            file.read(reinterpret_cast<char*>(&numChannels), 2);
+            file.read(reinterpret_cast<char*>(&sampleRate), 4);
+            file.seekg(6, std::ios::cur);
+            file.read(reinterpret_cast<char*>(&bitsPerSample), 2);
+            file.seekg(chunkSize - 16, std::ios::cur);
+            outSampleRate = sampleRate;
+        } else if (std::strncmp(chunkId, "data", 4) == 0) {
+            size_t numSamples = chunkSize / (bitsPerSample / 8) / numChannels;
+            samples.resize(numSamples);
+
+            for (size_t i = 0; i < numSamples; ++i) {
+                float sample = 0.0f;
+                if (bitsPerSample == 16) {
+                    int16_t s;
+                    file.read(reinterpret_cast<char*>(&s), 2);
+                    sample = s / 32768.0f;
+                    for (int c = 1; c < numChannels; ++c) file.seekg(2, std::ios::cur);
+                } else if (bitsPerSample == 8) {
+                    uint8_t s;
+                    file.read(reinterpret_cast<char*>(&s), 1);
+                    sample = (s - 128) / 128.0f;
+                    for (int c = 1; c < numChannels; ++c) file.seekg(1, std::ios::cur);
+                }
+                samples[i] = sample;
+            }
+            return samples;
+        } else {
+            file.seekg(chunkSize, std::ios::cur);
+        }
+    }
+    return {};
+}
 
 void StimulusLua::registerBindings(sol::state& lua) {
     // Create stimulus table
@@ -121,89 +190,17 @@ void StimulusLua::registerBindings(sol::state& lua) {
         sol::optional<std::string> audioFileOpt = config["audioFile"];
         if (audioFileOpt) {
             bool repeat = config.get_or("loop", true);
-            const std::string& path = *audioFileOpt;
-
-            // Simple WAV file loader
-            std::ifstream file(path, std::ios::binary);
-            if (!file.is_open()) {
-                std::cerr << "[Stimulus] Failed to open WAV file: " << path << std::endl;
-                return;
-            }
-
-            // Read RIFF header
-            char riff[4];
-            file.read(riff, 4);
-            if (std::strncmp(riff, "RIFF", 4) != 0) {
-                std::cerr << "[Stimulus] Invalid WAV file (not RIFF): " << path << std::endl;
-                return;
-            }
-
-            file.seekg(8);  // Skip file size
-            char wave[4];
-            file.read(wave, 4);
-            if (std::strncmp(wave, "WAVE", 4) != 0) {
-                std::cerr << "[Stimulus] Invalid WAV file (not WAVE): " << path << std::endl;
-                return;
-            }
-
-            // Find fmt chunk
-            uint16_t audioFormat = 0, numChannels = 0, bitsPerSample = 0;
             uint32_t sampleRate = 0;
-
-            while (file.good()) {
-                char chunkId[4];
-                uint32_t chunkSize;
-                file.read(chunkId, 4);
-                file.read(reinterpret_cast<char*>(&chunkSize), 4);
-
-                if (std::strncmp(chunkId, "fmt ", 4) == 0) {
-                    file.read(reinterpret_cast<char*>(&audioFormat), 2);
-                    file.read(reinterpret_cast<char*>(&numChannels), 2);
-                    file.read(reinterpret_cast<char*>(&sampleRate), 4);
-                    file.seekg(6, std::ios::cur);  // Skip byte rate, block align
-                    file.read(reinterpret_cast<char*>(&bitsPerSample), 2);
-                    file.seekg(chunkSize - 16, std::ios::cur);  // Skip rest of fmt
-                } else if (std::strncmp(chunkId, "data", 4) == 0) {
-                    // Found data chunk
-                    size_t numSamples = chunkSize / (bitsPerSample / 8) / numChannels;
-                    std::vector<float> samples(numSamples);
-
-                    for (size_t i = 0; i < numSamples; ++i) {
-                        float sample = 0.0f;
-                        if (bitsPerSample == 16) {
-                            int16_t s;
-                            file.read(reinterpret_cast<char*>(&s), 2);
-                            sample = s / 32768.0f;
-                            // Skip extra channels
-                            for (int c = 1; c < numChannels; ++c) {
-                                file.seekg(2, std::ios::cur);
-                            }
-                        } else if (bitsPerSample == 8) {
-                            uint8_t s;
-                            file.read(reinterpret_cast<char*>(&s), 1);
-                            sample = (s - 128) / 128.0f;
-                            for (int c = 1; c < numChannels; ++c) {
-                                file.seekg(1, std::ios::cur);
-                            }
-                        }
-                        samples[i] = sample;
-                    }
-
-                    ssb->setAudioSamples(std::move(samples), sampleRate, repeat);
-
-                    manager_->addStimulus(name, ssb, "ssb", freq, amplitude);
-
-                    std::cout << "[Stimulus] Added SSB audio file '" << name << "': "
-                              << freq / 1e6 << " MHz " << modeStr << ", "
-                              << path << " (" << numSamples << " samples @ "
-                              << sampleRate << " Hz)" << std::endl;
-                    return;
-                } else {
-                    file.seekg(chunkSize, std::ios::cur);  // Skip unknown chunk
-                }
+            auto samples = loadWavFile(*audioFileOpt, sampleRate);
+            
+            if (!samples.empty()) {
+                ssb->setAudioSamples(std::move(samples), sampleRate, repeat);
+                manager_->addStimulus(name, ssb, "ssb", freq, amplitude);
+                std::cout << "[Stimulus] Added SSB audio file '" << name << "': "
+                          << freq / 1e6 << " MHz " << modeStr << ", "
+                          << *audioFileOpt << " (" << samples.size() << " samples @ "
+                          << sampleRate << " Hz)" << std::endl;
             }
-
-            std::cerr << "[Stimulus] No data chunk found in WAV file: " << path << std::endl;
             return;
         }
 
@@ -213,6 +210,56 @@ void StimulusLua::registerBindings(sol::state& lua) {
 
         std::cout << "[Stimulus] Added SSB '" << name << "': "
                   << freq / 1e6 << " MHz " << modeStr << ", default tone" << std::endl;
+    };
+
+    // stimulus.addAm(name, config)
+    stimulus["addAm"] = [this](const std::string& name, sol::table config) {
+        double freq = config.get_or("freq", 1.0e6);
+        double amplitude = config.get_or("amplitude", 50e-6);
+        double modIndex = config.get_or("modIndex", 0.8);
+
+        auto am = std::make_shared<AmGenerator>(freq, amplitude);
+        am->setModulationIndex(modIndex);
+
+        // Check for tones
+        sol::optional<sol::table> tonesOpt = config["tones"];
+        if (tonesOpt) {
+            std::vector<double> tones;
+            for (auto& kv : *tonesOpt) {
+                tones.push_back(kv.second.as<double>());
+            }
+            am->setTones(tones);
+            manager_->addStimulus(name, am, "am", freq, amplitude);
+            std::cout << "[Stimulus] Added AM '" << name << "': "
+                      << freq / 1e6 << " MHz, " << tones.size() << " tone(s), "
+                      << (int)(modIndex * 100) << "% mod" << std::endl;
+            return;
+        }
+
+        // Check for audio file (WAV)
+        sol::optional<std::string> audioFileOpt = config["audioFile"];
+        if (audioFileOpt) {
+            bool repeat = config.get_or("loop", true);
+            uint32_t sampleRate = 0;
+            auto samples = loadWavFile(*audioFileOpt, sampleRate);
+            
+            if (!samples.empty()) {
+                am->setAudioSamples(std::move(samples), sampleRate, repeat);
+                manager_->addStimulus(name, am, "am", freq, amplitude);
+                std::cout << "[Stimulus] Added AM audio file '" << name << "': "
+                          << freq / 1e6 << " MHz, " << *audioFileOpt 
+                          << " (" << samples.size() << " samples @ "
+                          << sampleRate << " Hz), " << (int)(modIndex * 100) << "% mod" << std::endl;
+            }
+            return;
+        }
+
+        // Default: 1kHz tone
+        am->setTones({1000.0});
+        manager_->addStimulus(name, am, "am", freq, amplitude);
+        std::cout << "[Stimulus] Added AM '" << name << "': "
+                  << freq / 1e6 << " MHz, default tone, "
+                  << (int)(modIndex * 100) << "% mod" << std::endl;
     };
 
     // stimulus.addTone(name, config)

@@ -66,6 +66,23 @@ stimulus.addSsb("voice-id", {
     loop = true
 })
 
+-- AM two-tone beacon on 14.250 MHz (S9+10)
+stimulus.addAm("am_two_tone", {
+    freq = 14.250e6,
+    amplitude = 150e-6,
+    modIndex = 0.8,
+    tones = {400, 1000}
+})
+
+-- AM voice beacon on 14.280 MHz (S9+10)
+stimulus.addAm("am_voice", {
+    freq = 14.280e6,
+    amplitude = 150e-6,
+    modIndex = 0.9,
+    audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
+    loop = true
+})
+
 -- stimulus.addSsb("voice_id", {
 --     freq = 14.200e6,
 --     amplitude = 30e-3,
