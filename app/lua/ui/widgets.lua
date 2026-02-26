@@ -234,7 +234,7 @@ end
 -- =============================================================================
 -- Checkbox Widget
 -- =============================================================================
-function ui.checkbox(id, label, x, y, checked, tags)
+function ui.checkbox(id, label, x, y, checked, tags, property)
     -- Build widget tags first
     local widgetTags = {"widget.Checkbox"}
     if tags then
@@ -261,7 +261,10 @@ function ui.checkbox(id, label, x, y, checked, tags)
     local w, h = getWidgetSize(id, widgetTags, defaultW, defaultH)
 
     -- Register with events module
-    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+    registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags, {
+        property = property,
+        checked = checked
+    })
 
     -- Track hot/active for visual feedback
     local isHot = state.pointInRect(state.mouseX, state.mouseY, x, y, w, h)

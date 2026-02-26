@@ -231,7 +231,7 @@ std::string TwinConn::sendCommand(const std::string& cmd) {
     }
 
     std::vector<uint8_t> request(cmd.begin(), cmd.end());
-    auto result = control_->sendRequest(request, std::chrono::milliseconds(1000));
+    auto result = control_->sendRequest(request, std::chrono::milliseconds(100));
 
     if (!result.ok()) {
         return "ERROR timeout";
@@ -242,10 +242,57 @@ std::string TwinConn::sendCommand(const std::string& cmd) {
 
 bool TwinConn::setLO(double freq_hz) {
     std::ostringstream cmd;
-    cmd << "SET_LO " << std::fixed << freq_hz << "\n";
+    cmd << "SET_QSD_VFO 2 " << std::fixed << freq_hz << "\n";
 
     std::string response = sendCommand(cmd.str());
     return response.find("OK") == 0;
+}
+
+bool TwinConn::setQsdVfo(int index, double freq_hz) {
+    std::ostringstream cmd;
+    cmd << "SET_QSD_VFO " << index << " " << std::fixed << freq_hz << "\n";
+
+    std::string response = sendCommand(cmd.str());
+    return response.find("OK") == 0;
+}
+
+bool TwinConn::setPreselectorCap(int index, bool enabled) {
+    std::ostringstream cmd;
+    cmd << "SET_PRESEL_C " << index << " " << (enabled ? "1" : "0") << "\n";
+    std::string response = sendCommand(cmd.str());
+    return response.find("OK") == 0;
+}
+
+bool TwinConn::setPreselectorInd(bool enabled) {
+    std::ostringstream cmd;
+    cmd << "SET_PRESEL_L " << (enabled ? "1" : "0") << "\n";
+    std::string response = sendCommand(cmd.str());
+    return response.find("OK") == 0;
+}
+
+bool TwinConn::setBistEnable(bool enabled) {
+    std::ostringstream cmd;
+    cmd << "SET_BIST_ENABLE " << (enabled ? "1" : "0") << "\n";
+    std::string response = sendCommand(cmd.str());
+    return response.find("OK") == 0;
+}
+
+bool TwinConn::setBistFreq(double freq_hz) {
+    std::ostringstream cmd;
+    cmd << "SET_BIST_FREQ " << std::fixed << freq_hz << "\n";
+    std::string response = sendCommand(cmd.str());
+    return response.find("OK") == 0;
+}
+
+bool TwinConn::setCalibration(const std::string& type, const std::string& data) {
+    std::string cmd = "SET_CALIBRATION " + type + " " + data + "\n";
+    std::string response = sendCommand(cmd);
+    return response.find("OK") == 0;
+}
+
+std::string TwinConn::getCalibration(const std::string& type) {
+    std::string cmd = "GET_CALIBRATION " + type + "\n";
+    return sendCommand(cmd);
 }
 
 bool TwinConn::getStatus(double& lo_freq_hz, bool& streaming) {

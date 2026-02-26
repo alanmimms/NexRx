@@ -266,8 +266,8 @@ end
 -- Public API - Event Dispatch
 -- ============================================================================
 
--- Debug flag for event dispatch (enabled by default for diagnosis)
-Events.debugDispatch = true
+-- Debug flag for event dispatch (disabled by default for performance)
+Events.debugDispatch = false
 
 --- Dispatch an event through the widget hierarchy
 -- @param event {type, x, y, button, key, delta, modifiers, ...}

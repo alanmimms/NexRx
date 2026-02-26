@@ -99,3 +99,27 @@ The design philosophy is:
 
 * Need capability to support future extension of set of UI devices.
   * Can add USB based keypads, touchpads, knobs, etc. for example like the ones used for CAD.
+
+# Hardware Calibration & Verification (BIST)
+* Implement FPGA BIST Stimulus:
+  * Add command to FPGA to generate a square wave on IOB_22a at a requested frequency.
+  * Filtered through 130pf + 100k resistor, fed to rx preselector in 200 ohm domain.
+  * Consider if FPGA can generate a better signal than square wave (e.g., simple DDS or PWM filtering).
+  * Add commands to Twin/HW to tune and toggle this BIST signal.
+* Preselector Calibration Sweep:
+  * App uses FPGA BIST to inject signal, QSD to measure amplitude.
+  * App sweeps all 11 capacitors (C0..C10) and Inductor L1 across frequencies.
+  * App computes the optimal L and C bit pattern for every passband center frequency to ensure monotonic, overlapping coverage.
+  * App sends this a priori calibration table to Twin/HW for storage.
+  * Replace real-time solver with a priori calculation using this calibration data.
+* Attenuator Calibration:
+  * App uses FPGA BIST to inject steady signal.
+  * App switches each attenuator stage (3, 6, 12, 24dB) in and out, measuring actual amplitude drop.
+  * App computes true attenuation for each combination.
+  * App generates calibration data mapping requested dB to the most accurate bit setting.
+* File Server Mechanism:
+  * Implement file transfer protocol over TCP link between App and HW/Twin.
+  * Support updating: FPGA image, NexBus STM32C011 firmware (up to 16 KBytes).
+  * Execute STM32H753 firmware in place (no tiny bootloader). Recovery via standard USB firmware update mechanism.
+  * Implement maintenance ops: READ, WRITE, SHA256, DELETE, LIST.
+  * Store files in a highly efficient Flash file system optimized for small data files (like calibration data) on STM32H753 flash (and local filesystem for Twin).

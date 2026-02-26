@@ -55,6 +55,12 @@ rule {
         qsdOffsetK = 12.0,              -- kHz
         rfAttenDb = 0,                  -- dB (0-45 in 3 dB steps)
 
+        -- Preselector
+        preselL1 = false,
+        preselC0 = false, preselC1 = false, preselC2 = false, preselC3 = false, preselC4 = false,
+        preselC5 = false, preselC6 = false, preselC7 = false, preselC8 = false, preselC9 = false,
+        preselC10 = false,
+
         -- =================================================================
         -- Display Defaults
         -- =================================================================

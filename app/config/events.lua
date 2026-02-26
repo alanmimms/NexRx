@@ -237,6 +237,14 @@ rule {
     apply = { handler = "layout_reset" }
 }
 
+-- Generic checkbox toggle
+rule {
+    id = "event-checkbox-toggle",
+    tags = {"event.MouseDown-LEFT", "widget.Checkbox"},
+    priority = 5,
+    apply = { handler = "toggle_property" }
+}
+
 -- =============================================================================
 -- VFO Button Clicks (specific logic, keep dedicated handlers)
 -- =============================================================================

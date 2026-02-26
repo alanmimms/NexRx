@@ -85,8 +85,25 @@ public:
     // Control Commands (via TCP)
     //------------------------------------------------------------------
 
-    // Set local oscillator frequency
+    // Set local oscillator frequency (legacy, now sets QSD2)
     bool setLO(double freq_hz);
+
+    // Set VFO for a specific QSD channel (0, 1, or 2)
+    bool setQsdVfo(int index, double freq_hz);
+
+    // Set preselector capacitor (0-10)
+    bool setPreselectorCap(int index, bool enabled);
+
+    // Set preselector inductor
+    bool setPreselectorInd(bool enabled);
+
+    // BIST (Built-In Self Test) Control
+    bool setBistEnable(bool enabled);
+    bool setBistFreq(double freq_hz);
+
+    // Calibration storage
+    bool setCalibration(const std::string& type, const std::string& data);
+    std::string getCalibration(const std::string& type);
 
     // Get twin status
     bool getStatus(double& lo_freq_hz, bool& streaming);
