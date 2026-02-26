@@ -53,20 +53,27 @@ public:
 
     void setFilterEnabled(bool enabled) { filterEnabled_ = enabled; }
 
+    float getSignalLevelRms() {
+        float rms = signalLevelRms_.exchange(0.0f);
+        return rms > 0 ? rms : lastValidRms_;
+    }
+
     // Process a single I/Q sample, returns audio sample
     // For SSB modes, uses FFT-based processing with overlap-add
     // Returns 0 while buffering, then outputs HOP_SIZE samples worth of audio
     float process(float i, float q) {
         // AM and CW use simple sample-by-sample processing
         if (mode_ == Mode::AM) {
-            float audio = std::sqrt(i * i + q * q);
-            return filterEnabled_ ? applyBandpassFilter(audio) : audio;
+            float mag = std::sqrt(i * i + q * q);
+            updateRms(mag);
+            return filterEnabled_ ? applyBandpassFilter(mag) : mag;
         }
         if (mode_ == Mode::CW) {
             float bfoPhaseInc = 2.0f * PI * bfoOffset_ / sampleRate_;
             float cos_bfo = std::cos(bfoPhase_);
             float sin_bfo = std::sin(bfoPhase_);
             float audio = i * cos_bfo + q * sin_bfo;
+            updateRms(audio * 1.41421356f); // Scale to complex equivalent power
             bfoPhase_ += bfoPhaseInc;
             if (bfoPhase_ > 2.0f * PI) bfoPhase_ -= 2.0f * PI;
             return filterEnabled_ ? applyBandpassFilter(audio) : audio;
@@ -76,15 +83,6 @@ public:
         inputI_[inputPos_] = i;
         inputQ_[inputPos_] = q;
         inputPos_++;
-
-        // Output from output buffer while we have samples
-        float audio = 0.0f;
-        if (outputPos_ < HOP_SIZE) {
-            audio = outputBuffer_[outputPos_++];
-            if (filterEnabled_) {
-                audio = applyBandpassFilter(audio);
-            }
-        }
 
         // When we have a full block, process it
         if (inputPos_ >= FFT_SIZE) {
@@ -96,6 +94,15 @@ public:
                 inputQ_[j] = inputQ_[j + HOP_SIZE];
             }
             outputPos_ = 0;  // Reset output position
+        }
+
+        // Output from output buffer
+        float audio = 0.0f;
+        if (outputPos_ < HOP_SIZE) {
+            audio = outputBuffer_[outputPos_++];
+            if (filterEnabled_) {
+                audio = applyBandpassFilter(audio);
+            }
         }
 
         return audio;
@@ -129,6 +136,24 @@ private:
     float sampleRate_ = 96000.0f;
     float bfoPhase_ = 0.0f;
     bool filterEnabled_ = true;
+
+    // Metering
+    std::atomic<float> signalLevelRms_{0.0f};
+    float lastValidRms_ = 0.0f;
+    float rmsAccum_ = 0.0f;
+    int sampleAccum_ = 0;
+
+    void updateRms(float val, int numSamples = 1) {
+        rmsAccum_ += val * val * numSamples;
+        sampleAccum_ += numSamples;
+        if (sampleAccum_ >= 960) { // Update every 10ms at 96kHz
+            float rms = std::sqrt(rmsAccum_ / sampleAccum_);
+            signalLevelRms_.store(rms, std::memory_order_relaxed);
+            lastValidRms_ = rms;
+            rmsAccum_ = 0;
+            sampleAccum_ = 0;
+        }
+    }
 
     // FFT-based SSB demodulation buffers
     std::vector<float> inputI_;         // Input I buffer (FFT_SIZE)
@@ -242,6 +267,25 @@ private:
 
         // Inverse FFT
         fftInPlace(fftRe_.data(), fftIm_.data(), FFT_SIZE, true);
+
+        // Power calculation from kept bins
+        float totalPower = 0.0f;
+        if (mode_ == Mode::USB) {
+            totalPower += fftRe_[0]*fftRe_[0]; // DC bin (already scaled)
+            totalPower += fftRe_[FFT_SIZE/2]*fftRe_[FFT_SIZE/2]; // Nyquist
+            for (int k = 1; k < FFT_SIZE / 2; ++k) {
+                totalPower += 2.0f * (fftRe_[k]*fftRe_[k] + fftIm_[k]*fftIm_[k]);
+            }
+        } else {
+            totalPower += fftRe_[0]*fftRe_[0];
+            totalPower += fftRe_[FFT_SIZE/2]*fftRe_[FFT_SIZE/2];
+            for (int k = FFT_SIZE / 2 + 1; k < FFT_SIZE; ++k) {
+                totalPower += 2.0f * (fftRe_[k]*fftRe_[k] + fftIm_[k]*fftIm_[k]);
+            }
+        }
+        // Correct for window gain: Hann window coherent gain is 0.5, power gain is 0.375
+        // We multiply by sqrt(1/0.375) ≈ 1.633 to restore original power.
+        updateRms(std::sqrt(totalPower / FFT_SIZE) * 1.633f, HOP_SIZE);
 
         // Overlap-add: take real part (audio)
         // Output = previous overlap + new first half (scaled by 2 since we zeroed half spectrum)

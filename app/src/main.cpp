@@ -316,11 +316,15 @@ private:
         float i_f = i2, q_f = q2;
         
         basebandFilter_.process(i_f, q_f);
-        float m_sq = i_f*i_f + q_f*q_f; signalAccumulator_ += m_sq; signalSampleCount_++;
-        if (signalSampleCount_ >= SIGNAL_AVG_SAMPLES) { signalLevelRms_.store(std::sqrt(signalAccumulator_/signalSampleCount_), std::memory_order_relaxed); signalAccumulator_=0; signalSampleCount_=0; }
+        
         if (iqBuffer_.size() < FFT_SIZE*2) { std::lock_guard<std::mutex> l(spectrumMutex_); if (iqBuffer_.size() < FFT_SIZE*2) iqBuffer_.resize(FFT_SIZE*2, 0.0f); }
         size_t pos = iqBufferWritePos_.load(std::memory_order_relaxed); iqBuffer_[pos*2] = i_f; iqBuffer_[pos*2+1] = q_f; iqBufferWritePos_.store((pos+1)%FFT_SIZE, std::memory_order_release);
+        
         float aOut = demod_.process(i_f, q_f);
+        
+        // S-meter level from Demodulator (which tracks audible bandwidth)
+        signalLevelRms_.store(demod_.getSignalLevelRms(), std::memory_order_relaxed);
+        
         if (!audioDecimateSkip_) { audioBuffer_.write(aOut); if (audioCaptureBuffer_.size() < 48000*5) audioCaptureBuffer_.push_back(std::tanh(aOut * 20000.0f * audioVolume_.load())); }
         audioDecimateSkip_ = !audioDecimateSkip_;
     }
