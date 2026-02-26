@@ -97,17 +97,6 @@ local specs = {
     wfRows         = { min = 64, max = 1024 },
     isgEnabled     = { setter = function(v) 
         hw.setBistEnable(v) 
-        if v then 
-            -- Store previous attenuation to restore later
-            Preselector.lastAtten = AppState.get("rfAttenDb")
-            -- Enable full attenuation (~45dB) for safety when ISG is active
-            AppState.set("rfAttenDb", 45)
-        else
-            -- Restore previous attenuation
-            if Preselector.lastAtten then
-                AppState.set("rfAttenDb", Preselector.lastAtten)
-            end
-        end
     end },
     isgFrequency   = { min = 0.1, max = 30.0, setter = function(v) hw.setBistFreq(v * 1e6) end },
     preselectorAuto = { defaultValue = true, setter = function(v) Preselector.auto = v end },

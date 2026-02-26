@@ -145,6 +145,9 @@ int runFunctionalMode(const Options& opts) {
     };
 
     double current_vfos[3] = {0};
+    double lo_phase[3] = {0, 0, 0};
+    double bist_phase[3] = {0, 0, 0};
+    double rf_phase = 0.0;
     double rf_target_hz = opts.rf_freq_mhz * 1e6;
 
     auto startTime = std::chrono::steady_clock::now();
@@ -161,6 +164,9 @@ int runFunctionalMode(const Options& opts) {
             }
             startTime = std::chrono::steady_clock::now();
             outputSample = 0;
+            if (stimulusManager) stimulusManager->resetAll();
+            for (int i=0; i<3; ++i) { lo_phase[i] = 0; bist_phase[i] = 0; }
+            rf_phase = 0;
             continue;
         }
 
@@ -177,9 +183,9 @@ int runFunctionalMode(const Options& opts) {
                 if (stimulusManager) {
                     stimulusManager->getRfIQ(t, rf_i, rf_q);
                 } else {
-                    double rf_p = 2.0 * M_PI * rf_target_hz * t;
-                    rf_i = (opts.rf_amplitude_mv * 1e-3) * cos(rf_p);
-                    rf_q = (opts.rf_amplitude_mv * 1e-3) * sin(rf_p);
+                    rf_phase = std::fmod(rf_phase + 2.0 * M_PI * rf_target_hz * oversamplePeriod, 2.0 * M_PI);
+                    rf_i = (opts.rf_amplitude_mv * 1e-3) * std::cos(rf_phase);
+                    rf_q = (opts.rf_amplitude_mv * 1e-3) * std::sin(rf_phase);
                 }
 
                 max_rf_val = std::max(max_rf_val, std::sqrt(rf_i*rf_i + rf_q*rf_q));
@@ -194,11 +200,10 @@ int runFunctionalMode(const Options& opts) {
                         memset(lpf_zq[ch], 0, sizeof(lpf_zq[ch]));
                     }
 
-                    // Complex downconversion: (rf_i + j*rf_q) * exp(-j * 2pi * vfo * t)
-                    // This is mathematically exact and avoids aliasing.
-                    double lo_p = 2.0 * M_PI * vfo * t;
-                    double cos_lo = cos(lo_p);
-                    double sin_lo = sin(lo_p);
+                    // Complex downconversion with phase accumulation
+                    lo_phase[ch] = std::fmod(lo_phase[ch] + 2.0 * M_PI * vfo * oversamplePeriod, 2.0 * M_PI);
+                    double cos_lo = std::cos(lo_phase[ch]);
+                    double sin_lo = std::sin(lo_phase[ch]);
                     
                     double bi = rf_i * cos_lo + rf_q * sin_lo;
                     double bq = rf_q * cos_lo - rf_i * sin_lo; // Q is -90 deg shift
@@ -207,9 +212,19 @@ int runFunctionalMode(const Options& opts) {
                     if (controlHandler->isBistEnabled()) {
                         double bist_f = controlHandler->getBistFreq();
                         double bist_offset = bist_f - vfo;
-                        double p_bist = 2.0 * M_PI * bist_offset * t;
-                        bi += 0.000158 * cos(p_bist) / gain; // Adjust for gain to keep level constant
-                        bq += 0.000158 * sin(p_bist) / gain;
+                        
+                        bist_phase[ch] = std::fmod(bist_phase[ch] + 2.0 * M_PI * bist_offset * oversamplePeriod, 2.0 * M_PI);
+                        
+                        // ISG Rejection Filter: Reject signals outside simulation Nyquist (240 kHz)
+                        // Uses a sharp 8th-order Butterworth-like curve centered at 200kHz.
+                        double rel_f = std::abs(bist_offset) / 200000.0;
+                        double rejection = 1.0 / (1.0 + std::pow(rel_f, 8.0));
+                        
+                        if (rejection > 0.0001) {
+                            // ~5uV constant level at ADC
+                            bi += (0.000005 * rejection / gain) * std::cos(bist_phase[ch]);
+                            bq += (0.000005 * rejection / gain) * std::sin(bist_phase[ch]);
+                        }
                     }
 
                     f_i[ch] = applyLpf(bi * gain, lpf_zi[ch]);

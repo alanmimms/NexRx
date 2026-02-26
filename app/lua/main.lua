@@ -72,6 +72,7 @@ end
 
 local hwConnected = false
 local freqEntryText = ""
+local isgFreqEntryText = ""
 local freqEntryBlink = 0
 
 function init()
@@ -136,6 +137,81 @@ function init()
         if p and p.property and p.value ~= nil then setProperty(p.property, p.value); return true end
         return false
     end)
+
+    -- =======================================================================
+    -- Frequency Entry Handlers
+    -- =======================================================================
+    
+    events.registerHandler("freq_entry_start", function(event, widget)
+        if widget and widget.tags and table.concat(widget.tags, ","):find("IsgControl") then
+            isgFreqEntryText = ""
+            events.addModeTag("IsgFreqEntryMode")
+            events.addModeTag("FreqEntryMode") -- Both for global rules
+        else
+            freqEntryText = ""
+            events.addModeTag("FreqEntryMode")
+        end
+        return true
+    end)
+
+    events.registerHandler("freq_entry_cancel", function(event, widget)
+        events.removeModeTag("FreqEntryMode")
+        events.removeModeTag("IsgFreqEntryMode")
+        freqEntryText = ""
+        isgFreqEntryText = ""
+        return true
+    end)
+
+    events.registerHandler("freq_entry_backspace", function(event, widget)
+        if events.hasModeTag("IsgFreqEntryMode") then
+            if #isgFreqEntryText > 0 then isgFreqEntryText = isgFreqEntryText:sub(1, -2) end
+        elseif events.hasModeTag("FreqEntryMode") then
+            if #freqEntryText > 0 then freqEntryText = freqEntryText:sub(1, -2) end
+        end
+        return true
+    end)
+
+    events.registerHandler("freq_entry_text", function(event, widget)
+        local text = event.text or ""
+        for i = 1, #text do
+            local ch = text:sub(i, i)
+            if ch:match("[0-9]") or (ch == ".") then
+                if events.hasModeTag("IsgFreqEntryMode") then
+                    if ch ~= "." or not isgFreqEntryText:find("%.") then
+                        isgFreqEntryText = isgFreqEntryText .. ch
+                    end
+                elseif events.hasModeTag("FreqEntryMode") then
+                    if ch ~= "." or not freqEntryText:find("%.") then
+                        freqEntryText = freqEntryText .. ch
+                    end
+                end
+            end
+        end
+        return true
+    end)
+
+    events.registerHandler("freq_entry_confirm", function(event, widget)
+        if events.hasModeTag("IsgFreqEntryMode") then
+            local newFreq = tonumber(isgFreqEntryText)
+            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
+                setProperty("isgFrequency", newFreq)
+            end
+            events.removeModeTag("IsgFreqEntryMode")
+            events.removeModeTag("FreqEntryMode")
+            isgFreqEntryText = ""
+        elseif events.hasModeTag("FreqEntryMode") then
+            local newFreq = tonumber(freqEntryText)
+            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
+                setProperty("frequency", newFreq)
+                if state.activeVFO == "A" then AppState.set("vfoA", newFreq) else AppState.set("vfoB", newFreq) end
+                bands.setFrequency(newFreq * 1e6)
+            end
+            events.removeModeTag("FreqEntryMode")
+            freqEntryText = ""
+        end
+        return true
+    end)
+
     Edit.init(events)
     layoutOverrides.load()
 end
@@ -295,7 +371,7 @@ function draw()
         
         -- ISG Frequency Display
         cx, cy = layout.getCursor()
-        ui.frequencyDisplay("isg-freq-disp", cx, cy, rR.w - 24, 36, state.isgFrequency, "", {"IsgControl"})
+        ui.frequencyDisplay("isg-freq-disp", cx, cy, rR.w - 24, 36, state.isgFrequency, isgFreqEntryText, {"IsgControl"})
         layout.newLine(44)
 
         cx, cy = layout.getCursor(); ui.checkbox("isg-en", "Generator Enabled", cx, cy, state.isgEnabled, {"IsgToggle"}, "isgEnabled"); layout.newLine(28)

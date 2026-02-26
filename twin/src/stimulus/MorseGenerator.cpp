@@ -251,7 +251,9 @@ std::string MorseGenerator::description() const {
 }
 
 void MorseGenerator::reset() {
-    // Nothing to reset - timing is calculated from absolute time
+    lastTime_ = -1.0;
+    currentPhase_ = 0.0;
+    lastEventIdx_ = 0;
 }
 
 bool MorseGenerator::hasMore(double time_s) const {
@@ -271,6 +273,7 @@ double MorseGenerator::getEnvelope(double time_s) const {
     double cycleTime = totalDuration_s_ + 7.0 * ditDuration_s_;
     if (repeat_ && totalDuration_s_ > 0) {
         effectiveTime = std::fmod(time_s, cycleTime);
+        if (effectiveTime < 0) effectiveTime += cycleTime;
     }
 
     // Fast path: check last known index
@@ -286,7 +289,7 @@ double MorseGenerator::getEnvelope(double time_s) const {
     }
 
     // Sequential search starting from last index
-    if (effectiveTime < sequence_[lastEventIdx_].startTime) {
+    if (lastEventIdx_ >= sequence_.size() || effectiveTime < sequence_[lastEventIdx_].startTime) {
         lastEventIdx_ = 0;
     }
 
@@ -319,16 +322,17 @@ double MorseGenerator::getEnvelope(double time_s) const {
 }
 
 void MorseGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
-    double env = getEnvelope(time_s) * amplitude_v_;
-    
-    // Accumulate phase based on time delta
-    if (lastTime_ < 0) {
+    // Detect backward time jump or first call
+    if (time_s < lastTime_ || lastTime_ < 0) {
         currentPhase_ = std::fmod(2.0 * M_PI * freq_hz_ * time_s, 2.0 * M_PI);
+        lastEventIdx_ = 0;
     } else {
         double dt = time_s - lastTime_;
         currentPhase_ = std::fmod(currentPhase_ + 2.0 * M_PI * freq_hz_ * dt, 2.0 * M_PI);
     }
     lastTime_ = time_s;
+
+    double env = getEnvelope(time_s) * amplitude_v_;
 
     if (env < 1e-12) {
         out_i = out_q = 0.0;

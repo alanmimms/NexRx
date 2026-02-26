@@ -173,6 +173,41 @@ rule {
 }
 
 rule {
+    id = "event-isg-wheel-ctrl",
+    tags = {"event.MouseWheel", "widget.IsgControl", "input.CTRL"},
+    priority = 110,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.01 }
+}
+
+rule {
+    id = "event-isg-wheel-shift",
+    tags = {"event.MouseWheel", "widget.IsgControl", "input.SHIFT"},
+    priority = 110,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 1.0 }
+}
+
+rule {
+    id = "event-isg-wheel-ctrl-shift",
+    tags = {"event.MouseWheel", "widget.IsgControl", "input.CTRL", "input.SHIFT"},
+    priority = 120,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.1 }
+}
+
+rule {
+    id = "event-isg-wheel-h",
+    tags = {"event.MouseWheel", "widget.IsgControl", "input.H"},
+    priority = 110,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.00001 }
+}
+
+rule {
+    id = "event-isg-wheel-shift-h",
+    tags = {"event.MouseWheel", "widget.IsgControl", "input.SHIFT", "input.H"},
+    priority = 120,
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.0001 }
+}
+
+rule {
     id = "event-isg-arrow-right",
     tags = {"event.KeyDown-RIGHT", "widget.IsgControl"},
     priority = 100,

@@ -693,6 +693,8 @@ void SsbGenerator::reset() {
     std::fill(hilbertHistory_.begin(), hilbertHistory_.end(), 0.0);
     hilbertIndex_ = 0;
     lastSampleTime_ = -1.0;
+    lastTime_ = -1.0;
+    carrierPhase_ = 0.0;
 
     if (tts_) {
         tts_->reset();
@@ -705,18 +707,18 @@ void SsbGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
         return;
     }
 
-    // Get audio I/Q
-    double audioI, audioQ;
-    getAudioIQ(time_s, audioI, audioQ);
-
-    // Accumulate carrier phase
-    if (lastTime_ < 0) {
+    // Accumulate carrier phase, detecting backward time jump or first call
+    if (time_s < lastTime_ || lastTime_ < 0) {
         carrierPhase_ = std::fmod(2.0 * M_PI * carrier_hz_ * time_s, 2.0 * M_PI);
     } else {
         double dt = time_s - lastTime_;
         carrierPhase_ = std::fmod(carrierPhase_ + 2.0 * M_PI * carrier_hz_ * dt, 2.0 * M_PI);
     }
     lastTime_ = time_s;
+
+    // Get audio I/Q
+    double audioI, audioQ;
+    getAudioIQ(time_s, audioI, audioQ);
 
     double cosPhase = std::cos(carrierPhase_);
     double sinPhase = std::sin(carrierPhase_);
