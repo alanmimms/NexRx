@@ -221,9 +221,9 @@ int runFunctionalMode(const Options& opts) {
                         double rejection = 1.0 / (1.0 + std::pow(rel_f, 8.0));
                         
                         if (rejection > 0.0001) {
-                            // ~5uV constant level at ADC
-                            bi += (0.000005 * rejection / gain) * std::cos(bist_phase[ch]);
-                            bq += (0.000005 * rejection / gain) * std::sin(bist_phase[ch]);
+                            // 0.66uV constant level at ADC (matches hardware)
+                            bi += (0.00000066 * rejection / gain) * std::cos(bist_phase[ch]);
+                            bq += (0.00000066 * rejection / gain) * std::sin(bist_phase[ch]);
                         }
                     }
 
