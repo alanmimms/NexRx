@@ -1,144 +1,71 @@
-This document outlines the **NexRig Digital Twin** architecture. This environment allows for bit-identical firmware development, high-fidelity RF physics validation, and host-side DSP optimization before physical hardware exists.
+# NexRx Digital Twin Architecture
+
+## 1. Overview
+The NexRx Digital Twin is a Software-in-the-Loop (SiL) simulation environment that allows the host application (DSP, UI) to be developed, tested, and validated without requiring physical hardware. It accurately emulates the RF frontend, the unique Triple-QSD (Quadrature Sampling Detector) architecture, and the network transport mechanisms of the physical radio.
+
+The Twin operates primarily in a **High-Fidelity Functional Mode**, which uses complex analytic mathematics to synthesize and mix signals in real-time, avoiding the aliasing artifacts common in discrete-time RF simulations.
 
 ---
 
-# NexRig Digital Twin Architecture (NexRX Focus)
+## 2. Signal Pipeline
 
-## 1. Executive Summary
+### 2.1 RF Stimulus Generation
+The Digital Twin uses a Lua-scriptable `StimulusManager` to inject RF signals into the virtual antenna.
+- **Supported Signals:** CW (Morse), SSB (Multi-tone or Audio Files), Sweeps, Thermal Noise, and I/Q RF Capture playback.
+- **Complex Baseband Synthesis:** Instead of generating real-valued voltages at high RF frequencies, generators compute the complex envelope `(I + jQ)` of the signal at its target frequency using absolute time. This analytic approach guarantees mathematically perfect frequency representation without Nyquist aliasing issues.
 
-The Digital Twin is a **Software-in-the-Loop (SiL)** simulation
-environment that combines a high-performance analog solver (Xyce) with
-a native-compiled instance of the Zephyr RTOS firmware. It treats the
-PC as the primary "Brain" (DSP/UI) and the simulated hardware as a
-high-bandwidth interleaved digitizer connected via a virtual 480 Mbps
-USB-HS link.
+### 2.2 High-Fidelity Analytic Mixing
+The core of the simulation is the virtual QSD array.
+- The composite RF analytic signal is complex-downconverted by three independent VFOs representing the three hardware QSDs.
+- `baseband = (rf_i + j*rf_q) * exp(-j * 2pi * vfo * t)`
+- This continuous-time equivalent mixing occurs before any decimation, providing pristine downconversion regardless of how high the carrier frequency is.
 
----
+### 2.3 Internal Signal Generator (ISG)
+The twin simulates the hardware's internal FPGA-based PDM signal generator (used for calibration and testing). The ISG signal is injected into the processing chain such that its amplitude remains constant relative to the ADC, regardless of the RF attenuator settings, perfectly mimicking the hardware injection topology.
 
-## 2. System Components
-
-### 2.1 The Physics Engine (Xyce)
-
-- **Role:** Simulates the analog RF signal path.
-    
-- **Implementation:** Linked as a shared library (`libxyce`) into the
-  C++ Orchestrator.
-    
-- **Key Models:**
-    
-    - **Antenna Stimulus:** A C++ class that injects raw RF captures
-      or synthetic multi-tone signals into the `Antenna_In` node. To
-      ensure high fidelity validation, the stimulus generator **must**
-      use an FFT-based Hilbert Transform with Overlap-Save (OLS) for
-      SSB signal synthesis. This avoids sideband leakage caused by,
-      e.g., < 128 tap FIR based Hilbert transformers that result in a
-      mimic of hardware I/Q imbalance, leaing to false-positive
-      "ghost" signals at the receiver's image frequency.
-        
-    - **Preselector:** Models the 200Ω switched LC bank using DCR/ESR
-      data from commercial SMD inductors.
-        
-    - **Hexafilar Transformer:** A mutual-inductance model
-      ($K$-factors) representing the BN-43-202 core (200Ω to 3×22Ω).
-        
-    - **Triple-QSD:** Time-varying resistors ($R_{on}/R_{off}$)
-      representing the **TS3A4751** CMOS switches.
-        
-
-### 2.2 The FPGA Surrogate (NCO Engine)
-
-- **Role:** Generates the high-speed switching logic for the mixers.
-    
-- **Implementation:** C++ class within the Orchestrator.
-    
-- **Logic:** A 32-bit phase accumulator updated at each Xyce time-step (720 MHz equivalent).
-    
-- **Output:** Drives the "Gate" nodes of the QSD switches in Xyce with precise phase offsets ($0^\circ, 120^\circ, 240^\circ$).
-    
-
-### 2.3 The Firmware Surrogate (Zephyr `native_sim`)
-
-- **Role:** Runs the **actual** production C code for the STM32H7.
-    
-- **Implementation:** Compiled for x86_64 using Zephyr's Native Simulator platform.
-    
-- **Peripheral Abstraction:**
-    
-    - **I/O:** Redirects register writes (Relays, Attenuators) to the Virtual Register Map.
-        
-    - **DMA:** Simulated via a "Hardware Model" that pulls 6-channel interleaved samples from shared memory.
-        
-
-### 2.4 The Interconnect (Virtual USB-HS)
-
-- **Control Pipe (RPC):** Transport-agnostic binary RPC (via Nanopb) running over a Unix Domain Socket. Provides "Callable API" access to hardware registers.
-    
-- **Data Pipe (UAC2):** High-speed 6-channel interleaved stream (3x I/Q) transferred via **POSIX Shared Memory**.
-    
+### 2.4 Filtering, Decimation, and Quantization
+- Baseband signals are passed through a chain of Biquad low-pass filters that model the AK5578 ADC's internal anti-aliasing response.
+- Signals are decimated from the internal oversampled simulation rate (e.g., 480 kHz) to the target output sample rate (96 kHz).
+- Finally, the high-precision floating-point values are dithered with uniform noise and quantized to 24-bit integers to accurately emulate the ADC's dynamic range and noise floor.
 
 ---
 
-## 3. Data Flow & Interfaces
+## 3. Host Application Interface
 
-### 3.1 The 6-Channel Interleaved Frame
+The app connects to the Digital Twin over two virtual network links, exactly mimicking the physical hardware's NexBus interface over Ethernet/USB.
 
-To maintain perfect phase alignment across all three QSDs, data is moved in atomic "Frames." Each frame represents a single sample point in time across the entire receiver.
+### 3.1 Control Plane (TCP Port 5000)
+A text-based command protocol allowing the app to control the hardware state.
+- `SET_QSD_VFO <ch> <freq_hz>`: Tunes one of the three QSDs. The app offsets QSD 0 and 1 by `+k` and `-k` kHz.
+- `SET_ATTEN_TOTAL <db>`: Adjusts the RF front-end attenuation.
+- `SET_PRESEL_C <idx> <0|1>`: Toggles individual preselector capacitor relays.
+- `SET_PRESEL_L <0|1>`: Toggles the preselector inductor relay.
+- `SET_BIST_ENABLE <0|1>`: Enables the Internal Signal Generator (ISG).
+- `SET_BIST_FREQ <freq_hz>`: Sets the ISG frequency.
 
-| **NCO**   | **Frequency** | **Purpose**                                                                                    |
-| --------- | ------------- | ---------------------------------------------------------------------------------------------- |
-| **NCO_A** | $4(f - k)$    | Captures signal shifted by $-k$; used for image subtraction.                                   |
-| **NCO_B** | $4(f + k)$    | Captures signal shifted by $+k$; used for image subtraction.                                   |
-| **NCO_C** | $4(6f)$       | Targeted at the 3rd harmonic (which appears at $3f$ baseband); used for harmonic cancellation. |
-
-_Note: The $4x$ factor is because each QSD requires a 4-phase quadrature clock ($0^\circ, 90^\circ, 180^\circ, 270^\circ$)._
-
-### 3.2 Control Register Map (Protobuf)
-
-The Host PC controls the simulated hardware via a `.proto` defined schema.
-
-- `REG_VFO_FREQ`: Updates the C++ NCO Engine.
-    
-- `REG_PRESEL_MASK`: Updates Xyce component values (relays).
-    
-- `REG_ATTEN_DB`: Adjusts the simulated attenuator ladder.
-    
+### 3.2 Data Stream (UDP Port 5001)
+A high-speed data pipe sending interleaved I/Q samples to the host.
+- Sent in batches of `IQFrame` structs.
+- Each frame contains a timestamp, a sequence number, and 3 pairs of 32-bit (containing 24-bit data) I/Q values representing the simultaneous state of the three QSDs.
 
 ---
 
-## 4. Operational Workflow
+## 4. Hardware Emulation Parity
 
-1. **Orchestrator Initialization:** The C++ main program loads the Xyce netlist and starts the Zephyr `native_sim` process.
-    
-2. **The Heartbeat Loop:** * The Orchestrator queries the NCO Engine for the current switch states.
-    
-    - Xyce "Steps" forward in time (e.g., 1ns increments).
-        
-    - At the "ADC Sample" interval (1/192kHz), 6 voltage values are pulled from Xyce.
-        
-3. **Firmware Processing:** The "Virtual STM32" (Zephyr) picks up these samples from shared memory and encapsulates them for the Host PC.
-    
-4. **Host DSP:** The Host PC C++ application receives the interleaved stream and performs the 1-2-1 weighting, filtering, and demodulation.
-    
+Currently, the twin effectively matches the hardware in several critical areas:
+- **Tuning & VFO control:** The app issues separate VFO commands for the 3 QSDs, driving them to independent frequencies.
+- **Data formatting:** The app receives the exact binary `IQFrame` structures it will receive from the STM32H7 via Ethernet/USB.
+- **Signal routing & DSP:** The app performs its LMS adaptive interference cancellation and baseband filtering using the 3-channel data just as it will with real hardware.
+- **ISG/Attenuator topology:** Changing attenuation affects the apparent strength of external signals but leaves the ISG calibration tone unaffected.
 
 ---
 
-## 5. Future Expansion: Transmitter Path
+## 5. Future Work & Emulation Completeness
 
-> **[RESERVED FOR TX IMPLEMENTATION]**
-> 
-> - _Planned Integration:_ 8-FET Segmented H-Bridge Model.
->     
-> - _Planned Integration:_ 1-2-1 Waveform Synthesis Logic (FPGA Side).
->     
-> - _Planned Integration:_ 200Ω Guanella Combiner and Filter Unit interactions.
->     
+To make the emulation a perfect 1:1 representation of the physical world, several milestones remain:
 
----
-
-## 6. Implementation Notes
-
-- **Consistency:** Use the same `.proto` file for Nanopb (Zephyr) and standard Protobuf (Host PC).
-    
-- **Determinism:** The simulation can be "Paused" at any point, allowing for inspection of analog voltages in Xyce and firmware state in Zephyr simultaneously.
-    
-- **Performance:** Xyce runs in a separate thread/process to utilize multi-core CPUs; the Orchestrator acts as the high-speed synchronizer.
+1. **Harmonic Mixing Simulation:** The current analytic mixer only downconverts the fundamental VFO frequency. Real QSDs act as square-wave mixers, heavily mixing on odd harmonics (3rd, 5th, etc.). The twin needs to generate these harmonic responses so the app's 1-2-1 harmonic cancellation logic can be validated.
+2. **Zephyr Firmware Surrogate:** Transition from the standalone C++ `twin` application to running the actual STM32H7 C code in a Zephyr `native_sim` environment. The firmware will use POSIX shared memory to pull samples from the C++ signal generator.
+3. **Xyce Physics Engine Integration:** For true analog validation, complete the integration of the Xyce SPICE simulator. This will allow testing of the exact non-linearities of the TS3A4751 CMOS switches, switch charge injection, and the mutual inductance of the hexafilar transformer, rather than relying solely on idealized mathematical mixing.
+4. **Preselector Physics:** Currently, the preselector commands (`SET_PRESEL_C`, etc.) are accepted but do not actively filter the RF spectrum in the fast Functional Mode. This requires implementing a dynamic filter whose coefficients update based on the L/C relay states.
+5. **A Priori Calibration Support:** Implement a file transfer mechanism to allow the app to generate and upload preselector and attenuator calibration tables to the twin's virtual flash filesystem, matching the STM32H7's behavior.
