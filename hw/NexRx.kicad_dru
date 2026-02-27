@@ -1,8 +1,0 @@
-(version 1)
-(rule "CanyonClearance"
-    (constraint clearance (min 0.75mm))
-    (condition "A.NetName == 'preselIn' && B.Layer == 'F.Cu'"))
-
-(rule "X2SON_Force_Min_Clearance"
-    (constraint clearance (min 0.11mm))
-	(condition "A.memberOfFootprint('Package_SON:Texas_X2SON-4_1x1mm_P0.65mm') && B.memberOfFootprint('Package_SON:Texas_X2SON-4_1x1mm_P0.65mm')"))
