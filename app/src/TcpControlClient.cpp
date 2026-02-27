@@ -4,6 +4,7 @@
 
 #include "TcpControlClient.hpp"
 
+#include <cbor.h>
 #include <algorithm>
 #include <cerrno>
 #include <iostream>
@@ -72,30 +73,22 @@ std::string TcpControlClient::name() const {
 
 bool TcpControlClient::sendMessage(std::span<const uint8_t> data) {
     if (socket_ == SOCKET_INVALID) {
-        std::cerr << "[TcpClient] sendMessage: socket invalid" << std::endl;
-        return false;
-    }
-    if (data.size() > config_.maxMessageSize) {
-        std::cerr << "[TcpClient] sendMessage: data too large" << std::endl;
         return false;
     }
 
-    // Send length prefix (4 bytes, little-endian)
-    uint32_t len = static_cast<uint32_t>(data.size());
-    uint8_t header[4];
-    header[0] = len & 0xFF;
-    header[1] = (len >> 8) & 0xFF;
-    header[2] = (len >> 16) & 0xFF;
-    header[3] = (len >> 24) & 0xFF;
+    // Send length prefix as CBOR unsigned integer
+    uint8_t header[9];
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, header, sizeof(header), 0);
+    cbor_encode_uint(&encoder, data.size());
+    size_t headerLen = cbor_encoder_get_buffer_size(&encoder, header);
 
     // Send header
     size_t sent = 0;
-    while (sent < 4) {
+    while (sent < headerLen) {
         int n = send(socket_, reinterpret_cast<const char*>(header + sent),
-                     static_cast<int>(4 - sent), MSG_NOSIGNAL);
+                     static_cast<int>(headerLen - sent), MSG_NOSIGNAL);
         if (n <= 0) {
-            std::cerr << "[TcpClient] sendMessage: header send failed, n=" << n
-                      << " errno=" << errno << std::endl;
             return false;
         }
         sent += static_cast<size_t>(n);
@@ -107,8 +100,6 @@ bool TcpControlClient::sendMessage(std::span<const uint8_t> data) {
         int n = send(socket_, reinterpret_cast<const char*>(data.data() + sent),
                      static_cast<int>(data.size() - sent), MSG_NOSIGNAL);
         if (n <= 0) {
-            std::cerr << "[TcpClient] sendMessage: payload send failed, n=" << n
-                      << " errno=" << errno << std::endl;
             return false;
         }
         sent += static_cast<size_t>(n);
@@ -126,36 +117,41 @@ std::optional<std::vector<uint8_t>> TcpControlClient::receiveMessage(
 
     net::setSocketTimeout(socket_, static_cast<int>(timeout.count()));
 
-    // Receive length prefix
-    uint8_t header[4];
-    size_t received = 0;
-    while (received < 4) {
-        int n = recv(socket_, reinterpret_cast<char*>(header + received),
-                     static_cast<int>(4 - received), 0);
-        if (n <= 0) {
-            return std::nullopt;
+    // Receive first byte of CBOR length prefix
+    uint8_t firstByte;
+    int n = recv(socket_, reinterpret_cast<char*>(&firstByte), 1, 0);
+    if (n <= 0) return std::nullopt;
+
+    uint64_t len = 0;
+    if (firstByte < 0x18) {
+        len = firstByte;
+    } else if (firstByte <= 0x1b) {
+        size_t extraBytes = 1 << (firstByte - 0x18);
+        uint8_t buffer[8];
+        size_t received = 0;
+        while (received < extraBytes) {
+            n = recv(socket_, reinterpret_cast<char*>(buffer + received),
+                     static_cast<int>(extraBytes - received), 0);
+            if (n <= 0) return std::nullopt;
+            received += static_cast<size_t>(n);
         }
-        received += static_cast<size_t>(n);
-    }
-
-    uint32_t len = header[0] |
-                   (static_cast<uint32_t>(header[1]) << 8) |
-                   (static_cast<uint32_t>(header[2]) << 16) |
-                   (static_cast<uint32_t>(header[3]) << 24);
-
-    if (len > config_.maxMessageSize) {
+        if (extraBytes == 1) len = buffer[0];
+        else if (extraBytes == 2) len = (static_cast<uint64_t>(buffer[0]) << 8) | buffer[1];
+        else if (extraBytes == 4) len = (static_cast<uint64_t>(buffer[0]) << 24) | (static_cast<uint64_t>(buffer[1]) << 16) | (static_cast<uint64_t>(buffer[2]) << 8) | buffer[3];
+        else if (extraBytes == 8) {
+            for (int i = 0; i < 8; ++i) len = (len << 8) | buffer[i];
+        }
+    } else {
         return std::nullopt;
     }
 
     // Receive payload
     std::vector<uint8_t> data(len);
-    received = 0;
+    size_t received = 0;
     while (received < len) {
-        int n = recv(socket_, reinterpret_cast<char*>(data.data() + received),
-                     static_cast<int>(len - received), 0);
-        if (n <= 0) {
-            return std::nullopt;
-        }
+        n = recv(socket_, reinterpret_cast<char*>(data.data() + received),
+                 static_cast<int>(len - received), 0);
+        if (n <= 0) return std::nullopt;
         received += static_cast<size_t>(n);
     }
 

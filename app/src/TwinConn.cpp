@@ -4,6 +4,7 @@
 
 #include "TwinConn.hpp"
 
+#include <cbor.h>
 #include <iostream>
 #include <sstream>
 #include <chrono>
@@ -73,8 +74,6 @@ bool TwinConn::initialize(const TwinConfig& config) {
     UdpStreamClientConfig streamConfig;
     streamConfig.port = config.streamPort;
     streamConfig.receiveBufferSize = config.receiveBufferSize;
-    streamConfig.serverHost = config.host;      // For NAT hole punch
-    streamConfig.serverPort = config.streamPort; // Server listens on same port
 
     stream_ = std::make_unique<UdpStreamClient>(streamConfig);
 
@@ -87,14 +86,6 @@ bool TwinConn::initialize(const TwinConfig& config) {
         control_.reset();
         stream_.reset();
         return false;
-    }
-
-    // Send NAT hole punch to establish return path for UDP
-    if (stream_->sendHolePunch()) {
-        if (config.verbose) {
-            std::cout << "[TwinConn] Sent UDP hole punch to "
-                      << config.host << ":" << config.streamPort << std::endl;
-        }
     }
 
     if (config.verbose) {
@@ -112,12 +103,10 @@ void TwinConn::shutdown() {
     // Send graceful disconnect to twin before closing TCP
     if (control_ && connected_) {
         try {
-            // Send DISCONNECT command - don't wait too long for response
-            std::string cmd = "DISCONNECT\n";
-            std::vector<uint8_t> request(cmd.begin(), cmd.end());
-            control_->sendRequest(request, std::chrono::milliseconds(100));
+            // Send GBYE command
+            sendCborRequest("GBYE", {});
             if (config_.verbose) {
-                std::cout << "[TwinConn] Sent DISCONNECT to twin" << std::endl;
+                std::cout << "[TwinConn] Sent GBYE to twin" << std::endl;
             }
         } catch (...) {
             // Ignore errors during shutdown
@@ -222,112 +211,239 @@ void TwinConn::receiveLoop() {
 }
 
 //------------------------------------------------------------------
-// Control Commands
+// Control Commands (via TCP/CBOR)
 //------------------------------------------------------------------
 
-std::string TwinConn::sendCommand(const std::string& cmd) {
-    if (!connected_ || !control_) {
-        return "ERROR not connected";
+std::vector<uint8_t> TwinConn::processResponse(const std::vector<uint8_t>& responseData, const std::string& cmd_id) {
+    if (responseData.empty()) return {};
+
+    // Response is [status, payload]
+    CborParser resParser;
+    CborValue resIt, resArray;
+    if (cbor_parser_init(responseData.data(), responseData.size(), 0, &resParser, &resIt) != CborNoError) return {};
+    if (!cbor_value_is_array(&resIt)) return {};
+    
+    cbor_value_enter_container(&resIt, &resArray);
+    
+    int64_t status;
+    if (!cbor_value_is_integer(&resArray)) return {};
+    cbor_value_get_int64(&resArray, &status);
+    cbor_value_advance(&resArray);
+    
+    if (status != 0) {
+        if (config_.verbose) std::cerr << "[TwinConn] Command " << cmd_id << " returned error " << status << std::endl;
+        return {};
     }
 
-    if (config_.verbose) {
-        std::cout << "[TwinConn] Sending: " << cmd << std::flush;
+    // Return the payload (the second element of the response array)
+    if (cbor_value_is_text_string(&resArray)) {
+        size_t payloadLen;
+        cbor_value_get_string_length(&resArray, &payloadLen);
+        std::vector<uint8_t> payload(payloadLen + 1);
+        cbor_value_copy_text_string(&resArray, reinterpret_cast<char*>(payload.data()), &payloadLen, &resArray);
+        payload.resize(payloadLen); // Remove null terminator from vector
+        return payload;
     }
-
-    std::vector<uint8_t> request(cmd.begin(), cmd.end());
-    auto result = control_->sendRequest(request, std::chrono::milliseconds(100));
-
-    if (!result.ok()) {
-        if (config_.verbose) std::cerr << "[TwinConn] Command failed: " << cmd << " (timeout)" << std::endl;
-        return "ERROR timeout";
-    }
-
-    return std::string(result.value.begin(), result.value.end());
+    
+    return responseData; // Fallback
 }
 
-bool TwinConn::setLO(double freq_hz) {
-    std::ostringstream cmd;
-    cmd << "SET_QSD_VFO 2 " << std::fixed << freq_hz << "\n";
-
-    std::string response = sendCommand(cmd.str());
-    return response.find("OK") == 0;
+std::vector<uint8_t> TwinConn::sendCborRequest(const std::string& cmd_id, const std::vector<uint8_t>& request) {
+    auto result = control_->sendRequest(request, std::chrono::milliseconds(500));
+    if (!result.ok()) {
+        if (config_.verbose) std::cerr << "[TwinConn] Command failed: " << cmd_id << " (timeout/error)" << std::endl;
+        return {};
+    }
+    return processResponse(result.value, cmd_id);
 }
 
 bool TwinConn::setQsdVfo(int index, double freq_hz) {
-    std::ostringstream cmd;
-    cmd << "SET_QSD_VFO " << index << " " << std::fixed << freq_hz << "\n";
+    uint8_t buffer[128];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SVFO");
+    cbor_encoder_create_array(&array, &args, 2);
+    cbor_encode_uint(&args, index);
+    cbor_encode_double(&args, freq_hz);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SVFO", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
+}
 
-    std::string response = sendCommand(cmd.str());
-    return response.find("OK") == 0;
+bool TwinConn::setAtten(int db_value, bool enabled) {
+    uint8_t buffer[128];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SATT");
+    cbor_encoder_create_array(&array, &args, 2);
+    cbor_encode_uint(&args, db_value);
+    cbor_encode_boolean(&args, enabled);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SATT", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
 bool TwinConn::setPreselectorCap(int index, bool enabled) {
-    std::ostringstream cmd;
-    cmd << "SET_PRESEL_C " << index << " " << (enabled ? "1" : "0") << "\n";
-    std::string response = sendCommand(cmd.str());
-    return response.find("OK") == 0;
+    uint8_t buffer[128];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SPRC");
+    cbor_encoder_create_array(&array, &args, 2);
+    cbor_encode_uint(&args, index);
+    cbor_encode_boolean(&args, enabled);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SPRC", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
-bool TwinConn::setPreselectorInd(bool enabled) {
-    std::ostringstream cmd;
-    cmd << "SET_PRESEL_L " << (enabled ? "1" : "0") << "\n";
-    std::string response = sendCommand(cmd.str());
-    return response.find("OK") == 0;
+bool TwinConn::setPreselectorInd(int index, bool enabled) {
+    uint8_t buffer[128];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SPRL");
+    cbor_encoder_create_array(&array, &args, 2);
+    cbor_encode_uint(&args, index);
+    cbor_encode_boolean(&args, enabled);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SPRL", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
-bool TwinConn::setBistEnable(bool enabled) {
-    std::ostringstream cmd;
-    cmd << "SET_BIST_ENABLE " << (enabled ? "1" : "0") << "\n";
-    std::string response = sendCommand(cmd.str());
-    return response.find("OK") == 0;
+bool TwinConn::setIsgEnable(bool enabled) {
+    uint8_t buffer[128];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SIEN");
+    cbor_encoder_create_array(&array, &args, 1);
+    cbor_encode_boolean(&args, enabled);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SIEN", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
-bool TwinConn::setBistFreq(double freq_hz) {
-    std::ostringstream cmd;
-    cmd << "SET_BIST_FREQ " << std::fixed << freq_hz << "\n";
-    std::string response = sendCommand(cmd.str());
-    return response.find("OK") == 0;
+bool TwinConn::setIsgFreq(double freq_hz) {
+    uint8_t buffer[128];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SIFQ");
+    cbor_encoder_create_array(&array, &args, 1);
+    cbor_encode_double(&args, freq_hz);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SIFQ", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
-bool TwinConn::setCalibration(const std::string& type, const std::string& data) {
-    std::string cmd = "SET_CALIBRATION " + type + " " + data + "\n";
-    std::string response = sendCommand(cmd);
-    return response.find("OK") == 0;
+bool TwinConn::setCodecConfig(int rate, int channels, double gain, double lpf) {
+    uint8_t buffer[256];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SCOD");
+    cbor_encoder_create_array(&array, &args, 4);
+    cbor_encode_uint(&args, rate);
+    cbor_encode_uint(&args, channels);
+    cbor_encode_double(&args, gain);
+    cbor_encode_double(&args, lpf);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SCOD", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
+}
+
+bool TwinConn::setCalibration(const std::string& type, const std::string& json_data) {
+    std::vector<uint8_t> buffer(json_data.size() + 256);
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer.data(), buffer.size(), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SCAL");
+    cbor_encoder_create_array(&array, &args, 2);
+    cbor_encode_text_stringz(&args, type.c_str());
+    cbor_encode_text_stringz(&args, json_data.c_str());
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SCAL", {buffer.data(), buffer.data() + cbor_encoder_get_buffer_size(&encoder, buffer.data())}).empty();
 }
 
 std::string TwinConn::getCalibration(const std::string& type) {
-    std::string cmd = "GET_CALIBRATION " + type + "\n";
-    return sendCommand(cmd);
+    uint8_t buffer[256];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "GCAL");
+    cbor_encoder_create_array(&array, &args, 1);
+    cbor_encode_text_stringz(&args, type.c_str());
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    auto res = sendCborRequest("GCAL", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)});
+    return std::string(res.begin(), res.end());
 }
 
-bool TwinConn::getStatus(double& lo_freq_hz, bool& streaming) {
-    std::string response = sendCommand("GET_STATUS\n");
+std::string TwinConn::getStatus() {
+    uint8_t buffer[64];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "GSTS");
+    cbor_encoder_create_array(&array, &args, 0);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    auto res = sendCborRequest("GSTS", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)});
+    return std::string(res.begin(), res.end());
+}
 
-    if (response.find("STATUS") != 0) {
-        return false;
-    }
-
-    // Parse: "STATUS lo=14200000.0 streaming=true"
-    lo_freq_hz = 0.0;
-    streaming = false;
-
-    size_t loPos = response.find("lo=");
-    if (loPos != std::string::npos) {
-        lo_freq_hz = std::stod(response.substr(loPos + 3));
-    }
-
-    streaming = response.find("streaming=true") != std::string::npos;
-    return true;
+std::string TwinConn::getHardwareConfig() {
+    uint8_t buffer[64];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "GCNF");
+    cbor_encoder_create_array(&array, &args, 0);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    auto res = sendCborRequest("GCNF", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)});
+    return std::string(res.begin(), res.end());
 }
 
 bool TwinConn::startStream() {
-    std::string response = sendCommand("START_STREAM\n");
-    return response.find("OK") == 0;
+    uint8_t buffer[64];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "STM[");
+    cbor_encoder_create_array(&array, &args, 0);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("STM[", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
 bool TwinConn::stopStream() {
-    std::string response = sendCommand("STOP_STREAM\n");
-    return response.find("OK") == 0;
+    uint8_t buffer[64];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "]STM");
+    cbor_encoder_create_array(&array, &args, 0);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("]STM", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
 //------------------------------------------------------------------

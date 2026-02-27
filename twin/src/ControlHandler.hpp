@@ -3,6 +3,7 @@
 #include "transport/TcpControlTransport.hpp"
 #include "AttenuatorModel.hpp"
 
+#include <cbor.h>
 #include <atomic>
 #include <string>
 #include <vector>
@@ -19,24 +20,47 @@ namespace nexrx {
 class PreselectorModel {
 public:
     void setCap(int idx, bool enabled) { if (idx >= 0 && idx < 11) caps_[idx].store(enabled, std::memory_order_relaxed); }
-    void setInd(bool enabled) { l1_.store(enabled, std::memory_order_relaxed); }
+    void setInd(int idx, bool enabled) { if (idx == 0) l1_.store(enabled, std::memory_order_relaxed); }
     bool getCap(int idx) const { return (idx >= 0 && idx < 11) ? caps_[idx].load(std::memory_order_relaxed) : false; }
-    bool getInd() const { return l1_.load(std::memory_order_relaxed); }
+    bool getInd(int idx) const { return (idx == 0) ? l1_.load(std::memory_order_relaxed) : false; }
 private:
     std::atomic<bool> caps_[11];
     std::atomic<bool> l1_{false};
 };
 
+struct CodecConfig {
+    std::atomic<int> sampleRate{96000};
+    std::atomic<int> channels{8};
+    std::atomic<double> gain{0.0};
+    std::atomic<double> lpfCutoff{48000.0};
+};
+
 class ControlHandler {
 public:
+    // Command Strings
+    static constexpr const char* CMD_SET_QSD_VFO     = "SVFO";
+    static constexpr const char* CMD_SET_ATTEN       = "SATT";
+    static constexpr const char* CMD_SET_PRESEL_C    = "SPRC";
+    static constexpr const char* CMD_SET_PRESEL_L    = "SPRL";
+    static constexpr const char* CMD_START_STREAM    = "STM[";
+    static constexpr const char* CMD_STOP_STREAM     = "]STM";
+    static constexpr const char* CMD_GET_STATUS      = "GSTS";
+    static constexpr const char* CMD_GET_CONFIG      = "GCNF";
+    static constexpr const char* CMD_SET_ISG_ENABLE  = "SIEN";
+    static constexpr const char* CMD_SET_ISG_FREQ    = "SIFQ";
+    static constexpr const char* CMD_SET_CALIBRATION = "SCAL";
+    static constexpr const char* CMD_GET_CALIBRATION = "GCAL";
+    static constexpr const char* CMD_SET_CODEC       = "SCOD";
+    static constexpr const char* CMD_DISCONNECT      = "GBYE";
+
     ControlHandler(double f0, double f1, double f2, AttenuatorModel* atten = nullptr, PreselectorModel* presel = nullptr)
         : attenuator_(atten), presel_(presel), streaming_(false), running_(false),
           connected_(false), reconnected_(false) {
         qsd_freq_hz_[0].store(f0, std::memory_order_relaxed);
         qsd_freq_hz_[1].store(f1, std::memory_order_relaxed);
         qsd_freq_hz_[2].store(f2, std::memory_order_relaxed);
-        bist_enabled_.store(false);
-        bist_freq_hz_.store(14201000.0);
+        isg_enabled_.store(false);
+        isg_freq_hz_.store(14201000.0);
     }
 
     ~ControlHandler() { stop(); }
@@ -58,8 +82,8 @@ public:
     void setStreaming(bool s) { streaming_.store(s, std::memory_order_release); }
     bool isConnected() const { return connected_.load(std::memory_order_acquire); }
 
-    bool isBistEnabled() const { return bist_enabled_.load(std::memory_order_relaxed); }
-    double getBistFreq() const { return bist_freq_hz_.load(std::memory_order_relaxed); }
+    bool isIsgEnabled() const { return isg_enabled_.load(std::memory_order_relaxed); }
+    double getIsgFreq() const { return isg_freq_hz_.load(std::memory_order_relaxed); }
 
     std::string consumeReconnect() {
         std::lock_guard<std::mutex> lock(reconnectMutex_);
@@ -87,102 +111,182 @@ private:
                 }
                 continue;
             }
-            std::string request(result.value.begin(), result.value.end());
-            std::string response = handleCommand(request);
-            std::vector<uint8_t> resp(response.begin(), response.end());
-            control_->sendResponse(resp);
+            
+            std::vector<uint8_t> response = handleCborCommand(result.value);
+            control_->sendResponse(response);
         }
     }
 
-    std::string handleCommand(const std::string& cmd) {
-        std::istringstream iss(cmd);
-        std::string verb; iss >> verb;
+    std::vector<uint8_t> handleCborCommand(const std::vector<uint8_t>& request) {
+        CborParser parser;
+        CborValue it;
+        if (cbor_parser_init(request.data(), request.size(), 0, &parser, &it) != CborNoError) {
+            return encodeResponse(1, "CBOR Parse Error");
+        }
 
-        if (verb == "SET_QSD_VFO") {
-            int idx; double freq;
-            if (iss >> idx >> freq) { 
-                if (idx >= 0 && idx < 3) { 
-                    qsd_freq_hz_[idx].store(freq, std::memory_order_relaxed); 
-                    if (verbose_) std::cout << "[Control] SET_QSD_VFO " << idx << " " << std::fixed << std::setprecision(0) << freq << " Hz" << std::endl;
-                    return "OK\n"; 
-                } 
+        if (!cbor_value_is_array(&it)) return encodeResponse(1, "Request must be array");
+
+        CborValue arrayIt;
+        cbor_value_enter_container(&it, &arrayIt);
+
+        char cmd[16]; size_t cmdLen = sizeof(cmd);
+        if (!cbor_value_is_text_string(&arrayIt)) return encodeResponse(1, "Invalid command ID");
+        cbor_value_copy_text_string(&arrayIt, cmd, &cmdLen, &arrayIt);
+
+        if (!cbor_value_is_array(&arrayIt)) return encodeResponse(1, "Arguments must be array");
+        CborValue argsIt;
+        cbor_value_enter_container(&arrayIt, &argsIt);
+
+        std::string sCmd(cmd);
+
+        if (sCmd == CMD_SET_QSD_VFO) {
+            uint64_t idx; double freq;
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid index");
+            cbor_value_get_uint64(&argsIt, &idx); cbor_value_advance(&argsIt);
+            if (cbor_value_is_integer(&argsIt)) { int64_t f; cbor_value_get_int64(&argsIt, &f); freq = (double)f; }
+            else if (cbor_value_is_double(&argsIt)) { cbor_value_get_double(&argsIt, &freq); }
+            else return encodeResponse(1, "Invalid frequency");
+            
+            if (idx < 3) {
+                qsd_freq_hz_[idx].store(freq, std::memory_order_relaxed);
+                if (verbose_) std::cout << "[Control] SET_QSD_VFO " << idx << " " << std::fixed << std::setprecision(0) << freq << " Hz" << std::endl;
+                return encodeResponse(0, "OK");
             }
-            return "ERROR invalid index\n";
+            return encodeResponse(1, "Invalid QSD index");
         }
-        else if (verb == "START_STREAM") { 
+        else if (sCmd == CMD_START_STREAM) {
             if (verbose_) std::cout << "[Control] START_STREAM" << std::endl;
-            streaming_.store(true, std::memory_order_release); return "OK\n"; 
+            streaming_.store(true, std::memory_order_release);
+            return encodeResponse(0, "OK");
         }
-        else if (verb == "STOP_STREAM") { 
+        else if (sCmd == CMD_STOP_STREAM) {
             if (verbose_) std::cout << "[Control] STOP_STREAM" << std::endl;
-            streaming_.store(false, std::memory_order_release); return "OK\n"; 
+            streaming_.store(false, std::memory_order_release);
+            return encodeResponse(0, "OK");
         }
-        else if (verb == "SET_PRESEL_C" && presel_) {
-            int idx, val; if (iss >> idx >> val) { 
-                presel_->setCap(idx, val != 0); 
-                if (verbose_) std::cout << "[Control] SET_PRESEL_C " << idx << " " << val << std::endl;
-                return "OK\n"; 
+        else if (sCmd == CMD_SET_PRESEL_C) {
+            uint64_t idx; bool en;
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid index");
+            cbor_value_get_uint64(&argsIt, &idx); cbor_value_advance(&argsIt);
+            if (!cbor_value_is_boolean(&argsIt)) return encodeResponse(1, "Invalid enable");
+            cbor_value_get_boolean(&argsIt, &en);
+            if (presel_) {
+                presel_->setCap((int)idx, en);
+                if (verbose_) std::cout << "[Control] SET_PRESEL_C " << idx << " " << en << std::endl;
+                return encodeResponse(0, "OK");
             }
+            return encodeResponse(1, "No preselector");
         }
-        else if (verb == "SET_PRESEL_L" && presel_) {
-            int val; if (iss >> val) { 
-                presel_->setInd(val != 0); 
-                if (verbose_) std::cout << "[Control] SET_PRESEL_L " << val << std::endl;
-                return "OK\n"; 
+        else if (sCmd == CMD_SET_PRESEL_L) {
+            uint64_t idx; bool en;
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid index");
+            cbor_value_get_uint64(&argsIt, &idx); cbor_value_advance(&argsIt);
+            if (!cbor_value_is_boolean(&argsIt)) return encodeResponse(1, "Invalid enable");
+            cbor_value_get_boolean(&argsIt, &en);
+            if (presel_) {
+                presel_->setInd((int)idx, en);
+                if (verbose_) std::cout << "[Control] SET_PRESEL_L " << idx << " " << en << std::endl;
+                return encodeResponse(0, "OK");
             }
+            return encodeResponse(1, "No preselector");
         }
-        else if (verb == "SET_ATTEN" && attenuator_) {
-            int db, val; if (iss >> db >> val) {
-                bool en = (val != 0);
-                switch (db) {
-                    case 3:  attenuator_->setAtten3dB(en); break;
-                    case 6:  attenuator_->setAtten6dB(en); break;
-                    case 12: attenuator_->setAtten12dB(en); break;
-                    case 24: attenuator_->setAtten24dB(en); break;
-                    default: return "ERROR invalid bit\n";
-                }
-                if (verbose_) std::cout << "[Control] SET_ATTEN " << db << " " << val << " (Total: " << attenuator_->getTotalDb() << " dB)" << std::endl;
-                return "OK\n";
+        else if (sCmd == CMD_SET_ATTEN) {
+            uint64_t db; bool en;
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid dB value");
+            cbor_value_get_uint64(&argsIt, &db); cbor_value_advance(&argsIt);
+            if (!cbor_value_is_boolean(&argsIt)) return encodeResponse(1, "Invalid enable");
+            cbor_value_get_boolean(&argsIt, &en);
+            if (attenuator_) {
+                if (db == 3) attenuator_->setAtten3dB(en);
+                else if (db == 6) attenuator_->setAtten6dB(en);
+                else if (db == 12) attenuator_->setAtten12dB(en);
+                else if (db == 24) attenuator_->setAtten24dB(en);
+                else return encodeResponse(1, "Invalid attenuator bit");
+                if (verbose_) std::cout << "[Control] SET_ATTEN " << db << " " << en << std::endl;
+                return encodeResponse(0, "OK");
             }
+            return encodeResponse(1, "No attenuator");
         }
-        else if (verb == "SET_ATTEN_TOTAL" && attenuator_) {
-            double db; if (iss >> db) { 
-                attenuator_->setTotalDb(db); 
-                if (verbose_) std::cout << "[Control] SET_ATTEN_TOTAL " << db << " dB" << std::endl;
-                return "OK\n"; 
-            }
+        else if (sCmd == CMD_SET_ISG_ENABLE) {
+            bool en;
+            if (!cbor_value_is_boolean(&argsIt)) return encodeResponse(1, "Invalid enable");
+            cbor_value_get_boolean(&argsIt, &en);
+            isg_enabled_.store(en);
+            if (verbose_) std::cout << "[Control] SET_ISG_ENABLE " << en << std::endl;
+            return encodeResponse(0, "OK");
         }
-        else if (verb == "SET_BIST_ENABLE") {
-            int val; if (iss >> val) { 
-                bist_enabled_.store(val != 0); 
-                if (verbose_) std::cout << "[Control] SET_BIST_ENABLE " << val << std::endl;
-                return "OK\n"; 
-            }
+        else if (sCmd == CMD_SET_ISG_FREQ) {
+            double freq;
+            if (cbor_value_is_integer(&argsIt)) { int64_t f; cbor_value_get_int64(&argsIt, &f); freq = (double)f; }
+            else if (cbor_value_is_double(&argsIt)) { cbor_value_get_double(&argsIt, &freq); }
+            else return encodeResponse(1, "Invalid frequency");
+            isg_freq_hz_.store(freq);
+            if (verbose_) std::cout << "[Control] SET_ISG_FREQ " << freq << std::endl;
+            return encodeResponse(0, "OK");
         }
-        else if (verb == "SET_BIST_FREQ") {
-            double freq; if (iss >> freq) { 
-                bist_freq_hz_.store(freq); 
-                if (verbose_) std::cout << "[Control] SET_BIST_FREQ " << std::fixed << std::setprecision(0) << freq << " Hz" << std::endl;
-                return "OK\n"; 
-            }
+        else if (sCmd == CMD_SET_CALIBRATION) {
+            char type[64]; size_t len = sizeof(type);
+            if (!cbor_value_is_text_string(&argsIt)) return encodeResponse(1, "Invalid type");
+            cbor_value_copy_text_string(&argsIt, type, &len, &argsIt);
+            if (!cbor_value_is_text_string(&argsIt)) return encodeResponse(1, "Invalid JSON data");
+            char data[4096]; size_t dlen = sizeof(data);
+            cbor_value_copy_text_string(&argsIt, data, &dlen, &argsIt);
+            calibrations_[type] = data;
+            return encodeResponse(0, "OK");
         }
-        else if (verb == "SET_CALIBRATION") {
-            std::string type, data; if (iss >> type) { std::getline(iss >> std::ws, data); calibrations_[type] = data; return "OK\n"; }
+        else if (sCmd == CMD_GET_CALIBRATION) {
+            char type[64]; size_t len = sizeof(type);
+            if (!cbor_value_is_text_string(&argsIt)) return encodeResponse(1, "Invalid type");
+            cbor_value_copy_text_string(&argsIt, type, &len, &argsIt);
+            auto it_cal = calibrations_.find(type);
+            return encodeResponse(0, it_cal != calibrations_.end() ? it_cal->second : "{}");
         }
-        else if (verb == "GET_CALIBRATION") {
-            std::string type; if (iss >> type) { auto it = calibrations_.find(type); return (it != calibrations_.end() ? it->second : "") + "\n"; }
+        else if (sCmd == CMD_GET_STATUS) {
+            std::ostringstream ss;
+            ss << "{\"lo\":" << std::fixed << std::setprecision(1) << qsd_freq_hz_[2].load() 
+               << ",\"streaming\":" << (streaming_.load() ? "true" : "false")
+               << ",\"isg_enabled\":" << (isg_enabled_.load() ? "true" : "false") << "}";
+            return encodeResponse(0, ss.str());
         }
-        else if (verb == "SET_LO") {
-            double f; if (iss >> f) { 
-                qsd_freq_hz_[2].store(f, std::memory_order_relaxed); 
-                if (verbose_) std::cout << "[Control] SET_LO " << std::fixed << std::setprecision(0) << f << " Hz (Legacy)" << std::endl;
-                return "OK\n"; 
-            }
+        else if (sCmd == CMD_GET_CONFIG) {
+            std::ostringstream ss;
+            ss << "{\"version\":\"0.1.0\",\"capacities\":{"
+               << "\"preselector\":{\"capacitors\":11,\"inductors\":1},"
+               << "\"attenuator_pads\":[3,6,12,24],"
+               << "\"qsd\":{\"vfo_min_hz\":100000,\"vfo_max_hz\":60000000}}}";
+            return encodeResponse(0, ss.str());
         }
-        else if (verb == "GET_STATUS") {
-            return "STATUS lo=" + std::to_string(qsd_freq_hz_[2].load()) + " streaming=" + (streaming_.load() ? "true" : "false") + "\n";
+        else if (sCmd == CMD_SET_CODEC) {
+            uint64_t rate, chans; double gain, lpf;
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid rate");
+            cbor_value_get_uint64(&argsIt, &rate); cbor_value_advance(&argsIt);
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid channels");
+            cbor_value_get_uint64(&argsIt, &chans); cbor_value_advance(&argsIt);
+            if (cbor_value_is_double(&argsIt)) cbor_value_get_double(&argsIt, &gain); else gain = 0.0; cbor_value_advance(&argsIt);
+            if (cbor_value_is_double(&argsIt)) cbor_value_get_double(&argsIt, &lpf); else lpf = 0.0;
+            codec_.sampleRate.store((int)rate); codec_.channels.store((int)chans);
+            codec_.gain.store(gain); codec_.lpfCutoff.store(lpf);
+            if (verbose_) std::cout << "[Control] SET_CODEC rate=" << rate << " chans=" << chans << std::endl;
+            return encodeResponse(0, "OK");
         }
-        return "ERROR\n";
+        else if (sCmd == CMD_DISCONNECT) {
+            if (verbose_) std::cout << "[Control] Client sent GBYE" << std::endl;
+            return encodeResponse(0, "BYE");
+        }
+        
+        return encodeResponse(1, "Unknown Command: " + sCmd);
+    }
+
+    std::vector<uint8_t> encodeResponse(int status, const std::string& payload) {
+        uint8_t buffer[8192];
+        CborEncoder encoder, array;
+        cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+        cbor_encoder_create_array(&encoder, &array, 2);
+        cbor_encode_int(&array, status);
+        cbor_encode_text_stringz(&array, payload.c_str());
+        cbor_encoder_close_container(&encoder, &array);
+        size_t len = cbor_encoder_get_buffer_size(&encoder, buffer);
+        return std::vector<uint8_t>(buffer, buffer + len);
     }
 
     TcpControlTransport* control_ = nullptr;
@@ -190,8 +294,9 @@ private:
     std::atomic<double> qsd_freq_hz_[3];
     AttenuatorModel* attenuator_ = nullptr;
     PreselectorModel* presel_ = nullptr;
-    std::atomic<bool> bist_enabled_;
-    std::atomic<double> bist_freq_hz_;
+    std::atomic<bool> isg_enabled_;
+    std::atomic<double> isg_freq_hz_;
+    CodecConfig codec_;
     std::map<std::string, std::string> calibrations_;
     std::atomic<bool> streaming_;
     std::atomic<bool> running_;

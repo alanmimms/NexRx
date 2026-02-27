@@ -146,7 +146,7 @@ int runFunctionalMode(const Options& opts) {
 
     double current_vfos[3] = {0};
     double lo_phase[3] = {0, 0, 0};
-    double bist_phase[3] = {0, 0, 0};
+    double isg_phase[3] = {0, 0, 0};
     double rf_phase = 0.0;
     double rf_target_hz = opts.rf_freq_mhz * 1e6;
 
@@ -165,7 +165,7 @@ int runFunctionalMode(const Options& opts) {
             startTime = std::chrono::steady_clock::now();
             outputSample = 0;
             if (stimulusManager) stimulusManager->resetAll();
-            for (int i=0; i<3; ++i) { lo_phase[i] = 0; bist_phase[i] = 0; }
+            for (int i=0; i<3; ++i) { lo_phase[i] = 0; isg_phase[i] = 0; }
             rf_phase = 0;
             continue;
         }
@@ -211,21 +211,21 @@ int runFunctionalMode(const Options& opts) {
                     double bq = rf_q * cos_lo - rf_i * sin_lo; // Q is -90 deg shift
 
                     // 3. INTERNAL SIGNAL GENERATOR (ISG) - Injected at baseband
-                    if (controlHandler->isBistEnabled()) {
-                        double bist_f = controlHandler->getBistFreq();
-                        double bist_offset = bist_f - vfo;
+                    if (controlHandler->isIsgEnabled()) {
+                        double isg_f = controlHandler->getIsgFreq();
+                        double isg_offset = isg_f - vfo;
                         
-                        bist_phase[ch] = std::fmod(bist_phase[ch] + 2.0 * M_PI * bist_offset * oversamplePeriod, 2.0 * M_PI);
+                        isg_phase[ch] = std::fmod(isg_phase[ch] + 2.0 * M_PI * isg_offset * oversamplePeriod, 2.0 * M_PI);
                         
                         // ISG Rejection Filter: Reject signals outside simulation Nyquist (240 kHz)
                         // Uses a sharp 8th-order Butterworth-like curve centered at 200kHz.
-                        double rel_f = std::abs(bist_offset) / 200000.0;
+                        double rel_f = std::abs(isg_offset) / 200000.0;
                         double rejection = 1.0 / (1.0 + std::pow(rel_f, 8.0));
                         
                         if (rejection > 0.0001) {
                             // 0.66uV constant level at ADC (matches hardware)
-                            bi += (0.00000066 * rejection / gain) * std::cos(bist_phase[ch]);
-                            bq += (0.00000066 * rejection / gain) * std::sin(bist_phase[ch]);
+                            bi += (0.00000066 * rejection / gain) * std::cos(isg_phase[ch]);
+                            bq += (0.00000066 * rejection / gain) * std::sin(isg_phase[ch]);
                         }
                     }
 

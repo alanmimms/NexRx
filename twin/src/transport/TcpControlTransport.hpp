@@ -22,14 +22,13 @@ struct TcpControlConfig {
     std::string host = "0.0.0.0";           // Server: bind address, Client: connect address
     uint16_t port = 5000;                    // TCP port
     bool server = false;                     // true = server, false = client
-    size_t maxMessageSize = 65536;           // Max message size in bytes
 };
 
 //======================================================================
 // TCP Control Transport
 //
-// Message framing: [4-byte length][payload]
-// Length is little-endian uint32_t
+// Message framing: [CBOR-encoded length][payload]
+// Uses network byte order naturally via CBOR.
 //
 // Usage:
 //   Server (simulation/firmware):

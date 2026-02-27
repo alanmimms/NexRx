@@ -24,14 +24,13 @@ namespace nexrx {
 struct TcpControlClientConfig {
     std::string host = "127.0.0.1";     // Server address
     uint16_t port = 5000;                // TCP port
-    size_t maxMessageSize = 65536;       // Max message size in bytes
 };
 
 //======================================================================
 // TCP Control Client
 //
 // Client-only version of TCP transport for sending control commands.
-// Message framing: [4-byte length (LE)][payload]
+// Message framing: [CBOR length][payload]
 //======================================================================
 class TcpControlClient : public RpcTransport {
 public:

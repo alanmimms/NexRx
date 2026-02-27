@@ -206,53 +206,6 @@ void UdpStreamClient::clear() {
                    std::memory_order_release);
 }
 
-bool UdpStreamClient::sendHolePunch() {
-    if (socket_ == SOCKET_INVALID || config_.serverHost.empty()) {
-        return false;
-    }
-
-    // Set up server address
-    sockaddr_in serverAddr;
-    std::memset(&serverAddr, 0, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(config_.serverPort);
-
-    if (inet_pton(AF_INET, config_.serverHost.c_str(), &serverAddr.sin_addr) != 1) {
-        return false;
-    }
-
-    // Send a valid CBOR hole punch packet to punch through NAT
-    // Format: ["NXRQ", version, TYPE_HOLE_PUNCH, []] (empty frames)
-    uint8_t buffer[64];
-    CborEncoder encoder;
-    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
-
-    CborEncoder packetArray;
-    cbor_encoder_create_array(&encoder, &packetArray, 4);
-
-    cbor_encode_text_stringz(&packetArray, UdpProtocol::MAGIC);
-    cbor_encode_uint(&packetArray, UdpProtocol::VERSION);
-    cbor_encode_uint(&packetArray, UdpProtocol::TYPE_HOLE_PUNCH);
-
-    // Empty frames array
-    CborEncoder framesArray;
-    cbor_encoder_create_array(&packetArray, &framesArray, 0);
-    cbor_encoder_close_container(&packetArray, &framesArray);
-
-    cbor_encoder_close_container(&encoder, &packetArray);
-
-    size_t len = cbor_encoder_get_buffer_size(&encoder, buffer);
-
-    int sent = sendto(socket_,
-                      reinterpret_cast<const char*>(buffer),
-                      static_cast<int>(len),
-                      0,
-                      reinterpret_cast<struct sockaddr*>(&serverAddr),
-                      sizeof(serverAddr));
-
-    return sent > 0;
-}
-
 void UdpStreamClient::receiveLoop() {
     // Boost thread priority for real-time audio processing
     boostThreadPriority();

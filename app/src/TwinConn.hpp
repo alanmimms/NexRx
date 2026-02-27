@@ -82,38 +82,44 @@ public:
     size_t pollFrames(size_t maxFrames = 100);
 
     //------------------------------------------------------------------
-    // Control Commands (via TCP)
+    // Control Commands (via TCP/CBOR)
     //------------------------------------------------------------------
-
-    // Set local oscillator frequency (legacy, now sets QSD2)
-    bool setLO(double freq_hz);
 
     // Set VFO for a specific QSD channel (0, 1, or 2)
     bool setQsdVfo(int index, double freq_hz);
 
+    // Set attenuator pad enabled state
+    bool setAtten(int db_value, bool enabled);
+
     // Set preselector capacitor (0-10)
     bool setPreselectorCap(int index, bool enabled);
 
-    // Set preselector inductor
-    bool setPreselectorInd(bool enabled);
+    // Set preselector inductor (index 0 for L701 bypass)
+    bool setPreselectorInd(int index, bool enabled);
 
-    // BIST (Built-In Self Test) Control
-    bool setBistEnable(bool enabled);
-    bool setBistFreq(double freq_hz);
+    // ISG (Internal Signal Generator) Control
+    bool setIsgEnable(bool enabled);
+    bool setIsgFreq(double freq_hz);
 
-    // Calibration storage
-    bool setCalibration(const std::string& type, const std::string& data);
+    // Audio Codec (AK5578) Control
+    bool setCodecConfig(int rate, int channels, double gain, double lpf);
+
+    // Calibration storage (JSON strings)
+    bool setCalibration(const std::string& type, const std::string& json_data);
     std::string getCalibration(const std::string& type);
 
-    // Get twin status
-    bool getStatus(double& lo_freq_hz, bool& streaming);
+    // Get twin status (returns JSON string)
+    std::string getStatus();
 
-    // Start/stop streaming (usually auto-started)
+    // Get hardware configuration (returns JSON string)
+    std::string getHardwareConfig();
+
+    // Start/stop streaming
     bool startStream();
     bool stopStream();
 
-    // Send raw command (returns response)
-    std::string sendCommand(const std::string& cmd);
+    // Send raw CBOR request (returns CBOR response payload)
+    std::vector<uint8_t> sendCborRequest(const std::string& cmd_id, const std::vector<uint8_t>& args_cbor);
 
     //------------------------------------------------------------------
     // Statistics
@@ -133,6 +139,8 @@ public:
 
 private:
     void receiveLoop();
+
+    std::vector<uint8_t> processResponse(const std::vector<uint8_t>& responseData, const std::string& cmd_id);
 
     TwinConfig config_;
     std::unique_ptr<TcpControlClient> control_;

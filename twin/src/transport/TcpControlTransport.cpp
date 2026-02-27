@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <poll.h>
 
+#include <cbor.h>
 #include <cstring>
 #include <algorithm>
 
@@ -208,22 +209,21 @@ bool TcpControlTransport::setSocketTimeout(int fd, std::chrono::milliseconds tim
 }
 
 bool TcpControlTransport::sendMessage(int fd, std::span<const uint8_t> data) {
-    if (fd < 0 || data.size() > config_.maxMessageSize) {
+    if (fd < 0) {
         return false;
     }
 
-    // Send length prefix (4 bytes, little-endian)
-    uint32_t len = static_cast<uint32_t>(data.size());
-    uint8_t header[4];
-    header[0] = len & 0xFF;
-    header[1] = (len >> 8) & 0xFF;
-    header[2] = (len >> 16) & 0xFF;
-    header[3] = (len >> 24) & 0xFF;
+    // Send length prefix as CBOR unsigned integer
+    uint8_t header[9];
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, header, sizeof(header), 0);
+    cbor_encode_uint(&encoder, data.size());
+    size_t headerLen = cbor_encoder_get_buffer_size(&encoder, header);
 
     // Send header
     size_t sent = 0;
-    while (sent < 4) {
-        ssize_t n = send(fd, header + sent, 4 - sent, MSG_NOSIGNAL);
+    while (sent < headerLen) {
+        ssize_t n = send(fd, header + sent, headerLen - sent, MSG_NOSIGNAL);
         if (n <= 0) {
             return false;
         }
@@ -253,47 +253,42 @@ std::optional<std::vector<uint8_t>> TcpControlTransport::receiveMessage(
 
     setSocketTimeout(fd, timeout);
 
-    // Receive length prefix
-    uint8_t header[4];
-    size_t received = 0;
-    while (received < 4) {
-        ssize_t n = recv(fd, header + received, 4 - received, 0);
-        if (n < 0) {
-            // Error - could be timeout (EAGAIN/EWOULDBLOCK) or real error
-            // Return nullopt but don't close connection for timeout
-            return std::nullopt;
-        }
-        if (n == 0) {
-            // Client closed connection cleanly
-            // Set errno to something other than EAGAIN so receiveRequest detects this
-            errno = ECONNRESET;
-            return std::nullopt;
-        }
-        received += n;
-    }
+    // Receive first byte of CBOR length prefix
+    uint8_t firstByte;
+    ssize_t n = recv(fd, &firstByte, 1, 0);
+    if (n < 0) return std::nullopt;
+    if (n == 0) { errno = ECONNRESET; return std::nullopt; }
 
-    uint32_t len = header[0] |
-                   (static_cast<uint32_t>(header[1]) << 8) |
-                   (static_cast<uint32_t>(header[2]) << 16) |
-                   (static_cast<uint32_t>(header[3]) << 24);
-
-    if (len > config_.maxMessageSize) {
+    uint64_t len = 0;
+    if (firstByte < 0x18) {
+        len = firstByte;
+    } else if (firstByte <= 0x1b) {
+        size_t extraBytes = 1 << (firstByte - 0x18);
+        uint8_t buffer[8];
+        size_t received = 0;
+        while (received < extraBytes) {
+            n = recv(fd, buffer + received, extraBytes - received, 0);
+            if (n <= 0) { errno = ECONNRESET; return std::nullopt; }
+            received += n;
+        }
+        if (extraBytes == 1) len = buffer[0];
+        else if (extraBytes == 2) len = (static_cast<uint64_t>(buffer[0]) << 8) | buffer[1];
+        else if (extraBytes == 4) len = (static_cast<uint64_t>(buffer[0]) << 24) | (static_cast<uint64_t>(buffer[1]) << 16) | (static_cast<uint64_t>(buffer[2]) << 8) | buffer[3];
+        else if (extraBytes == 8) {
+            for (int i = 0; i < 8; ++i) len = (len << 8) | buffer[i];
+        }
+    } else {
+        // Not an unsigned integer (or indefinite length, which we don't support for framing)
         return std::nullopt;
     }
 
     // Receive payload
     std::vector<uint8_t> data(len);
-    received = 0;
+    size_t received = 0;
     while (received < len) {
-        ssize_t n = recv(fd, data.data() + received, len - received, 0);
-        if (n < 0) {
-            return std::nullopt;
-        }
-        if (n == 0) {
-            // Client closed connection cleanly
-            errno = ECONNRESET;
-            return std::nullopt;
-        }
+        n = recv(fd, data.data() + received, len - received, 0);
+        if (n < 0) return std::nullopt;
+        if (n == 0) { errno = ECONNRESET; return std::nullopt; }
         received += n;
     }
 
