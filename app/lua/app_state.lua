@@ -103,9 +103,9 @@ local specs = {
     wfBins         = { min = 128, max = 4096 },
     wfRows         = { min = 64, max = 1024 },
     isgEnabled     = { setter = function(v) 
-        hw.setBistEnable(v) 
+        hw.setIsgEnable(v) 
     end },
-    isgFrequency   = { min = 0.1, max = 30.0, setter = function(v) hw.setBistFreq(v * 1e6) end },
+    isgFrequency   = { min = 0.1, max = 30.0, setter = function(v) hw.setIsgFreq(v * 1e6) end },
     preselectorAuto = { defaultValue = true, setter = function(v) Preselector.auto = v end },
 }
 

@@ -80,11 +80,11 @@ state.
 - `SET_PRESEL_C <idx> <0|1>`: Toggles individual preselector capacitor
   relays.
 
-- `SET_PRESEL_L <0|1>`: Toggles the preselector inductor relay.
+- `SET_PRESEL_L <index> <0|1>`: Toggles a preselector inductor relay.
 
-- `SET_BIST_ENABLE <0|1>`: Enables the Internal Signal Generator (ISG).
+- `SET_ISG_ENABLE <0|1>`: Enables the Internal Signal Generator (ISG).
 
-- `SET_BIST_FREQ <freq_hz>`: Sets the ISG frequency.
+- `SET_ISG_FREQ <freq_hz>`: Sets the ISG frequency.
 
 ### 3.2 Data Stream (UDP Port 5001)
 A high-speed data pipe sending interleaved I/Q samples to the host.
