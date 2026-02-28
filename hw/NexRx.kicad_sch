@@ -2844,14 +2844,13 @@
 				)
 			)
 		)
-		(property "Value" "350V"
-			(at 68.58 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "350V" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Bourns" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "GDT35-35-S1-RP" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C19947197" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "652-GDT35-35-S1-RP" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Gas Discharge Tube with 3 Pins" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Library:GDT3535S1RP"
 			(at 68.58 88.9 90)
 			(effects
@@ -2870,15 +2869,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Gas Discharge Tube with 3 Pins"
-			(at 68.58 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 68.58 88.9 0)
 			(effects
@@ -2895,33 +2886,9 @@
 				)
 			)
 		)
-		(property "Manufacturer_Name" "Bourns"
-			(at 68.58 88.9 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "GDT35-35-S1-RP"
-			(at 68.58 88.9 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "652-GDT35-35-S1-RP"
-			(at 68.58 88.9 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 68.58 88.9 90)
 			(effects
@@ -2940,15 +2907,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C19947197"
-			(at 68.58 88.9 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "3"
 			(uuid "957dacc2-69d3-4af2-b90f-1f61f5b28176")
 		)
@@ -2985,15 +2949,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100nF"
-			(at 78.994 78.74 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
+    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "GRM3195C2A104JA01D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C170182" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "81-GRM31C5C2A104JA1L" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 100V, 5%, 100nF, 1206" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
 			(at 81.28 78.4352 0)
 			(effects
@@ -3012,15 +2974,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 85.09 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "DigiKey_Part_Number" ""
 			(at 85.09 77.47 0)
 			(effects
@@ -3048,24 +3002,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 85.09 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 85.09 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 85.09 77.47 0)
 			(effects
@@ -3129,33 +3067,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 85.09 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 85.09 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 85.09 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 85.09 77.47 0)
 			(effects
@@ -3271,33 +3185,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
-			(at 85.09 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "GRM3195C2A104JA01D"
-			(at 85.09 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "81-GRM31C5C2A104JA1L "
-			(at 85.09 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 85.09 77.47 90)
 			(effects
@@ -3316,15 +3206,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C2940749"
-			(at 85.09 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "1"
 			(uuid "843d9752-2bcf-4931-b83e-fb885a91b1d9")
 		)
@@ -3425,14 +3312,13 @@
 				)
 			)
 		)
-		(property "Value" "SMA"
-			(at 46.736 67.31 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "SMA" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "MOLEX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "733910083" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C493445" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, LEMO, ...)" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Library:733910083"
 			(at 46.99 77.47 0)
 			(effects
@@ -3451,15 +3337,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, LEMO, ...)"
-			(at 48.26 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 48.26 77.47 0)
 			(effects
@@ -3502,33 +3380,14 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C493445"
-			(at 48.26 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" "MOLEX"
-			(at 48.26 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "733910083"
-			(at 48.26 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
+		
+		
 		(pin "1"
 			(uuid "3a0f86e2-13f0-4d08-b3c1-ced4a3363945")
 		)
@@ -3936,15 +3795,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100k"
-			(at 55.626 86.614 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
+    (property "Value" "100k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Panasonic" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "ERJ-P08J104V" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C2077703" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "667-ERJ-P08J104V" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 100k, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 54.864 84.074 90)
 			(effects
@@ -3963,15 +3820,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
-			(at 55.88 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 55.88 83.82 0)
 			(effects
@@ -3997,33 +3846,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Panasonic"
-			(at 55.88 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "ERJ-P08J104V"
-			(at 55.88 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "667-ERJ-P08J104V"
-			(at 55.88 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 55.88 83.82 0)
 			(effects
@@ -4042,15 +3867,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C2077703"
-			(at 55.88 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "6819c4d7-2361-460d-bc5a-60c889f8e11a")
 		)
@@ -4407,14 +4229,13 @@
 				)
 			)
 		)
-		(property "Value" "TPD1E0B04DPY"
-			(at 117.602 93.726 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "TPD1E0B04DPY" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C913830" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "0.13-pF, ±3.6-V, ±8-kV ESD protection diode in 0402 & 0201 packages for USB-C & Antenna" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Diode_SMD:D_SOD-882"
 			(at 127 90.17 0)
 			(effects
@@ -4433,15 +4254,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "0.13-pF, ±3.6-V, ±8-kV ESD protection diode in 0402 & 0201 packages for USB-C & Antenna"
-			(at 127 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "Mouser-part-number" ""
 			(at 127 90.17 90)
 			(effects
@@ -4469,15 +4282,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C913830"
-			(at 127 90.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 127 90.17 0)
 			(effects
@@ -4494,6 +4299,11 @@
 				)
 			)
 		)
+    
+    
+    
+    
+    
 		(pin "2"
 			(uuid "c5d21223-9693-4435-8740-b510a20fd3a2")
 		)
@@ -4527,15 +4337,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100nF"
-			(at 121.412 83.312 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
+    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "GRM3195C2A104JA01D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C170182" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "81-GRM31C5C2A104JA1L" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 100V, 5%, 100nF, 1206" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
 			(at 123.19 82.8548 0)
 			(effects
@@ -4554,15 +4362,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "Availability" ""
 			(at 119.38 83.82 0)
 			(effects
@@ -4608,33 +4408,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 119.38 83.82 0)
 			(effects
@@ -4742,33 +4518,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "GRM3195C2A104JA01D"
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "81-GRM31C5C2A104JA1L "
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 119.38 83.82 0)
 			(effects
@@ -4787,15 +4539,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C2940749"
-			(at 119.38 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "1"
 			(uuid "1c8ff0d7-faf6-4e19-8271-3e4e8d335478")
 		)

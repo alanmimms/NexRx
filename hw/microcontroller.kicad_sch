@@ -2061,14 +2061,13 @@
 					)
 				)
 			)
-			(property "Value" "26MHz"
-				(at 2.794 3.81 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
+    (property "Value" "26MHz" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "EATON" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "E2X260181G01" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C712894" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "504-E2X260181G01" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "26MHz 18pF 10PPM" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+			
 			(property "Footprint" "Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm"
 				(at 13.97 -12.065 0)
 				(effects
@@ -2087,15 +2086,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "26MHz 18pF 10PPM"
-				(at 13.97 -12.065 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
+			
 			(property "cap-type" ""
 				(at 0 0 0)
 				(effects
@@ -2112,33 +2103,9 @@
 					)
 				)
 			)
-			(property "Manufacturer_Name" "EATON"
-				(at 10.795 -8.255 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer_Part_Number" "E2X260181G01"
-				(at 13.97 -12.065 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Mouser Part Number" "504-E2X260181G01"
-				(at 13.97 -12.065 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
+			
+			
+			
 			(property "Core" ""
 				(at 0 0 90)
 				(effects
@@ -2175,6 +2142,11 @@
 					(hide yes)
 				)
 			)
+    
+    
+    
+    
+    
 			(symbol "Crystal-small-GND24_0_1"
 				(polyline
 					(pts
@@ -9915,15 +9887,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "8.06k"
-			(at 147.32 149.8599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
+    (property "Value" "8.06k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C863964" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 8.06k, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 148.844 148.844 90)
 			(effects
@@ -9942,24 +9912,13 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
-			(at 149.86 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCBpn" "C863964"
-			(at 149.86 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
+		
 		(pin "1"
 			(uuid "1fd49e26-09c7-42a1-a2df-33e4706c18ca")
 		)
@@ -10262,14 +10221,13 @@
 				)
 			)
 		)
-		(property "Value" "68710814022"
-			(at 161.544 18.542 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "68710814022" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "MOLEX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "5034800800" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C293338" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Wurth Elektronik 687 Series 0.5mm 8 Way 1 Row Straight PCB Socket Surface Mount Wire to Board" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Library:68710814022"
 			(at 168.91 119.05 0)
 			(effects
@@ -10290,15 +10248,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Wurth Elektronik 687 Series 0.5mm 8 Way 1 Row Straight PCB Socket Surface Mount Wire to Board"
-			(at 149.86 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "Height" "2.25"
 			(at 168.91 419.05 0)
 			(effects
@@ -10309,16 +10259,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
-			(at 168.91 519.05 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
+		
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Wurth-Elektronik/68710814022?qs=ZtY9WdtwX54hJHBraEAPJw%3D%3D"
 			(at 168.91 619.05 0)
 			(effects
@@ -10329,26 +10270,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "MOLEX"
-			(at 168.91 719.05 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "5034800800"
-			(at 168.91 819.05 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "cap-type" ""
 			(at 149.86 24.13 0)
 			(effects
@@ -10419,33 +10342,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 149.86 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 149.86 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 149.86 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 149.86 24.13 0)
 			(effects
@@ -10553,15 +10452,12 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C293338"
-			(at 149.86 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "3"
 			(uuid "07c1b705-0fc4-43eb-aff5-7e992c2d8037")
 		)
@@ -11120,14 +11016,13 @@
 				)
 			)
 		)
-		(property "Value" "22"
-			(at 49.784 99.314 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "22" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C4258780" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 22, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 46.99 100.33 0)
 			(effects
@@ -11146,15 +11041,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
-			(at 46.99 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 46.99 100.33 0)
 			(effects
@@ -11189,15 +11076,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C4258780"
-			(at 46.99 100.33 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "1"
 			(uuid "785a467a-7675-4fc7-b076-b09fc41b8f04")
 		)
@@ -11299,14 +11183,13 @@
 				)
 			)
 		)
-		(property "Value" "100nF"
-			(at 164.338 82.296 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 160.3248 83.82 0)
 			(effects
@@ -11325,15 +11208,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 163.576 84.328 0)
 			(effects
@@ -11369,24 +11244,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 161.29 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 161.29 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 161.29 80.01 90)
 			(effects
@@ -11450,33 +11309,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 161.29 80.01 0)
 			(effects
@@ -11576,33 +11411,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Kemet"
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "C0805F104K1RACAUTO"
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-C0805F104K1RAUTO"
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 161.29 80.01 0)
 			(effects
@@ -11621,15 +11432,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C24452"
-			(at 161.29 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "2470eae3-9c73-4589-b369-b2b3f081f072")
 		)
@@ -12339,14 +12147,13 @@
 				)
 			)
 		)
-		(property "Value" "100nF"
-			(at 170.942 82.296 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 173.0248 83.82 0)
 			(effects
@@ -12365,15 +12172,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 171.704 84.074 0)
 			(effects
@@ -12409,24 +12208,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 173.99 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 173.99 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 173.99 80.01 90)
 			(effects
@@ -12490,33 +12273,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 173.99 80.01 0)
 			(effects
@@ -12616,33 +12375,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Kemet"
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "C0805F104K1RACAUTO"
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-C0805F104K1RAUTO"
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 173.99 80.01 0)
 			(effects
@@ -12661,15 +12396,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C24452"
-			(at 173.99 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "6833db06-bc75-4b58-a686-7e7b22149f0d")
 		)
@@ -13496,14 +13228,13 @@
 				)
 			)
 		)
-		(property "Value" "10k"
-			(at 36.83 194.818 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 39.116 190.754 90)
 			(effects
@@ -13522,15 +13253,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
-			(at 38.1 190.5 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "DigiKey_Part_Number" ""
 			(at 38.1 190.5 90)
 			(effects
@@ -13558,24 +13281,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 38.1 190.5 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 38.1 190.5 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 38.1 190.5 90)
 			(effects
@@ -13639,33 +13346,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 38.1 190.5 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 38.1 190.5 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 38.1 190.5 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 38.1 190.5 90)
 			(effects
@@ -13774,15 +13457,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C723366"
-			(at 38.1 190.5 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "6c759f16-cbe4-466b-aa33-19b4f2acfed9")
 		)
@@ -13815,14 +13495,13 @@
 				)
 			)
 		)
-		(property "Value" "2.2uF"
-			(at 58.928 153.416 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "2.2uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C100082" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 10%, 2.2uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 56.8452 154.94 0)
 			(effects
@@ -13841,15 +13520,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 57.15 140.97 0)
 			(effects
@@ -13886,24 +13557,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 55.88 151.13 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 55.88 151.13 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 55.88 151.13 90)
 			(effects
@@ -13967,33 +13622,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 55.88 151.13 0)
 			(effects
@@ -14093,33 +13724,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" ""
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" ""
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 55.88 151.13 0)
 			(effects
@@ -14138,15 +13745,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C100082"
-			(at 55.88 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "d34b5434-184f-4a28-b9de-7a36a67358af")
 		)
@@ -15035,14 +14639,13 @@
 				)
 			)
 		)
-		(property "Value" "10k"
-			(at 258.064 44.196 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 259.08 46.99 0)
 			(effects
@@ -15061,15 +14664,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
-			(at 259.08 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 259.08 46.99 0)
 			(effects
@@ -15104,15 +14699,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C723366"
-			(at 259.08 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "1"
 			(uuid "a9284363-f6d9-49e3-8b16-3ca98dce0e7c")
 		)
@@ -17699,14 +17291,13 @@
 				)
 			)
 		)
-		(property "Value" "1uF"
-			(at 221.996 159.258 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 224.4852 166.37 0)
 			(effects
@@ -17725,15 +17316,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 223.52 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X5R"
 			(at 221.996 165.608 90)
 			(effects
@@ -17769,24 +17352,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 223.52 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 223.52 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 223.52 162.56 90)
 			(effects
@@ -17850,33 +17417,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 223.52 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 223.52 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 223.52 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 223.52 162.56 0)
 			(effects
@@ -17976,33 +17519,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
-			(at 223.52 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
-			(at 223.52 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
-			(at 223.52 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 223.52 162.56 0)
 			(effects
@@ -18021,15 +17540,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C301928"
-			(at 223.52 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "236f23d3-aee7-48c6-9c89-f94e04d67fcf")
 		)
@@ -18173,14 +17689,13 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "10k"
-			(at 213.36 120.904 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 215.646 125.984 90)
 			(effects
@@ -18199,15 +17714,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
-			(at 214.63 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "DigiKey_Part_Number" ""
 			(at 214.63 125.73 90)
 			(effects
@@ -18235,24 +17742,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 214.63 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 214.63 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 214.63 125.73 90)
 			(effects
@@ -18316,33 +17807,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 214.63 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 214.63 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 214.63 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 214.63 125.73 90)
 			(effects
@@ -18451,15 +17918,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C723366"
-			(at 214.63 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "1e6f0fc7-399c-4cf1-a768-67d3adeae81b")
 		)
@@ -18493,14 +17957,13 @@
 				)
 			)
 		)
-		(property "Value" "2.2uF"
-			(at 48.006 153.162 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "2.2uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C100082" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 10%, 2.2uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 49.8348 154.94 0)
 			(effects
@@ -18519,15 +17982,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 57.15 143.51 0)
 			(effects
@@ -18564,24 +18019,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 50.8 151.13 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 50.8 151.13 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 50.8 151.13 90)
 			(effects
@@ -18645,33 +18084,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 50.8 151.13 0)
 			(effects
@@ -18771,33 +18186,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" ""
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" ""
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 50.8 151.13 0)
 			(effects
@@ -18816,15 +18207,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C100082"
-			(at 50.8 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "70e128d7-91b4-4e4c-b0f2-2a2aa7103cbe")
 		)
@@ -19127,14 +18515,13 @@
 				)
 			)
 		)
-		(property "Value" "10k"
-			(at 255.524 27.686 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 256.54 30.48 0)
 			(effects
@@ -19153,15 +18540,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
-			(at 256.54 30.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 256.54 30.48 0)
 			(effects
@@ -19196,15 +18575,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C723366"
-			(at 256.54 30.48 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "1"
 			(uuid "0c5cf05d-21c2-4c62-b00c-22e42f471bc0")
 		)
@@ -19858,15 +19234,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "STM32H753VITx"
-			(at 84.6933 168.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
+    (property "Value" "STM32H753VITx" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C730206" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "STMicroelectronics Arm Cortex-M7 MCU, 2048KB flash, 1024KB RAM, 480 MHz, 1.71-3.6V, 82 GPIO, LQFP100" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Package_QFP:LQFP-100_14x14mm_P0.5mm"
 			(at 62.23 163.83 0)
 			(effects
@@ -19886,15 +19260,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "STMicroelectronics Arm Cortex-M7 MCU, 2048KB flash, 1024KB RAM, 480 MHz, 1.71-3.6V, 82 GPIO, LQFP100"
-			(at 80.01 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 80.01 97.79 0)
 			(effects
@@ -19911,15 +19277,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C730206"
-			(at 80.01 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "label" ""
 			(at 80.01 97.79 0)
 			(effects
@@ -19929,6 +19287,11 @@
 				(hide yes)
 			)
 		)
+    
+    
+    
+    
+    
 		(pin "5"
 			(uuid "98e54797-54e9-40f7-bb92-1224d1cf21bb")
 		)
@@ -20780,15 +20143,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "USB3343"
-			(at 168.5133 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
+    (property "Value" "USB3343" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "SMSC" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "USB3343-CP-TR" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C633347" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Hi-Speed USB ULPI Transceiver, QFN-24" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.6x2.6mm"
 			(at 179.07 118.11 0)
 			(effects
@@ -20807,24 +20168,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Hi-Speed USB ULPI Transceiver, QFN-24"
-			(at 166.37 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCBpn" "C633347"
-			(at 166.37 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "cap-type" ""
 			(at 166.37 123.19 0)
 			(effects
@@ -20849,33 +20194,14 @@
 				)
 			)
 		)
-		(property "Manufacturer_Part_Number" "USB3343-CP-TR"
-			(at 166.37 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" "SMSC"
-			(at 166.37 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCBpn" "C633347"
-			(at 166.37 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
+		
+		
 		(pin "24"
 			(uuid "4d52e020-b3a2-4ade-a399-fff8f9eb730d")
 		)
@@ -21047,14 +20373,13 @@
 				)
 			)
 		)
-		(property "Value" "100nF"
-			(at 260.096 158.496 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 260.6548 166.37 0)
 			(effects
@@ -21073,15 +20398,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 261.62 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 259.588 165.862 90)
 			(effects
@@ -21117,24 +20434,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 261.62 162.56 90)
 			(effects
@@ -21198,33 +20499,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 261.62 162.56 90)
 			(effects
@@ -21324,33 +20601,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Kemet"
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "C0805F104K1RACAUTO"
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-C0805F104K1RAUTO"
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 261.62 162.56 90)
 			(effects
@@ -21369,15 +20622,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C24452"
-			(at 261.62 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "4310756e-3ca8-432a-9c5e-cf1288ceea16")
 		)
@@ -21410,14 +20660,13 @@
 				)
 			)
 		)
-		(property "Value" "10k"
-			(at 121.92 58.928 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 124.206 54.864 90)
 			(effects
@@ -21436,15 +20685,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
-			(at 123.19 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "DigiKey_Part_Number" ""
 			(at 123.19 54.61 90)
 			(effects
@@ -21472,24 +20713,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 123.19 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 123.19 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 123.19 54.61 90)
 			(effects
@@ -21553,33 +20778,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 123.19 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 123.19 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 123.19 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 123.19 54.61 90)
 			(effects
@@ -21688,15 +20889,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C723366"
-			(at 123.19 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "ba958404-bc6d-4912-9111-70415edaeb5b")
 		)
@@ -21864,14 +21062,13 @@
 				)
 			)
 		)
-		(property "Value" "1uF"
-			(at 224.79 133.096 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 225.0948 133.35 0)
 			(effects
@@ -21890,15 +21087,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 226.06 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X5R"
 			(at 227.076 132.588 90)
 			(effects
@@ -21934,24 +21123,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 226.06 129.54 90)
 			(effects
@@ -22015,33 +21188,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 226.06 129.54 90)
 			(effects
@@ -22141,33 +21290,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 226.06 129.54 90)
 			(effects
@@ -22186,15 +21311,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C301928"
-			(at 226.06 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "d3c6af57-e285-4221-9d60-eac0dfc2beab")
 		)
@@ -22227,14 +21349,13 @@
 				)
 			)
 		)
-		(property "Value" "26MHz"
-			(at 138.176 127.762 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "26MHz" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "EATON" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "E2X260181G01" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C712894" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "504-E2X260181G01" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "26MHz 18pF 10PPM" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm"
 			(at 148.59 142.875 0)
 			(effects
@@ -22253,15 +21374,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "26MHz 18pF 10PPM"
-			(at 148.59 142.875 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 134.62 130.81 0)
 			(effects
@@ -22278,33 +21391,9 @@
 				)
 			)
 		)
-		(property "Manufacturer_Name" "EATON"
-			(at 145.415 139.065 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "E2X260181G01"
-			(at 148.59 142.875 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "504-E2X260181G01"
-			(at 148.59 142.875 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 134.62 130.81 90)
 			(effects
@@ -22323,15 +21412,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C712894"
-			(at 134.62 130.81 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "3"
 			(uuid "c1780a87-674d-4d69-b167-e614cdc33ae6")
 		)
@@ -22371,14 +21457,13 @@
 				)
 			)
 		)
-		(property "Value" "10uF"
-			(at 240.03 22.606 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Taoup Uidem" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "81-GXT155R71E223KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C327087" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "963-MLAST168BB5106MT" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 233.68 24.4348 0)
 			(effects
@@ -22397,15 +21482,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 237.49 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 234.188 24.13 90)
 			(effects
@@ -22442,24 +21519,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 237.49 25.4 90)
 			(effects
@@ -22523,33 +21584,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 237.49 25.4 90)
 			(effects
@@ -22649,33 +21686,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Taoup Uidem"
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "81-GXT155R71E223KE1D"
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "963-MLAST168BB5106MT"
-			(at 237.49 25.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 237.49 25.4 90)
 			(effects
@@ -22694,15 +21707,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C327087"
-			(at 237.49 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "40d99ec2-c5bb-4e85-92f1-15f6c04b0f1d")
 		)
@@ -23426,14 +22436,13 @@
 				)
 			)
 		)
-		(property "Value" "100nF"
-			(at 227.584 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 225.7552 101.6 0)
 			(effects
@@ -23452,15 +22461,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 222.504 100.33 0)
 			(effects
@@ -23496,24 +22497,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 224.79 97.79 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 224.79 97.79 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 224.79 97.79 90)
 			(effects
@@ -23577,33 +22562,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 224.79 97.79 0)
 			(effects
@@ -23703,33 +22664,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Kemet"
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "C0805F104K1RACAUTO"
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-C0805F104K1RAUTO"
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 224.79 97.79 0)
 			(effects
@@ -23748,15 +22685,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C24452"
-			(at 224.79 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "39ba63ee-0ce4-46a0-946b-1734d5b1add3")
 		)
@@ -23857,16 +22791,13 @@
 				(justify right)
 			)
 		)
-		(property "Value" "FTSH-105-01-L-DV-K"
-			(at 226.314 27.432 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
+    (property "Value" "FTSH-105-01-L-DV-K" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C5155080" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Cortex Debug Connector, standard ARM Cortex-M SWD and JTAG interface SamTec FTSH-105-01-L-DV-K" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Library:FTSH10501LDVK"
 			(at 228.6 41.91 0)
 			(effects
@@ -23885,15 +22816,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Cortex Debug Connector, standard ARM Cortex-M SWD and JTAG interface SamTec FTSH-105-01-L-DV-K"
-			(at 228.6 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 228.6 41.91 0)
 			(effects
@@ -23955,33 +22878,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 228.6 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 228.6 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 228.6 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 228.6 41.91 0)
 			(effects
@@ -24089,15 +22988,12 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C5155080"
-			(at 228.6 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "8"
 			(uuid "4c014d9a-5f7f-4832-bb27-740018a7db17")
 		)
@@ -24222,14 +23118,13 @@
 				)
 			)
 		)
-		(property "Value" "4.7uF"
-			(at 234.95 100.076 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "4.7uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Vishay/Sprague" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C18535241" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "74-298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 233.3752 101.6 0)
 			(effects
@@ -24248,15 +23143,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "tant"
 			(at 235.204 102.616 0)
 			(effects
@@ -24292,24 +23179,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 232.41 97.79 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 232.41 97.79 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 232.41 97.79 90)
 			(effects
@@ -24373,33 +23244,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 232.41 97.79 0)
 			(effects
@@ -24499,33 +23346,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Vishay/Sprague"
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "298D475X9010M2T"
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "74-298D475X9010M2T"
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 232.41 97.79 0)
 			(effects
@@ -24544,15 +23367,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C18535241"
-			(at 232.41 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "3e0d273f-bac9-4852-b834-dc1cab2c2388")
 		)
@@ -24653,15 +23473,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22.1k"
-			(at 140.97 106.6799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
+    (property "Value" "22.1k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C284424" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 22.1k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 139.446 105.664 90)
 			(effects
@@ -24680,24 +23498,13 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
-			(at 138.43 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCBpn" "C284424"
-			(at 138.43 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
+		
 		(pin "1"
 			(uuid "39f76173-0b30-4820-92a7-56fb8636f7d0")
 		)
@@ -25385,14 +24192,13 @@
 				)
 			)
 		)
-		(property "Value" "100nF"
-			(at 216.154 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 214.3252 101.6 0)
 			(effects
@@ -25411,15 +24217,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 211.074 100.33 0)
 			(effects
@@ -25455,24 +24253,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 213.36 97.79 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 213.36 97.79 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 213.36 97.79 90)
 			(effects
@@ -25536,33 +24318,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 213.36 97.79 0)
 			(effects
@@ -25662,33 +24420,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Kemet"
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "C0805F104K1RACAUTO"
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-C0805F104K1RAUTO"
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 213.36 97.79 0)
 			(effects
@@ -25707,15 +24441,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C24452"
-			(at 213.36 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "8ac6a29d-5041-455b-a3a5-641d6abf8a2f")
 		)
@@ -25859,14 +24590,13 @@
 				)
 			)
 		)
-		(property "Value" "26MHz"
-			(at 27.94 42.418 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "26MHz" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "EATON" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "E2X260181G01" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C712894" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "504-E2X260181G01" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "26MHz 18pF 10PPM" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm"
 			(at 38.1 57.785 0)
 			(effects
@@ -25885,15 +24615,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "26MHz 18pF 10PPM"
-			(at 38.1 57.785 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 24.13 45.72 0)
 			(effects
@@ -25910,33 +24632,9 @@
 				)
 			)
 		)
-		(property "Manufacturer_Name" "EATON"
-			(at 34.925 53.975 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "E2X260181G01"
-			(at 38.1 57.785 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "504-E2X260181G01"
-			(at 38.1 57.785 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 24.13 45.72 90)
 			(effects
@@ -25955,15 +24653,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C712894"
-			(at 24.13 45.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "3"
 			(uuid "e2493664-91ce-4fa2-aa55-fe269dc59f33")
 		)
@@ -26141,14 +24836,13 @@
 				)
 			)
 		)
-		(property "Value" "10uF"
-			(at 178.054 49.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Taoup Uidem" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "81-GXT155R71E223KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C327087" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "963-MLAST168BB5106MT" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 176.2252 43.18 0)
 			(effects
@@ -26167,15 +24861,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 175.26 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X7R"
 			(at 176.53 43.688 90)
 			(effects
@@ -26212,24 +24898,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 175.26 46.99 90)
 			(effects
@@ -26293,33 +24963,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 175.26 46.99 90)
 			(effects
@@ -26419,33 +25065,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Taoup Uidem"
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "81-GXT155R71E223KE1D"
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "963-MLAST168BB5106MT"
-			(at 175.26 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 175.26 46.99 90)
 			(effects
@@ -26464,15 +25086,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C327087"
-			(at 175.26 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "2bf882af-819f-4f0b-b835-dc0947256811")
 		)
@@ -26654,14 +25273,13 @@
 				)
 			)
 		)
-		(property "Value" "47uF"
-			(at 200.406 158.496 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "47uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Kyocera AVX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "TCTAL1A107M8R-V1" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C403725" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "755-TCTAL1A107M8R-V1" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 47uF, 1206" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
 			(at 200.9648 166.37 0)
 			(effects
@@ -26680,15 +25298,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 201.93 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "X5R"
 			(at 199.898 165.862 90)
 			(effects
@@ -26724,24 +25334,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 201.93 162.56 90)
 			(effects
@@ -26805,33 +25399,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 201.93 162.56 90)
 			(effects
@@ -26931,33 +25501,9 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Kyocera AVX"
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "TCTAL1A107M8R-V1"
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "755-TCTAL1A107M8R-V1"
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "Core" ""
 			(at 201.93 162.56 90)
 			(effects
@@ -26976,15 +25522,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C403725"
-			(at 201.93 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "r-power" ""
 			(at 201.93 162.56 0)
 			(effects
@@ -26993,6 +25531,11 @@
 				)
 			)
 		)
+    
+    
+    
+    
+    
 		(pin "2"
 			(uuid "f873f87e-a2d7-463b-b087-6a1bac64e156")
 		)
@@ -27176,14 +25719,13 @@
 				)
 			)
 		)
-		(property "Value" "600"
-			(at 219.6719 87.63 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "600" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Laird Technologies" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C2441365" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "875-MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 219.71 93.218 90)
 			(effects
@@ -27202,15 +25744,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A"
-			(at 219.71 91.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 219.71 91.44 0)
 			(effects
@@ -27245,42 +25779,15 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Laird Technologies"
-			(at 219.71 91.44 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "MI0603J601R-10"
-			(at 219.71 91.44 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "875-MI0603J601R-10"
-			(at 219.71 91.44 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCBpn" "C2441365"
-			(at 219.71 91.44 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
+		
+		
+		
 		(pin "2"
 			(uuid "18a07e13-819d-4f7c-85cd-a6d197acc0b1")
 		)
@@ -27313,14 +25820,13 @@
 				)
 			)
 		)
-		(property "Value" "10k"
-			(at 207.01 120.904 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 209.296 125.984 90)
 			(effects
@@ -27339,15 +25845,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
-			(at 208.28 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "DigiKey_Part_Number" ""
 			(at 208.28 125.73 90)
 			(effects
@@ -27375,24 +25873,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mfg" ""
-			(at 208.28 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MfgPart" ""
-			(at 208.28 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Sim.Params" ""
 			(at 208.28 125.73 90)
 			(effects
@@ -27456,33 +25938,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 208.28 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 208.28 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 208.28 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 208.28 125.73 90)
 			(effects
@@ -27591,15 +26049,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C723366"
-			(at 208.28 125.73 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "2"
 			(uuid "ea33b893-500f-427a-ba6b-d5649a9e37d2")
 		)
@@ -27633,15 +26088,13 @@
 				(justify right)
 			)
 		)
-		(property "Value" "27pF"
-			(at 17.78 50.9269 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
+    (property "Value" "27pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C107045" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 27pF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 20.32 49.53 0)
 			(effects
@@ -27660,15 +26113,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, small US symbol"
-			(at 20.32 49.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" "NP0"
 			(at 20.32 49.53 0)
 			(effects
@@ -27693,15 +26138,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C107045"
-			(at 20.32 49.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "working-voltage" "50V"
 			(at 20.32 49.53 0)
 			(effects
@@ -27711,6 +26148,11 @@
 				(hide yes)
 			)
 		)
+    
+    
+    
+    
+    
 		(pin "2"
 			(uuid "8d7fe9b9-c44d-44eb-8f85-3520c4a1c204")
 		)

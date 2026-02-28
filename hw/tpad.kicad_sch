@@ -1025,14 +1025,13 @@
 				)
 			)
 		)
-		(property "Value" "${rSeries}"
-			(at 114.3 84.582 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "34.4" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C2503774" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 114.046 83.566 90)
 			(effects
@@ -1051,15 +1050,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, 0.1%, thin film, 0402"
-			(at 114.3 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "Availability" ""
 			(at 114.3 82.55 90)
 			(effects
@@ -1105,33 +1096,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 114.3 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 114.3 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 114.3 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 114.3 82.55 90)
 			(effects
@@ -1240,15 +1207,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "${rSeriesJLCPCBpn}"
-			(at 114.3 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 114.3 82.55 0)
 			(effects
@@ -1265,6 +1224,11 @@
 				)
 			)
 		)
+    
+    
+    
+    
+    
 		(pin "1"
 			(uuid "9f58af78-03c1-4119-aa7f-86216f87cfcd")
 		)
@@ -1310,14 +1274,13 @@
 				)
 			)
 		)
-		(property "Value" "AS183-92LF"
-			(at 92.71 73.66 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Skyworks" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C2654768" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "873-AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 71.12 174.93 0)
 			(effects
@@ -1338,15 +1301,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm"
-			(at 92.71 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 92.71 80.01 0)
 			(effects
@@ -1408,33 +1363,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 92.71 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 92.71 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 92.71 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 92.71 80.01 0)
 			(effects
@@ -1526,16 +1457,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "873-AS183-92LF"
-			(at 71.12 574.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
+		
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Skyworks-Solutions-Inc/AS183-92LF?qs=WMHGlxXAKT9uKJ5iI33IgQ%3D%3D"
 			(at 71.12 674.93 0)
 			(effects
@@ -1546,26 +1468,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Skyworks"
-			(at 71.12 774.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
-			(at 71.12 874.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Mouser-part-number" ""
 			(at 92.71 80.01 0)
 			(effects
@@ -1593,15 +1497,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C2654768"
-			(at 92.71 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "4"
 			(uuid "cbd25d3a-4ecf-46c2-aa05-6a908ce3d07e")
 		)
@@ -1658,14 +1559,13 @@
 				)
 			)
 		)
-		(property "Value" "${rShunt}"
-			(at 111.252 87.63 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "562" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C284620" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 562, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 110.236 87.884 90)
 			(effects
@@ -1684,15 +1584,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, 0.1%, thin film, 0402"
-			(at 109.22 87.63 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "Availability" ""
 			(at 109.22 87.63 90)
 			(effects
@@ -1738,33 +1630,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 109.22 87.63 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 109.22 87.63 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 109.22 87.63 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 109.22 87.63 90)
 			(effects
@@ -1873,15 +1741,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "${rShuntJLCPCBpn}"
-			(at 109.22 87.63 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 109.22 87.63 0)
 			(effects
@@ -1898,6 +1758,11 @@
 				)
 			)
 		)
+    
+    
+    
+    
+    
 		(pin "1"
 			(uuid "c706c114-65a4-4090-9d4d-fec3f4125d1a")
 		)
@@ -1943,14 +1808,13 @@
 				)
 			)
 		)
-		(property "Value" "AS183-92LF"
-			(at 125.73 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "Skyworks" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C2654768" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "873-AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 147.32 -14.91 0)
 			(effects
@@ -1971,15 +1835,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm"
-			(at 125.73 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 125.73 80.01 0)
 			(effects
@@ -2041,33 +1897,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 125.73 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 125.73 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 125.73 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 125.73 80.01 0)
 			(effects
@@ -2159,16 +1991,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "873-AS183-92LF"
-			(at 147.32 -414.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
+		
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Skyworks-Solutions-Inc/AS183-92LF?qs=WMHGlxXAKT9uKJ5iI33IgQ%3D%3D"
 			(at 147.32 -514.91 0)
 			(effects
@@ -2179,26 +2002,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Skyworks"
-			(at 147.32 -614.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "AS183-92LF"
-			(at 147.32 -714.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
+		
+		
 		(property "Mouser-part-number" ""
 			(at 125.73 80.01 0)
 			(effects
@@ -2226,15 +2031,12 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C2654768"
-			(at 125.73 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+    
+    
+    
+    
+    
+		
 		(pin "4"
 			(uuid "4fbcc8e5-9dd3-4ab1-874a-9257d41013ed")
 		)
@@ -2449,14 +2251,13 @@
 				)
 			)
 		)
-		(property "Value" "${rSeries}"
-			(at 104.14 84.582 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
+    (property "Value" "34.4" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "LCSC_PN" "C2503774" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 103.886 83.566 90)
 			(effects
@@ -2475,15 +2276,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, 0.1%, thin film, 0402"
-			(at 104.14 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "Availability" ""
 			(at 104.14 82.55 90)
 			(effects
@@ -2529,33 +2322,9 @@
 				(hide yes)
 			)
 		)
-		(property "MF" ""
-			(at 104.14 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 104.14 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 104.14 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
+		
+		
 		(property "PARTREV" ""
 			(at 104.14 82.55 90)
 			(effects
@@ -2664,15 +2433,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "${rSeriesJLCPCBpn}"
-			(at 104.14 82.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
+		
 		(property "cap-type" ""
 			(at 104.14 82.55 0)
 			(effects
@@ -2689,6 +2450,11 @@
 				)
 			)
 		)
+    
+    
+    
+    
+    
 		(pin "1"
 			(uuid "a0703774-dc43-4fae-9e07-10b007d25595")
 		)
