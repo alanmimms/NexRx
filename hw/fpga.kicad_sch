@@ -3751,7 +3751,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0ea2ac3d-a358-46ba-b555-e7a73af871bb")
-		(property "Reference" "C1301"
+		(property "Reference" "C1302"
 			(at 29.718 139.954 0)
 			(effects
 				(font
@@ -3760,34 +3760,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "1uF" (at 29.464 144.526 0) (effects
+		(property "Value" "1uF"
+			(at 29.464 144.526 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "Murata" (at 30.48 142.24 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 30.48 142.24 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 31.4452 146.05 0)
 			(effects
@@ -3806,7 +3787,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402"
+			(at 30.48 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Murata"
+			(at 30.48 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GRM155R61E105KE11D"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C301928"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "81-GRM155R61E105KE1D"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "DigiKey_Part_Number" ""
 			(at 30.48 142.24 0)
 			(effects
@@ -3834,8 +3859,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 30.48 142.24 0)
 			(effects
@@ -3899,9 +3922,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 30.48 142.24 0)
 			(effects
@@ -4009,9 +4029,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 30.48 142.24 0)
 			(effects
@@ -4030,12 +4047,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "ef070fba-decd-4a10-8f88-aa5809ac29f8")
 		)
@@ -4045,7 +4056,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1301")
+					(reference "C1302")
 					(unit 1)
 				)
 			)
@@ -4060,7 +4071,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "12d39986-6481-41c3-8ff9-54f6cda7bc6a")
-		(property "Reference" "#PWR01315"
+		(property "Reference" "#PWR01308"
 			(at 58.42 59.69 0)
 			(effects
 				(font
@@ -4111,7 +4122,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01315")
+					(reference "#PWR01308")
 					(unit 1)
 				)
 			)
@@ -4127,7 +4138,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1f25109f-f599-4c2d-8b18-76e12ad8bb10")
-		(property "Reference" "R1304"
+		(property "Reference" "R1303"
 			(at 71.374 85.09 90)
 			(effects
 				(font
@@ -4370,7 +4381,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "R1304")
+					(reference "R1303")
 					(unit 1)
 				)
 			)
@@ -4385,7 +4396,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2045bf14-9c39-42ce-b9f0-2cfc2d0772b7")
-		(property "Reference" "C1305"
+		(property "Reference" "C1308"
 			(at 99.314 82.804 0)
 			(effects
 				(font
@@ -4394,34 +4405,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "8pF" (at 99.568 87.376 0) (effects
+		(property "Value" "8pF"
+			(at 99.568 87.376 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 99.06 85.09 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H080D080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C1882476" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H080D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 8pF, 0603" (at 99.06 85.09 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 98.0948 81.28 0)
 			(effects
@@ -4440,7 +4432,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 8pF, 0603"
+			(at 99.06 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 99.06 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H080D080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C1882476"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H080D"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 99.06 85.09 0)
 			(effects
@@ -4486,9 +4522,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 99.06 85.09 0)
 			(effects
@@ -4596,9 +4629,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 99.06 85.09 0)
 			(effects
@@ -4617,12 +4647,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "b34fdf88-8916-483b-815a-fd7ee6f44a09")
 		)
@@ -4632,7 +4656,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1305")
+					(reference "C1308")
 					(unit 1)
 				)
 			)
@@ -4656,29 +4680,15 @@
 				(justify left)
 			)
 		)
-    (property "Value" "ICE40UP5K-SG48I" (at 204.47 53.3399 0) (effects
+		(property "Value" "ICE40UP5K-SG48I"
+			(at 204.47 53.3399 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-			))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C2678152" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN" (at 194.31 52.07 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm"
 			(at 198.12 137.16 0)
 			(effects
@@ -4697,7 +4707,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN"
+			(at 194.31 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2678152"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" ""
 			(at 198.12 102.87 0)
 			(effects
@@ -4722,12 +4776,6 @@
 				)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "8"
 			(uuid "d928c929-68d6-49c4-8c54-b37a534edfe8")
 		)
@@ -4961,7 +5009,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "31d9bb1c-353c-4a44-8e8b-7d6a10837395")
-		(property "Reference" "#PWR01309"
+		(property "Reference" "#PWR01314"
 			(at 140.97 59.69 0)
 			(effects
 				(font
@@ -5012,7 +5060,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01309")
+					(reference "#PWR01314")
 					(unit 1)
 				)
 			)
@@ -5028,7 +5076,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3cd9d631-c1bb-4a01-a7f7-69eedf5feee6")
-		(property "Reference" "#PWR01313"
+		(property "Reference" "#PWR01316"
 			(at 147.32 59.69 0)
 			(effects
 				(font
@@ -5079,7 +5127,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01313")
+					(reference "#PWR01316")
 					(unit 1)
 				)
 			)
@@ -5094,7 +5142,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "45bab717-3544-46f5-bde1-26ec7ccb9ace")
-		(property "Reference" "#PWR01319"
+		(property "Reference" "#PWR01322"
 			(at 200.66 86.36 0)
 			(effects
 				(font
@@ -5160,7 +5208,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01319")
+					(reference "#PWR01322")
 					(unit 1)
 				)
 			)
@@ -5175,7 +5223,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4854be98-f36d-4104-b4bd-1e2cb78cf74e")
-		(property "Reference" "#PWR01320"
+		(property "Reference" "#PWR01311"
 			(at 77.47 59.69 0)
 			(effects
 				(font
@@ -5226,7 +5274,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01320")
+					(reference "#PWR01311")
 					(unit 1)
 				)
 			)
@@ -5251,34 +5299,15 @@
 				(justify left)
 			)
 		)
-    (property "Value" "330" (at 101.854 75.184 90) (effects
+		(property "Value" "330"
+			(at 101.854 75.184 90)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-			))
-    (property "Manufacturer" "" (at 104.14 77.47 90) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C854274" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 330, 0402" (at 104.14 77.47 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 103.886 76.454 90)
 			(effects
@@ -5297,7 +5326,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Resistor, Thin Film, 0.1%, 330, 0402"
+			(at 104.14 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 104.14 77.47 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C854274"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 104.14 77.47 90)
 			(effects
@@ -5343,9 +5416,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 104.14 77.47 90)
 			(effects
@@ -5454,12 +5524,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "09af24e4-5ca4-441f-9429-8fbb1ea62e21")
 		)
@@ -5485,7 +5549,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "625d98eb-13d8-4f05-8694-60f5713d3e3e")
-		(property "Reference" "R1306"
+		(property "Reference" "R1301"
 			(at 64.516 75.184 90)
 			(effects
 				(font
@@ -5546,7 +5610,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "R1306")
+					(reference "R1301")
 					(unit 1)
 				)
 			)
@@ -5561,7 +5625,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "671ac812-22e4-4c78-9b3d-c8f46cdaa02f")
-		(property "Reference" "C1309"
+		(property "Reference" "C1310"
 			(at 150.876 45.72 0)
 			(effects
 				(font
@@ -5909,7 +5973,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1309")
+					(reference "C1310")
 					(unit 1)
 				)
 			)
@@ -5933,29 +5997,15 @@
 				)
 			)
 		)
-    (property "Value" "ICE40UP5K-SG48I" (at 204.47 53.3399 0) (effects
+		(property "Value" "ICE40UP5K-SG48I"
+			(at 204.47 53.3399 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-			))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C2678152" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN" (at 194.31 52.07 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm"
 			(at 125.73 111.76 0)
 			(effects
@@ -5974,7 +6024,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN"
+			(at 194.31 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2678152"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" ""
 			(at 125.73 77.47 0)
 			(effects
@@ -5999,12 +6093,6 @@
 				)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "8"
 			(uuid "d928c929-68d6-49c4-8c54-b37a534edfe9")
 		)
@@ -6170,7 +6258,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "67f78642-91f7-4ecc-b389-bff61401f844")
-		(property "Reference" "C1314"
+		(property "Reference" "C1306"
 			(at 72.644 46.228 0)
 			(effects
 				(font
@@ -6178,33 +6266,14 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 72.644 50.8 0) (effects
+		(property "Value" "100nF"
+			(at 72.644 50.8 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Kemet" (at 69.85 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 69.85 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 70.8152 52.07 0)
 			(effects
@@ -6223,7 +6292,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+			(at 69.85 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kemet"
+			(at 69.85 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C0805F104K1RACAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C24452"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "80-C0805F104K1RAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "X7R"
 			(at 67.564 50.8 0)
 			(effects
@@ -6259,8 +6372,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 69.85 48.26 90)
 			(effects
@@ -6324,9 +6435,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 69.85 48.26 0)
 			(effects
@@ -6426,9 +6534,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 69.85 48.26 0)
 			(effects
@@ -6447,12 +6552,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "919bc34a-f015-41a7-8348-03f1d1720086")
 		)
@@ -6462,7 +6561,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1314")
+					(reference "C1306")
 					(unit 1)
 				)
 			)
@@ -6486,33 +6585,14 @@
 				)
 			)
 		)
-    (property "Value" "40MHz" (at 51.435 128.27 0) (effects
+		(property "Value" "40MHz"
+			(at 51.435 128.27 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "ECS" (at 38.1 133.35 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "ECS-TXO-2016-33-400-TR" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C2451471" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "520-TXO-2016-33-400T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "TCXO Oscillators 40MHz 3.3V 2.5ppm -40C +85C" (at 38.1 133.35 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Library:ECSTXO201633400TR"
 			(at 72.39 228.27 0)
 			(effects
@@ -6533,7 +6613,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "TCXO Oscillators 40MHz 3.3V 2.5ppm -40C +85C"
+			(at 38.1 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "ECS"
+			(at 38.1 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "ECS-TXO-2016-33-400-TR"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2451471"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "520-TXO-2016-33-400T"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Height" "0.8"
 			(at 72.39 528.27 0)
 			(effects
@@ -6544,7 +6668,6 @@
 				(hide yes)
 			)
 		)
-		
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/ECS/ECS-TXO-2016-33-400-TR?qs=PzGy0jfpSMtctR53CPxRHg%3D%3D"
 			(at 72.39 728.27 0)
 			(effects
@@ -6555,8 +6678,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "DigiKey_Part_Number" ""
 			(at 38.1 133.35 0)
 			(effects
@@ -6584,8 +6705,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 38.1 133.35 0)
 			(effects
@@ -6649,9 +6768,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 38.1 133.35 0)
 			(effects
@@ -6776,12 +6892,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "1"
 			(uuid "881e0b19-eae6-44bd-9533-ce60deb20c92")
 		)
@@ -6812,7 +6922,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6a997826-8287-462e-92f2-3ed2cadb5e09")
-		(property "Reference" "#PWR01316"
+		(property "Reference" "#PWR01320"
 			(at 189.23 109.22 0)
 			(effects
 				(font
@@ -6863,7 +6973,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01316")
+					(reference "#PWR01320")
 					(unit 1)
 				)
 			)
@@ -6878,7 +6988,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6c7299da-cbbf-4ec0-b704-c87a1df88c48")
-		(property "Reference" "C1306"
+		(property "Reference" "C1311"
 			(at 161.544 127.508 0)
 			(effects
 				(font
@@ -6886,33 +6996,14 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 161.544 132.08 0) (effects
+		(property "Value" "100nF"
+			(at 161.544 132.08 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Kemet" (at 158.75 129.54 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 158.75 129.54 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 159.7152 133.35 0)
 			(effects
@@ -6931,7 +7022,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+			(at 158.75 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kemet"
+			(at 158.75 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C0805F104K1RACAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C24452"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "80-C0805F104K1RAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "X7R"
 			(at 156.464 132.08 0)
 			(effects
@@ -6967,8 +7102,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 158.75 129.54 90)
 			(effects
@@ -7032,9 +7165,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 158.75 129.54 0)
 			(effects
@@ -7142,9 +7272,6 @@
 				)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 158.75 129.54 0)
 			(effects
@@ -7163,12 +7290,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "1bedaf8c-55b2-4959-b025-11f650fd2984")
 		)
@@ -7178,7 +7299,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1306")
+					(reference "C1311")
 					(unit 1)
 				)
 			)
@@ -7193,7 +7314,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7526c873-a777-4f4d-92cd-883c84e13412")
-		(property "Reference" "#PWR01317"
+		(property "Reference" "#PWR01310"
 			(at 69.85 59.69 0)
 			(effects
 				(font
@@ -7244,7 +7365,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01317")
+					(reference "#PWR01310")
 					(unit 1)
 				)
 			)
@@ -7260,7 +7381,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "76a8ad31-a720-4666-93f0-bcfa0a590d9e")
-		(property "Reference" "#PWR01322"
+		(property "Reference" "#PWR01324"
 			(at 213.36 34.29 0)
 			(effects
 				(font
@@ -7326,7 +7447,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01322")
+					(reference "#PWR01324")
 					(unit 1)
 				)
 			)
@@ -7349,33 +7470,14 @@
 				)
 			)
 		)
-    (property "Value" "10nF" (at 215.9 39.624 0) (effects
+		(property "Value" "10nF"
+			(at 215.9 39.624 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Murata" (at 213.36 36.83 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "GCM1885C2A103JE02J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C115056" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "81-GCM1885C2A103JE2J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 25V, 5%, 10nF, 0603" (at 213.36 36.83 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 214.3252 40.64 0)
 			(effects
@@ -7394,7 +7496,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 5%, 10nF, 0603"
+			(at 213.36 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Murata"
+			(at 213.36 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM1885C2A103JE02J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C115056"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "81-GCM1885C2A103JE2J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "X7R"
 			(at 213.36 36.576 0)
 			(effects
@@ -7430,8 +7576,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 213.36 36.83 90)
 			(effects
@@ -7495,9 +7639,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 213.36 36.83 0)
 			(effects
@@ -7597,9 +7738,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 213.36 36.83 90)
 			(effects
@@ -7618,12 +7756,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "c07adbab-01a6-4e3f-9ea8-a21e2782c27f")
 		)
@@ -7648,7 +7780,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7ba12d4a-0180-46c5-adff-32d63d994d71")
-		(property "Reference" "C1311"
+		(property "Reference" "C1314"
 			(at 178.308 94.488 0)
 			(effects
 				(font
@@ -7656,33 +7788,14 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 178.562 98.806 0) (effects
+		(property "Value" "100nF"
+			(at 178.562 98.806 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Kemet" (at 181.61 96.52 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 181.61 96.52 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 180.6448 92.71 0)
 			(effects
@@ -7701,7 +7814,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+			(at 181.61 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kemet"
+			(at 181.61 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C0805F104K1RACAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C24452"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "80-C0805F104K1RAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "X7R"
 			(at 181.61 96.52 0)
 			(effects
@@ -7737,8 +7894,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 181.61 96.52 90)
 			(effects
@@ -7802,9 +7957,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 181.61 96.52 0)
 			(effects
@@ -7904,9 +8056,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 181.61 96.52 0)
 			(effects
@@ -7925,12 +8074,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "bc7746e9-11f2-42e0-a220-f2406a0cc698")
 		)
@@ -7940,7 +8083,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1311")
+					(reference "C1314")
 					(unit 1)
 				)
 			)
@@ -7956,7 +8099,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "80e15605-6eca-4cf4-b6aa-59a0b989839e")
-		(property "Reference" "R1302"
+		(property "Reference" "R1304"
 			(at 78.994 85.09 90)
 			(effects
 				(font
@@ -8199,7 +8342,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "R1302")
+					(reference "R1304")
 					(unit 1)
 				)
 			)
@@ -8214,7 +8357,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "821b458d-fd02-4f4a-965a-ebc051a531b3")
-		(property "Reference" "#PWR01310"
+		(property "Reference" "#PWR01318"
 			(at 165.1 127 0)
 			(effects
 				(font
@@ -8280,7 +8423,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01310")
+					(reference "#PWR01318")
 					(unit 1)
 				)
 			)
@@ -8305,34 +8448,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "100nF" (at 37.592 144.272 0) (effects
+		(property "Value" "100nF"
+			(at 37.592 144.272 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "Kemet" (at 36.83 142.24 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 36.83 142.24 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 35.8648 146.05 0)
 			(effects
@@ -8351,7 +8475,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+			(at 36.83 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kemet"
+			(at 36.83 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C0805F104K1RACAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C24452"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "80-C0805F104K1RAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "DigiKey_Part_Number" ""
 			(at 36.83 142.24 0)
 			(effects
@@ -8379,8 +8547,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 36.83 142.24 0)
 			(effects
@@ -8444,9 +8610,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 36.83 142.24 0)
 			(effects
@@ -8554,9 +8717,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 36.83 142.24 0)
 			(effects
@@ -8575,12 +8735,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "9aacbba8-fe7d-4c5d-ada9-d7c911e2aef3")
 		)
@@ -8615,29 +8769,15 @@
 				(justify left)
 			)
 		)
-    (property "Value" "ICE40UP5K-SG48I" (at 204.47 53.3399 0) (effects
+		(property "Value" "ICE40UP5K-SG48I"
+			(at 204.47 53.3399 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-			))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C2678152" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN" (at 194.31 52.07 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm"
 			(at 144.78 189.23 0)
 			(effects
@@ -8656,7 +8796,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN"
+			(at 194.31 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2678152"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" ""
 			(at 144.78 154.94 0)
 			(effects
@@ -8681,12 +8865,6 @@
 				)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "8"
 			(uuid "d928c929-68d6-49c4-8c54-b37a534edfea")
 		)
@@ -8933,7 +9111,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "97b00350-cad9-421a-8725-8498e1e77a9c")
-		(property "Reference" "#PWR01318"
+		(property "Reference" "#PWR01321"
 			(at 198.12 120.65 0)
 			(effects
 				(font
@@ -8984,7 +9162,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01318")
+					(reference "#PWR01321")
 					(unit 1)
 				)
 			)
@@ -9000,7 +9178,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9bca48e9-1a0d-4fdd-b466-ee8bb97dd853")
-		(property "Reference" "#PWR01302"
+		(property "Reference" "#PWR01301"
 			(at 27.94 41.91 0)
 			(effects
 				(font
@@ -9066,7 +9244,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01302")
+					(reference "#PWR01301")
 					(unit 1)
 				)
 			)
@@ -9082,7 +9260,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9ce4274a-5561-40b7-92ab-f9c1f000a32b")
-		(property "Reference" "#PWR01311"
+		(property "Reference" "#PWR01319"
 			(at 165.1 140.97 0)
 			(effects
 				(font
@@ -9133,7 +9311,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01311")
+					(reference "#PWR01319")
 					(unit 1)
 				)
 			)
@@ -9148,7 +9326,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a284fb67-e8f6-40dc-97e2-85fea2c07c61")
-		(property "Reference" "#PWR01314"
+		(property "Reference" "#PWR01307"
 			(at 58.42 41.91 0)
 			(effects
 				(font
@@ -9214,7 +9392,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01314")
+					(reference "#PWR01307")
 					(unit 1)
 				)
 			)
@@ -9229,7 +9407,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a4a0383d-9716-4a66-b135-af70ab778ed2")
-		(property "Reference" "C1302"
+		(property "Reference" "C1301"
 			(at 30.988 41.148 0)
 			(effects
 				(font
@@ -9237,33 +9415,14 @@
 				)
 			)
 		)
-    (property "Value" "4.7uF" (at 30.48 45.466 0) (effects
+		(property "Value" "4.7uF"
+			(at 30.48 45.466 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Vishay/Sprague" (at 27.94 43.18 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C18535241" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "74-298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 27.94 43.18 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 28.9052 46.99 0)
 			(effects
@@ -9282,7 +9441,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805"
+			(at 27.94 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Vishay/Sprague"
+			(at 27.94 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "298D475X9010M2T"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C18535241"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "74-298D475X9010M2T"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "tant"
 			(at 30.734 48.006 0)
 			(effects
@@ -9318,8 +9521,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 27.94 43.18 90)
 			(effects
@@ -9383,9 +9584,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 27.94 43.18 0)
 			(effects
@@ -9485,9 +9683,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 27.94 43.18 0)
 			(effects
@@ -9506,12 +9701,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "f5231b09-a579-484e-bcf1-7523af8dc704")
 		)
@@ -9521,7 +9710,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1302")
+					(reference "C1301")
 					(unit 1)
 				)
 			)
@@ -9536,7 +9725,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a9996e53-c97d-492d-9600-2ad6310dc577")
-		(property "Reference" "#PWR01307"
+		(property "Reference" "#PWR01309"
 			(at 66.04 143.51 0)
 			(effects
 				(font
@@ -9587,7 +9776,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01307")
+					(reference "#PWR01309")
 					(unit 1)
 				)
 			)
@@ -9603,7 +9792,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ac05c807-ad04-43ed-8247-71cf80c1f4dc")
-		(property "Reference" "#PWR01323"
+		(property "Reference" "#PWR01325"
 			(at 213.36 48.26 0)
 			(effects
 				(font
@@ -9654,7 +9843,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01323")
+					(reference "#PWR01325")
 					(unit 1)
 				)
 			)
@@ -9747,7 +9936,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b3908c63-f025-4a60-a991-ccf4bfe86ce3")
-		(property "Reference" "#PWR01324"
+		(property "Reference" "#PWR01312"
 			(at 88.9 100.33 0)
 			(effects
 				(font
@@ -9798,7 +9987,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01324")
+					(reference "#PWR01312")
 					(unit 1)
 				)
 			)
@@ -9813,7 +10002,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b490b2ea-ee2d-4af4-b5c7-2b8c151b6de9")
-		(property "Reference" "C1307"
+		(property "Reference" "C1309"
 			(at 143.764 46.228 0)
 			(effects
 				(font
@@ -9821,33 +10010,14 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 143.764 50.8 0) (effects
+		(property "Value" "100nF"
+			(at 143.764 50.8 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Kemet" (at 140.97 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 140.97 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 141.9352 52.07 0)
 			(effects
@@ -9866,7 +10036,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+			(at 140.97 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kemet"
+			(at 140.97 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C0805F104K1RACAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C24452"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "80-C0805F104K1RAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "X7R"
 			(at 138.684 50.8 0)
 			(effects
@@ -9902,8 +10116,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 140.97 48.26 90)
 			(effects
@@ -9967,9 +10179,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 140.97 48.26 0)
 			(effects
@@ -10077,9 +10286,6 @@
 				)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 140.97 48.26 0)
 			(effects
@@ -10098,12 +10304,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "6326c7ca-ed48-40e0-a035-dc66d2b03a67")
 		)
@@ -10113,7 +10313,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1307")
+					(reference "C1309")
 					(unit 1)
 				)
 			)
@@ -10129,7 +10329,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b57d44f8-766f-4090-a94f-2f3d522740c0")
-		(property "Reference" "#PWR01321"
+		(property "Reference" "#PWR01323"
 			(at 207.01 48.26 0)
 			(effects
 				(font
@@ -10180,7 +10380,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01321")
+					(reference "#PWR01323")
 					(unit 1)
 				)
 			)
@@ -10195,7 +10395,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b8e7a2cc-bee7-4971-a1c3-16256ba076ff")
-		(property "Reference" "C1308"
+		(property "Reference" "C1312"
 			(at 168.402 127.508 0)
 			(effects
 				(font
@@ -10543,7 +10743,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1308")
+					(reference "C1312")
 					(unit 1)
 				)
 			)
@@ -10559,7 +10759,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c118c9e1-a2e6-4284-94a9-2972066eb747")
-		(property "Reference" "C1310"
+		(property "Reference" "C1313"
 			(at 170.688 94.488 0)
 			(effects
 				(font
@@ -10907,7 +11107,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1310")
+					(reference "C1313")
 					(unit 1)
 				)
 			)
@@ -10923,7 +11123,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c4a40012-e2a1-46b6-8281-844ee50c3685")
-		(property "Reference" "#PWR01301"
+		(property "Reference" "#PWR01303"
 			(at 30.48 135.89 0)
 			(effects
 				(font
@@ -10989,7 +11189,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01301")
+					(reference "#PWR01303")
 					(unit 1)
 				)
 			)
@@ -11014,29 +11214,15 @@
 				(justify left)
 			)
 		)
-    (property "Value" "ICE40UP5K-SG48I" (at 204.47 53.3399 0) (effects
+		(property "Value" "ICE40UP5K-SG48I"
+			(at 204.47 53.3399 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-			))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C2678152" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN" (at 194.31 52.07 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm"
 			(at 194.31 86.36 0)
 			(effects
@@ -11055,7 +11241,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN"
+			(at 194.31 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2678152"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" ""
 			(at 194.31 52.07 0)
 			(effects
@@ -11080,12 +11310,6 @@
 				)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "8"
 			(uuid "d928c929-68d6-49c4-8c54-b37a534edfeb")
 		)
@@ -11252,7 +11476,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e06c82d1-b7c1-4be6-b082-ba65254b7963")
-		(property "Reference" "R1305"
+		(property "Reference" "R1302"
 			(at 73.406 75.184 90)
 			(effects
 				(font
@@ -11313,7 +11537,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "R1305")
+					(reference "R1302")
 					(unit 1)
 				)
 			)
@@ -11328,7 +11552,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e24d75c7-8023-45fe-b094-9e219ca77bef")
-		(property "Reference" "C1312"
+		(property "Reference" "C1305"
 			(at 61.214 46.228 0)
 			(effects
 				(font
@@ -11336,33 +11560,14 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 61.214 50.8 0) (effects
+		(property "Value" "100nF"
+			(at 61.214 50.8 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Kemet" (at 58.42 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 58.42 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 59.3852 52.07 0)
 			(effects
@@ -11381,7 +11586,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+			(at 58.42 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kemet"
+			(at 58.42 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C0805F104K1RACAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C24452"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "80-C0805F104K1RAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "X7R"
 			(at 56.134 50.8 0)
 			(effects
@@ -11417,8 +11666,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 58.42 48.26 90)
 			(effects
@@ -11482,9 +11729,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 58.42 48.26 0)
 			(effects
@@ -11584,9 +11828,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 58.42 48.26 0)
 			(effects
@@ -11605,12 +11846,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "f2b78309-1ce7-4a7d-8e7a-431036fb3720")
 		)
@@ -11620,7 +11855,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1312")
+					(reference "C1305")
 					(unit 1)
 				)
 			)
@@ -11635,7 +11870,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e6d340cd-220c-4a08-bed0-265e62472f04")
-		(property "Reference" "C1315"
+		(property "Reference" "C1307"
 			(at 80.518 46.228 0)
 			(effects
 				(font
@@ -11643,33 +11878,14 @@
 				)
 			)
 		)
-    (property "Value" "4.7uF" (at 80.01 50.546 0) (effects
+		(property "Value" "4.7uF"
+			(at 80.01 50.546 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Vishay/Sprague" (at 77.47 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C18535241" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "74-298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 77.47 48.26 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 78.4352 52.07 0)
 			(effects
@@ -11688,7 +11904,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805"
+			(at 77.47 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Vishay/Sprague"
+			(at 77.47 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "298D475X9010M2T"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C18535241"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "74-298D475X9010M2T"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "tant"
 			(at 80.264 53.086 0)
 			(effects
@@ -11724,8 +11984,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 77.47 48.26 90)
 			(effects
@@ -11789,9 +12047,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 77.47 48.26 0)
 			(effects
@@ -11891,9 +12146,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 77.47 48.26 0)
 			(effects
@@ -11912,12 +12164,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "943668f6-61a7-49b3-93c8-aa3a63e38bbf")
 		)
@@ -11927,7 +12173,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1315")
+					(reference "C1307")
 					(unit 1)
 				)
 			)
@@ -11943,7 +12189,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e82ebcda-a09c-4f03-bc7e-2841698cc8e2")
-		(property "Reference" "#PWR01308"
+		(property "Reference" "#PWR01317"
 			(at 158.75 140.97 0)
 			(effects
 				(font
@@ -11994,7 +12240,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01308")
+					(reference "#PWR01317")
 					(unit 1)
 				)
 			)
@@ -12010,7 +12256,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e89561b4-2bf8-4fae-b2c4-2a7cb23ecfd0")
-		(property "Reference" "R1303"
+		(property "Reference" "R1306"
 			(at 86.614 85.09 90)
 			(effects
 				(font
@@ -12253,7 +12499,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "R1303")
+					(reference "R1306")
 					(unit 1)
 				)
 			)
@@ -12269,7 +12515,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ebddc81d-4532-4ae3-ab51-62a937e7e93d")
-		(property "Reference" "#PWR01303"
+		(property "Reference" "#PWR01302"
 			(at 27.94 55.88 0)
 			(effects
 				(font
@@ -12320,7 +12566,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01303")
+					(reference "#PWR01302")
 					(unit 1)
 				)
 			)
@@ -12344,28 +12590,14 @@
 				)
 			)
 		)
-    (property "Value" "600" (at 64.7319 38.1 90) (effects
+		(property "Value" "600"
+			(at 64.7319 38.1 90)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Laird Technologies" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C2441365" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "875-MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 64.77 41.91 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 64.77 43.688 90)
 			(effects
@@ -12384,7 +12616,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A"
+			(at 64.77 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Laird Technologies"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "MI0603J601R-10"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2441365"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "875-MI0603J601R-10"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" ""
 			(at 64.77 41.91 0)
 			(effects
@@ -12419,15 +12695,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
-		
-		
-		
 		(pin "2"
 			(uuid "ae080cf0-bab0-4cdf-b1cb-bf95267dc97f")
 		)
@@ -12453,7 +12720,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f110ae0f-8e5d-4eef-83dc-8e0eec658726")
-		(property "Reference" "#PWR01325"
+		(property "Reference" "#PWR01313"
 			(at 99.06 96.52 0)
 			(effects
 				(font
@@ -12504,7 +12771,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01325")
+					(reference "#PWR01313")
 					(unit 1)
 				)
 			)
@@ -12527,33 +12794,14 @@
 				)
 			)
 		)
-    (property "Value" "4.7uF" (at 44.45 45.466 0) (effects
+		(property "Value" "4.7uF"
+			(at 44.45 45.466 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Vishay/Sprague" (at 41.91 43.18 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C18535241" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "74-298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 41.91 43.18 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 42.8752 46.99 0)
 			(effects
@@ -12572,7 +12820,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805"
+			(at 41.91 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Vishay/Sprague"
+			(at 41.91 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "298D475X9010M2T"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C18535241"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "74-298D475X9010M2T"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "tant"
 			(at 44.704 48.006 0)
 			(effects
@@ -12608,8 +12900,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 41.91 43.18 90)
 			(effects
@@ -12673,9 +12963,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 41.91 43.18 0)
 			(effects
@@ -12775,9 +13062,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 41.91 43.18 0)
 			(effects
@@ -12796,12 +13080,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "21b2fd7e-6a0e-4f82-bb50-1f8503d385a9")
 		)
@@ -12827,7 +13105,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f66d846d-9fb8-4638-878c-e3fa2005c996")
-		(property "Reference" "#PWR01312"
+		(property "Reference" "#PWR01315"
 			(at 147.32 45.72 0)
 			(effects
 				(font
@@ -12893,7 +13171,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "#PWR01312")
+					(reference "#PWR01315")
 					(unit 1)
 				)
 			)
@@ -12909,7 +13187,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f70e4b2f-4c39-4ae3-9a34-843667b0c208")
-		(property "Reference" "R1301"
+		(property "Reference" "R1305"
 			(at 82.296 75.184 90)
 			(effects
 				(font
@@ -12917,28 +13195,14 @@
 				)
 			)
 		)
-    (property "Value" "100k" (at 82.042 79.502 90) (effects
+		(property "Value" "100k"
+			(at 82.042 79.502 90)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C728576" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402" (at 82.55 77.47 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 82.296 76.454 90)
 			(effects
@@ -12957,13 +13221,51 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
-		
+		(property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402"
+			(at 82.55 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C728576"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "6266adff-2866-4ba1-b0d4-2b2e0bb2a938")
 		)
@@ -12973,7 +13275,7 @@
 		(instances
 			(project ""
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "R1301")
+					(reference "R1305")
 					(unit 1)
 				)
 			)
@@ -12996,33 +13298,14 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 209.804 39.37 0) (effects
+		(property "Value" "100nF"
+			(at 209.804 39.37 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "Kemet" (at 207.01 36.83 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 207.01 36.83 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 207.9752 40.64 0)
 			(effects
@@ -13041,7 +13324,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+			(at 207.01 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kemet"
+			(at 207.01 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C0805F104K1RACAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C24452"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "80-C0805F104K1RAUTO"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "X7R"
 			(at 204.724 39.37 0)
 			(effects
@@ -13077,8 +13404,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 207.01 36.83 90)
 			(effects
@@ -13142,9 +13467,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 207.01 36.83 0)
 			(effects
@@ -13252,9 +13574,6 @@
 				)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 207.01 36.83 0)
 			(effects
@@ -13273,12 +13592,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "2adfe257-e781-4316-a68d-37aecb04fc84")
 		)
@@ -13303,7 +13616,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fe60762c-bd1e-4505-a17a-2b7a367ca5f8")
-		(property "Reference" "C1313"
+		(property "Reference" "C1315"
 			(at 186.182 94.488 0)
 			(effects
 				(font
@@ -13311,33 +13624,14 @@
 				)
 			)
 		)
-    (property "Value" "1nF" (at 187.198 98.552 0) (effects
+		(property "Value" "1nF"
+			(at 187.198 98.552 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
-			))
-    (property "Manufacturer" "TDK" (at 189.23 96.52 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C1608C0G1H102J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C106246" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-C1608C0G1H102J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 1nF, 0603" (at 189.23 96.52 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 188.2648 92.71 0)
 			(effects
@@ -13356,7 +13650,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 1nF, 0603"
+			(at 189.23 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 189.23 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C1608C0G1H102J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C106246"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-C1608C0G1H102J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" "NP0"
 			(at 189.23 96.52 0)
 			(effects
@@ -13392,8 +13730,6 @@
 				(hide yes)
 			)
 		)
-		
-		
 		(property "Sim.Params" ""
 			(at 189.23 96.52 90)
 			(effects
@@ -13457,9 +13793,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 189.23 96.52 0)
 			(effects
@@ -13559,9 +13892,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 189.23 96.52 0)
 			(effects
@@ -13580,12 +13910,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "c8ee76e9-b311-4829-a79f-ea72b03784f6")
 		)
@@ -13595,7 +13919,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
-					(reference "C1313")
+					(reference "C1315")
 					(unit 1)
 				)
 			)

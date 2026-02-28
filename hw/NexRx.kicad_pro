@@ -226,15 +226,7 @@
           ""
         ],
         [
-          "silk_over_copper|-38572275|-343721624|92b21e73-39ab-4031-92c0-c2791ed8502b|00000000-0000-0000-0000-000000000000",
-          ""
-        ],
-        [
           "silk_over_copper|-45126842|-342257982|5a8d5e7c-3f8c-48bc-a6f8-54b6a6ccf57a|00000000-0000-0000-0000-000000000000",
-          ""
-        ],
-        [
-          "silk_over_copper|-45597973|-349857982|78e7a9b9-9304-493f-9f2a-4dbe67e3c6a5|00000000-0000-0000-0000-000000000000",
           ""
         ],
         [
@@ -2518,7 +2510,7 @@
         "PowerH"
       ],
       "Net-(R1001-Pad1)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(R1002-Pad1)": [
         "rf50"
@@ -2527,7 +2519,7 @@
         "rf200"
       ],
       "Net-(R1101-Pad1)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(R1102-Pad1)": [
         "rf50"
@@ -2641,7 +2633,7 @@
         "rf200"
       ],
       "Net-(R801-Pad1)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(R802-Pad1)": [
         "rf50"
@@ -2650,7 +2642,7 @@
         "rf200"
       ],
       "Net-(R901-Pad1)": [
-        "rf50"
+        "rf200"
       ],
       "Net-(R902-Pad1)": [
         "rf50"
@@ -4565,9 +4557,21 @@
           "label": "JLCPCBpn",
           "name": "JLCPCBpn",
           "show": true
+        },
+        {
+          "group_by": false,
+          "label": "Mouser_PN",
+          "name": "Mouser_PN",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "LCSC_PN",
+          "name": "LCSC_PN",
+          "show": false
         }
       ],
-      "filter_string": "r",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",

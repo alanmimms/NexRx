@@ -3651,34 +3651,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "32pF" (at 91.694 105.156 0) (effects
+		(property "Value" "32pF"
+			(at 91.694 105.156 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 86.36 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H330J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C107047" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H330J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 32pF, 0603" (at 86.36 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 87.3252 106.68 0)
 			(effects
@@ -3697,7 +3678,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 32pF, 0603"
+			(at 86.36 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 86.36 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H330J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C107047"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H330J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 86.36 102.87 0)
 			(effects
@@ -3743,9 +3768,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 86.36 102.87 0)
 			(effects
@@ -3853,9 +3875,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 86.36 102.87 0)
 			(effects
@@ -3874,12 +3893,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "7a2fa3c5-7bb4-42fe-a186-c9a1515fcf8c")
 		)
@@ -4461,34 +4474,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "8pF" (at 57.912 105.41 0) (effects
+		(property "Value" "8pF"
+			(at 57.912 105.41 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 53.34 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H080D080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C1882476" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H080D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 8pF, 0603" (at 53.34 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 54.3052 106.68 0)
 			(effects
@@ -4507,7 +4501,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 8pF, 0603"
+			(at 53.34 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 53.34 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H080D080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C1882476"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H080D"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 53.34 102.87 0)
 			(effects
@@ -4553,9 +4591,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 53.34 102.87 0)
 			(effects
@@ -4663,9 +4698,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 53.34 102.87 0)
 			(effects
@@ -4684,12 +4716,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "13a43cdf-ec8d-4c5a-96bd-cd804bfde7b6")
 		)
@@ -7057,34 +7083,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "240pF" (at 141.986 104.902 0) (effects
+		(property "Value" "240pF"
+			(at 141.986 104.902 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "Kyocera AVX" (at 135.89 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "06035A251JAT2A" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C519400" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "581-06035A251J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 240pF, 0603" (at 135.89 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 136.8552 106.68 0)
 			(effects
@@ -7103,7 +7110,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 240pF, 0603"
+			(at 135.89 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Kyocera AVX"
+			(at 135.89 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "06035A251JAT2A"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C519400"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "581-06035A251J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 135.89 102.87 0)
 			(effects
@@ -7149,9 +7200,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 135.89 102.87 0)
 			(effects
@@ -7259,9 +7307,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 135.89 102.87 0)
 			(effects
@@ -7280,12 +7325,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "3ca14b53-1a25-4e78-8880-c34554c10d9f")
 		)
@@ -7319,34 +7358,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "1nF" (at 175.768 105.156 0) (effects
+		(property "Value" "1nF"
+			(at 175.768 105.156 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 168.91 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C1608C0G1H102J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C106246" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-C1608C0G1H102J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 1nF, 0603" (at 168.91 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 169.8752 106.68 0)
 			(effects
@@ -7365,7 +7385,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 1nF, 0603"
+			(at 168.91 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 168.91 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C1608C0G1H102J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C106246"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-C1608C0G1H102J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 168.91 102.87 0)
 			(effects
@@ -7411,9 +7475,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 168.91 102.87 0)
 			(effects
@@ -7521,9 +7582,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 168.91 102.87 0)
 			(effects
@@ -7542,12 +7600,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "a0ed1f1b-c5d7-49ec-9341-512ff8f90152")
 		)
@@ -7994,34 +8046,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "16pF" (at 74.93 105.41 0) (effects
+		(property "Value" "16pF"
+			(at 74.93 105.41 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 69.85 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H150J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C327125" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H150J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 16pF, 0603" (at 69.85 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 70.8152 106.68 0)
 			(effects
@@ -8040,7 +8073,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 16pF, 0603"
+			(at 69.85 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 69.85 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H150J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C327125"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H150J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 69.85 102.87 0)
 			(effects
@@ -8086,9 +8163,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 69.85 102.87 0)
 			(effects
@@ -8196,9 +8270,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 69.85 102.87 0)
 			(effects
@@ -8217,12 +8288,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "18731d9e-fe47-4e51-999f-aa8bb8254d51")
 		)
@@ -8256,34 +8321,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "3.9nF" (at 207.772 105.41 0) (effects
+		(property "Value" "3.9nF"
+			(at 207.772 105.41 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 201.93 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H392J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C576817" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H392J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 3.9nF, 0603" (at 201.93 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 202.8952 106.68 0)
 			(effects
@@ -8302,7 +8348,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 3.9nF, 0603"
+			(at 201.93 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 201.93 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H392J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C576817"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H392J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 201.93 102.87 0)
 			(effects
@@ -8348,9 +8438,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 201.93 102.87 0)
 			(effects
@@ -8458,9 +8545,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 201.93 102.87 0)
 			(effects
@@ -8479,12 +8563,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "2c608d5e-50c2-415c-ad55-3a9eedd87abe")
 		)
@@ -8652,34 +8730,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "130pF" (at 125.476 104.902 0) (effects
+		(property "Value" "130pF"
+			(at 125.476 104.902 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 119.38 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H121J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C519399" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H121J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 130pF, 0603" (at 119.38 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 120.3452 106.68 0)
 			(effects
@@ -8698,7 +8757,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 130pF, 0603"
+			(at 119.38 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 119.38 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H121J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C519399"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H121J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 119.38 102.87 0)
 			(effects
@@ -8744,9 +8847,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 119.38 102.87 0)
 			(effects
@@ -8854,9 +8954,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 119.38 102.87 0)
 			(effects
@@ -8875,12 +8972,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "3dd08d67-3ded-40bf-9f19-eb09c21b65f4")
 		)
@@ -9394,34 +9485,15 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1.5uH" (at 236.22 101.6 0) (effects
+		(property "Value" "1.5uH"
+			(at 236.22 101.6 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-			))
-    (property "Manufacturer" "TDK" (at 234.95 101.6 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "NLV32T-1R5J-EF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C286756" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor with ferrite core, small symbol" (at 234.95 101.6 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Inductor_SMD:L_1210_3225Metric"
 			(at 234.95 101.6 0)
 			(effects
@@ -9440,7 +9512,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Inductor with ferrite core, small symbol"
+			(at 234.95 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 234.95 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "NLV32T-1R5J-EF"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C286756"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" ""
 			(at 234.95 101.6 0)
 			(effects
@@ -9502,9 +9618,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 234.95 101.6 0)
 			(effects
@@ -9613,12 +9726,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "55890a69-1be4-4b4c-9c74-e8a7b6a125c1")
 		)
@@ -9711,7 +9818,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9fe9dfd7-3ac0-4eba-b5cc-9c93ac52af06")
-		(property "Reference" "C712"
+		(property "Reference" "C711"
 			(at 209.804 100.584 0)
 			(effects
 				(font
@@ -9720,34 +9827,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "4.7nF" (at 208.788 105.41 0) (effects
+		(property "Value" "4.7nF"
+			(at 208.788 105.41 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 214.63 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H822J080AE" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C2894191" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H822J8" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 4.7nF, 0603" (at 214.63 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 213.6648 106.68 0)
 			(effects
@@ -9766,7 +9854,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 4.7nF, 0603"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 214.63 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H822J080AE"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2894191"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H822J8"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 214.63 102.87 0)
 			(effects
@@ -9812,9 +9944,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 214.63 102.87 0)
 			(effects
@@ -9922,9 +10051,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 214.63 102.87 0)
 			(effects
@@ -9943,12 +10069,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "8dc03a48-2651-4296-aca1-aa90edb5fc01")
 		)
@@ -9958,7 +10078,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/4791d531-dc86-4dad-a3f8-522417f410d3"
-					(reference "C712")
+					(reference "C711")
 					(unit 1)
 				)
 			)
@@ -10040,7 +10160,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ae2ba812-b89f-4ac2-93e5-b289b6f5bd23")
-		(property "Reference" "C711"
+		(property "Reference" "C712"
 			(at 224.536 100.584 0)
 			(effects
 				(font
@@ -10049,34 +10169,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "3.3nF" (at 225.552 105.41 0) (effects
+		(property "Value" "3.3nF"
+			(at 225.552 105.41 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 219.71 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "C1608C0G1H332J080AE" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C107048" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-C1608C0G1H332J08" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 3.3nF, 0603" (at 219.71 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 220.6752 106.68 0)
 			(effects
@@ -10095,7 +10196,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 3.3nF, 0603"
+			(at 219.71 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 219.71 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C1608C0G1H332J080AE"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C107048"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-C1608C0G1H332J08"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 219.71 102.87 0)
 			(effects
@@ -10141,9 +10286,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 219.71 102.87 0)
 			(effects
@@ -10251,9 +10393,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 219.71 102.87 0)
 			(effects
@@ -10272,12 +10411,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "555c24d2-6110-4a90-bdeb-c5aff260f48f")
 		)
@@ -10287,7 +10420,7 @@
 		(instances
 			(project "NexRig"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/4791d531-dc86-4dad-a3f8-522417f410d3"
-					(reference "C711")
+					(reference "C712")
 					(unit 1)
 				)
 			)
@@ -11003,34 +11136,15 @@
 				(justify left)
 			)
 		)
-    (property "Value" "220nH" (at 235.966 112.014 0) (effects
+		(property "Value" "220nH"
+			(at 235.966 112.014 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-			))
-    (property "Manufacturer" "TDK" (at 234.95 111.76 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "NLV32T-2R7J-EF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C295117" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor with ferrite core, small symbol" (at 234.95 111.76 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Inductor_SMD:L_1210_3225Metric"
 			(at 234.95 111.76 0)
 			(effects
@@ -11049,7 +11163,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Inductor with ferrite core, small symbol"
+			(at 234.95 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 234.95 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "NLV32T-2R7J-EF"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C295117"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "cap-type" ""
 			(at 234.95 111.76 0)
 			(effects
@@ -11111,9 +11269,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 234.95 111.76 0)
 			(effects
@@ -11222,12 +11377,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "cda02d3c-258d-4a80-90b2-e255b350009f")
 		)
@@ -11328,34 +11477,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "2.2nF" (at 192.278 105.156 0) (effects
+		(property "Value" "2.2nF"
+			(at 192.278 105.156 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 185.42 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H222J080AE" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C107043" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H222J8" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 2.2nF, 0603" (at 185.42 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 186.3852 106.68 0)
 			(effects
@@ -11374,7 +11504,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 2.2nF, 0603"
+			(at 185.42 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 185.42 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H222J080AE"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C107043"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H222J8"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 185.42 102.87 0)
 			(effects
@@ -11420,9 +11594,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 185.42 102.87 0)
 			(effects
@@ -11530,9 +11701,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 185.42 102.87 0)
 			(effects
@@ -11551,12 +11719,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "a616b6ba-d635-4fd3-88b6-74d3293fb8c3")
 		)
@@ -12416,34 +12578,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "560pF" (at 158.75 105.156 0) (effects
+		(property "Value" "560pF"
+			(at 158.75 105.156 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 152.4 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H561J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C107054" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H561J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 560pF, 0603" (at 152.4 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 153.3652 106.68 0)
 			(effects
@@ -12462,7 +12605,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 560pF, 0603"
+			(at 152.4 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 152.4 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H561J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C107054"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H561J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 152.4 102.87 0)
 			(effects
@@ -12508,9 +12695,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 152.4 102.87 0)
 			(effects
@@ -12618,9 +12802,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 152.4 102.87 0)
 			(effects
@@ -12639,12 +12820,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "2804658d-e414-49a8-bfd9-3733b48af2d8")
 		)
@@ -12812,34 +12987,15 @@
 				(justify right)
 			)
 		)
-    (property "Value" "68pF" (at 108.204 105.156 0) (effects
+		(property "Value" "68pF"
+			(at 108.204 105.156 0)
+			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
-			))
-    (property "Manufacturer" "TDK" (at 102.87 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    (property "MPN" "CGA3E2C0G1H680J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "LCSC_PN" "C282073" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Mouser_PN" "810-CGA3E2C0G1H680J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 68pF, 0603" (at 102.87 102.87 0) (effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			))
-    
-    
-    
-    
-    
-    
-		
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 103.8352 106.68 0)
 			(effects
@@ -12858,7 +13014,51 @@
 				(hide yes)
 			)
 		)
-		
+		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 68pF, 0603"
+			(at 102.87 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "TDK"
+			(at 102.87 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CGA3E2C0G1H680J080AA"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C282073"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "810-CGA3E2C0G1H680J"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(property "Availability" ""
 			(at 102.87 102.87 0)
 			(effects
@@ -12904,9 +13104,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "PARTREV" ""
 			(at 102.87 102.87 0)
 			(effects
@@ -13014,9 +13211,6 @@
 				(hide yes)
 			)
 		)
-		
-		
-		
 		(property "Core" ""
 			(at 102.87 102.87 0)
 			(effects
@@ -13035,12 +13229,6 @@
 				(hide yes)
 			)
 		)
-    
-    
-    
-    
-    
-		
 		(pin "2"
 			(uuid "7c23ee33-d139-4e46-b170-32ecdaef3f79")
 		)
