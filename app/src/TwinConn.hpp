@@ -97,12 +97,15 @@ public:
     // Set preselector inductor (index 0 for L701 bypass)
     bool setPreselectorInd(int index, bool enabled);
 
+    // PGA (MAX9939) Control
+    bool setPgaGain(int index, double gain_db);
+
     // ISG (Internal Signal Generator) Control
     bool setIsgEnable(bool enabled);
     bool setIsgFreq(double freq_hz);
 
     // Audio Codec (AK5578) Control
-    bool setCodecConfig(int rate, int channels, double gain, double lpf);
+    bool setCodecConfig(int rate, const std::vector<int>& channel_map, double gain, int filter_type);
 
     // Calibration storage (JSON strings)
     bool setCalibration(const std::string& type, const std::string& json_data);

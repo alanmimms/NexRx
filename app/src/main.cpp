@@ -215,6 +215,7 @@ private:
         lua_["hw"]["setPreselectorInd"] = [this](bool en) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_PRESEL_L " << en << std::endl; postCommand([this, en]() { twinHost_.setPreselectorInd(0, en); }); } };
         lua_["hw"]["setIsgEnable"] = [this](bool en) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_ISG_ENABLE " << en << std::endl; postCommand([this, en]() { twinHost_.setIsgEnable(en); }); } };
         lua_["hw"]["setIsgFreq"] = [this](double f) { if (twinConnected_.load()) { std::cout << "[CPP] HW: SET_ISG_FREQ " << std::fixed << std::setprecision(0) << f << std::endl; postCommand([this, f]() { twinHost_.setIsgFreq(f); }); } };
+        lua_["hw"]["setCodecConfig"] = [this](int rate, double gain) { if (twinConnected_.load()) { std::vector<int> chMap = {0, 1, 2, 3, 4, 5, 6, 7}; postCommand([this, rate, chMap, gain]() { twinHost_.setCodecConfig(rate, chMap, gain, 0); }); } };
         lua_["hw"]["setQsdOffset"] = [this](double kHz) { qsdOffsetKhz_ = kHz; };
 
         lua_["rx"] = lua_.create_table();

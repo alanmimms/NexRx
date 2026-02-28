@@ -28,11 +28,23 @@ private:
     std::atomic<bool> l1_{false};
 };
 
+class PgaModel {
+public:
+    void setGain(int idx, double db) { if (idx >= 0 && idx < 6) gains_[idx].store(db, std::memory_order_relaxed); }
+    double getGain(int idx) const { return (idx >= 0 && idx < 6) ? gains_[idx].load(std::memory_order_relaxed) : 0.0; }
+private:
+    std::atomic<double> gains_[6];
+};
+
 struct CodecConfig {
     std::atomic<int> sampleRate{96000};
-    std::atomic<int> channels{8};
+    std::atomic<int> channelMap[8];
     std::atomic<double> gain{0.0};
-    std::atomic<double> lpfCutoff{48000.0};
+    std::atomic<int> filterType{0};
+
+    CodecConfig() {
+        for (int i = 0; i < 8; ++i) channelMap[i].store(i);
+    }
 };
 
 class ControlHandler {
@@ -42,6 +54,7 @@ public:
     static constexpr const char* CMD_SET_ATTEN       = "SATT";
     static constexpr const char* CMD_SET_PRESEL_C    = "SPRC";
     static constexpr const char* CMD_SET_PRESEL_L    = "SPRL";
+    static constexpr const char* CMD_SET_PGA_GAIN    = "SPGA";
     static constexpr const char* CMD_START_STREAM    = "STM[";
     static constexpr const char* CMD_STOP_STREAM     = "]STM";
     static constexpr const char* CMD_GET_STATUS      = "GSTS";
@@ -53,8 +66,8 @@ public:
     static constexpr const char* CMD_SET_CODEC       = "SCOD";
     static constexpr const char* CMD_DISCONNECT      = "GBYE";
 
-    ControlHandler(double f0, double f1, double f2, AttenuatorModel* atten = nullptr, PreselectorModel* presel = nullptr)
-        : attenuator_(atten), presel_(presel), streaming_(false), running_(false),
+    ControlHandler(double f0, double f1, double f2, AttenuatorModel* atten = nullptr, PreselectorModel* presel = nullptr, PgaModel* pga = nullptr)
+        : attenuator_(atten), presel_(presel), pga_(pga), streaming_(false), running_(false),
           connected_(false), reconnected_(false) {
         qsd_freq_hz_[0].store(f0, std::memory_order_relaxed);
         qsd_freq_hz_[1].store(f1, std::memory_order_relaxed);
@@ -224,6 +237,46 @@ private:
             if (verbose_) std::cout << "[Control] SET_ISG_FREQ " << freq << std::endl;
             return encodeResponse(0, "OK");
         }
+        else if (sCmd == CMD_SET_PGA_GAIN) {
+            uint64_t idx; double gain;
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid index");
+            cbor_value_get_uint64(&argsIt, &idx); cbor_value_advance(&argsIt);
+            if (cbor_value_is_integer(&argsIt)) { int64_t g; cbor_value_get_int64(&argsIt, &g); gain = (double)g; }
+            else if (cbor_value_is_double(&argsIt)) { cbor_value_get_double(&argsIt, &gain); }
+            else return encodeResponse(1, "Invalid gain");
+            if (pga_) {
+                pga_->setGain((int)idx, gain);
+                if (verbose_) std::cout << "[Control] SET_PGA_GAIN " << idx << " " << gain << " dB" << std::endl;
+                return encodeResponse(0, "OK");
+            }
+            return encodeResponse(1, "No PGA model");
+        }
+        else if (sCmd == CMD_SET_CODEC) {
+            uint64_t rate;
+            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid rate");
+            cbor_value_get_uint64(&argsIt, &rate); cbor_value_advance(&argsIt);
+            if (!cbor_value_is_array(&argsIt)) return encodeResponse(1, "Invalid channel map array");
+            CborValue mapIt; cbor_value_enter_container(&argsIt, &mapIt);
+            int i = 0;
+            while (!cbor_value_at_end(&mapIt) && i < 8) {
+                uint64_t ch; cbor_value_get_uint64(&mapIt, &ch);
+                codec_.channelMap[i++].store((int)ch);
+                cbor_value_advance(&mapIt);
+            }
+            cbor_value_leave_container(&argsIt, &mapIt);
+            double gain;
+            if (cbor_value_is_integer(&argsIt)) { int64_t g; cbor_value_get_int64(&argsIt, &g); gain = (double)g; }
+            else if (cbor_value_is_double(&argsIt)) { cbor_value_get_double(&argsIt, &gain); }
+            else gain = 0.0;
+            cbor_value_advance(&argsIt);
+            uint64_t filter;
+            if (cbor_value_is_unsigned_integer(&argsIt)) cbor_value_get_uint64(&argsIt, &filter); else filter = 0;
+            codec_.sampleRate.store((int)rate);
+            codec_.gain.store(gain);
+            codec_.filterType.store((int)filter);
+            if (verbose_) std::cout << "[Control] SET_CODEC rate=" << rate << " gain=" << gain << " filter=" << filter << std::endl;
+            return encodeResponse(0, "OK");
+        }
         else if (sCmd == CMD_SET_CALIBRATION) {
             char type[64]; size_t len = sizeof(type);
             if (!cbor_value_is_text_string(&argsIt)) return encodeResponse(1, "Invalid type");
@@ -256,19 +309,6 @@ private:
                << "\"qsd\":{\"vfo_min_hz\":100000,\"vfo_max_hz\":60000000}}}";
             return encodeResponse(0, ss.str());
         }
-        else if (sCmd == CMD_SET_CODEC) {
-            uint64_t rate, chans; double gain, lpf;
-            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid rate");
-            cbor_value_get_uint64(&argsIt, &rate); cbor_value_advance(&argsIt);
-            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid channels");
-            cbor_value_get_uint64(&argsIt, &chans); cbor_value_advance(&argsIt);
-            if (cbor_value_is_double(&argsIt)) cbor_value_get_double(&argsIt, &gain); else gain = 0.0; cbor_value_advance(&argsIt);
-            if (cbor_value_is_double(&argsIt)) cbor_value_get_double(&argsIt, &lpf); else lpf = 0.0;
-            codec_.sampleRate.store((int)rate); codec_.channels.store((int)chans);
-            codec_.gain.store(gain); codec_.lpfCutoff.store(lpf);
-            if (verbose_) std::cout << "[Control] SET_CODEC rate=" << rate << " chans=" << chans << std::endl;
-            return encodeResponse(0, "OK");
-        }
         else if (sCmd == CMD_DISCONNECT) {
             if (verbose_) std::cout << "[Control] Client sent GBYE" << std::endl;
             return encodeResponse(0, "BYE");
@@ -294,6 +334,7 @@ private:
     std::atomic<double> qsd_freq_hz_[3];
     AttenuatorModel* attenuator_ = nullptr;
     PreselectorModel* presel_ = nullptr;
+    PgaModel* pga_ = nullptr;
     std::atomic<bool> isg_enabled_;
     std::atomic<double> isg_freq_hz_;
     CodecConfig codec_;

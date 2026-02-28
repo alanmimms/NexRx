@@ -97,6 +97,7 @@ int runFunctionalMode(const Options& opts) {
     
     AttenuatorModel attenuator;
     PreselectorModel preselector;
+    PgaModel pga;
     std::shared_ptr<StimulusManager> stimulusManager;
     std::unique_ptr<sol::state> lua;
     std::string stimulusPath = opts.stimulus.empty() ? "config/stimuli/default.lua" : opts.stimulus;
@@ -123,7 +124,7 @@ int runFunctionalMode(const Options& opts) {
     if (!stream->connect()) return 1;
 
     double lo = opts.lo_freq_mhz * 1e6, k = opts.qsd_offset_khz * 1000.0;
-    auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &preselector);
+    auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &preselector, &pga);
     controlHandler->start(control.get(), opts.verbose);
 
     constexpr double sampleRate = 96000.0, samplePeriod = 1.0 / sampleRate;
@@ -176,11 +177,16 @@ int runFunctionalMode(const Options& opts) {
             double f_i[3] = {0}, f_q[3] = {0};
             for (int os=0; os < OVERSAMPLE; ++os) {
                 double t = (outputSample * OVERSAMPLE + os) * oversamplePeriod;
-                double gain = attenuator.getVoltageGain();
+                double attenGain = attenuator.getVoltageGain();
 
                 // 2. Mix with 3 independent LOs
                 for (int ch=0; ch<3; ++ch) {
                     double vfo = controlHandler->getQsdVfo(ch);
+                    double pgaGainI = std::pow(10.0, pga.getGain(ch * 2) / 20.0);
+                    double pgaGainQ = std::pow(10.0, pga.getGain(ch * 2 + 1) / 20.0);
+                    double totalGainI = attenGain * pgaGainI;
+                    double totalGainQ = attenGain * pgaGainQ;
+
                     if (std::abs(vfo - current_vfos[ch]) > 0.1) {
                         current_vfos[ch] = vfo;
                         // Reset filters on tune to prevent transients
@@ -224,13 +230,13 @@ int runFunctionalMode(const Options& opts) {
                         
                         if (rejection > 0.0001) {
                             // 0.66uV constant level at ADC (matches hardware)
-                            bi += (0.00000066 * rejection / gain) * std::cos(isg_phase[ch]);
-                            bq += (0.00000066 * rejection / gain) * std::sin(isg_phase[ch]);
+                            bi += (0.00000066 * rejection / attenGain) * std::cos(isg_phase[ch]);
+                            bq += (0.00000066 * rejection / attenGain) * std::sin(isg_phase[ch]);
                         }
                     }
 
-                    f_i[ch] = applyLpf(bi * gain, lpf_zi[ch]);
-                    f_q[ch] = applyLpf(bq * gain, lpf_zq[ch]);
+                    f_i[ch] = applyLpf(bi * totalGainI, lpf_zi[ch]);
+                    f_q[ch] = applyLpf(bq * totalGainQ, lpf_zq[ch]);
                 }
             }
 

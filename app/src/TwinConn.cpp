@@ -317,6 +317,21 @@ bool TwinConn::setPreselectorInd(int index, bool enabled) {
     return !sendCborRequest("SPRL", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
+bool TwinConn::setPgaGain(int index, double gain_db) {
+    uint8_t buffer[128];
+    CborEncoder encoder, array, args;
+    cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
+    cbor_encoder_create_array(&encoder, &array, 2);
+    cbor_encode_text_stringz(&array, "SPGA");
+    cbor_encoder_create_array(&array, &args, 2);
+    cbor_encode_uint(&args, index);
+    cbor_encode_double(&args, gain_db);
+    cbor_encoder_close_container(&array, &args);
+    cbor_encoder_close_container(&encoder, &array);
+    
+    return !sendCborRequest("SPGA", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
+}
+
 bool TwinConn::setIsgEnable(bool enabled) {
     uint8_t buffer[128];
     CborEncoder encoder, array, args;
@@ -345,17 +360,21 @@ bool TwinConn::setIsgFreq(double freq_hz) {
     return !sendCborRequest("SIFQ", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
-bool TwinConn::setCodecConfig(int rate, int channels, double gain, double lpf) {
-    uint8_t buffer[256];
-    CborEncoder encoder, array, args;
+bool TwinConn::setCodecConfig(int rate, const std::vector<int>& channel_map, double gain, int filter_type) {
+    uint8_t buffer[512];
+    CborEncoder encoder, array, args, mapArray;
     cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
     cbor_encoder_create_array(&encoder, &array, 2);
     cbor_encode_text_stringz(&array, "SCOD");
     cbor_encoder_create_array(&array, &args, 4);
     cbor_encode_uint(&args, rate);
-    cbor_encode_uint(&args, channels);
+    
+    cbor_encoder_create_array(&args, &mapArray, channel_map.size());
+    for (int ch : channel_map) cbor_encode_uint(&mapArray, ch);
+    cbor_encoder_close_container(&args, &mapArray);
+    
     cbor_encode_double(&args, gain);
-    cbor_encode_double(&args, lpf);
+    cbor_encode_uint(&args, filter_type);
     cbor_encoder_close_container(&array, &args);
     cbor_encoder_close_container(&encoder, &array);
     
