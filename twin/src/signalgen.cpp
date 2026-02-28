@@ -166,12 +166,25 @@ int runFunctionalMode(const Options& opts) {
     auto stream = std::make_unique<UdpStreamTransport>(streamConfig); if (!stream->connect()) return 1;
     double lo = opts.lo_freq_mhz * 1e6, k = opts.qsd_offset_khz * 1000.0;
     auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &preselector, &pga); controlHandler->start(control.get(), opts.verbose);
-    constexpr double sampleRate = 96000.0, samplePeriod = 1.0 / sampleRate;
+    double sampleRate = 96000.0, samplePeriod = 1.0 / sampleRate;
     double isg_noise_zi[3][2] = {}, isg_noise_zq[3][2] = {};
     double current_vfos[3] = {0};
     auto streamStartTime = std::chrono::steady_clock::now();
     size_t outputSample = 0; std::vector<IQFrame> batch; batch.reserve(32);
     while (true) {
+        int targetRate; std::vector<int> chMap;
+        controlHandler->getCodecConfig(targetRate, chMap);
+        if (std::abs(sampleRate - (double)targetRate) > 1.0) {
+            sampleRate = (double)targetRate;
+            samplePeriod = 1.0 / sampleRate;
+            // Reset state on rate change
+            memset(isg_noise_zi, 0, sizeof(isg_noise_zi));
+            memset(isg_noise_zq, 0, sizeof(isg_noise_zq));
+            streamStartTime = std::chrono::steady_clock::now();
+            outputSample = 0;
+            if (opts.verbose) std::cout << "[Twin] Sample rate changed to " << sampleRate << " Hz" << std::endl;
+        }
+
         if (!controlHandler->isConnected() || !controlHandler->isStreaming()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             if (controlHandler->isConnected()) { std::string newIP = controlHandler->consumeReconnect(); if (!newIP.empty()) stream->setDestination(newIP, opts.streamPort); }
@@ -179,15 +192,23 @@ int runFunctionalMode(const Options& opts) {
             continue;
         }
         auto now = std::chrono::steady_clock::now(); auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - streamStartTime).count();
-        auto target_elapsed = (outputSample * 1000000ULL) / 96000ULL; if (elapsed < target_elapsed) { std::this_thread::sleep_for(std::chrono::microseconds(target_elapsed - elapsed)); }
-        for (int step=0; step < 960; ++step) {
+        auto target_elapsed = (uint64_t)(outputSample * 1000000.0 / sampleRate);
+        if (elapsed < target_elapsed) { std::this_thread::sleep_for(std::chrono::microseconds(target_elapsed - elapsed)); }
+        
+        // Number of samples to process in this iteration (aim for ~10ms batches)
+        int nSteps = (int)(sampleRate / 100.0);
+        if (nSteps < 1) nSteps = 1;
+
+        for (int step=0; step < nSteps; ++step) {
             static std::mt19937 rng(12345); static std::normal_distribution<double> dist(0, 1e-8); 
-            double t = outputSample * samplePeriod; double attenGain = attenuator.getVoltageGain(); double f_i[3], f_q[3];
+            double t = outputSample * samplePeriod; double attenGain = attenuator.getVoltageGain();
+            double pgaGainLinear = std::pow(10.0, pga.getGain() / 20.0);
+            double f_i[3] = {0}, f_q[3] = {0};
             for (int ch=0; ch<3; ++ch) {
-                double vfo = controlHandler->getQsdVfo(ch); double pgaGainI = std::pow(10.0, pga.getGain(ch * 2) / 20.0), pgaGainQ = std::pow(10.0, pga.getGain(ch * 2 + 1) / 20.0);
+                double vfo = controlHandler->getQsdVfo(ch);
                 if (std::abs(vfo - current_vfos[ch]) > 0.1) { current_vfos[ch] = vfo; memset(isg_noise_zi[ch], 0, sizeof(isg_noise_zi[ch])); memset(isg_noise_zq[ch], 0, sizeof(isg_noise_zq[ch])); }
                 double rf_bb_i = 0, rf_bb_q = 0;
-                if (stimulusManager) { stimulusManager->getRfIQ(t, rf_bb_i, rf_bb_q, vfo, 400000.0); double presel = getPreselGain(vfo, preselector); rf_bb_i *= presel; rf_bb_q *= presel; }
+                if (stimulusManager) { stimulusManager->getRfIQ(t, rf_bb_i, rf_bb_q, vfo, 1000000.0); double presel = getPreselGain(vfo, preselector); rf_bb_i *= presel; rf_bb_q *= presel; }
                 else if (opts.rf_amplitude_mv > 0) { double rf_f = opts.rf_freq_mhz * 1e6, off = rf_f - vfo, p = 2.0 * M_PI * off * t, presel = getPreselGain(rf_f, preselector); rf_bb_i = (opts.rf_amplitude_mv * 1e-3) * presel * std::cos(p); rf_bb_q = (opts.rf_amplitude_mv * 1e-3) * presel * std::sin(p); }
                 double isg_bb_i = 0, isg_bb_q = 0;
                 if (controlHandler->isIsgEnabled()) {
@@ -196,7 +217,7 @@ int runFunctionalMode(const Options& opts) {
                     else if (isg_f == 1.0) {
                         static std::uniform_real_distribution<double> white(-1.0, 1.0);
                         double f_res_isg, q_isg; getPreselParams(preselector, f_res_isg, q_isg);
-                        double f_off_isg = std::clamp(f_res_isg - vfo, -48000.0, 48000.0), bw_isg = f_res_isg / q_isg;
+                        double f_off_isg = std::clamp(f_res_isg - vfo, -sampleRate/2.0, sampleRate/2.0), bw_isg = f_res_isg / q_isg;
                         // 1st order complex resonator: y = (1-r)*x + r*exp(j*theta)*y_prev
                         double r = std::exp(-M_PI * bw_isg / sampleRate);
                         double theta = 2.0 * M_PI * f_off_isg / sampleRate;
@@ -211,9 +232,9 @@ int runFunctionalMode(const Options& opts) {
                 }
                 double t_bb_i = rf_bb_i * attenGain + isg_bb_i + dist(rng), t_bb_q = rf_bb_q * attenGain + isg_bb_q + dist(rng);
                 double gE = opts.gainErr[ch], pE = opts.phaseErrRad[ch], bi = t_bb_i, bq = (t_bb_q * std::cos(pE) - t_bb_i * std::sin(pE)) * gE;
-                f_i[ch] = bi * pgaGainI; f_q[ch] = bq * pgaGainQ;
+                f_i[ch] = bi * pgaGainLinear; f_q[ch] = bq * pgaGainLinear;
             }
-            IQFrame pk; pk.sequence = (uint32_t)outputSample; pk.timestamp_ns = outputSample * 10416;
+            IQFrame pk; pk.sequence = (uint32_t)outputSample; pk.timestamp_ns = (uint64_t)(outputSample * 1e9 / sampleRate);
             for (int ch=0; ch<3; ++ch) { pk.qsd[ch].i = (int32_t)(f_i[ch] * 8388607.0); pk.qsd[ch].q = (int32_t)(f_q[ch] * 8388607.0); }
             batch.push_back(pk); if (batch.size() >= 32) { stream->writeBatch(batch); batch.clear(); }
             outputSample++;

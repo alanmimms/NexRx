@@ -29,7 +29,7 @@ TestStatus iq_bal(RemoteDevice& device, std::string& message) {
     conn.setAtten(3, true); conn.setAtten(6, true); conn.setAtten(12, true); conn.setAtten(24, true);
     conn.setPreselectorInd(0, true); // Short L1
     for (int i=0; i<11; ++i) conn.setPreselectorCap(i, (64 >> i) & 1); 
-    for (int i=0; i<6; ++i) conn.setPgaGain(i, 20.0);
+    conn.setPgaGain(20.0);
     
     conn.setIsgEnable(true);
     conn.setIsgFreq(14.205e6);

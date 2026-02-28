@@ -17,7 +17,7 @@ TestStatus select_chk(RemoteDevice& device, std::string& message) {
     std::cout << "-----+----+-----------+-----------+-------+------------" << std::endl;
 
     conn.setAtten(3, true); conn.setAtten(6, true); conn.setAtten(12, true); conn.setAtten(24, true);
-    for (int i=0; i<6; ++i) conn.setPgaGain(i, 20.0);
+    conn.setPgaGain(20.0);
     
     // ISG Noise mode (1Hz)
     conn.setIsgEnable(true);
@@ -39,10 +39,13 @@ TestStatus select_chk(RemoteDevice& device, std::string& message) {
     };
 
     bool allOk = true;
-    double fs = 96000.0;
-    const size_t FFT_SIZE = 4096;
-    const int AVG_COUNT = 64; // Increased averaging for noise
+    double fs = 768000.0;
+    const size_t FFT_SIZE = 8192; // Increased for better resolution at higher FS
+    const int AVG_COUNT = 32;
 
+    // Configure codec for high-speed mode (768k) on QSD2
+    conn.setCodecConfig(768000, {4, 5}, 0.0, 0); // Assuming channels 4,5 map to QSD2 I/Q in high-speed remapping
+    
     for (const auto& tc : cases) {
         conn.setPreselectorInd(0, tc.l1);
         for (int i=0; i<11; ++i) conn.setPreselectorCap(i, (tc.mask >> i) & 1);
@@ -60,11 +63,17 @@ TestStatus select_chk(RemoteDevice& device, std::string& message) {
                 }
             };
             conn.setFrameCallback(callback);
-            for (int i=0; i<100 && buffer.size() < FFT_SIZE; ++i) std::this_thread::sleep_for(std::chrono::milliseconds(2));
+            for (int i=0; i<200 && buffer.size() < FFT_SIZE; ++i) std::this_thread::sleep_for(std::chrono::microseconds(500));
             conn.setFrameCallback(nullptr);
 
             if (buffer.size() < FFT_SIZE) continue;
             collected++;
+
+            // Apply Hann Window
+            for (size_t i=0; i<FFT_SIZE; ++i) {
+                double w = 0.5 * (1.0 - std::cos(2.0 * M_PI * i / (FFT_SIZE - 1)));
+                buffer[i] *= w;
+            }
 
             fftInPlace(buffer, false);
             for (size_t k=0; k<FFT_SIZE; ++k) avgMag[k] += std::abs(buffer[k]);
@@ -72,33 +81,39 @@ TestStatus select_chk(RemoteDevice& device, std::string& message) {
 
         if (collected == 0) continue;
 
-        double maxMag = -1.0;
-        size_t peakBin = 0;
         for (size_t k=0; k<FFT_SIZE; ++k) {
             avgMag[k] /= (double)collected;
         }
         
-        // Smooth the spectrum (5-bin moving average)
+        // Smooth the spectrum (9-bin moving average for 768k resolution)
         std::vector<double> smoothed(FFT_SIZE);
+        double maxMag = -1.0;
+        size_t peakBin = 0;
         for (size_t k=0; k<FFT_SIZE; ++k) {
             double sum = 0;
-            for (int i=-2; i<=2; ++i) sum += avgMag[(k + i + FFT_SIZE) % FFT_SIZE];
-            smoothed[k] = sum / 5.0;
+            for (int i=-4; i<=4; ++i) sum += avgMag[(k + i + FFT_SIZE) % FFT_SIZE];
+            smoothed[k] = sum / 9.0;
             if (smoothed[k] > maxMag) { maxMag = smoothed[k]; peakBin = k; }
         }
+
+        // Robust peak estimation: average 5 bins around peak
+        double peakAvg = 0;
+        for (int i=-2; i<=2; ++i) peakAvg += smoothed[(peakBin + i + FFT_SIZE) % FFT_SIZE];
+        peakAvg /= 5.0;
 
         double freqOffset;
         if (peakBin <= FFT_SIZE / 2) freqOffset = (double)peakBin * fs / FFT_SIZE;
         else freqOffset = (double)((int)peakBin - (int)FFT_SIZE) * fs / FFT_SIZE;
 
         double peakFreq = tc.resonance + freqOffset;
-        double target = maxMag / 1.414;
+        double target = peakAvg / 1.414;
         int lowBin = -1, highBin = -1;
         
         std::vector<std::pair<double, double>> linear;
+        // Search +/- fs/2 range relative to peak
         for (int i = -(int)FFT_SIZE/2; i < (int)FFT_SIZE/2; ++i) {
             size_t k = (peakBin + i + FFT_SIZE) % FFT_SIZE;
-            double f = freqOffset + (double)i * fs / FFT_SIZE;
+            double f = (double)i * fs / FFT_SIZE; // relative to peakBin
             linear.push_back({f, smoothed[k]});
         }
 

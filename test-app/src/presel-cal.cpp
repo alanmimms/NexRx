@@ -92,7 +92,7 @@ TestStatus presel_cal(RemoteDevice& device, std::string& message) {
     std::cout << "-----+----+-----------+-----------+-------+-------" << std::endl;
 
     conn.setAtten(3, true); conn.setAtten(6, true); conn.setAtten(12, true); conn.setAtten(24, true);
-    for (int i=0; i<6; ++i) conn.setPgaGain(i, 20.0);
+    conn.setPgaGain(20.0);
     conn.setIsgEnable(true);
     conn.startStream();
     conn.startReceiving();
@@ -148,7 +148,7 @@ TestStatus full_scan(RemoteDevice& device, std::string& message) {
     std::cout << "Mask | L1 | Peak Freq | -3dB BW   | Q     | Power" << std::endl;
     std::cout << "-----+----+-----------+-----------+-------+-------" << std::endl;
     conn.setAtten(3, true); conn.setAtten(6, true); conn.setAtten(12, true); conn.setAtten(24, true);
-    for (int i=0; i<6; ++i) conn.setPgaGain(i, 20.0);
+    conn.setPgaGain(20.0);
     conn.setIsgEnable(true);
     conn.startStream();
     conn.startReceiving();

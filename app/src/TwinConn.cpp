@@ -323,14 +323,13 @@ bool TwinConn::setPreselectorInd(int index, bool enabled) {
     return !sendCborRequest("SPRL", {buffer, buffer + cbor_encoder_get_buffer_size(&encoder, buffer)}).empty();
 }
 
-bool TwinConn::setPgaGain(int index, double gain_db) {
+bool TwinConn::setPgaGain(double gain_db) {
     uint8_t buffer[128];
     CborEncoder encoder, array, args;
     cbor_encoder_init(&encoder, buffer, sizeof(buffer), 0);
     cbor_encoder_create_array(&encoder, &array, 2);
     cbor_encode_text_stringz(&array, "SPGA");
-    cbor_encoder_create_array(&array, &args, 2);
-    cbor_encode_uint(&args, index);
+    cbor_encoder_create_array(&array, &args, 1);
     cbor_encode_double(&args, gain_db);
     cbor_encoder_close_container(&array, &args);
     cbor_encoder_close_container(&encoder, &array);

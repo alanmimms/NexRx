@@ -100,7 +100,7 @@ public:
     bool setPreselectorInd(int index, bool enabled);
 
     // PGA (MAX9939) Control
-    bool setPgaGain(int index, double gain_db);
+    bool setPgaGain(double gain_db);
 
     // ISG (Internal Signal Generator) Control
     bool setIsgEnable(bool enabled);

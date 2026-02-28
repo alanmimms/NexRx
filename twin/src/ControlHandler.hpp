@@ -35,12 +35,12 @@ private:
 class PgaModel {
 public:
     PgaModel() {
-        for (int i=0; i<6; ++i) gains_[i].store(0.0, std::memory_order_relaxed);
+        gain_.store(0.0, std::memory_order_relaxed);
     }
-    void setGain(int idx, double db) { if (idx >= 0 && idx < 6) gains_[idx].store(db, std::memory_order_relaxed); }
-    double getGain(int idx) const { return (idx >= 0 && idx < 6) ? gains_[idx].load(std::memory_order_relaxed) : 0.0; }
+    void setGain(double db) { gain_.store(db, std::memory_order_relaxed); }
+    double getGain() const { return gain_.load(std::memory_order_relaxed); }
 private:
-    std::atomic<double> gains_[6];
+    std::atomic<double> gain_;
 };
 
 struct CodecConfig {
@@ -110,6 +110,12 @@ public:
         std::lock_guard<std::mutex> lock(reconnectMutex_);
         if (reconnected_) { reconnected_ = false; return newClientIP_; }
         return "";
+    }
+
+    void getCodecConfig(int& rate, std::vector<int>& channelMap) const {
+        rate = codec_.sampleRate.load(std::memory_order_relaxed);
+        channelMap.clear();
+        for (int i = 0; i < 8; ++i) channelMap.push_back(codec_.channelMap[i].load(std::memory_order_relaxed));
     }
 
 private:
@@ -250,15 +256,13 @@ private:
             return encodeResponse(0, "OK");
         }
         else if (sCmd == CMD_SET_PGA_GAIN) {
-            uint64_t idx; double gain;
-            if (!cbor_value_is_unsigned_integer(&argsIt)) return encodeResponse(1, "Invalid index");
-            cbor_value_get_uint64(&argsIt, &idx); cbor_value_advance(&argsIt);
+            double gain;
             if (cbor_value_is_integer(&argsIt)) { int64_t g; cbor_value_get_int64(&argsIt, &g); gain = (double)g; }
             else if (cbor_value_is_double(&argsIt)) { cbor_value_get_double(&argsIt, &gain); }
             else return encodeResponse(1, "Invalid gain");
             if (pga_) {
-                pga_->setGain((int)idx, gain);
-                if (verbose_) std::cout << "[Control] SET_PGA_GAIN " << idx << " " << gain << " dB" << std::endl;
+                pga_->setGain(gain);
+                if (verbose_) std::cout << "[Control] SET_PGA_GAIN " << gain << " dB" << std::endl;
                 return encodeResponse(0, "OK");
             }
             return encodeResponse(1, "No PGA model");
