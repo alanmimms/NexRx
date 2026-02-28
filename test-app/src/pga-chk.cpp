@@ -33,8 +33,8 @@ TestStatus pga_chk(RemoteDevice& device, std::string& message) {
     std::cout << "--------+----------+-----------+--------" << std::endl;
 
     conn.setAtten(3, true); conn.setAtten(6, true); conn.setAtten(12, true); conn.setAtten(24, true);
-    // Tune preselector to ~14.2MHz (Mask 64, L1 Off)
-    conn.setPreselectorInd(0, false);
+    // Tune preselector to ~14.2MHz (Mask 64, L1 Shorted/Bypassed)
+    conn.setPreselectorInd(0, true);
     for (int i=0; i<11; ++i) conn.setPreselectorCap(i, (64 >> i) & 1);
     
     conn.setIsgEnable(true);
