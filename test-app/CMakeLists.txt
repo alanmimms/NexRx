@@ -50,6 +50,7 @@ set(TEST_APP_SOURCES
     src/spur-chk.cpp
     src/pga-chk.cpp
     src/stream-chk.cpp
+    src/select-chk.cpp
     
     # Shared with app/
     ${APP_SRC_DIR}/Socket.cpp

@@ -10,6 +10,7 @@ namespace nexrx {
     TestStatus presel_cal(RemoteDevice& device, std::string& message);
     TestStatus pga_chk(RemoteDevice& device, std::string& message);
     TestStatus iq_bal(RemoteDevice& device, std::string& message);
+    TestStatus select_chk(RemoteDevice& device, std::string& message);
     TestStatus full_scan(RemoteDevice& device, std::string& message);
 }
 
@@ -53,6 +54,7 @@ int main(int argc, char* argv[]) {
     }
     engine.addTest("PGA Linearity", nexrx::pga_chk);
     engine.addTest("QSD Image Rejection", nexrx::iq_bal);
+    engine.addTest("Selectivity Characterization", nexrx::select_chk);
     
     engine.runAll(device);
     
