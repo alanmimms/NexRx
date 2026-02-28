@@ -85,8 +85,8 @@ The Internal Signal Generator provides a reference signal for calibration and te
 
 | Command | ID (String) | Args | Description |
 | :--- | :--- | :--- | :--- |
-| `SET_ISG_ENABLE`| `SIEN` | `[enabled]` | Enables/disables the ISG. |
-| `SET_ISG_FREQ` | `SIFQ` | `[freq_hz]` | Sets the frequency of the ISG signal. |
+| `SET_ISG_ENABLE`| `SIEN` | `[enabled]` | Master power control for the ISG. |
+| `SET_ISG_FREQ` | `SIFQ` | `[freq_hz]` | 0=Disabled, 1=White Noise, >1=Single Tone (Hz). |
 
 ### 5.4 Calibration
 
