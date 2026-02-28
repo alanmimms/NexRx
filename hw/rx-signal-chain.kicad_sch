@@ -8518,12 +8518,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kyocera AVX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 246.38 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kyocera AVX" (at 246.38 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TAJD106K050RNJ" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4983748" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "581-TAJD106K050R" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 246.38 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 245.4148 162.56 0)
@@ -9015,12 +9036,27 @@
 				)
 			)
 		)
-    (property "Value" "OPA1692IDGK" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "OPA1692IDGK" (at 83.82 144.78 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2876472" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Dual SoundPlus Low Power, Low Noise & Low Distortion Audio Operational Amplifiers, VSSOP-8" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Dual SoundPlus Low Power, Low Noise & Low Distortion Audio Operational Amplifiers, VSSOP-8" (at 83.82 152.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Package_SO:VSSOP-8_3x3mm_P0.65mm"
 			(at 85.09 186.69 0)
@@ -9141,12 +9177,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "4.7uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Vishay/Sprague" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "4.7uF" (at 204.978 139.446 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "Vishay/Sprague" (at 204.47 137.16 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C18535241" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "74-298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 204.47 137.16 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 203.5048 133.35 0)
@@ -9448,12 +9505,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1.5uH" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1.5uH" (at 116.586 153.416 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "TDK" (at 114.3 152.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "NLV32T-1R5J-EF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C286756" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor with ferrite core, small symbol" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Inductor with ferrite core, small symbol" (at 114.3 152.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_1210_3225Metric"
 			(at 114.3 152.4 0)
@@ -9686,12 +9764,27 @@
 				(justify left)
 			)
 		)
-    (property "Value" "OPA1692IDGK" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "OPA1692IDGK" (at 83.82 144.78 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2876472" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Dual SoundPlus Low Power, Low Noise & Low Distortion Audio Operational Amplifiers, VSSOP-8" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Dual SoundPlus Low Power, Low Noise & Low Distortion Audio Operational Amplifiers, VSSOP-8" (at 83.82 152.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Package_SO:VSSOP-8_3x3mm_P0.65mm"
 			(at 153.67 168.91 0)
@@ -9811,12 +9904,32 @@
 				)
 			)
 		)
-    (property "Value" "AK5578EN" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Asahi Kasei Microdevices" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "AK5578EN" (at 185.674 112.522 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Asahi Kasei Microdevices" (at 190.5 60.96 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "AK5578EN" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2651626" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "412-AK5578EN" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "PREMIUM ADC GEN3 32BIT 768KHZ 12" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "PREMIUM ADC GEN3 32BIT 768KHZ 12" (at 190.5 60.96 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Library:QFN50P900X900X100-65N"
 			(at 242.57 138.1 0)
@@ -10800,12 +10913,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 245.872 125.222 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 245.11 123.19 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 245.11 123.19 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 246.0752 127 0)
@@ -11155,12 +11289,32 @@
 				)
 			)
 		)
-    (property "Value" "33" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "33" (at 98.806 150.368 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 99.06 152.4 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C854277" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 33, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 33, 0402" (at 99.06 152.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 98.806 151.384 90)
@@ -11775,12 +11929,32 @@
 				)
 			)
 		)
-    (property "Value" "2.2uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Vishay/Sprague" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "2.2uF" (at 64.008 191.262 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Vishay/Sprague" (at 60.96 189.23 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4979223" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "74-TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 60.96 189.23 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 59.9948 193.04 0)
@@ -12475,12 +12649,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 198.882 139.192 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "Kemet" (at 199.39 137.16 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 199.39 137.16 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 200.3552 133.35 0)
@@ -12798,12 +12993,32 @@
 				)
 			)
 		)
-    (property "Value" "10nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10nF" (at 123.698 159.512 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Murata" (at 120.65 157.48 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GCM1885C2A103JE02J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C115056" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GCM1885C2A103JE2J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 25V, 5%, 10nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 5%, 10nF, 0603" (at 120.65 157.48 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 119.6848 161.29 0)
@@ -13094,12 +13309,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1.5uH" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1.5uH" (at 116.586 187.706 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "TDK" (at 114.3 186.69 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "NLV32T-1R5J-EF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C286756" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor with ferrite core, small symbol" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Inductor with ferrite core, small symbol" (at 114.3 186.69 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_1210_3225Metric"
 			(at 114.3 186.69 0)
@@ -13332,12 +13568,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kyocera AVX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 229.87 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kyocera AVX" (at 229.87 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TAJD106K050RNJ" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4983748" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "581-TAJD106K050R" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 229.87 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 228.9048 162.56 0)
@@ -13843,12 +14100,27 @@
 				)
 			)
 		)
-    (property "Value" "OPA1692IDGK" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "OPA1692IDGK" (at 83.82 144.78 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2876472" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Dual SoundPlus Low Power, Low Noise & Low Distortion Audio Operational Amplifiers, VSSOP-8" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Dual SoundPlus Low Power, Low Noise & Low Distortion Audio Operational Amplifiers, VSSOP-8" (at 83.82 152.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Package_SO:VSSOP-8_3x3mm_P0.65mm"
 			(at 83.82 152.4 0)
@@ -13970,12 +14242,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 220.726 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 220.98 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 220.98 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 220.0148 162.56 0)
@@ -14326,12 +14619,28 @@
 				(justify left)
 			)
 		)
-    (property "Value" "SP0402B-ELC-01ETG" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "SP0402B-ELC-01ETG" (at 73.66 54.356 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
     (property "Manufacturer" "LITTELFUSE" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "SP0402B-ELC-01ETG" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C1974049" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "576-SP0402BELC-01ETG" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "ESD Suppressor Diode TVS Bi-Dir 7V 2-Pin DFN T/R" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "ESD Suppressor Diode TVS Bi-Dir 7V 2-Pin DFN T/R" (at 73.66 58.42 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Library:SP0402BELC01ETG"
 			(at -19.99 45.72 0)
@@ -14441,12 +14750,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kyocera AVX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 196.85 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kyocera AVX" (at 196.85 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TAJD106K050RNJ" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4983748" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "581-TAJD106K050R" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 196.85 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 195.8848 162.56 0)
@@ -14737,12 +15067,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "4.7uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Vishay/Sprague" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "4.7uF" (at 226.568 140.716 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "Vishay/Sprague" (at 226.06 138.43 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C18535241" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "74-298D475X9010M2T" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805" (at 226.06 138.43 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 225.0948 134.62 0)
@@ -15582,12 +15933,27 @@
 				)
 			)
 		)
-    (property "Value" "600" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "600" (at 108.458 182.372 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "Laird Technologies" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2441365" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "875-MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 106.68 186.69 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 106.68 188.468 90)
@@ -15984,12 +16350,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 204.216 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 204.47 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 204.47 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 203.5048 162.56 0)
@@ -16272,12 +16659,32 @@
 				)
 			)
 		)
-    (property "Value" "2.2uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Vishay/Sprague" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "2.2uF" (at 131.318 193.802 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Vishay/Sprague" (at 128.27 191.77 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4979223" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "74-TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 128.27 191.77 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 127.3048 195.58 0)
@@ -16972,12 +17379,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kyocera AVX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 213.36 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kyocera AVX" (at 213.36 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TAJD106K050RNJ" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4983748" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "581-TAJD106K050R" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 10uF, 0805" (at 213.36 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 212.3948 162.56 0)
@@ -17552,12 +17980,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 253.746 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 254 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 254 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 253.0348 162.56 0)
@@ -17907,12 +18356,32 @@
 				)
 			)
 		)
-    (property "Value" "2.2uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Vishay/Sprague" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "2.2uF" (at 131.318 159.512 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Vishay/Sprague" (at 128.27 157.48 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4979223" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "74-TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 128.27 157.48 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 127.3048 161.29 0)
@@ -18540,12 +19009,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 237.236 160.782 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 237.49 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 237.49 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 236.5248 162.56 0)
@@ -19044,12 +19534,32 @@
 				)
 			)
 		)
-    (property "Value" "2.2uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Vishay/Sprague" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "2.2uF" (at 64.008 156.972 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Vishay/Sprague" (at 60.96 154.94 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C4979223" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "74-TMCP1D225MTR2F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, Tantalum, 50V, 10%, 2.2uF, CP_EIA-3528-21_Kemet-B" (at 60.96 154.94 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
 			(at 59.9948 158.75 0)
@@ -19407,12 +19917,32 @@
 				)
 			)
 		)
-    (property "Value" "10nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10nF" (at 123.698 193.802 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Murata" (at 120.65 191.77 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GCM1885C2A103JE02J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C115056" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GCM1885C2A103JE2J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 25V, 5%, 10nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 5%, 10nF, 0603" (at 120.65 191.77 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 119.6848 195.58 0)
@@ -19838,12 +20368,32 @@
 				)
 			)
 		)
-    (property "Value" "33" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "33" (at 98.806 184.658 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 99.06 186.69 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C854277" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 33, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 33, 0402" (at 99.06 186.69 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 98.806 185.674 90)
@@ -20123,12 +20673,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 220.472 140.462 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "Kemet" (at 220.98 138.43 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 220.98 138.43 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 221.9452 134.62 0)
@@ -20668,12 +21239,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 143.764 173.99 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 144.78 168.91 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 144.78 168.91 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 143.8148 172.72 0)
@@ -20955,12 +21547,27 @@
 				)
 			)
 		)
-    (property "Value" "600" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "600" (at 108.458 148.082 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "Laird Technologies" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2441365" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "875-MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 106.68 152.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 106.68 154.178 90)
@@ -21077,12 +21684,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1uF" (at 236.22 125.476 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Murata" (at 237.49 123.19 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 237.49 123.19 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 236.5248 127 0)

@@ -1025,12 +1025,32 @@
 				)
 			)
 		)
-    (property "Value" "34.4" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "34.4" (at 114.3 84.582 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 114.3 82.55 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2503774" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402" (at 114.3 82.55 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 114.046 83.566 90)
@@ -1274,12 +1294,32 @@
 				)
 			)
 		)
-    (property "Value" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Skyworks" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "AS183-92LF" (at 92.71 73.66 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Skyworks" (at 92.71 80.01 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2654768" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "873-AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm" (at 92.71 80.01 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 71.12 174.93 0)
@@ -1559,12 +1599,32 @@
 				)
 			)
 		)
-    (property "Value" "562" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "562" (at 111.252 87.63 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 109.22 87.63 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C284620" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 562, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 562, 0402" (at 109.22 87.63 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 110.236 87.884 90)
@@ -1808,12 +1868,32 @@
 				)
 			)
 		)
-    (property "Value" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Skyworks" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "AS183-92LF" (at 125.73 86.36 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Skyworks" (at 125.73 80.01 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2654768" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "873-AS183-92LF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "RF Switch ICs .3-2500MHz IL .3dB IP3 +43dBm" (at 125.73 80.01 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Library:SOT65P220X110-6N"
 			(at 147.32 -14.91 0)
@@ -2251,12 +2331,32 @@
 				)
 			)
 		)
-    (property "Value" "34.4" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "34.4" (at 104.14 84.582 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 104.14 82.55 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2503774" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402" (at 104.14 82.55 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 103.886 83.566 90)

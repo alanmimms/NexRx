@@ -1937,12 +1937,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 64.008 109.982 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 63.5 107.95 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 63.5 107.95 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 64.4652 111.76 0)
@@ -2187,12 +2208,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Taoup Uidem" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 57.912 110.49 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Taoup Uidem" (at 58.42 107.95 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "81-GXT155R71E223KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C327087" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "963-MLAST168BB5106MT" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 58.42 107.95 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 57.4548 111.76 0)
@@ -2437,12 +2479,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10k" (at 75.692 73.406 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 76.2 69.85 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 76.2 69.85 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 75.184 70.104 90)
@@ -3950,12 +4013,32 @@
 				)
 			)
 		)
-    (property "Value" "TS3A4751RUCR" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "TS3A4751RUCR" (at 99.06 72.39 0) (effects
+				(font
+					(size 1.524 1.524)
+				)
+			))
+    (property "Manufacturer" "" (at 78.74 82.55 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C527570" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "" (at 78.74 82.55 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Library:TS3A4751-RUC14"
 			(at 119.38 106.68 0)
@@ -4232,12 +4315,32 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 59.944 83.82 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Murata" (at 55.88 82.55 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM3195C2A104JA01D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C170182" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM31C5C2A104JA1L" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 100V, 5%, 100nF, 1206" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 100V, 5%, 100nF, 1206" (at 55.88 82.55 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
 			(at 59.69 81.5848 0)
@@ -4929,12 +5032,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 83.058 73.152 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Kemet" (at 82.55 71.12 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 82.55 71.12 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 83.5152 74.93 0)

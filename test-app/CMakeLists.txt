@@ -37,6 +37,9 @@ add_library(tinycbor_lib STATIC
 )
 target_include_directories(tinycbor_lib PUBLIC ${tinycbor_SOURCE_DIR}/src)
 
+# Threads
+find_package(Threads REQUIRED)
+
 # Common sources for the test application
 set(TEST_APP_SOURCES
     src/test-app.cpp
@@ -61,6 +64,7 @@ target_include_directories(nexrx-test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${APP_SRC_DIR}
     ${TWIN_SRC_DIR}
+    ${tinycbor_SOURCE_DIR}/src
 )
 
 target_link_libraries(nexrx-test PRIVATE

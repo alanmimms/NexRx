@@ -42,6 +42,7 @@ struct Options {
     bool help = false;
     bool verbose = true;
     bool stream = true;
+    bool no_stimulus = false;
     double duration_ms = 0.0;
     double rf_freq_mhz = 14.120; 
     double lo_freq_mhz = 14.200;
@@ -58,6 +59,7 @@ void printUsage(const char* prog) {
               << "Options:\n"
               << "  --help, -h       Show this help\n"
               << "  --quiet          Disable verbose command logging\n"
+              << "  --no-stimulus    Do not load any stimulus (silent RF)\n"
               << "  --rf FREQ        Set static RF signal frequency in MHz (default: 14.12)\n"
               << "  --lo FREQ        Set initial LO frequency in MHz (default: 14.20)\n"
               << "  --amplitude MV   Set RF signal amplitude in mV (default: 1.0)\n"
@@ -73,6 +75,8 @@ Options parseArgs(int argc, char* argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--help" || arg == "-h") opts.help = true;
+        else if (arg == "--quiet") opts.verbose = false;
+        else if (arg == "--no-stimulus") opts.no_stimulus = true;
         else if (arg == "--rf" && i+1 < argc) opts.rf_freq_mhz = std::stod(argv[++i]);
         else if (arg == "--lo" && i+1 < argc) opts.lo_freq_mhz = std::stod(argv[++i]);
         else if (arg == "--amplitude" && i+1 < argc) opts.rf_amplitude_mv = std::stod(argv[++i]);
@@ -80,7 +84,11 @@ Options parseArgs(int argc, char* argv[]) {
         else if (arg == "--stimulus" && i+1 < argc) opts.stimulus = argv[++i];
         else if (arg == "--duration" && i+1 < argc) opts.duration_ms = std::stod(argv[++i]);
         else if (arg == "--port" && i+1 < argc) opts.controlPort = (uint16_t)std::stoi(argv[++i]);
-        else if (arg == "--quiet") opts.verbose = false;
+        else {
+            std::cerr << "Unknown option: " << arg << std::endl;
+            printUsage(argv[0]);
+            exit(1);
+        }
     }
     return opts;
 }
@@ -92,9 +100,28 @@ static constexpr BiquadCoeffs ak5578_480k_stages[3] = {
     {1.0000000000, -0.9740021692, 1.0000000000, -1.6237519754, 0.9064567688},
 };
 
+// Characterize filter rejection
+double getPreselGain(double freq_hz, const PreselectorModel& model) {
+    static const double cap_vals[11] = {
+        10e-12, 20e-12, 40e-12, 80e-12, 160e-12, 320e-12, 
+        640e-12, 1.28e-9, 2.56e-9, 5.12e-9, 10.24e-9
+    };
+    double total_c = 20e-12; // Stray capacitance
+    for (int i=0; i<11; ++i) if (model.getCap(i)) total_c += cap_vals[i];
+    double total_l = model.getInd(0) ? (1.5e-6 + 220e-9) : 220e-9;
+    double f_res = 1.0 / (2.0 * M_PI * std::sqrt(total_l * total_c));
+    double q = 40.0 * (1.0 - (f_res / 150e6));
+    double bw = f_res / std::max(1.0, q);
+    double rel_f = std::abs(freq_hz - f_res) / (bw / 2.0);
+    double atten = 1.0 / std::sqrt(1.0 + std::pow(rel_f, 4.0));
+    double leak = 0.0003; 
+    double srf_dist = std::abs(freq_hz - 45e6) / 2e6;
+    double srf_peak = 0.05 / (1.0 + srf_dist * srf_dist);
+    return std::max({atten, leak, srf_peak});
+}
+
 int runFunctionalMode(const Options& opts) {
     std::cout << "=== NexRx Digital Twin - FUNCTIONAL MODE (High-Fidelity) ===" << std::endl;
-    
     AttenuatorModel attenuator;
     PreselectorModel preselector;
     PgaModel pga;
@@ -102,21 +129,20 @@ int runFunctionalMode(const Options& opts) {
     std::unique_ptr<sol::state> lua;
     std::string stimulusPath = opts.stimulus.empty() ? "config/stimuli/default.lua" : opts.stimulus;
 
-    if (std::ifstream(stimulusPath).good()) {
+    if (!opts.no_stimulus && std::ifstream(stimulusPath).good()) {
         lua = std::make_unique<sol::state>();
         lua->open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
         StimulusLua stimLua; stimLua.registerBindings(*lua);
         if (stimLua.loadScript(*lua, stimulusPath)) {
             stimulusManager = stimLua.manager();
             stimulusManager->freeze();
-            std::cout << "[Twin] Loaded stimulus: " << stimulusPath << std::endl;
+            if (opts.verbose) std::cout << "[Twin] Loaded stimulus: " << stimulusPath << std::endl;
         }
     }
 
     TcpControlConfig ctlConfig; ctlConfig.host = opts.bindAddr; ctlConfig.port = opts.controlPort; ctlConfig.server = true;
     auto control = std::make_unique<TcpControlTransport>(ctlConfig);
     if (!control->connect()) return 1;
-    
     if (!control->acceptClient(std::chrono::milliseconds(0))) return 1;
 
     UdpStreamConfig streamConfig; streamConfig.host = control->peerIP(); streamConfig.port = opts.streamPort; streamConfig.server = true;
@@ -128,10 +154,6 @@ int runFunctionalMode(const Options& opts) {
     controlHandler->start(control.get(), opts.verbose);
 
     constexpr double sampleRate = 96000.0, samplePeriod = 1.0 / sampleRate;
-    const int OVERSAMPLE = 5;
-    const double oversampleRate = sampleRate * OVERSAMPLE;
-    const double oversamplePeriod = 1.0 / oversampleRate;
-    
     double lpf_zi[3][3][2] = {}, lpf_zq[3][3][2] = {};
     auto applyLpf = [&](double x, double z[3][2]) {
         double y = x;
@@ -146,13 +168,7 @@ int runFunctionalMode(const Options& opts) {
     };
 
     double current_vfos[3] = {0};
-    double lo_phase[3] = {0, 0, 0};
-    double isg_phase[3] = {0, 0, 0};
-    double rf_phase = 0.0;
-    double rf_target_hz = opts.rf_freq_mhz * 1e6;
-
-    auto startTime = std::chrono::steady_clock::now();
-    auto lastLogTime = startTime;
+    auto streamStartTime = std::chrono::steady_clock::now();
     size_t outputSample = 0;
     std::vector<IQFrame> batch; batch.reserve(32);
 
@@ -163,108 +179,79 @@ int runFunctionalMode(const Options& opts) {
                 std::string newIP = controlHandler->consumeReconnect();
                 if (!newIP.empty()) stream->setDestination(newIP, opts.streamPort);
             }
-            startTime = std::chrono::steady_clock::now();
+            streamStartTime = std::chrono::steady_clock::now();
             outputSample = 0;
             if (stimulusManager) stimulusManager->resetAll();
-            for (int i=0; i<3; ++i) { lo_phase[i] = 0; isg_phase[i] = 0; }
-            rf_phase = 0;
             continue;
         }
 
-        double max_rf_val = 0;
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - streamStartTime).count();
+        auto target_elapsed = (outputSample * 1000000ULL) / 96000ULL;
+        if (elapsed < target_elapsed) {
+            std::this_thread::sleep_for(std::chrono::microseconds(target_elapsed - elapsed));
+        }
 
         for (int step=0; step < 960; ++step) {
-            double f_i[3] = {0}, f_q[3] = {0};
-            for (int os=0; os < OVERSAMPLE; ++os) {
-                double t = (outputSample * OVERSAMPLE + os) * oversamplePeriod;
-                double attenGain = attenuator.getVoltageGain();
+            static std::mt19937 rng(12345);
+            static std::normal_distribution<double> dist(0, 1e-8); 
+            double t = outputSample * samplePeriod;
+            double attenGain = attenuator.getVoltageGain();
+            double f_i[3], f_q[3];
 
-                // 2. Mix with 3 independent LOs
-                for (int ch=0; ch<3; ++ch) {
-                    double vfo = controlHandler->getQsdVfo(ch);
-                    double pgaGainI = std::pow(10.0, pga.getGain(ch * 2) / 20.0);
-                    double pgaGainQ = std::pow(10.0, pga.getGain(ch * 2 + 1) / 20.0);
-                    double totalGainI = attenGain * pgaGainI;
-                    double totalGainQ = attenGain * pgaGainQ;
-
-                    if (std::abs(vfo - current_vfos[ch]) > 0.1) {
-                        current_vfos[ch] = vfo;
-                        // Reset filters on tune to prevent transients
-                        memset(lpf_zi[ch], 0, sizeof(lpf_zi[ch]));
-                        memset(lpf_zq[ch], 0, sizeof(lpf_zq[ch]));
-                    }
-
-                    // Get ANALYTIC RF Antenna Signal for THIS channel
-                    // We use a 400kHz window (narrower than 480kHz Nyquist)
-                    // to ensure perfect rejection of aliasing products.
-                    double rf_i = 0, rf_q = 0;
-                    if (stimulusManager) {
-                        stimulusManager->getRfIQ(t, rf_i, rf_q, vfo, 400000.0);
-                    } else {
-                        rf_phase = std::fmod(rf_phase + 2.0 * M_PI * rf_target_hz * oversamplePeriod, 2.0 * M_PI);
-                        rf_i = (opts.rf_amplitude_mv * 1e-3) * std::cos(rf_phase);
-                        rf_q = (opts.rf_amplitude_mv * 1e-3) * std::sin(rf_phase);
-                    }
-
-                    if (ch == 1) max_rf_val = std::max(max_rf_val, std::sqrt(rf_i*rf_i + rf_q*rf_q));
-
-                    // Complex downconversion with phase accumulation
-                    lo_phase[ch] = std::fmod(lo_phase[ch] + 2.0 * M_PI * vfo * oversamplePeriod, 2.0 * M_PI);
-                    double cos_lo = std::cos(lo_phase[ch]);
-                    double sin_lo = std::sin(lo_phase[ch]);
-                    
-                    double bi = rf_i * cos_lo + rf_q * sin_lo;
-                    double bq = rf_q * cos_lo - rf_i * sin_lo; // Q is -90 deg shift
-
-                    // 3. INTERNAL SIGNAL GENERATOR (ISG) - Injected at baseband
-                    if (controlHandler->isIsgEnabled()) {
-                        double isg_f = controlHandler->getIsgFreq();
-                        double isg_offset = isg_f - vfo;
-                        
-                        isg_phase[ch] = std::fmod(isg_phase[ch] + 2.0 * M_PI * isg_offset * oversamplePeriod, 2.0 * M_PI);
-                        
-                        // ISG Rejection Filter: Reject signals outside simulation Nyquist (240 kHz)
-                        // Uses a sharp 8th-order Butterworth-like curve centered at 200kHz.
-                        double rel_f = std::abs(isg_offset) / 200000.0;
-                        double rejection = 1.0 / (1.0 + std::pow(rel_f, 8.0));
-                        
-                        if (rejection > 0.0001) {
-                            // 0.66uV constant level at ADC (matches hardware)
-                            bi += (0.00000066 * rejection / attenGain) * std::cos(isg_phase[ch]);
-                            bq += (0.00000066 * rejection / attenGain) * std::sin(isg_phase[ch]);
-                        }
-                    }
-
-                    f_i[ch] = applyLpf(bi * totalGainI, lpf_zi[ch]);
-                    f_q[ch] = applyLpf(bq * totalGainQ, lpf_zq[ch]);
+            for (int ch=0; ch<3; ++ch) {
+                double vfo = controlHandler->getQsdVfo(ch);
+                double pgaGainI = std::pow(10.0, pga.getGain(ch * 2) / 20.0);
+                double pgaGainQ = std::pow(10.0, pga.getGain(ch * 2 + 1) / 20.0);
+                if (std::abs(vfo - current_vfos[ch]) > 0.1) {
+                    current_vfos[ch] = vfo;
+                    memset(lpf_zi[ch], 0, sizeof(lpf_zi[ch]));
+                    memset(lpf_zq[ch], 0, sizeof(lpf_zq[ch]));
                 }
+                double rf_bb_i = 0, rf_bb_q = 0;
+                if (stimulusManager) {
+                    stimulusManager->getRfIQ(t, rf_bb_i, rf_bb_q, vfo, 400000.0);
+                    double presel = getPreselGain(vfo, preselector);
+                    rf_bb_i *= presel; rf_bb_q *= presel;
+                } else if (opts.rf_amplitude_mv > 0) {
+                    double rf_f = opts.rf_freq_mhz * 1e6;
+                    double off = rf_f - vfo;
+                    double p = 2.0 * M_PI * off * t;
+                    double presel = getPreselGain(rf_f, preselector);
+                    rf_bb_i = (opts.rf_amplitude_mv * 1e-3) * presel * std::cos(p);
+                    rf_bb_q = (opts.rf_amplitude_mv * 1e-3) * presel * std::sin(p);
+                }
+                double isg_bb_i = 0, isg_bb_q = 0;
+                if (controlHandler->isIsgEnabled()) {
+                    double isg_f = controlHandler->getIsgFreq();
+                    double isg_off = isg_f - vfo;
+                    double p = 2.0 * M_PI * isg_off * t;
+                    double isg_presel = getPreselGain(isg_f, preselector);
+                    // 50uV constant level (approx S9 + 20dB)
+                    isg_bb_i = 0.000050 * isg_presel * std::cos(p);
+                    isg_bb_q = 0.000050 * isg_presel * std::sin(p);
+                }
+                double total_bb_i = rf_bb_i * attenGain + isg_bb_i + dist(rng);
+                double total_bb_q = rf_bb_q * attenGain + isg_bb_q + dist(rng);
+                double gainErr = 1.029, phaseErrRad = 0.026;
+                double bi = total_bb_i;
+                double bq = (total_bb_q * std::cos(phaseErrRad) - total_bb_i * std::sin(phaseErrRad)) * gainErr;
+                f_i[ch] = applyLpf(bi * pgaGainI, lpf_zi[ch]);
+                f_q[ch] = applyLpf(bq * pgaGainQ, lpf_zq[ch]);
             }
-
-            IQFrame frame; frame.timestamp_ns = (uint64_t)(outputSample * samplePeriod * 1e9); frame.sequence = (uint32_t)outputSample;
-            static thread_local std::mt19937 rng(std::random_device{}()); static thread_local std::uniform_real_distribution<double> dist(-0.5, 0.5);
-            auto quant = [&](double v) { 
-                double scaled = v * 8388607.0/1.65;
-                if (!std::isfinite(scaled)) return (int32_t)0;
-                return (int32_t)std::clamp(std::round(scaled + dist(rng)+dist(rng)), -8388608.0, 8388607.0); 
-            };
-            for (int ch=0; ch<3; ++ch) { frame.qsd[ch].i = quant(f_i[ch]); frame.qsd[ch].q = quant(f_q[ch]); }
-            batch.push_back(frame);
-            if (batch.size() >= 32) { stream->writeBatch(batch); batch.clear(); }
+            IQFrame packet;
+            packet.sequence = (uint32_t)outputSample;
+            packet.timestamp_ns = outputSample * 10416;
+            for (int ch=0; ch<3; ++ch) {
+                packet.qsd[ch].i = (int32_t)(f_i[ch] * 8388607.0);
+                packet.qsd[ch].q = (int32_t)(f_q[ch] * 8388607.0);
+            }
+            batch.push_back(packet);
+            if (batch.size() >= 32) {
+                stream->writeBatch(batch);
+                batch.clear();
+            }
             outputSample++;
-        }
-
-        auto now = std::chrono::steady_clock::now();
-        if (std::chrono::duration<double>(now - lastLogTime).count() > 1.0) {
-            if (opts.verbose) {
-                std::cout << "[Twin] Max RF Input: " << std::fixed << std::setprecision(1) << max_rf_val * 1e6 << " uV" << std::endl;
-            }
-            lastLogTime = now;
-        }
-
-        double simTime = outputSample * samplePeriod;
-        double elapsed = std::chrono::duration<double>(now - startTime).count();
-        if (simTime > elapsed) {
-            std::this_thread::sleep_for(std::chrono::microseconds((int)((simTime - elapsed)*1e6)));
         }
     }
     return 0;
@@ -272,7 +259,7 @@ int runFunctionalMode(const Options& opts) {
 
 int main(int argc, char* argv[]) {
 #ifdef HAVE_SSE_DENORMAL_CONTROL
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+    _mm_setcsr(_mm_getcsr() | 0x8040);
 #endif
     Options opts = parseArgs(argc, argv);
     if (opts.help) { printUsage(argv[0]); return 0; }

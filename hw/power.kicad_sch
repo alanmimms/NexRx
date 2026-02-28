@@ -6734,12 +6734,32 @@
 				)
 			)
 		)
-    (property "Value" "1uH" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Coilcraft" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1uH" (at 75.438 88.646 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Coilcraft" (at 74.93 90.17 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "XGL4030-102MEC" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C6336766" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Inductor" (at 74.93 90.17 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Library:IND_XGL4030_COC"
 			(at 74.93 90.17 0)
@@ -7105,12 +7125,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Taoup Uidem" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 117.602 107.188 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Taoup Uidem" (at 118.11 109.22 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "81-GXT155R71E223KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C327087" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "963-MLAST168BB5106MT" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 118.11 109.22 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 118.11 109.22 0)
@@ -7553,12 +7594,32 @@
 				)
 			)
 		)
-    (property "Value" "SMBJ15A" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "SMBJ15A" (at 49.53 128.27 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "SMBJ15A" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "SMBJ15A" (at 49.53 132.08 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "LCSC_PN" "C83846" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "600W 14V transient protection zener diode" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "600W 14V transient protection zener diode" (at 49.53 132.08 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Diode_SMD:D_SMB"
 			(at 49.53 136.525 0)
@@ -7730,12 +7791,32 @@
 				)
 			)
 		)
-    (property "Value" "2.2uH" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "muRata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "2.2uH" (at 100.33 37.084 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "muRata" (at 101.6 33.02 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C86089" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor, small symbol" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Inductor, small symbol" (at 101.6 33.02 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_0805_2012Metric"
 			(at 101.6 33.02 0)
@@ -8387,12 +8468,27 @@
 				)
 			)
 		)
-    (property "Value" "220pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "220pF" (at 187.706 45.72 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "C1608C0G1H221F080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C106210" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-C1608C0G1H221F" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 220pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 220pF, 0603" (at 184.15 43.18 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 183.1848 39.37 0)
@@ -8556,12 +8652,32 @@
 				)
 			)
 		)
-    (property "Value" "LMR51430" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "LMR51430" (at 74.93 25.4 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 74.93 33.02 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C5185863" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "4.5-V to 36-V, 3-A synchronous buck converter with 40-µA IQ, SOT-23-6" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "4.5-V to 36-V, 3-A synchronous buck converter with 40-µA IQ, SOT-23-6" (at 74.93 33.02 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
 			(at 76.2 41.91 0)
@@ -8806,12 +8922,32 @@
 				)
 			)
 		)
-    (property "Value" "TPS7A2050PDBVR" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "TPS7A2050PDBVR" (at 160.02 95.25 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 144.78 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C36907702" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "300 mA Low Dropout Voltage Regulator, Fixed Output, 1.6..6.0Vin, Low-Noise (7μV RMS), 6.5μA IQ LDO, X2SON-5" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "300 mA Low Dropout Voltage Regulator, Fixed Output, 1.6..6.0Vin, Low-Noise (7μV RMS), 6.5μA IQ LDO, X2SON-5" (at 144.78 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "DBV0005A-MFG"
 			(at 144.78 102.87 0)
@@ -9476,12 +9612,28 @@
 				(justify right)
 			)
 		)
-    (property "Value" "ESD9B5.0ST5G" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "ESD9B5.0ST5G" (at 96.52 185.4199 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
     (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C111566" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "ESD protection diode, 5.0Vrwm, SOD-923" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "ESD protection diode, 5.0Vrwm, SOD-923" (at 99.06 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Diode_SMD:D_SOD-923"
 			(at 99.06 184.15 0)
@@ -9706,12 +9858,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "5.1k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "5.1k" (at 118.872 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 124.46 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C854378" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 5.1k, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 5.1k, 0603" (at 124.46 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 125.476 184.404 90)
@@ -10423,12 +10596,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1uF" (at 137.922 107.188 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Murata" (at 138.43 109.22 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 138.43 109.22 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 137.4648 113.03 0)
@@ -11094,12 +11288,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1uF" (at 254.762 40.132 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Murata" (at 255.27 38.1 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 255.27 38.1 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 254.3048 41.91 0)
@@ -11390,12 +11605,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1k" (at 128.524 172.974 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 133.35 171.45 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C136974" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 1k, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 1k, 0603" (at 133.35 171.45 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 134.366 171.704 90)
@@ -11890,12 +12126,28 @@
 				(justify right)
 			)
 		)
-    (property "Value" "ESD9B5.0ST5G" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "ESD9B5.0ST5G" (at 135.89 185.4199 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
     (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C111566" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "ESD protection diode, 5.0Vrwm, SOD-923" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "ESD protection diode, 5.0Vrwm, SOD-923" (at 133.35 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Diode_SMD:D_SOD-923"
 			(at 133.35 184.15 0)
@@ -12039,12 +12291,27 @@
 				)
 			)
 		)
-    (property "Value" "600" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "600" (at 128.778 98.552 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "Laird Technologies" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2441365" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "875-MI0603J601R-10" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A" (at 127 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 127 104.648 90)
@@ -12160,12 +12427,32 @@
 				)
 			)
 		)
-    (property "Value" "100nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kemet" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100nF" (at 94.234 29.21 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Kemet" (at 90.17 30.48 90) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C0805F104K1RACAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C24452" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "80-C0805F104K1RAUTO" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603" (at 90.17 30.48 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 93.98 31.4452 0)
@@ -12524,12 +12811,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "22.1k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "22.1k" (at 107.95 49.022 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 106.68 46.99 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C284424" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 22.1k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 22.1k, 0402" (at 106.68 46.99 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 107.696 46.736 90)
@@ -12807,12 +13115,32 @@
 				)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Taoup Uidem" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 48.26 38.862 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Taoup Uidem" (at 45.72 36.83 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "81-GXT155R71E223KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C327087" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "963-MLAST168BB5106MT" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 45.72 36.83 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 46.6852 40.64 0)
@@ -13102,12 +13430,27 @@
 				)
 			)
 		)
-    (property "Value" "TPS74612PQWDRBRQ1" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "TPS74612PQWDRBRQ1" (at 232.918 29.21 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "Texas Instruments" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "TPS74612PQWDRBRQ1" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2868254" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "595-PS74612PQWDRBRQ1" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "LDO Voltage Regulators Automotive 1-A, low-IQ, high-PSRR, low-dropout (LDO) voltage regulator with power good 8-SON -40 to 125" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "LDO Voltage Regulators Automotive 1-A, low-IQ, high-PSRR, low-dropout (LDO) voltage regulator with power good 8-SON -40 to 125" (at 232.41 30.48 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "SON65P300X300X100-9N-D"
 			(at 259.08 125.4 0)
@@ -13237,12 +13580,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10k" (at 91.186 119.888 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 92.71 119.38 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C723366" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402" (at 92.71 119.38 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 91.694 119.126 90)
@@ -13506,12 +13870,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "10uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Taoup Uidem" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "10uF" (at 41.402 100.838 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Taoup Uidem" (at 41.91 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "81-GXT155R71E223KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C327087" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "963-MLAST168BB5106MT" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603" (at 41.91 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 40.9448 106.68 0)
@@ -13801,12 +14186,32 @@
 				)
 			)
 		)
-    (property "Value" "TPS7A2033PDBVR" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "TPS7A2033PDBVR" (at 220.98 95.25 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "" (at 205.74 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C36907702" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "300 mA Low Dropout Voltage Regulator, Fixed Output, 1.6..6.0Vin, Low-Noise (7μV RMS), 6.5μA IQ LDO, X2SON-5" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "300 mA Low Dropout Voltage Regulator, Fixed Output, 1.6..6.0Vin, Low-Noise (7μV RMS), 6.5μA IQ LDO, X2SON-5" (at 205.74 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "DBV0005A-MFG"
 			(at 205.74 102.87 0)
@@ -14536,12 +14941,27 @@
 				)
 			)
 		)
-    (property "Value" "TPS61023" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "TPS61023" (at 68.834 114.808 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C919459" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "3.7A boost converter with 0.5V ultra-low input voltage" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "3.7A boost converter with 0.5V ultra-low input voltage" (at 74.93 99.06 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-563"
 			(at 74.93 99.06 0)
@@ -15206,12 +15626,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1uF" (at 178.308 105.918 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Murata" (at 177.8 107.95 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 177.8 107.95 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 178.7652 111.76 0)
@@ -15567,12 +16008,27 @@
 				)
 			)
 		)
-    (property "Value" "TPS22918DBVR" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "TPS22918DBVR" (at 168.91 27.94 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "Texas Instruments" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "TPS22918DBVR" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C131941" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "595-TPS22918DBVR" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "5.5V, 2A, 52m load switch with adjustable rise time and adjustable quick output discharge" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "5.5V, 2A, 52m load switch with adjustable rise time and adjustable quick output discharge" (at 167.64 34.29 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
 			(at 191.77 129.21 0)
@@ -15703,12 +16159,27 @@
 				)
 			)
 		)
-    (property "Value" "TPS22918DBVR" (at 0 0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "TPS22918DBVR" (at 228.6 63.5 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
     (property "Manufacturer" "Texas Instruments" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "MPN" "TPS22918DBVR" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C131941" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "595-TPS22918DBVR" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "5.5V, 2A, 52m load switch with adjustable rise time and adjustable quick output discharge" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "5.5V, 2A, 52m load switch with adjustable rise time and adjustable quick output discharge" (at 227.33 69.85 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
 			(at 251.46 164.77 0)
@@ -15806,12 +16277,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1uF" (at 255.016 76.2 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Murata" (at 255.27 73.66 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 255.27 73.66 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 254.3048 77.47 0)
@@ -16679,12 +17171,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "100k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "100k" (at 108.204 35.814 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 106.68 36.83 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C728576" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402" (at 106.68 36.83 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 107.696 36.576 90)
@@ -17016,12 +17529,32 @@
 				)
 			)
 		)
-    (property "Value" "pwr+data" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Korean HROparts Elec" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "pwr+data" (at 72.39 138.43 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Korean HROparts Elec" (at 72.39 158.75 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "TYPE-C-31-M-12" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C165948" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "USB 2.0-only 16P Type-C Receptacle connector" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "USB 2.0-only 16P Type-C Receptacle connector" (at 114.935 182.88 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Library:USB_C_Receptacle_HRO_TYPE-C-31-M-12-bursted"
 			(at 76.2 158.75 0)
@@ -17529,12 +18062,32 @@
 				)
 			)
 		)
-    (property "Value" "1uF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1uF" (at 57.404 38.862 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+			))
+    (property "Manufacturer" "Murata" (at 54.61 36.83 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402" (at 54.61 36.83 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 53.6448 40.64 0)
@@ -17886,12 +18439,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Murata" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1nF" (at 244.602 80.772 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "Murata" (at 245.11 78.74 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "GRM155R61E105KE11D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C301928" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "81-GRM155R61E105KE1D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, X5R, 25V, 5%, 1nF, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, X5R, 25V, 5%, 1nF, 0402" (at 245.11 78.74 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 244.1448 82.55 0)
@@ -18249,12 +18823,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "57.6k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "57.6k" (at 91.186 109.728 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 92.71 109.22 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C517765" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 57.6k, 0402" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 57.6k, 0402" (at 92.71 109.22 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 91.694 108.966 90)
@@ -18518,12 +19113,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "5.1k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "5.1k" (at 113.538 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 107.95 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C854378" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 5.1k, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 5.1k, 0603" (at 107.95 184.15 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 106.934 184.404 90)
@@ -19020,12 +19636,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1k" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1k" (at 112.776 172.974 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "" (at 107.95 171.45 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C136974" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Resistor, Thin Film, 0.1%, 1k, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Resistor, Thin Film, 0.1%, 1k, 0603" (at 107.95 171.45 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 106.934 171.704 90)

@@ -61,11 +61,13 @@ public:
 
     // Set callback for each received frame
     void setFrameCallback(FrameCallback callback) {
+        std::lock_guard<std::mutex> lock(callbackMutex_);
         frameCallback_ = std::move(callback);
     }
 
     // Set callback for batch of frames (more efficient)
     void setBatchCallback(BatchCallback callback) {
+        std::lock_guard<std::mutex> lock(callbackMutex_);
         batchCallback_ = std::move(callback);
     }
 
@@ -150,12 +152,14 @@ private:
     std::unique_ptr<UdpStreamClient> stream_;
     bool connected_ = false;
 
+    mutable std::mutex callbackMutex_;
     FrameCallback frameCallback_;
     BatchCallback batchCallback_;
 
     std::thread receiveThread_;
     std::atomic<bool> receiving_{false};
     std::atomic<bool> stopRequested_{false};
+    std::atomic<bool> firstFrame_{true};
 
     std::atomic<uint64_t> framesReceived_{0};
     std::atomic<uint64_t> lastSequence_{0};

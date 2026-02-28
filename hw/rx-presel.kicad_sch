@@ -3651,12 +3651,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "32pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "32pF" (at 91.694 105.156 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 86.36 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H330J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C107047" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H330J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 32pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 32pF, 0603" (at 86.36 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 87.3252 106.68 0)
@@ -4440,12 +4461,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "8pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "8pF" (at 57.912 105.41 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 53.34 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H080D080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C1882476" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H080D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 8pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 8pF, 0603" (at 53.34 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 54.3052 106.68 0)
@@ -7015,12 +7057,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "240pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "Kyocera AVX" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "240pF" (at 141.986 104.902 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "Kyocera AVX" (at 135.89 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "06035A251JAT2A" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C519400" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "581-06035A251J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 240pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 240pF, 0603" (at 135.89 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 136.8552 106.68 0)
@@ -7256,12 +7319,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "1nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1nF" (at 175.768 105.156 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 168.91 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C1608C0G1H102J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C106246" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-C1608C0G1H102J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 1nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 1nF, 0603" (at 168.91 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 169.8752 106.68 0)
@@ -7910,12 +7994,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "16pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "16pF" (at 74.93 105.41 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 69.85 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H150J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C327125" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H150J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 16pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 16pF, 0603" (at 69.85 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 70.8152 106.68 0)
@@ -8151,12 +8256,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "3.9nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "3.9nF" (at 207.772 105.41 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 201.93 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H392J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C576817" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H392J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 3.9nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 3.9nF, 0603" (at 201.93 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 202.8952 106.68 0)
@@ -8526,12 +8652,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "130pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "130pF" (at 125.476 104.902 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 119.38 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H121J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C519399" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H121J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 130pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 130pF, 0603" (at 119.38 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 120.3452 106.68 0)
@@ -9247,12 +9394,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "1.5uH" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "1.5uH" (at 236.22 101.6 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "TDK" (at 234.95 101.6 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "NLV32T-1R5J-EF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C286756" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor with ferrite core, small symbol" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Inductor with ferrite core, small symbol" (at 234.95 101.6 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_1210_3225Metric"
 			(at 234.95 101.6 0)
@@ -9552,12 +9720,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "4.7nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "4.7nF" (at 208.788 105.41 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 214.63 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H822J080AE" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C2894191" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H822J8" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 4.7nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 4.7nF, 0603" (at 214.63 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 213.6648 106.68 0)
@@ -9860,12 +10049,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "3.3nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "3.3nF" (at 225.552 105.41 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 219.71 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "C1608C0G1H332J080AE" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C107048" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-C1608C0G1H332J08" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 3.3nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 3.3nF, 0603" (at 219.71 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 220.6752 106.68 0)
@@ -10793,12 +11003,33 @@
 				(justify left)
 			)
 		)
-    (property "Value" "220nH" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "220nH" (at 235.966 112.014 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			))
+    (property "Manufacturer" "TDK" (at 234.95 111.76 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "NLV32T-2R7J-EF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C295117" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Inductor with ferrite core, small symbol" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Inductor with ferrite core, small symbol" (at 234.95 111.76 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Inductor_SMD:L_1210_3225Metric"
 			(at 234.95 111.76 0)
@@ -11097,12 +11328,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "2.2nF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "2.2nF" (at 192.278 105.156 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 185.42 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H222J080AE" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C107043" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H222J8" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 2.2nF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 2.2nF, 0603" (at 185.42 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 186.3852 106.68 0)
@@ -12164,12 +12416,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "560pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "560pF" (at 158.75 105.156 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 152.4 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H561J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C107054" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H561J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 560pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 560pF, 0603" (at 152.4 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 153.3652 106.68 0)
@@ -12539,12 +12812,33 @@
 				(justify right)
 			)
 		)
-    (property "Value" "68pF" (at 0 0 0) (effects (font (size 1.27 1.27))))
-    (property "Manufacturer" "TDK" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Value" "68pF" (at 108.204 105.156 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			))
+    (property "Manufacturer" "TDK" (at 102.87 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
     (property "MPN" "CGA3E2C0G1H680J080AA" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "LCSC_PN" "C282073" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Mouser_PN" "810-CGA3E2C0G1H680J" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 68pF, 0603" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 68pF, 0603" (at 102.87 102.87 0) (effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			))
+    
+    
+    
+    
+    
+    
 		
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 103.8352 106.68 0)

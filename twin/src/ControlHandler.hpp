@@ -19,17 +19,24 @@ namespace nexrx {
 
 class PreselectorModel {
 public:
+    PreselectorModel() {
+        for (int i=0; i<11; ++i) caps_[i].store(false, std::memory_order_relaxed);
+        l1_.store(false, std::memory_order_relaxed);
+    }
     void setCap(int idx, bool enabled) { if (idx >= 0 && idx < 11) caps_[idx].store(enabled, std::memory_order_relaxed); }
     void setInd(int idx, bool enabled) { if (idx == 0) l1_.store(enabled, std::memory_order_relaxed); }
     bool getCap(int idx) const { return (idx >= 0 && idx < 11) ? caps_[idx].load(std::memory_order_relaxed) : false; }
     bool getInd(int idx) const { return (idx == 0) ? l1_.load(std::memory_order_relaxed) : false; }
 private:
     std::atomic<bool> caps_[11];
-    std::atomic<bool> l1_{false};
+    std::atomic<bool> l1_;
 };
 
 class PgaModel {
 public:
+    PgaModel() {
+        for (int i=0; i<6; ++i) gains_[i].store(0.0, std::memory_order_relaxed);
+    }
     void setGain(int idx, double db) { if (idx >= 0 && idx < 6) gains_[idx].store(db, std::memory_order_relaxed); }
     double getGain(int idx) const { return (idx >= 0 && idx < 6) ? gains_[idx].load(std::memory_order_relaxed) : 0.0; }
 private:
@@ -285,6 +292,7 @@ private:
             char data[4096]; size_t dlen = sizeof(data);
             cbor_value_copy_text_string(&argsIt, data, &dlen, &argsIt);
             calibrations_[type] = data;
+            if (verbose_) std::cout << "[Control] SET_CALIBRATION " << type << std::endl;
             return encodeResponse(0, "OK");
         }
         else if (sCmd == CMD_GET_CALIBRATION) {

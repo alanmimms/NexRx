@@ -77,10 +77,11 @@ A response is a CBOR array:
 | `SET_ATTEN` | `SATT` | `[db_value, enabled]` | Enables/disables a specific attenuator stage (3, 6, 12, or 24 dB). |
 | `SET_PRESEL_C` | `SPRC` | `[index, enabled]` | Enables/disables one of the 11 preselector capacitors. |
 | `SET_PRESEL_L` | `SPRL` | `[index, enabled]` | Enables/disables a preselector inductor (index 0 for L701 bypass). |
+| `SET_PGA_GAIN` | `SPGA` | `[index, gain_db]` | Sets the gain for one of the 6 MAX9939 PGAs. |
 
 ### 5.3 Internal Signal Generator (ISG)
 
-The Internal Signal Generator (formerly BIST) provides a reference signal for calibration and testing.
+The Internal Signal Generator provides a reference signal for calibration and testing.
 
 | Command | ID (String) | Args | Description |
 | :--- | :--- | :--- | :--- |
@@ -98,11 +99,11 @@ Calibration data is stored as JSON strings.
 
 ### 5.5 Audio Codec (AK5578)
 
-Configures the AK5578 audio codec parameters.
+Configures the AK5578 audio codec parameters. Note that all 8 channels share a single sample rate.
 
 | Command | ID (String) | Args | Description |
 | :--- | :--- | :--- | :--- |
-| `SET_CODEC` | `SCOD` | `[rate, channels, gain, lpf]` | Configures sample rate, channels, gain, and LPF. |
+| `SET_CODEC` | `SCOD` | `[rate, [ch_map...], gain, filter]` | Configures sample rate, 8-channel TDM mapping, gain, and filter type. |
 
 ## 6. Philosophy
 

@@ -182,13 +182,19 @@ size_t TwinConn::pollFrames(size_t maxFrames) {
 
         frameBuffer_.push_back(frame);
 
-        if (frameCallback_) {
-            frameCallback_(frame);
+        {
+            std::lock_guard<std::mutex> lock(callbackMutex_);
+            if (frameCallback_) {
+                frameCallback_(frame);
+            }
         }
     }
 
-    if (!frameBuffer_.empty() && batchCallback_) {
-        batchCallback_(frameBuffer_);
+    {
+        std::lock_guard<std::mutex> lock(callbackMutex_);
+        if (!frameBuffer_.empty() && batchCallback_) {
+            batchCallback_(frameBuffer_);
+        }
     }
 
     return count;
@@ -484,6 +490,7 @@ uint64_t TwinConn::packetsReceived() const {
 void TwinConn::resetStats() {
     framesReceived_ = 0;
     lastSequence_ = 0;
+    firstFrame_.store(true, std::memory_order_relaxed);
     if (stream_) {
         stream_->clear();
     }
