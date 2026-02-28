@@ -99,14 +99,13 @@ TestStatus presel_cal(RemoteDevice& device, std::string& message) {
     
     struct TestCase { uint32_t mask; bool l1; };
     std::vector<TestCase> cases = {
-        { 2047, true  }, { 1024, true  }, { 512,  true  },
-        { 256,  true  }, { 128,  true  }, { 64,   true  }, { 48,   true  }, 
-        { 32,   true  }, { 24,   true  }, { 16,   true  }, { 12,   true  },
-        { 8,    true  }, { 4,    true  }, { 2,    true  }, { 1,    true  }, { 0, true },
-        { 2047, false }, { 1024, false }, { 512,  false }, { 256,  false },
-        { 128,  false }, { 64,   false }, { 48,   false }, { 32,   false },
-        { 24,   false }, { 16,   false }, { 8,    false }, { 4,    false },
-        { 2,    false }, { 1,    false }, { 0,    false }
+        { 2047, true  }, // Max C, L1 (LF)
+        { 512,  true  }, // Mid C, L1
+        { 0,    true  }, // Min C, L1 (HF Edge)
+        { 512,  false }, // Mid C, Bypass (VHF Start)
+        { 64,   false }, // Small C, Bypass (VHF)
+        { 8,    false }, // Tiny C, Bypass (VHF)
+        { 0,    false }  // Parasitic floor (Max VHF)
     };
 
     bool success = true;

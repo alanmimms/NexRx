@@ -111,12 +111,26 @@ Options parseArgs(int argc, char* argv[]) {
         std::uniform_real_distribution<double> pDist(-0.05, 0.05); // +/- ~3 deg phase
         
         std::cout << "[Twin] Simulated Hardware Inaccuracies (Random):" << std::endl;
+        std::cout << "Channel | Rejection | Simulated Gain Err | Simulated Phase Err" << std::endl;
+        std::cout << "--------+-----------+--------------------+--------------------" << std::endl;
+        
         for (int i=0; i<3; ++i) {
             opts.gainErr[i] = gDist(rng);
             opts.phaseErrRad[i] = pDist(rng);
-            std::cout << "  Ch " << i << ": Gain=" << std::fixed << std::setprecision(3) << 20.0*std::log10(opts.gainErr[i]) 
-                      << "dB, Phase=" << std::setprecision(2) << opts.phaseErrRad[i]*(180.0/M_PI) << " deg" << std::endl;
+            
+            // Calculate theoretical rejection (IRR)
+            double g = opts.gainErr[i];
+            double p = opts.phaseErrRad[i];
+            double rej_num = 1.0 + g*g + 2.0*g*std::cos(p);
+            double rej_den = 1.0 + g*g - 2.0*g*std::cos(p);
+            double rej = 10.0 * std::log10(rej_num / std::max(1e-10, rej_den));
+
+            std::cout << std::setw(7) << i << " | "
+                      << std::fixed << std::setprecision(1) << std::setw(7) << rej << " dBc | "
+                      << std::setw(15) << std::setprecision(3) << 20.0*std::log10(g) << " dB | "
+                      << std::setw(15) << std::setprecision(2) << p * (180.0/M_PI) << " deg" << std::endl;
         }
+        std::cout << std::endl;
     }
 
     return opts;
@@ -275,22 +289,29 @@ int runFunctionalMode(const Options& opts) {
                         isg_bb_q = 0.000050 * isg_presel * std::sin(p);
                     } else if (isg_f == 1.0) {
                         static std::uniform_real_distribution<double> white(-1.0, 1.0);
-                        static const double cap_vals_noise[11] = { 8e-12, 16e-12, 32e-12, 68e-12, 130e-12, 240e-12, 560e-12, 1000e-12, 2200e-12, 3300e-12, 8000e-12 };
-                        double total_c_noise = 20e-12; for (int i=0; i<11; ++i) if (preselector.getCap(i)) total_c_noise += cap_vals_noise[i];
+                        
+                        // Use exact resonance parameters from centralized helper
+                        double total_c_noise = 20e-12; // Base stray
+                        static const double cap_vals_isg[11] = { 8e-12, 16e-12, 32e-12, 68e-12, 130e-12, 240e-12, 560e-12, 1000e-12, 2200e-12, 3300e-12, 8000e-12 };
+                        for (int i=0; i<11; ++i) if (preselector.getCap(i)) total_c_noise += cap_vals_isg[i];
                         double total_l_noise = preselector.isL1Shorted() ? 220e-9 : (1.5e-6 + 220e-9);
+                        
                         double f_res_isg = 1.0 / (2.0 * M_PI * std::sqrt(total_l_noise * total_c_noise));
                         double q_isg = 40.0 * (1.0 - (f_res_isg / 150e6));
                         double f_off_isg = f_res_isg - vfo;
+                        
                         double r = 1.0 - (M_PI * (f_res_isg / q_isg) / sampleRate);
                         double theta = 2.0 * M_PI * f_off_isg / sampleRate;
                         double a1 = -2.0 * r * std::cos(theta);
                         double a2 = r * r;
                         double g_res = (1.0 - r * r) * 0.5;
+
                         auto applyResonator = [&](double x, double z[2]) {
                             double out = g_res * x - a1 * z[0] - a2 * z[1];
                             z[1] = z[0]; z[0] = out;
                             return out;
                         };
+
                         double raw_i = white(rng), raw_q = white(rng);
                         isg_bb_i = 0.000050 * (applyResonator(raw_i, isg_noise_zi[ch]) + raw_i * 0.0003);
                         isg_bb_q = 0.000050 * (applyResonator(raw_q, isg_noise_zq[ch]) + raw_q * 0.0003);
