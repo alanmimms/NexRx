@@ -43,6 +43,8 @@ struct Options {
     bool verbose = true;
     bool stream = true;
     bool no_stimulus = false;
+    bool no_cal = false;
+    std::string cal_file = "";
     double duration_ms = 0.0;
     double rf_freq_mhz = 14.120; 
     double lo_freq_mhz = 14.200;
@@ -52,6 +54,10 @@ struct Options {
     std::string bindAddr = "0.0.0.0";
     uint16_t controlPort = 5000;
     uint16_t streamPort = 5001;
+
+    // Simulated Hardware Inaccuracies (per channel)
+    double gainErr[3];      // Voltage ratio
+    double phaseErrRad[3];  // Radians
 };
 
 void printUsage(const char* prog) {
@@ -60,6 +66,8 @@ void printUsage(const char* prog) {
               << "  --help, -h       Show this help\n"
               << "  --quiet          Disable verbose command logging\n"
               << "  --no-stimulus    Do not load any stimulus (silent RF)\n"
+              << "  --no-cal         Ignore calibration and use random errors\n"
+              << "  --cal-file FILE  Load hardware calibration from JSON\n"
               << "  --rf FREQ        Set static RF signal frequency in MHz (default: 14.12)\n"
               << "  --lo FREQ        Set initial LO frequency in MHz (default: 14.20)\n"
               << "  --amplitude MV   Set RF signal amplitude in mV (default: 1.0)\n"
@@ -72,11 +80,16 @@ void printUsage(const char* prog) {
 
 Options parseArgs(int argc, char* argv[]) {
     Options opts;
+    // Default errors (0)
+    for (int i=0; i<3; ++i) { opts.gainErr[i] = 1.0; opts.phaseErrRad[i] = 0.0; }
+
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--help" || arg == "-h") opts.help = true;
         else if (arg == "--quiet") opts.verbose = false;
         else if (arg == "--no-stimulus") opts.no_stimulus = true;
+        else if (arg == "--no-cal") opts.no_cal = true;
+        else if (arg == "--cal-file" && i+1 < argc) opts.cal_file = argv[++i];
         else if (arg == "--rf" && i+1 < argc) opts.rf_freq_mhz = std::stod(argv[++i]);
         else if (arg == "--lo" && i+1 < argc) opts.lo_freq_mhz = std::stod(argv[++i]);
         else if (arg == "--amplitude" && i+1 < argc) opts.rf_amplitude_mv = std::stod(argv[++i]);
@@ -90,6 +103,22 @@ Options parseArgs(int argc, char* argv[]) {
             exit(1);
         }
     }
+
+    // Generate random inaccuracies if no calibration
+    if (opts.cal_file.empty() || opts.no_cal) {
+        std::mt19937 rng(std::chrono::system_clock::now().time_since_epoch().count());
+        std::uniform_real_distribution<double> gDist(0.95, 1.05); // +/- 5% gain
+        std::uniform_real_distribution<double> pDist(-0.05, 0.05); // +/- ~3 deg phase
+        
+        std::cout << "[Twin] Simulated Hardware Inaccuracies (Random):" << std::endl;
+        for (int i=0; i<3; ++i) {
+            opts.gainErr[i] = gDist(rng);
+            opts.phaseErrRad[i] = pDist(rng);
+            std::cout << "  Ch " << i << ": Gain=" << std::fixed << std::setprecision(3) << 20.0*std::log10(opts.gainErr[i]) 
+                      << "dB, Phase=" << std::setprecision(2) << opts.phaseErrRad[i]*(180.0/M_PI) << " deg" << std::endl;
+        }
+    }
+
     return opts;
 }
 
@@ -102,21 +131,33 @@ static constexpr BiquadCoeffs ak5578_480k_stages[3] = {
 
 // Characterize filter rejection
 double getPreselGain(double freq_hz, const PreselectorModel& model) {
+    // Corrected capacitor values (C701-C711)
     static const double cap_vals[11] = {
-        10e-12, 20e-12, 40e-12, 80e-12, 160e-12, 320e-12, 
-        640e-12, 1.28e-9, 2.56e-9, 5.12e-9, 10.24e-9
+        8e-12, 16e-12, 32e-12, 68e-12, 130e-12, 240e-12, 
+        560e-12, 1000e-12, 2200e-12, 3300e-12, 8000e-12
     };
-    double total_c = 20e-12; // Stray capacitance
+    double total_c = 20e-12; // Stray capacitance floor
     for (int i=0; i<11; ++i) if (model.getCap(i)) total_c += cap_vals[i];
-    double total_l = model.getInd(0) ? (1.5e-6 + 220e-9) : 220e-9;
+    
+    // L1 (1.5uH) is shorted when L=y (model.isL1Shorted() == true)
+    // L2 (220nH) is always in circuit.
+    double total_l = model.isL1Shorted() ? 220e-9 : (1.5e-6 + 220e-9);
+    
     double f_res = 1.0 / (2.0 * M_PI * std::sqrt(total_l * total_c));
+    
+    // Quality factor - declines with frequency
     double q = 40.0 * (1.0 - (f_res / 150e6));
     double bw = f_res / std::max(1.0, q);
+    
+    // Parallel LC Tank response (Bandpass)
     double rel_f = std::abs(freq_hz - f_res) / (bw / 2.0);
     double atten = 1.0 / std::sqrt(1.0 + std::pow(rel_f, 4.0));
+    
+    // Artifacts: -70dB leakage floor, SRF peak at 45MHz
     double leak = 0.0003; 
     double srf_dist = std::abs(freq_hz - 45e6) / 2e6;
     double srf_peak = 0.05 / (1.0 + srf_dist * srf_dist);
+    
     return std::max({atten, leak, srf_peak});
 }
 
@@ -168,6 +209,7 @@ int runFunctionalMode(const Options& opts) {
     };
 
     double current_vfos[3] = {0};
+    double isg_noise_zi[3][2] = {}, isg_noise_zq[3][2] = {};
     auto streamStartTime = std::chrono::steady_clock::now();
     size_t outputSample = 0;
     std::vector<IQFrame> batch; batch.reserve(32);
@@ -224,16 +266,39 @@ int runFunctionalMode(const Options& opts) {
                 double isg_bb_i = 0, isg_bb_q = 0;
                 if (controlHandler->isIsgEnabled()) {
                     double isg_f = controlHandler->getIsgFreq();
-                    double isg_off = isg_f - vfo;
-                    double p = 2.0 * M_PI * isg_off * t;
-                    double isg_presel = getPreselGain(isg_f, preselector);
-                    // 50uV constant level (approx S9 + 20dB)
-                    isg_bb_i = 0.000050 * isg_presel * std::cos(p);
-                    isg_bb_q = 0.000050 * isg_presel * std::sin(p);
+                    if (isg_f > 1.0) {
+                        double isg_off = isg_f - vfo;
+                        double p = 2.0 * M_PI * isg_off * t;
+                        double isg_presel = getPreselGain(isg_f, preselector);
+                        // 50uV constant level (approx S9 + 20dB)
+                        isg_bb_i = 0.000050 * isg_presel * std::cos(p);
+                        isg_bb_q = 0.000050 * isg_presel * std::sin(p);
+                    } else if (isg_f == 1.0) {
+                        static std::uniform_real_distribution<double> white(-1.0, 1.0);
+                        static const double cap_vals_noise[11] = { 8e-12, 16e-12, 32e-12, 68e-12, 130e-12, 240e-12, 560e-12, 1000e-12, 2200e-12, 3300e-12, 8000e-12 };
+                        double total_c_noise = 20e-12; for (int i=0; i<11; ++i) if (preselector.getCap(i)) total_c_noise += cap_vals_noise[i];
+                        double total_l_noise = preselector.isL1Shorted() ? 220e-9 : (1.5e-6 + 220e-9);
+                        double f_res_isg = 1.0 / (2.0 * M_PI * std::sqrt(total_l_noise * total_c_noise));
+                        double q_isg = 40.0 * (1.0 - (f_res_isg / 150e6));
+                        double f_off_isg = f_res_isg - vfo;
+                        double r = 1.0 - (M_PI * (f_res_isg / q_isg) / sampleRate);
+                        double theta = 2.0 * M_PI * f_off_isg / sampleRate;
+                        double a1 = -2.0 * r * std::cos(theta);
+                        double a2 = r * r;
+                        double g_res = (1.0 - r * r) * 0.5;
+                        auto applyResonator = [&](double x, double z[2]) {
+                            double out = g_res * x - a1 * z[0] - a2 * z[1];
+                            z[1] = z[0]; z[0] = out;
+                            return out;
+                        };
+                        double raw_i = white(rng), raw_q = white(rng);
+                        isg_bb_i = 0.000050 * (applyResonator(raw_i, isg_noise_zi[ch]) + raw_i * 0.0003);
+                        isg_bb_q = 0.000050 * (applyResonator(raw_q, isg_noise_zq[ch]) + raw_q * 0.0003);
+                    }
                 }
                 double total_bb_i = rf_bb_i * attenGain + isg_bb_i + dist(rng);
                 double total_bb_q = rf_bb_q * attenGain + isg_bb_q + dist(rng);
-                double gainErr = 1.029, phaseErrRad = 0.026;
+                double gainErr = opts.gainErr[ch], phaseErrRad = opts.phaseErrRad[ch];
                 double bi = total_bb_i;
                 double bq = (total_bb_q * std::cos(phaseErrRad) - total_bb_i * std::sin(phaseErrRad)) * gainErr;
                 f_i[ch] = applyLpf(bi * pgaGainI, lpf_zi[ch]);

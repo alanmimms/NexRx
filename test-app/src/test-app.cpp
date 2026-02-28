@@ -10,18 +10,26 @@ namespace nexrx {
     TestStatus presel_cal(RemoteDevice& device, std::string& message);
     TestStatus pga_chk(RemoteDevice& device, std::string& message);
     TestStatus iq_bal(RemoteDevice& device, std::string& message);
+    TestStatus full_scan(RemoteDevice& device, std::string& message);
 }
 
 int main(int argc, char* argv[]) {
     std::string host = "127.0.0.1";
-    if (argc > 1) {
-        std::string arg = argv[1];
+    bool doFullScan = false;
+
+    for (int i=1; i<argc; ++i) {
+        std::string arg = argv[i];
         if (arg == "--help" || arg == "-h") {
-            std::cout << "Usage: " << argv[0] << " [hostname/IP]" << std::endl;
-            std::cout << "Default host: 127.0.0.1" << std::endl;
+            std::cout << "Usage: " << argv[0] << " [hostname/IP] [options]" << std::endl;
+            std::cout << "Options:" << std::endl;
+            std::cout << "  --all-masks    Generate full 4096-state preselector log" << std::endl;
+            std::cout << "  [hostname/IP]  Default: 127.0.0.1" << std::endl;
             return 0;
+        } else if (arg == "--all-masks") {
+            doFullScan = true;
+        } else {
+            host = arg;
         }
-        host = arg;
     }
 
     std::cout << "==================================================" << std::endl;
@@ -38,7 +46,11 @@ int main(int argc, char* argv[]) {
 
     nexrx::TestEngine engine;
     engine.addTest("UDP Streaming Integrity", nexrx::stream_chk);
-    engine.addTest("Preselector Response", nexrx::presel_cal);
+    if (doFullScan) {
+        engine.addTest("Preselector Full Atlas", nexrx::full_scan);
+    } else {
+        engine.addTest("Preselector Response", nexrx::presel_cal);
+    }
     engine.addTest("PGA Linearity", nexrx::pga_chk);
     engine.addTest("QSD Image Rejection", nexrx::iq_bal);
     

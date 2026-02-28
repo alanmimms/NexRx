@@ -21,15 +21,15 @@ class PreselectorModel {
 public:
     PreselectorModel() {
         for (int i=0; i<11; ++i) caps_[i].store(false, std::memory_order_relaxed);
-        l1_.store(false, std::memory_order_relaxed);
+        l1_shorted_.store(false, std::memory_order_relaxed);
     }
     void setCap(int idx, bool enabled) { if (idx >= 0 && idx < 11) caps_[idx].store(enabled, std::memory_order_relaxed); }
-    void setInd(int idx, bool enabled) { if (idx == 0) l1_.store(enabled, std::memory_order_relaxed); }
+    void setInd(int idx, bool enabled) { if (idx == 0) l1_shorted_.store(enabled, std::memory_order_relaxed); }
     bool getCap(int idx) const { return (idx >= 0 && idx < 11) ? caps_[idx].load(std::memory_order_relaxed) : false; }
-    bool getInd(int idx) const { return (idx == 0) ? l1_.load(std::memory_order_relaxed) : false; }
+    bool isL1Shorted() const { return l1_shorted_.load(std::memory_order_relaxed); }
 private:
     std::atomic<bool> caps_[11];
-    std::atomic<bool> l1_;
+    std::atomic<bool> l1_shorted_;
 };
 
 class PgaModel {
@@ -68,6 +68,7 @@ public:
     static constexpr const char* CMD_GET_CONFIG      = "GCNF";
     static constexpr const char* CMD_SET_ISG_ENABLE  = "SIEN";
     static constexpr const char* CMD_SET_ISG_FREQ    = "SIFQ";
+    static constexpr const char* CMD_SET_ISG_MODE    = "SIMO";
     static constexpr const char* CMD_SET_CALIBRATION = "SCAL";
     static constexpr const char* CMD_GET_CALIBRATION = "GCAL";
     static constexpr const char* CMD_SET_CODEC       = "SCOD";
@@ -240,8 +241,12 @@ private:
             if (cbor_value_is_integer(&argsIt)) { int64_t f; cbor_value_get_int64(&argsIt, &f); freq = (double)f; }
             else if (cbor_value_is_double(&argsIt)) { cbor_value_get_double(&argsIt, &freq); }
             else return encodeResponse(1, "Invalid frequency");
+            
             isg_freq_hz_.store(freq);
-            if (verbose_) std::cout << "[Control] SET_ISG_FREQ " << freq << std::endl;
+            if (freq == 0.0) isg_enabled_.store(false);
+            else isg_enabled_.store(true);
+
+            if (verbose_) std::cout << "[Control] SET_ISG_FREQ " << freq << (freq == 1.0 ? " (Noise)" : " Hz") << std::endl;
             return encodeResponse(0, "OK");
         }
         else if (sCmd == CMD_SET_PGA_GAIN) {

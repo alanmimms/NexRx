@@ -359,7 +359,13 @@ bool TwinConn::setIsgFreq(double freq_hz) {
     cbor_encoder_create_array(&encoder, &array, 2);
     cbor_encode_text_stringz(&array, "SIFQ");
     cbor_encoder_create_array(&array, &args, 1);
-    cbor_encode_double(&args, freq_hz);
+    
+    // 0=Disabled, 1=Noise, >1=Tone
+    double f = freq_hz;
+    if (f < 0.0) f = 0.0;
+    else if (f > 0.0 && f < 1.0) f = 1.0; 
+    
+    cbor_encode_double(&args, f);
     cbor_encoder_close_container(&array, &args);
     cbor_encoder_close_container(&encoder, &array);
     
