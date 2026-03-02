@@ -63747,7 +63747,7 @@
 		(descr "DRB0008J _2022")
 		(tags "Integrated Circuit")
 		(property "Reference" "U1207"
-			(at 0 0 0)
+			(at 0 2.65 0)
 			(layer "F.SilkS")
 			(uuid "ad9de9d5-cbae-4742-8cf6-af3099c4517f")
 			(effects
@@ -118128,7 +118128,18 @@
 			(uuid "6330f71f-e2c6-4999-b710-22d18e5a2e0c")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/TS3A4751RUCR/3D/TS3A4751RUCR.stp"
+		(model "${KICAD9_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0805_2012Metric.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+		(model "${KICAD9_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_1206_3216Metric.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -127794,7 +127805,7 @@
 			(uuid "79bf8a7f-0ecd-4390-90bc-8c4173b9d388")
 		)
 		(embedded_fonts no)
-		(model "/home/alan/ham/NexRx/symbols/TS3A4751RUCR/3D/TS3A4751RUCR.stp"
+		(model "${KICAD9_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.step"
 			(offset
 				(xyz 0 0 0)
 			)
