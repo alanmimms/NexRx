@@ -1572,6 +1572,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C2654768"
+			(at 92.71 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "cbd25d3a-4ecf-46c2-aa05-6a908ce3d07e")
 		)
@@ -2167,6 +2176,15 @@
 			)
 		)
 		(property "label" ""
+			(at 125.73 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C2654768"
 			(at 125.73 80.01 0)
 			(effects
 				(font

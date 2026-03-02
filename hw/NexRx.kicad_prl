@@ -54,7 +54,7 @@
       "shapes"
     ],
     "visible_layers": "ffffffff_ffffffff_ffffdff5_dffffff7",
-    "zone_display_mode": 0
+    "zone_display_mode": 1
   },
   "git": {
     "repo_type": "",
@@ -124,7 +124,7 @@
     "show_unconnected_nets": false,
     "show_zero_pad_nets": false,
     "sort_ascending": true,
-    "sorting_column": 13
+    "sorting_column": 0
   },
   "open_jobsets": [],
   "project": {
