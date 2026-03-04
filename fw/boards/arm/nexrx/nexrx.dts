@@ -55,15 +55,42 @@
 		status = "okay";
 	};
 
-	/* Define the USB CDC-ACM UART for logging */
-	cdc_acm_uart0: cdc_acm_uart0 {
-		compatible = "zephyr,cdc-acm-uart";
-	};
-
 	zephyr,user {
 		/* USB-C CC Monitor ADC Channels */
 		io-channels = <&adc1 7>, <&adc1 8>;
 		io-channel-names = "CC2_ADC", "CC1_ADC";
+	};
+};
+
+&zephyr_udc0 {
+	status = "okay";
+	pinctrl-0 = <&otg_hs_ulpi_ck_pa5 &otg_hs_ulpi_d0_pa3
+		     &otg_hs_ulpi_d1_pb0 &otg_hs_ulpi_d2_pb1
+		     &otg_hs_ulpi_d3_pb10 &otg_hs_ulpi_d4_pb11
+		     &otg_hs_ulpi_d5_pb12 &otg_hs_ulpi_d6_pb13
+		     &otg_hs_ulpi_d7_pb5 &otg_hs_ulpi_dir_pc2
+		     &otg_hs_ulpi_nxt_pc3 &otg_hs_ulpi_stp_pc0>;
+	pinctrl-names = "default";
+
+	usb_device_0: usb_device_0 {
+		compatible = "zephyr,usb-device";
+		status = "okay";
+
+		cdc_acm_uart0: cdc_acm_uart0 {
+			compatible = "zephyr,cdc-acm-uart";
+			label = "CDC_ACM_0";
+		};
+
+		cdc_acm_uart1: cdc_acm_uart1 {
+			compatible = "zephyr,cdc-acm-uart";
+			label = "CDC_ACM_1";
+		};
+
+		/* Custom Vendor Bulk for IQ Data Pump */
+		iq_data_pump: iq_data_pump {
+			compatible = "zephyr,usb-vendor-bulk";
+			status = "okay";
+		};
 	};
 };
 
@@ -99,17 +126,6 @@
 &clk_hse {
 	clock-frequency = <DT_FREQ_M(26)>;
 	status = "okay";
-};
-
-&zephyr_udc0 {
-	status = "okay";
-	pinctrl-0 = <&otg_hs_ulpi_ck_pa5 &otg_hs_ulpi_d0_pa3
-		     &otg_hs_ulpi_d1_pb0 &otg_hs_ulpi_d2_pb1
-		     &otg_hs_ulpi_d3_pb10 &otg_hs_ulpi_d4_pb11
-		     &otg_hs_ulpi_d5_pb12 &otg_hs_ulpi_d6_pb13
-		     &otg_hs_ulpi_d7_pb5 &otg_hs_ulpi_dir_pc2
-		     &otg_hs_ulpi_nxt_pc3 &otg_hs_ulpi_stp_pc0>;
-	pinctrl-names = "default";
 };
 
 &pll {

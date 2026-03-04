@@ -75,3 +75,7 @@
     for the I/Q stream to reduce MCU overhead.
   - [ ] **Hardware Interleaving**: Use MDMA (Master DMA) to interleave the
     multi-lane SAI buffers into a single contiguous stream for USB offload.
+  - [ ] **Data Loss Detection**: Implement sequence numbering and MCU overrun 
+    tracking in the binary header.
+  - [ ] **Simulation & Testing**: Use Zephyr 'native_sim' to validate the pump 
+    logic and interleaving patterns on the host before hardware deployment.

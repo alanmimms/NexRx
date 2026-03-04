@@ -10,4 +10,17 @@ project(NexRxFW)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-target_sources(app PRIVATE src/main.cpp)
+# Source files
+target_sources(app PRIVATE 
+    src/main.cpp
+    src/drivers/FPGAManager.cpp
+    src/drivers/AK5578.cpp
+    src/drivers/MAX9939.cpp
+    src/drivers/NexBus.cpp
+    src/transport/USBManager.cpp
+    src/transport/QSDCapture.cpp
+    src/transport/ControlHandler.cpp
+)
+
+# Include directories
+target_include_directories(app PRIVATE src)
