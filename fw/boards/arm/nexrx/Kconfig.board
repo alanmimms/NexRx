@@ -1,0 +1,3 @@
+config BOARD_NEXRX
+	bool "NexRx Receiver Board"
+	depends on SOC_STM32H753XX

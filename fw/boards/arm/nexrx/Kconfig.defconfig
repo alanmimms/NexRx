@@ -1,0 +1,6 @@
+if BOARD_NEXRX
+
+config BOARD
+	default "nexrx"
+
+endif # BOARD_NEXRX

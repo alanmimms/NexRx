@@ -1,0 +1,220 @@
+/dts-v1/;
+#include <st/h7/stm32h753Xi.dtsi>
+#include <st/h7/stm32h753v(i-g)tx-pinctrl.dtsi>
+
+/ {
+	model = "NexRx Receiver Board";
+	compatible = "nexrx,nexrx-rx";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,dtcm = &dtcm;
+		zephyr,console = &usart6;
+		zephyr,shell-uart = &usart6;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pwr_3v3: pwr_3v3 {
+			gpios = <&gpiod 6 GPIO_ACTIVE_HIGH>;
+			label = "3.3V Digital Enable";
+		};
+		pwr_3va: pwr_3va {
+			gpios = <&gpiod 7 GPIO_ACTIVE_HIGH>;
+			label = "3.3V Analog Enable";
+		};
+		pwr_5va: pwr_5va {
+			gpios = <&gpiod 8 GPIO_ACTIVE_HIGH>;
+			label = "5V Analog Enable";
+		};
+		pwr_fpgacore: pwr_fpgacore {
+			gpios = <&gpiod 9 GPIO_ACTIVE_HIGH>;
+			label = "FPGA VCORE Enable";
+		};
+	};
+
+	nexbus {
+		compatible = "nexrx,nexbus";
+		pinctrl-0 = <&tim3_ch1_pc6 &usart6_tx_pc6>;
+		pinctrl-names = "default";
+		status = "okay";
+	};
+
+	fpga {
+		compatible = "nexrx,fpga-ice40";
+		prog-gpios = <&gpioe 1 GPIO_ACTIVE_LOW>;
+		done-gpios = <&gpioe 0 GPIO_ACTIVE_HIGH>;
+		nss-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};
+
+	codec {
+		compatible = "nexrx,ak5578";
+		reset-gpios = <&gpioa 6 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};
+
+	/* Define the USB CDC-ACM UART for logging */
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+
+	zephyr,user {
+		/* USB-C CC Monitor ADC Channels */
+		io-channels = <&adc1 7>, <&adc1 8>;
+		io-channel-names = "CC2_ADC", "CC1_ADC";
+	};
+};
+
+&adc1 {
+	pinctrl-0 = <&adc1_inp7_pa7 &adc1_inp8_pc5>;
+	pinctrl-names = "default";
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	channel@7 {
+		reg = <7>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+	channel@8 {
+		reg = <8>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+};
+
+&i2c4 {
+	pinctrl-0 = <&i2c4_scl_pd12 &i2c4_sda_pd13>;
+	pinctrl-names = "default";
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+};
+
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(26)>;
+	status = "okay";
+};
+
+&zephyr_udc0 {
+	status = "okay";
+	pinctrl-0 = <&otg_hs_ulpi_ck_pa5 &otg_hs_ulpi_d0_pa3
+		     &otg_hs_ulpi_d1_pb0 &otg_hs_ulpi_d2_pb1
+		     &otg_hs_ulpi_d3_pb10 &otg_hs_ulpi_d4_pb11
+		     &otg_hs_ulpi_d5_pb12 &otg_hs_ulpi_d6_pb13
+		     &otg_hs_ulpi_d7_pb5 &otg_hs_ulpi_dir_pc2
+		     &otg_hs_ulpi_nxt_pc3 &otg_hs_ulpi_stp_pc0>;
+	pinctrl-names = "default";
+};
+
+&pll {
+	div-m = <13>;
+	mul-n = <400>;
+	div-p = <2>;
+	div-q = <2>;
+	div-r = <2>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(400)>;
+	d1cpre = <1>;
+	hpre = <2>;
+	d1ppre = <2>;
+	d2ppre2 = <2>;
+	d2ppre1 = <2>;
+	d3ppre = <2>;
+};
+
+&usart6 {
+	pinctrl-0 = <&usart6_tx_pc6>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&tim3 {
+	status = "okay";
+	st,prescaler = <0>;
+	pinctrl-0 = <&tim3_ch1_pc6>;
+	pinctrl-names = "default";
+	dmas = <&dma1 0 22 0x440>; 
+	dma-names = "ch1";
+	pwm1: pwm {
+		status = "okay";
+		st,prescaler = <0>;
+	};
+};
+
+&spi3 {
+	pinctrl-0 = <&spi3_sck_pc10 &spi3_miso_pc11 &spi3_mosi_pb2>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&spi2 {
+	pinctrl-0 = <&spi2_sck_pa9 &spi2_mosi_pc1>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpioa 11 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&spi4 {
+	pinctrl-0 = <&spi4_sck_pe2 &spi4_mosi_pe14>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpioe 4 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&sai3 {
+	status = "okay";
+	pinctrl-0 = <&sai3_a_mclk_pd15 &sai3_a_sck_pd0 
+		     &sai3_a_fs_pd4 &sai3_a_sd_pd1>;
+	pinctrl-names = "default";
+	sai3_a: sai3_a {
+		status = "okay";
+		st,sync-type = "master";
+		dmas = <&dma1 1 89 0x440>; 
+		dma-names = "rx";
+	};
+};
+
+&sai2 {
+	status = "okay";
+	pinctrl-0 = <&sai2_a_sd_pd11 &sai2_b_sd_pa0>;
+	pinctrl-names = "default";
+	sai2_a: sai2_a {
+		status = "okay";
+		st,sync-type = "slave";
+		st,sync-source = <&sai3_a>;
+		dmas = <&dma1 2 87 0x440>; 
+		dma-names = "rx";
+	};
+	sai2_b: sai2_b {
+		status = "okay";
+		st,sync-type = "slave";
+		st,sync-source = <&sai3_a>;
+		dmas = <&dma1 3 88 0x440>; 
+		dma-names = "rx";
+	};
+};
+
+&sai4 {
+	status = "okay";
+	pinctrl-0 = <&sai4_a_sd_pe6>;
+	pinctrl-names = "default";
+	sai4_a: sai4_a {
+		status = "okay";
+		st,sync-type = "slave";
+		st,sync-source = <&sai3_a>;
+		dmas = <&dma1 4 102 0x440>; 
+		dma-names = "rx";
+	};
+};

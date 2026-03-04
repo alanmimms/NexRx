@@ -28,7 +28,7 @@
 
 /* Hardware Mapping */
 #define BUS_PIN             11      /* PA11 */
-#define IWDG_TIMEOUT_MS     25
+#define IWDG_TIMEOUT_MS     50      /* Reset if silent for >50ms */
 #define IDLE_BLINK_MS       500
 #define IDLE_TIMEOUT_MS     1000
 
@@ -53,6 +53,14 @@ void SysTick_Handler(void) {
 
 int main(void) {
   systemClockConfig();
+  
+  /* Check if reset was caused by the IWDG */
+  if (RCC->CSR & RCC_CSR_IWDGRSTF) {
+    /* Clear reset flags and jump to bootloader for recovery/maintenance */
+    RCC->CSR |= RCC_CSR_RMVF;
+    jumpToBootloader();
+  }
+  
   initGPIO();
   
   myId = detectId();
@@ -149,7 +157,7 @@ int main(void) {
         GPIOA->ODR ^= GPIO_ODR_OD0;
         lastBlinkMs = msTicks;
       }
-      IWDG->KR = IWDG_KEY_RELOAD; /* Prevent reset while waiting for host */
+      /* IWDG reload intentionally removed to allow silence-to-reset */
     }
   }
 }

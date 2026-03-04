@@ -118,30 +118,31 @@ optimal L/C/Attenuator configuration—these calculations are performed
 on the host application where significantly more compute power is
 available compared to the embedded controller.
 
-## 7. Data Plane (UDP)
+## 7. Data Plane (UDP/USB)
 
-High-bandwidth IQ sample data is sent over a separate UDP stream
-(default port 5001).
+High-bandwidth IQ sample data is sent over a separate UDP stream (Digital Twin)
+or USB Bulk endpoint (Physical Hardware).
 
-### 7.1 Protocol Structure (CBOR)
+### 7.1 Digital Twin Format (CBOR / Version 1)
 
-The data plane uses **CBOR** for efficient serialization. Every UDP
-packet is a CBOR-encoded array:
+The Digital Twin uses CBOR-encoded arrays for UDP packets:
+`["NXRQ", 1, type, frames]`
 
-`["NXRQ", version, type, frames]`
+### 7.2 Physical Hardware Format (Binary / Version 2)
 
-*   **Magic String:** `"NXRQ"`
-*   **Version:** `1`
-*   **Type:** 
-    *   `0`: `TYPE_IQ_DATA` (Server streaming data)
-    *   `1`: `TYPE_TX_AUDIO` (Future: Client-to-server transmit audio)
+To minimize MCU overhead, the physical hardware uses a fixed-length binary
+header for USB Bulk transfers.
 
-### 7.2 IQFrame Structure
+| Offset | Size | Type | Description |
+| :--- | :--- | :--- | :--- |
+| 0 | 4 | uint32 | **Magic**: `0x52584E51` ("NXRQ") |
+| 4 | 4 | uint32 | **Version**: `2` (Binary Format) |
+| 8 | 4 | uint32 | **Sequence**: 32-bit packet counter |
+| 12 | 8 | uint64 | **Timestamp**: 64-bit nanosecond timer |
+| 20 | 4 | uint32 | **Frame Count**: Number of I/Q frames (6 channels/frame) |
+| 24 | N | int32[] | **Samples**: Interleaved `[i0, q0, i1, q1, i2, q2, ...]` |
 
-Each frame in the `frames` array is a CBOR array:
-
-`[sequence, timestamp_ns, i0, q0, i1, q1, i2, q2]`
-
-*   **sequence:** 32-bit unsigned integer.
-*   **timestamp_ns:** 64-bit unsigned integer.
-*   **iN, qN:** 24-bit signed integers.
+*   **Sample Alignment**: Each sample is a 32-bit signed integer (S24 sign-
+    extended to S32).
+*   **Frame Structure**: A single "frame" consists of 6 samples (I/Q for three
+    QSD stages).

@@ -4688,18 +4688,22 @@
       "Tpad 24"
     ],
     [
+      "f2486bc2-eba8-4fb8-890d-ac8b4843b7f5",
+      "Tune Control"
+    ],
+    [
       "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
       "Power"
+    ],
+    [
+      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
+      "PGA1"
     ],
     [
       "18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641",
       "FPGA"
     ],
     [
-      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
-      "PGA1"
-    ],
-    [
       "32c670c7-05fb-4d6f-b587-f687839b2e31",
       "PGA2"
     ],
@@ -4718,10 +4722,6 @@
     [
       "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
       "PGA1"
-    ],
-    [
-      "f2486bc2-eba8-4fb8-890d-ac8b4843b7f5",
-      "Tune Control"
     ]
   ],
   "text_variables": {
