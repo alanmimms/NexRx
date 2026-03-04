@@ -18,3 +18,11 @@ representation. Make all template parameters names all uppercase.
 Instead of names like "n_call" use e.g., "nCall".
 
 In your responses I want no congratulation or attempts to show me I'm smart.
+
+Never use "_" in filenames unless you must for compatibility with APIs
+or something like Python module names.
+
+When appropriate, refactor source code that has accumulated a number
+of modular components into separate module source files. Don't let our
+work grow the size of source modules to such a size that handling them
+is hard for you or for me.
