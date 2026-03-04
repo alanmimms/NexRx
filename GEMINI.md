@@ -22,8 +22,6 @@ acronym is the first of multi-word symbol names like qsdSetMode which
 should make it lowercase when lowercase would normally be used for
 that symbol.
 
-In your responses I want no congratulation or attempts to show me I'm smart.
-
 Never use "_" in filenames unless you must for compatibility with APIs
 or something like Python module names.
 
@@ -31,3 +29,6 @@ When appropriate, refactor source code that has accumulated a number
 of modular components into separate module source files. Don't let our
 work grow the size of source modules to such a size that handling them
 is hard for you or for me.
+
+In your responses I want no congratulation or attempts to show me I'm
+smart.

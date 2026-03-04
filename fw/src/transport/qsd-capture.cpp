@@ -79,17 +79,15 @@ void QSDCapture::processHalf(uint8_t halfIndex) {
     size_t d = i * CHANNEL_COUNT;
     size_t s = laneOffset + (i * 2);
     
-    /* Process and track peak for AGC */
     for (int ch = 0; ch < 3; ch++) {
-      int32_t i_val = static_cast<int32_t>(laneBuffers[ch][s + 0]);
-      int32_t q_val = static_cast<int32_t>(laneBuffers[ch][s + 1]);
-      samples[d + (ch*2) + 0] = i_val;
-      samples[d + (ch*2) + 1] = q_val;
-      peak = std::max({peak, std::abs(i_val), std::abs(q_val)});
+      int32_t iVal = static_cast<int32_t>(laneBuffers[ch][s + 0]);
+      int32_t qVal = static_cast<int32_t>(laneBuffers[ch][s + 1]);
+      samples[d + (ch*2) + 0] = iVal;
+      samples[d + (ch*2) + 1] = qVal;
+      peak = std::max({peak, std::abs(iVal), std::abs(qVal)});
     }
   }
 
-  /* Feed peak into AGC Manager for fast-reflex processing */
   AGCManager::processReflex(peak);
 
   usbBusy = true;
