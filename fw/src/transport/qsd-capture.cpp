@@ -1,9 +1,11 @@
 #include "qsd-capture.hpp"
 #include "usb-manager.hpp"
 #include "../drivers/fpga-manager.hpp"
+#include "../app/agc-manager.hpp"
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/time_units.h>
 #include <zephyr/drivers/i2s.h>
+#include <algorithm>
 
 LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
 
@@ -66,25 +68,29 @@ void QSDCapture::processHalf(uint8_t halfIndex) {
   header->magic = IQPacketHeader::MAGIC;
   header->version = 2;
   header->sequence = currentSequence++;
-  
-  /* Use precision TCXO timestamp from FPGA instead of MCU ticks */
   header->timestampNS = FPGAManager::getTCXOTimestamp();
-  
   header->frameCount = SAMPLES_PER_HALF;
   header->overrunCount = totalOverruns;
 
   size_t laneOffset = halfIndex * SAMPLES_PER_HALF * 2;
+  int32_t peak = 0;
 
   for (size_t i = 0; i < SAMPLES_PER_HALF; ++i) {
     size_t d = i * CHANNEL_COUNT;
     size_t s = laneOffset + (i * 2);
-    samples[d + 0] = static_cast<int32_t>(laneBuffers[0][s + 0]);
-    samples[d + 1] = static_cast<int32_t>(laneBuffers[0][s + 1]);
-    samples[d + 2] = static_cast<int32_t>(laneBuffers[1][s + 0]);
-    samples[d + 3] = static_cast<int32_t>(laneBuffers[1][s + 1]);
-    samples[d + 4] = static_cast<int32_t>(laneBuffers[2][s + 0]);
-    samples[d + 5] = static_cast<int32_t>(laneBuffers[2][s + 1]);
+    
+    /* Process and track peak for AGC */
+    for (int ch = 0; ch < 3; ch++) {
+      int32_t i_val = static_cast<int32_t>(laneBuffers[ch][s + 0]);
+      int32_t q_val = static_cast<int32_t>(laneBuffers[ch][s + 1]);
+      samples[d + (ch*2) + 0] = i_val;
+      samples[d + (ch*2) + 1] = q_val;
+      peak = std::max({peak, std::abs(i_val), std::abs(q_val)});
+    }
   }
+
+  /* Feed peak into AGC Manager for fast-reflex processing */
+  AGCManager::processReflex(peak);
 
   usbBusy = true;
   if (USBManager::submitBulkIn(activeUsbBuf, PACKET_SIZE) != 0) {

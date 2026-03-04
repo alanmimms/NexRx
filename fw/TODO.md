@@ -18,64 +18,68 @@
   (< 15W/3A).
 
 ## Phase 2: Host Connectivity (USB)
-...
-## Phase 4: Peripheral Drivers & Control
-- [ ] **NexBus (GPIO Expanders)**: Implement the custom 1 Mb/s pulse-width
-  protocol over USART6 (`Tune.txrx` pin) in half-duplex mode to control remote
-  hardware. 
+- [ ] **USB High-Speed PHY (ULPI)**: Configure Zephyr to use the external 
+  USB3343 ULPI PHY for 480Mb/s operation.
 
-  - [ ] Implement Mode A (Pulse-Width) using TIM3+DMA.
-  - [ ] Implement Mode B (UART 115.2k) for firmware updates.
-  - [ ] Implement C011 firmware validation and management logic (checking
-    versions and pushing updates).
-  - [ ] **Silence-to-Reset**: Implement IWDG on C011 firmware (`fw-expander`) 
-    that triggers a reset if no NexBus activity is detected, allowing 
-    recovery without dedicated reset lines.
+- [ ] **USB Device Stack (v3)**: Finalize the composite device with two 
+  CDC-ACM ports and the custom Vendor Bulk interface.
 
-## Phase 2: Host Connectivity (USB)
-- [ ] **USB High-Speed PHY (ULPI)**: Configure Zephyr to use the external USB3343 ULPI PHY for 480Mb/s operation.
-- [ ] **USB Device Stack**: Set up endpoints. We likely need:
-  - CDC-ACM (Control/Logging)
-  - Bulk IN (High-bandwidth I/Q streaming to Host)
-  - Bulk OUT (Future: Transmit audio/data from Host)
-- [ ] **Control Protocol**: Implement the CBOR-based request/response protocol (mirroring the Twin's TCP behavior) over the USB control interface.
+- [ ] **Control Protocol**: Implement the CBOR-based request/response protocol 
+  (mirroring the Twin's TCP behavior) over the second USB serial interface.
 
 ## Phase 3: FPGA Management
-- [ ] **Bitstream Loading**: Implement iCE40 Slave SPI configuration sequence
+- [x] **Bitstream Loading**: Implement iCE40 Slave SPI configuration sequence
   via SPI3.
-  - [ ] Store default bitstream in MCU internal flash as a `const uint8_t` 
-    array.
-  - [ ] Implement GPIO sequence (PROG/NSS) to trigger Slave SPI mode.
-  - [ ] Send bitstream + dummy clocks.
-  - [ ] Monitor `DONE` pin for success.
+  - [x] Implement GPIO sequence (PROG/NSS) to trigger Slave SPI mode.
+  - [x] Send bitstream + dummy clocks.
+  - [x] Monitor `DONE` pin for success.
+  - [x] Validate SPI path with register write/read.
+
+- [ ] **Bitstream Persistence**: Store default bitstream in MCU internal flash 
+  as a `const uint8_t` array or in a dedicated flash partition.
 
 - [ ] **Bitstream Update**: Implement a CBOR control command to receive a 
-  new bitstream from the host and write it to a dedicated flash partition.
-
-- [ ] **FPGA Reset & Lifecycle**: Manage the FPGA reset state and ensure it
-  is ready before communicating.
+  new bitstream from the host and write it to flash.
 
 ## Phase 4: Peripheral Drivers & Control
-- [ ] **NexBus (GPIO Expanders)**: Implement the custom 1 Mb/s pulse-width protocol over USART6 (`Tune.txrx` pin) in half-duplex mode to control remote hardware.
-- [ ] **AK5578 Audio Codec**: I2C4 driver to initialize the codec, set sample rates, and configure the TDM/multi-line output.
-- [ ] **MAX9939 PGAs**: SPI4 stubs to configure the gain for the QSD baseband stages.
-- [ ] **Display**: SPI2 driver and stubs for basic ST7789V graphics rendering.
+- [ ] **NexBus (GPIO Expanders)**: Implement the custom 1 Mb/s pulse-width
+  protocol over USART6 (`Tune.txrx` pin) in half-duplex mode.
+  - [x] Implement Mode A (Pulse-Width) using TIM3+DMA.
+  - [x] Implement Mode B (UART 115.2k) for firmware updates.
+  - [ ] Implement C011 firmware validation and management logic.
+  - [x] **Silence-to-Reset**: Implement IWDG on C011 firmware (`fw-expander`) 
+    for recovery without dedicated reset lines.
+
+- [x] **AK5578 Audio Codec**: I2C4 driver to initialize the codec and 
+  configure for 4-lane I2S output.
+
+- [x] **MAX9939 PGAs**: SPI4 driver to configure the gain for the QSD stages.
+
+- [x] **Display**: SPI2 driver and `DisplayManager` for status rendering.
 
 ## Phase 5: High-Speed Data Path
-- [ ] **SAI / I2S Engine**: Configure SAI2, SAI3, and SAI4 to capture the
-  multi-channel synchronous data from the AK5578.
+- [ ] **SAI Capture Engine**: Finalize capture from SAI2, SAI3, and SAI4.
+  - [ ] **DMA & Buffering**: Set up double-buffered DMA to pull SAI data into 
+    AXI SRAM buffers.
+  - [ ] **Data Plane Optimization**: Use a fixed binary header (Version 2) 
+    instead of CBOR for the I/Q stream.
+  - [ ] **Hardware Interleaving**: Implement MDMA-based gather-scatter to 
+    interleave lane data for USB offload.
 
-- [ ] **DMA & Buffering**: Set up double-buffered DMA to pull SAI data into
-  SRAM without CPU intervention.
-  - [ ] **AXI SRAM Placement**: Explicitly place high-bandwidth buffers in the
-    `.axi_sram` section to utilize the D1 domain's performance.
+- [ ] **Data Loss Detection**: Implement sequence numbering and MCU overrun 
+  tracking in the binary header.
 
-- [ ] **Stream Offload**: Feed the DMA buffers into the USB Bulk IN endpoint.
-  - [ ] **Data Plane Optimization**: Use a fixed binary header instead of CBOR
-    for the I/Q stream to reduce MCU overhead.
-  - [ ] **Hardware Interleaving**: Use MDMA (Master DMA) to interleave the
-    multi-lane SAI buffers into a single contiguous stream for USB offload.
-  - [ ] **Data Loss Detection**: Implement sequence numbering and MCU overrun 
-    tracking in the binary header.
-  - [ ] **Simulation & Testing**: Use Zephyr 'native_sim' to validate the pump 
-    logic and interleaving patterns on the host before hardware deployment.
+- [ ] **Simulation & Testing**: Use Zephyr 'native_sim' to validate the pump 
+  logic on the host.
+
+## Phase 6: Signal Processing & AGC
+- [ ] **AGC Manager**: Implement high-priority gain control in the MCU.
+  - [ ] **Reflexes**: Fast-attack response to clipping detected by AK5578 or 
+    peak analysis (< 500us reaction).
+  - [ ] **Gain Coordination**: Synchronize NexBus attenuator switches with PGA 
+    gain steps to eliminate audible jumps.
+  - [ ] **Policy API**: Interface for the Host to set AGC modes (Fast, Slow, 
+    etc.) and parameters via CBOR.
+
+- [ ] **Twin Enhancement**: Update the Digital Twin to support varying 
+  signal strengths and fading models to validate AGC behavior.

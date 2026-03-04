@@ -75,7 +75,7 @@ double StimulusManager::getSample(double time_s) const {
             sum += entry.stimulus->getSample(time_s);
         }
     }
-    return sum;
+    return sum * global_gain_.load();
 }
 
 void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q,
@@ -105,6 +105,9 @@ void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q,
             out_q += q;
         }
     }
+    double g = global_gain_.load();
+    out_i *= g;
+    out_q *= g;
 }
 
 void StimulusManager::freeze() {
@@ -145,6 +148,9 @@ void StimulusManager::getRfIQ_fast(double time_s, double& out_i, double& out_q,
         out_i += i;
         out_q += q;
     }
+    double g = global_gain_.load();
+    out_i *= g;
+    out_q *= g;
 }
 
 void StimulusManager::generateBatch(double start_time, double sample_period,
@@ -164,6 +170,11 @@ void StimulusManager::generateBatch(double start_time, double sample_period,
             out_iq[i * 2 + 1] += rf_q;
             t += sample_period;
         }
+    }
+    
+    double g = global_gain_.load();
+    for (size_t i = 0; i < count * 2; ++i) {
+        out_iq[i] *= g;
     }
 }
 

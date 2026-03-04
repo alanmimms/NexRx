@@ -125,6 +125,12 @@ public:
     // Reset all stimuli (restart playback, etc.)
     void resetAll();
 
+    // Global signal level control for fading/AGC testing
+    void setGlobalLeveldB(double level_db) { 
+        global_gain_.store(std::pow(10.0, level_db / 20.0)); 
+    }
+    double getGlobalGain() const { return global_gain_.load(); }
+
     // Check if any active stimulus is within bandwidth of target frequency
     bool isAnyWithin(double center_hz, double bandwidth_hz) const;
 
@@ -141,6 +147,7 @@ private:
     // Frozen snapshot for lock-free access during streaming
     std::atomic<bool> frozen_{false};
     std::vector<StimulusPtr> frozenStimuli_;  // Enabled stimuli only
+    std::atomic<double> global_gain_{1.0};
 };
 
 } // namespace nexrx
