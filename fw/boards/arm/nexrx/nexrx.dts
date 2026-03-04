@@ -12,6 +12,7 @@
 		zephyr,dtcm = &dtcm;
 		zephyr,console = &usart6;
 		zephyr,shell-uart = &usart6;
+		zephyr,display = &st7789v;
 	};
 
 	leds {
@@ -36,8 +37,9 @@
 
 	nexbus {
 		compatible = "nexrx,nexbus";
-		pinctrl-0 = <&tim3_ch1_pc6 &usart6_tx_pc6>;
-		pinctrl-names = "default";
+		pinctrl-0 = <&tim3_ch1_pc6>;
+		pinctrl-1 = <&usart6_tx_pc6>;
+		pinctrl-names = "mode_a", "mode_b";
 		status = "okay";
 	};
 
@@ -86,7 +88,6 @@
 			label = "CDC_ACM_1";
 		};
 
-		/* Custom Vendor Bulk for IQ Data Pump */
 		iq_data_pump: iq_data_pump {
 			compatible = "zephyr,usb-vendor-bulk";
 			status = "okay";
@@ -180,6 +181,33 @@
 	pinctrl-names = "default";
 	cs-gpios = <&gpioa 11 GPIO_ACTIVE_LOW>;
 	status = "okay";
+
+	st7789v: st7789v@0 {
+		compatible = "sitronix,st7789v";
+		reg = <0>;
+		spi-max-frequency = <32000000>;
+		reset-gpios = <&gpioe 12 GPIO_ACTIVE_LOW>;
+		dc-gpios = <&gpioe 13 GPIO_ACTIVE_LOW>;
+		width = <240>;
+		height = <135>;
+		x-offset = <0>;
+		y-offset = <40>;
+		vcom = <0x19>;
+		gctrl = <0x35>;
+		vrhs = <0x12>;
+		vdvs = <0x20>;
+		mdac = <0x00>;
+		gamma = <0x01>;
+		colmod = <0x05>;
+		lcm = <0x2c>;
+		porch-param = [0c 0c 00 33 33];
+		cmd2en-param = [33 06 04];
+		pwctrl1-param = [a4 a1];
+		pvgam-param = [d0 04 0d 11 13 2b 3f 54 4c 18 0d 0b 1f 23];
+		nvgam-param = [d0 04 0c 11 13 2c 3f 44 51 2f 1f 1f 20 23];
+		ram-param = [00 f0];
+		rgb-param = [cd 08 14];
+	};
 };
 
 &spi4 {

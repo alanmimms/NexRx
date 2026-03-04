@@ -17,9 +17,11 @@ target_sources(app PRIVATE
     src/drivers/AK5578.cpp
     src/drivers/MAX9939.cpp
     src/drivers/NexBus.cpp
+    src/drivers/DisplayManager.cpp
     src/transport/USBManager.cpp
     src/transport/QSDCapture.cpp
     src/transport/ControlHandler.cpp
+    src/transport/UsbCdcTransport.cpp
 )
 
 # Include directories

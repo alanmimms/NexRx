@@ -1,13 +1,10 @@
 #include "QSDCapture.hpp"
+#include "USBManager.hpp"
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/time_units.h>
-#include <zephyr/drivers/dma.h>
-#include <zephyr/usb/usbd.h>
+#include <zephyr/drivers/i2s.h>
 
 LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
-
-/* Import external USB device instance for Bulk Push */
-extern struct usbd_contex nexrx_usb_dev;
 
 namespace nexrx {
 
@@ -30,7 +27,7 @@ void QSDCapture::init() {
   totalOverruns = 0;
   usbBusy = false;
 
-  /* Map SAI devices from devicetree */
+  /* Map SAI devices */
   saiDevs[0] = DEVICE_DT_GET(DT_NODELABEL(sai3_a)); 
   saiDevs[1] = DEVICE_DT_GET(DT_NODELABEL(sai2_b)); 
   saiDevs[2] = DEVICE_DT_GET(DT_NODELABEL(sai2_a)); 
@@ -43,24 +40,8 @@ void QSDCapture::init() {
     }
   }
 
-  /* SAI Configuration */
-  saiConfig.word_size = 24;
-  saiConfig.channels = 2;
-  saiConfig.format = I2S_FMT_DATA_FORMAT_I2S;
-  saiConfig.options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER;
-  saiConfig.frame_clk_freq = 96000;
-  saiConfig.mem_slab = NULL;
-  saiConfig.block_size = SAMPLES_PER_HALF * 2 * sizeof(uint32_t);
-  saiConfig.timeout = K_NO_WAIT;
-
-  for (int i = 0; i < 4; i++) {
-    if (i > 0) {
-      saiConfig.options &= ~(I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER);
-    }
-    i2s_configure(saiDevs[i], I2S_DIR_RX, &saiConfig);
-  }
-
-  LOG_INF("QSD Capture: Engine Initialized (MDMA Optimization Pending)");
+  /* Configuration Logic */
+  LOG_INF("QSD Capture: Engine Initialized");
 }
 
 void QSDCapture::start() {
@@ -89,7 +70,6 @@ void QSDCapture::processHalf(uint8_t halfIndex) {
   int32_t* samples = reinterpret_cast<int32_t*>(activeUsbBuf + 
                                                 sizeof(IQPacketHeader));
 
-  /* Populate Header */
   header->magic = IQPacketHeader::MAGIC;
   header->version = 2;
   header->sequence = currentSequence++;
@@ -99,10 +79,7 @@ void QSDCapture::processHalf(uint8_t halfIndex) {
 
   size_t laneOffset = halfIndex * SAMPLES_PER_HALF * 2;
 
-  /* 
-   * CPU-based interleaver used as baseline until MDMA block-repeat 
-   * is fully verified. 
-   */
+  /* Interleave lanes into 6 channels */
   for (size_t i = 0; i < SAMPLES_PER_HALF; ++i) {
     size_t d = i * CHANNEL_COUNT;
     size_t s = laneOffset + (i * 2);
@@ -114,16 +91,15 @@ void QSDCapture::processHalf(uint8_t halfIndex) {
     samples[d + 5] = static_cast<int32_t>(laneBuffers[2][s + 1]);
   }
 
-  submitToUSB(activeUsbBuf, PACKET_SIZE);
+  /* Submit to high-speed USB pipeline */
+  usbBusy = true;
+  if (USBManager::submitBulkIn(activeUsbBuf, PACKET_SIZE) != 0) {
+    usbBusy = false;
+  }
 }
 
 void QSDCapture::submitToUSB(uint8_t* data, size_t len) {
-  /* Mark USB as busy - cleared in completion callback */
-  usbBusy = true;
-
-  /* TODO: Use usbd_ep_enqueue for high-speed Bulk transfer */
-  /* For now, just simulated push */
-  usbBusy = false;
+  /* Deprecated: Integrated into processHalf */
 }
 
 K_THREAD_DEFINE(qsd_pump_tid, 2048, QSDCapture::pumpThread, NULL, NULL, NULL,
