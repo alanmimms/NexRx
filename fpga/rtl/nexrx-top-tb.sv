@@ -5,9 +5,9 @@ module NexRxTopTb;
     /* Simulation Signals */
     logic clk40m;
     logic spiSck, spiMosi, spiMiso, spiNss;
-    logic [3:0] qsd0Clk, qsd1Clk;
-    logic [5:0] qsd2Clk;
-    logic isgOut;
+    logic [3:0] QSD0Clk, QSD1Clk;
+    logic [5:0] QSD2Clk;
+    logic ISGOut;
 
     /* Clock Generation: 40 MHz TCXO */
     initial clk40m = 0;
@@ -20,10 +20,10 @@ module NexRxTopTb;
         .spiMosi(spiMosi),
         .spiMiso(spiMiso),
         .spiNss(spiNss),
-        .qsd0Clk(qsd0Clk),
-        .qsd1Clk(qsd1Clk),
-        .qsd2Clk(qsd2Clk),
-        .isgOut(isgOut)
+        .QSD0Clk(QSD0Clk),
+        .QSD1Clk(QSD1Clk),
+        .QSD2Clk(QSD2Clk),
+        .ISGOut(ISGOut)
     );
 
     /* SPI Master Model Task */
@@ -74,11 +74,10 @@ module NexRxTopTb;
         /* 3. Observe Phasing */
         #1000;
         $display("[Test 3] Verifying QSD2 Sextature Phasing...");
-        /* Verify that QSD2 phases are non-zero after configuration */
         spiXfer(8'hC0, 32'd1002159035, rdata);
         spiXfer(8'h81, 32'h1, rdata);
         #500;
-        if (qsd2Clk !== 6'b0) begin
+        if (QSD2Clk !== 6'b0) begin
             $display("  PASS: QSD2 clocks are active");
         end else begin
             $display("  FAIL: QSD2 clocks are stuck at zero");

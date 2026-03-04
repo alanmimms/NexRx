@@ -14,11 +14,12 @@ module RegisterBank (
     input  logic        spiNss,
 
     /* Register Outputs */
-    output logic [31:0] isgInc,
-    output logic [31:0] qsd0Inc,
-    output logic [31:0] qsd1Inc,
-    output logic [31:0] qsd2Inc,
-    output logic        commitPulse,
+    output logic [31:0] ISGInc,
+    output logic [31:0] QSD0Inc,
+    output logic [31:0] QSD1Inc,
+    output logic [31:0] QSD2Inc,
+    output logic        commitFreq,
+    output logic        commitPhase,
 
     /* Inputs from Internal Logic */
     input  logic [63:0] tcxoTimer
@@ -35,10 +36,10 @@ module RegisterBank (
     logic [31:0] dataOut;
 
     logic [31:0] scratchReg;
-    logic [31:0] isgIncShadow;
-    logic [31:0] qsd0IncShadow;
-    logic [31:0] qsd1IncShadow;
-    logic [31:0] qsd2IncShadow;
+    logic [31:0] ISGIncShadow;
+    logic [31:0] QSD0IncShadow;
+    logic [31:0] QSD1IncShadow;
+    logic [31:0] QSD2IncShadow;
 
     logic [31:0] timeHLatch;
     logic [31:0] tcxoTimerLow;
@@ -97,23 +98,28 @@ module RegisterBank (
     always_ff @(posedge clkSys or negedge resetN) begin
         if (!resetN) begin
             scratchReg <= 32'h55AA;
-            isgIncShadow <= 32'h0;
-            qsd0IncShadow <= 32'h0;
-            qsd1IncShadow <= 32'h0;
-            qsd2IncShadow <= 32'h0;
-            commitPulse <= 1'b0;
+            ISGIncShadow <= 32'h0;
+            QSD0IncShadow <= 32'h0;
+            QSD1IncShadow <= 32'h0;
+            QSD2IncShadow <= 32'h0;
+            commitFreq <= 1'b0;
+            commitPhase <= 1'b0;
             timeHLatch <= 32'h0;
         end else begin
-            commitPulse <= 1'b0;
+            commitFreq <= 1'b0;
+            commitPhase <= 1'b0;
             if (cmdDoneSys) begin
                 if (isWrite) begin
                     case (addr)
                         7'h00: scratchReg <= dataIn;
-                        7'h01: commitPulse <= 1'b1;
-                        7'h10: isgIncShadow <= dataIn;
-                        7'h20: qsd0IncShadow <= dataIn;
-                        7'h30: qsd1IncShadow <= dataIn;
-                        7'h40: qsd2IncShadow <= dataIn;
+                        7'h01: begin
+                            commitFreq <= dataIn[0];
+                            commitPhase <= dataIn[1];
+                        end
+                        7'h10: ISGIncShadow <= dataIn;
+                        7'h20: QSD0IncShadow <= dataIn;
+                        7'h30: QSD1IncShadow <= dataIn;
+                        7'h40: QSD2IncShadow <= dataIn;
                     endcase
                 end else if (addr == 7'h04) begin
                     timeHLatch <= tcxoTimer[63:32];
@@ -125,19 +131,21 @@ module RegisterBank (
     always_comb begin
         case (addr)
             7'h00: dataOut = scratchReg;
+            7'h02: dataOut = 32'h4E585258; /* "NXRX" */
+            7'h03: dataOut = 32'h00010000; /* v1.0.0 */
             7'h04: dataOut = tcxoTimerLow;
             7'h05: dataOut = timeHLatch;
-            7'h10: dataOut = isgIncShadow;
-            7'h20: dataOut = qsd0IncShadow;
-            7'h30: dataOut = qsd1IncShadow;
-            7'h40: dataOut = qsd2IncShadow;
+            7'h10: dataOut = ISGIncShadow;
+            7'h20: dataOut = QSD0IncShadow;
+            7'h30: dataOut = QSD1IncShadow;
+            7'h40: dataOut = QSD2IncShadow;
             default: dataOut = 32'hDEADBEEF;
         endcase
     end
 
-    assign isgInc = isgIncShadow;
-    assign qsd0Inc = qsd0IncShadow;
-    assign qsd1Inc = qsd1IncShadow;
-    assign qsd2Inc = qsd2IncShadow;
+    assign ISGInc = ISGIncShadow;
+    assign QSD0Inc = QSD0IncShadow;
+    assign QSD1Inc = QSD1IncShadow;
+    assign QSD2Inc = QSD2IncShadow;
 
 endmodule

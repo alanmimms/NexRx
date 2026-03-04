@@ -15,7 +15,12 @@ generic index variables to be int. I want to use C string variables
 and arrays instead of std::string or std::string_view where possible
 to avoid all the verbosity and conversions to and from C string
 representation. Make all template parameters names all uppercase.
-Instead of names like "n_call" use e.g., "nCall".
+Instead of names like "n_call" use e.g., "nCall". Even within
+camelCase acronymous are to be in ALL CAPS so uQSDFoo1 is the right
+way to spell with the QSD acronym. The exception is for when the
+acronym is the first of multi-word symbol names like qsdSetMode which
+should make it lowercase when lowercase would normally be used for
+that symbol.
 
 In your responses I want no congratulation or attempts to show me I'm smart.
 

@@ -2,11 +2,12 @@
  * nco-core.sv
  * 32-bit Numerically Controlled Oscillator with Shadow Register.
  */
-module NcoCore (
+module NCOCore (
     input  logic        clk,
     input  logic        resetN,
     input  logic [31:0] nextIncrement,
     input  logic        commit,
+    input  logic        forceReset, /* Force phase to zero for alignment */
     output logic        pulse
 );
 
@@ -28,13 +29,15 @@ module NcoCore (
         if (!resetN) begin
             accumulator <= 32'h0;
             accMsbPrev <= 1'b0;
+        end else if (forceReset) begin
+            accumulator <= 32'h0;
+            accMsbPrev <= 1'b0;
         end else begin
             accumulator <= accumulator + increment;
             accMsbPrev <= accumulator[31];
         end
     end
 
-    /* Output a single-cycle pulse on MSB rising edge (overflow) */
     assign pulse = (accumulator[31] && !accMsbPrev);
 
 endmodule

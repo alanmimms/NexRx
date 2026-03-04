@@ -14,12 +14,12 @@ module NexRxTop (
     input  logic spiNss,
 
     /* QSD Outputs */
-    output logic [3:0] qsd0Clk,
-    output logic [3:0] qsd1Clk,
-    output logic [5:0] qsd2Clk,
+    output logic [3:0] QSD0Clk,
+    output logic [3:0] QSD1Clk,
+    output logic [5:0] QSD2Clk,
 
     /* Internal Signal Gen */
-    output logic isgOut
+    output logic ISGOut
 );
 
     /* Clocking & Reset */
@@ -50,10 +50,12 @@ module NexRxTop (
     assign resetN = pllLocked;
 
     /* Internal Interconnects */
-    logic [31:0] isgInc, qsd0Inc, qsd1Inc, qsd2Inc;
-    logic        commitPulse;
+    logic [31:0] ISGInc, QSD0Inc, QSD1Inc, QSD2Inc;
+    logic        commitFreq, commitPhase;
     logic [63:0] tcxoTimer;
-    logic        isgPulse, qsd0Pulse, qsd1Pulse, qsd2Pulse;
+    logic        ISGPulse, QSD0Pulse, QSD1Pulse, QSD2Pulse;
+    logic        noiseBit;
+    logic        ISGTone;
 
     //==================================================================
     // Register Bank & SPI
@@ -66,13 +68,19 @@ module NexRxTop (
         .spiMosi(spiMosi),
         .spiMiso(spiMiso),
         .spiNss(spiNss),
-        .isgInc(isgInc),
-        .qsd0Inc(qsd0Inc),
-        .qsd1Inc(qsd1Inc),
-        .qsd2Inc(qsd2Inc),
-        .commitPulse(commitPulse),
+        .ISGInc(ISGInc),
+        .QSD0Inc(QSD0Inc),
+        .QSD1Inc(QSD1Inc),
+        .QSD2Inc(QSD2Inc),
+        .commitFreq(commitFreq),
+        .commitPhase(commitPhase),
         .tcxoTimer(tcxoTimer)
     );
+
+    //==================================================================
+    // Noise Generator
+    //==================================================================
+    NoiseGen uNoise (.clk(clkSys), .resetN(resetN), .out(noiseBit));
 
     //==================================================================
     // Precision Monotonic Timer
@@ -88,24 +96,35 @@ module NexRxTop (
     //==================================================================
     // NCO Cores
     //==================================================================
-    NcoCore uNcoIsg  (.clk(clkSys), .resetN(resetN), .nextIncrement(isgInc),  .commit(commitPulse), .pulse(isgPulse));
-    NcoCore uNcoQsd0 (.clk(clkSys), .resetN(resetN), .nextIncrement(qsd0Inc), .commit(commitPulse), .pulse(qsd0Pulse));
-    NcoCore uNcoQsd1 (.clk(clkSys), .resetN(resetN), .nextIncrement(qsd1Inc), .commit(commitPulse), .pulse(qsd1Pulse));
-    NcoCore uNcoQsd2 (.clk(clkSys), .resetN(resetN), .nextIncrement(qsd2Inc), .commit(commitPulse), .pulse(qsd2Pulse));
+    NCOCore uNCOIsg  (.clk(clkSys), .resetN(resetN), .nextIncrement(ISGInc),  .commit(commitFreq), .forceReset(commitPhase), .pulse(ISGPulse));
+    NCOCore uNCOQSD0 (.clk(clkSys), .resetN(resetN), .nextIncrement(QSD0Inc), .commit(commitFreq), .forceReset(commitPhase), .pulse(QSD0Pulse));
+    NCOCore uNCOQSD1 (.clk(clkSys), .resetN(resetN), .nextIncrement(QSD1Inc), .commit(commitFreq), .forceReset(commitPhase), .pulse(QSD1Pulse));
+    NCOCore uNCOQSD2 (.clk(clkSys), .resetN(resetN), .nextIncrement(QSD2Inc), .commit(commitFreq), .forceReset(commitPhase), .pulse(QSD2Pulse));
 
     //==================================================================
     // Phase Generators (Walking Rings)
     //==================================================================
-    PhaseGen4 uGenQsd0 (.clk(clkSys), .resetN(resetN), .pulse(qsd0Pulse), .phases(qsd0Clk));
-    PhaseGen4 uGenQsd1 (.clk(clkSys), .resetN(resetN), .pulse(qsd1Pulse), .phases(qsd1Clk));
-    PhaseGen6 uGenQsd2 (.clk(clkSys), .resetN(resetN), .pulse(qsd2Pulse), .phases(qsd2Clk));
+    PhaseGen4 uGenQSD0 (.clk(clkSys), .resetN(resetN), .pulse(QSD0Pulse), .phases(QSD0Clk));
+    PhaseGen4 uGenQSD1 (.clk(clkSys), .resetN(resetN), .pulse(QSD1Pulse), .phases(QSD1Clk));
+    PhaseGen6 uGenQSD2 (.clk(clkSys), .resetN(resetN), .pulse(QSD2Pulse), .phases(QSD2Clk));
 
-    /* Simple ISG output toggle */
+    //==================================================================
+    // ISG Logic & Mode Mux
+    //==================================================================
     always_ff @(posedge clkSys or negedge resetN) begin
         if (!resetN)
-            isgOut <= 1'b0;
-        else if (isgPulse)
-            isgOut <= ~isgOut;
+            ISGTone <= 1'b0;
+        else if (ISGPulse)
+            ISGTone <= ~ISGTone;
+    end
+
+    always_comb begin
+        if (ISGInc == 32'd0)
+            ISGOut = 1'b0;
+        else if (ISGInc == 32'd1)
+            ISGOut = noiseBit;
+        else
+            ISGOut = ISGTone;
     end
 
 endmodule

@@ -1,5 +1,6 @@
-#include "QSDCapture.hpp"
-#include "USBManager.hpp"
+#include "qsd-capture.hpp"
+#include "usb-manager.hpp"
+#include "../drivers/fpga-manager.hpp"
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/time_units.h>
 #include <zephyr/drivers/i2s.h>
@@ -27,25 +28,17 @@ void QSDCapture::init() {
   totalOverruns = 0;
   usbBusy = false;
 
-  /* Map SAI devices */
   saiDevs[0] = DEVICE_DT_GET(DT_NODELABEL(sai3_a)); 
   saiDevs[1] = DEVICE_DT_GET(DT_NODELABEL(sai2_b)); 
   saiDevs[2] = DEVICE_DT_GET(DT_NODELABEL(sai2_a)); 
   saiDevs[3] = DEVICE_DT_GET(DT_NODELABEL(sai4_a)); 
 
   for (int i = 0; i < 4; i++) {
-    if (!device_is_ready(saiDevs[i])) {
-      LOG_ERR("QSD Capture: SAI Device %d not ready", i);
-      return;
-    }
+    if (!device_is_ready(saiDevs[i])) return;
   }
-
-  /* Configuration Logic */
-  LOG_INF("QSD Capture: Engine Initialized");
 }
 
 void QSDCapture::start() {
-  LOG_INF("QSD Capture: Starting synchronous streams...");
   i2s_trigger(saiDevs[1], I2S_DIR_RX, I2S_TRIGGER_START);
   i2s_trigger(saiDevs[2], I2S_DIR_RX, I2S_TRIGGER_START);
   i2s_trigger(saiDevs[3], I2S_DIR_RX, I2S_TRIGGER_START);
@@ -73,13 +66,15 @@ void QSDCapture::processHalf(uint8_t halfIndex) {
   header->magic = IQPacketHeader::MAGIC;
   header->version = 2;
   header->sequence = currentSequence++;
-  header->timestampNS = k_ticks_to_ns_near64(k_uptime_ticks());
+  
+  /* Use precision TCXO timestamp from FPGA instead of MCU ticks */
+  header->timestampNS = FPGAManager::getTCXOTimestamp();
+  
   header->frameCount = SAMPLES_PER_HALF;
   header->overrunCount = totalOverruns;
 
   size_t laneOffset = halfIndex * SAMPLES_PER_HALF * 2;
 
-  /* Interleave lanes into 6 channels */
   for (size_t i = 0; i < SAMPLES_PER_HALF; ++i) {
     size_t d = i * CHANNEL_COUNT;
     size_t s = laneOffset + (i * 2);
@@ -91,16 +86,13 @@ void QSDCapture::processHalf(uint8_t halfIndex) {
     samples[d + 5] = static_cast<int32_t>(laneBuffers[2][s + 1]);
   }
 
-  /* Submit to high-speed USB pipeline */
   usbBusy = true;
   if (USBManager::submitBulkIn(activeUsbBuf, PACKET_SIZE) != 0) {
     usbBusy = false;
   }
 }
 
-void QSDCapture::submitToUSB(uint8_t* data, size_t len) {
-  /* Deprecated: Integrated into processHalf */
-}
+void QSDCapture::submitToUSB(uint8_t* data, size_t len) {}
 
 K_THREAD_DEFINE(qsd_pump_tid, 2048, QSDCapture::pumpThread, NULL, NULL, NULL,
                 -1, K_FP_REGS, 0);
