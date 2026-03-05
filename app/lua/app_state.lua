@@ -56,7 +56,8 @@ local specs = {
     vfoB          = { min = 0.1, max = 30.0 },
     activeVFO     = {},
     selectedMode  = { setter = function(v) 
-        require("modes").setMode(v) 
+        local modeHelper = require("modes")
+        modeHelper.setMode(v) 
         if v == "AM" then
             AppState.set("bandpassEnabled", true)
             AppState.set("bandpassWidth", 6000)

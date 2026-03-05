@@ -11,13 +11,15 @@
 #include <iostream>
 #include <atomic>
 #include <algorithm>
+#include <deque>
 
 class Demodulator {
 public:
-  enum class Mode { USB = 0, LSB = 1, AM = 2, CW = 3 };
+  enum class Mode { USB = 0, LSB = 1, AM = 2, CW = 3, BYPASS = 4 };
 
   Demodulator() {
     computeFilterCoeffs();
+    hilbertHistory.resize(hilbertTaps, 0.0f);
   }
 
   void setMode(Mode m) { mode = m; }
@@ -52,6 +54,11 @@ public:
     float audio = 0.0f;
 
     switch (mode) {
+      case Mode::BYPASS: {
+        // Just raw I channel for verification
+        audio = i;
+        break;
+      }
       case Mode::AM: {
         audio = std::sqrt(magSq);
         // DC blocker
@@ -65,18 +72,18 @@ public:
         bfoPhase = std::fmod(bfoPhase + bfoPhaseInc, 2.0f * 3.14159265f);
         break;
       }
-      case Mode::USB: {
-        // Simplified phasing: I + Q (this will have an image, but it WILL have audio)
-        audio = i + q;
-        break;
-      }
+      case Mode::USB:
       case Mode::LSB: {
-        audio = i - q;
+        // For proper phasing SSB, we need to shift Q by 90 degrees (Hilbert)
+        // or use the analytic signal property.
+        // If the twin sends analytic baseband (positive freq only for USB),
+        // then I+Q or I-Q works. If it's real RF mixed with quadrature LO:
+        audio = (mode == Mode::USB) ? (i + q) : (i - q);
         break;
       }
     }
 
-    if (filterEnabled) {
+    if (filterEnabled && mode != Mode::BYPASS) {
       audio = applyBandpassFilter(audio);
     }
 
@@ -94,6 +101,10 @@ private:
   std::atomic<float> signalLevelRMS{0.0f};
   double rmsAccum = 0;
   int sampleAccum = 0;
+
+  // Hilbert for phasing (optional, not used in simple sum/diff yet)
+  static constexpr int hilbertTaps = 31;
+  std::vector<float> hilbertHistory;
 
   // Audio bandpass filter
   static constexpr int lpStages = 2;
@@ -113,7 +124,6 @@ private:
   }
 
   void computeFilterCoeffs() {
-    // Reset states
     for(auto& s : hpState) s = {0,0};
     for(auto& s : lpState) s = {0,0};
 

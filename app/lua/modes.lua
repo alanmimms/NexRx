@@ -17,7 +17,7 @@ local Modes = {}
 
 -- SINGLE SOURCE OF TRUTH: Mode names in ID order (index 1 = ID 0)
 -- Order must match C++ Demodulator::Mode enum
-Modes.names = {"USB", "LSB", "AM", "CW"}
+Modes.names = {"USB", "LSB", "AM", "CW", "BYPASS"}
 
 -- Derive all other tables from names
 Modes.nameToId = {}

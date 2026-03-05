@@ -297,9 +297,12 @@ function draw()
         cx, cy = layout.getCursor(); ui.label("mode-l", cx, cy, "Mode", {"Title"}); layout.newLine(24)
         layout.beginHorizontal(4)
         for _, m in ipairs(modeHelper.names) do
-            local bx, by = layout.reserveSpace(50, 26)
+            local bx, by = layout.reserveSpace(40, 26)
             local active = state.selectedMode == m and {"Active"} or {}
-            ui.button("mode-"..m:lower(), m, bx, by, 50, 26, {"Mode"..m, table.unpack(active)})
+            local label = m == "BYPASS" and "RAW" or m
+            if ui.button("mode-"..m:lower(), label, bx, by, 40, 26, {"Mode"..m, table.unpack(active)}) then
+                setProperty("selectedMode", m)
+            end
         end
         layout.endHorizontal(); layout.newLine(12)
 
