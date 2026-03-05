@@ -4,10 +4,10 @@
 
 #include "StimulusLua.hpp"
 #include "MorseGenerator.hpp"
-#include "SsbGenerator.hpp"
-#include "AmGenerator.hpp"
+#include "SSBGenerator.hpp"
+#include "AMGenerator.hpp"
 #include "SweepGenerator.hpp"
-#include "TtsEngine.hpp"
+#include "TTSEngine.hpp"
 #include "ToneGenerator.hpp"
 #include "NoiseGenerator.hpp"
 
@@ -136,11 +136,11 @@ void StimulusLua::registerBindings(sol::state& lua) {
         double amplitude = config.get_or("amplitude", 50e-6);
         std::string modeStr = config.get_or<std::string>("mode", "usb");
 
-        SsbGenerator::Mode mode = (modeStr == "lsb" || modeStr == "LSB")
-            ? SsbGenerator::Mode::LSB
-            : SsbGenerator::Mode::USB;
+        SSBGenerator::Mode mode = (modeStr == "lsb" || modeStr == "LSB")
+            ? SSBGenerator::Mode::LSB
+            : SSBGenerator::Mode::USB;
 
-        auto ssb = std::make_shared<SsbGenerator>(freq, amplitude, mode);
+        auto ssb = std::make_shared<SSBGenerator>(freq, amplitude, mode);
 
         // Check for tones
         sol::optional<sol::table> tonesOpt = config["tones"];
@@ -164,7 +164,7 @@ void StimulusLua::registerBindings(sol::state& lua) {
         if (voiceOpt) {
             bool repeat = config.get_or("loop", true);
 
-            auto tts = std::make_shared<TtsEngine>();
+            auto tts = std::make_shared<TTSEngine>();
             tts->setText(*voiceOpt);
             tts->setRepeat(repeat);
 
@@ -234,7 +234,7 @@ void StimulusLua::registerBindings(sol::state& lua) {
         double amplitude = config.get_or("amplitude", 50e-6);
         double modIndex = config.get_or("modIndex", 0.8);
 
-        auto am = std::make_shared<AmGenerator>(freq, amplitude);
+        auto am = std::make_shared<AMGenerator>(freq, amplitude);
         am->setModulationIndex(modIndex);
 
         // Check for tones
@@ -397,8 +397,8 @@ void StimulusLua::registerBindings(sol::state& lua) {
         for (const auto& info : manager_->listInfo()) {
             sol::table entry = lua.create_table();
             entry["type"] = info.type;
-            entry["freq"] = info.frequency_hz;
-            entry["amplitude"] = info.amplitude_v;
+            entry["freq"] = info.frequencyHz;
+            entry["amplitude"] = info.amplitudeV;
             entry["active"] = info.active;
             result[info.name] = entry;
         }

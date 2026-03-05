@@ -10,7 +10,7 @@
 #include "transport/USBManager.hpp"
 #include "transport/QSDCapture.hpp"
 #include "transport/ControlHandler.hpp"
-#include "transport/UsbCdcTransport.hpp"
+#include "transport/USBCDCTransport.hpp"
 
 LOG_MODULE_REGISTER(nexrx_main, LOG_LEVEL_INF);
 
@@ -41,7 +41,7 @@ int main() {
   nexrx::QSDCapture::init();
 
   /* 7. Initialize Control Plane Transport */
-  static nexrx::UsbCdcTransport controlTransport;
+  static nexrx::USBCDCTransport controlTransport;
   controlTransport.init();
 
   LOG_INF("System Initialization Complete.");

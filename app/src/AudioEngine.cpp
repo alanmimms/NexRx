@@ -15,174 +15,144 @@
 AudioEngine::AudioEngine() = default;
 
 AudioEngine::~AudioEngine() {
-    shutdown();
+  shutdown();
 }
 
-bool AudioEngine::init(uint32_t sampleRate, uint32_t channels) {
-    if (initialized_) {
-        return true;
-    }
-
-    sampleRate_ = sampleRate;
-    channels_ = channels;
-
-    device_ = new ma_device();
-
-    ma_device_config config = ma_device_config_init(ma_device_type_playback);
-    config.playback.format = ma_format_f32;
-    config.playback.channels = channels;
-    config.sampleRate = sampleRate;
-    config.dataCallback = &AudioEngine::dataCallback;
-    config.pUserData = this;
-
-    // Increase period size for better VM/Windows compatibility
-    // Higher latency but more tolerance for jitter
-    // Windows VMs especially need large buffers due to audio virtualization
-    config.periodSizeInMilliseconds = 100;  // 100ms periods
-    config.periods = 4;                      // Quadruple buffering
-
-    ma_result result = ma_device_init(nullptr, &config, device_);
-    if (result != MA_SUCCESS) {
-        std::cerr << "Failed to initialize audio device: " << result << std::endl;
-        delete device_;
-        device_ = nullptr;
-        return false;
-    }
-
-    initialized_ = true;
-
-    // Pre-allocate callback buffer (generous size to avoid reallocation)
-    // With 100ms periods at 48kHz = 4800 frames, allocate 8192 to be safe
-    callbackBuffer_.resize(8192 * channels, 0.0f);
-
-    std::cout << "Audio initialized: " << sampleRate << " Hz, " << channels << " channels" << std::endl;
-    std::cout << "  Actual period: " << device_->playback.internalPeriodSizeInFrames << " frames" << std::endl;
-    std::cout << "  Actual periods: " << device_->playback.internalPeriods << std::endl;
-
+bool AudioEngine::init(uint32_t sampleRateIn, uint32_t channelsIn) {
+  if (initialized) {
     return true;
+  }
+
+  sampleRate = sampleRateIn;
+  channels = channelsIn;
+
+  device = new ma_device();
+
+  ma_device_config config = ma_device_config_init(ma_device_type_playback);
+  config.playback.format = ma_format_f32;
+  config.playback.channels = channels;
+  config.sampleRate = sampleRate;
+  config.dataCallback = &AudioEngine::dataCallback;
+  config.pUserData = this;
+
+  // Increase period size for better VM/Windows compatibility
+  config.periodSizeInMilliseconds = 40; 
+  config.periods = 3;
+
+  ma_result result = ma_device_init(nullptr, &config, device);
+  if (result != MA_SUCCESS) {
+    std::cerr << "Failed to initialize audio device: " << result << std::endl;
+    delete device;
+    device = nullptr;
+    return false;
+  }
+
+  initialized = true;
+
+  // Pre-allocate callback buffer
+  callbackBuffer.resize(8192 * channels, 0.0f);
+
+  std::cout << "Audio initialized: " << sampleRate << " Hz, " << channels << " channels" << std::endl;
+  return true;
 }
 
 void AudioEngine::shutdown() {
-    if (!initialized_) {
-        return;
-    }
+  if (!initialized) {
+    return;
+  }
 
-    stop();
+  stop();
 
-    if (device_) {
-        ma_device_uninit(device_);
-        delete device_;
-        device_ = nullptr;
-    }
+  if (device) {
+    ma_device_uninit(device);
+    delete device;
+    device = nullptr;
+  }
 
-    initialized_ = false;
+  initialized = false;
 }
 
 bool AudioEngine::start() {
-    if (!initialized_ || playing_.load()) {
-        return playing_.load();
-    }
+  if (!initialized || playing.load()) {
+    return playing.load();
+  }
 
-    ma_result result = ma_device_start(device_);
-    if (result != MA_SUCCESS) {
-        std::cerr << "Failed to start audio device: " << result << std::endl;
-        return false;
-    }
+  ma_result result = ma_device_start(device);
+  if (result != MA_SUCCESS) {
+    std::cerr << "Failed to start audio device: " << result << std::endl;
+    return false;
+  }
 
-    playing_.store(true);
-    return true;
+  playing.store(true);
+  return true;
 }
 
 void AudioEngine::stop() {
-    if (!initialized_ || !playing_.load()) {
-        return;
-    }
+  if (!initialized || !playing.load()) {
+    return;
+  }
 
-    ma_device_stop(device_);
-    playing_.store(false);
+  ma_device_stop(device);
+  playing.store(false);
 }
 
-void AudioEngine::setVolume(float volume) {
-    volume_.store(std::clamp(volume, 0.0f, 1.0f));
+void AudioEngine::setVolume(float vol) {
+  volume.store(std::clamp(vol, 0.0f, 2.0f));
 }
 
 void AudioEngine::setTestTone(bool enabled, float frequency) {
-    testToneEnabled_.store(enabled);
-    testToneFrequency_.store(frequency);
-    if (!enabled) {
-        testTonePhase_ = 0.0f;
-    }
+  testToneEnabled.store(enabled);
+  testToneFrequency.store(frequency);
+  if (!enabled) {
+    testTonePhase = 0.0f;
+  }
 }
 
-void AudioEngine::dataCallback(ma_device* device, void* output, const void* /*input*/, uint32_t frameCount) {
-    AudioEngine* engine = static_cast<AudioEngine*>(device->pUserData);
-    engine->processAudio(static_cast<float*>(output), frameCount);
+void AudioEngine::dataCallback(ma_device* dev, void* output, const void* /*input*/, uint32_t frameCount) {
+  AudioEngine* engine = static_cast<AudioEngine*>(dev->pUserData);
+  engine->processAudio(static_cast<float*>(output), frameCount);
 }
 
 void AudioEngine::processAudio(float* output, uint32_t frameCount) {
-    const uint32_t channels = channels_;
-    const uint32_t totalSamples = frameCount * channels;
+  const uint32_t chs = channels;
+  const uint32_t totalSamples = frameCount * chs;
 
-    // Clear buffer first
+  // 1. Start with silence or test tone
+  if (testToneEnabled.load()) {
+    const float frequency = testToneFrequency.load();
+    const float phaseIncrement = 2.0f * 3.14159265359f * frequency / sampleRate;
+
+    for (uint32_t frame = 0; frame < frameCount; ++frame) {
+      float s = std::sin(testTonePhase) * 0.2f;
+      testTonePhase = std::fmod(testTonePhase + phaseIncrement, 2.0f * 3.14159265359f);
+      for (uint32_t ch = 0; ch < chs; ++ch) {
+        output[frame * chs + ch] = s;
+      }
+    }
+  } else {
     for (uint32_t i = 0; i < totalSamples; ++i) {
-        output[i] = 0.0f;
+      output[i] = 0.0f;
     }
+  }
 
-    // If muted, output silence
-    if (muted_.load()) {
-        return;
+  // 2. Mix in callback audio (demodulator output)
+  if (callback) {
+    if (callbackBuffer.size() >= totalSamples) {
+      std::fill(callbackBuffer.begin(), callbackBuffer.begin() + totalSamples, 0.0f);
+      callback(callbackBuffer.data(), frameCount, chs);
+      for (uint32_t i = 0; i < totalSamples; ++i) {
+        output[i] += callbackBuffer[i];
+      }
     }
+  }
 
-    // Generate test tone if enabled
-    if (testToneEnabled_.load()) {
-        const float frequency = testToneFrequency_.load();
-        const float phaseIncrement = 2.0f * 3.14159265359f * frequency / sampleRate_;
-
-        for (uint32_t frame = 0; frame < frameCount; ++frame) {
-            float sample = std::sin(testTonePhase_) * 0.3f;  // 0.3 amplitude to avoid clipping
-            testTonePhase_ += phaseIncrement;
-
-            // Keep phase in reasonable range
-            if (testTonePhase_ > 2.0f * 3.14159265359f) {
-                testTonePhase_ -= 2.0f * 3.14159265359f;
-            }
-
-            // Write to all channels
-            for (uint32_t ch = 0; ch < channels; ++ch) {
-                output[frame * channels + ch] = sample;
-            }
-        }
-    }
-
-    // Call user callback if set
-    if (callback_) {
-        // Ensure pre-allocated buffer is large enough (should always be true)
-        if (callbackBuffer_.size() < totalSamples) {
-            // This should not happen in normal operation, but handle gracefully
-            // by skipping the callback rather than allocating in audio thread
-            return;
-        }
-
-        // Clear the portion we'll use
-        for (uint32_t i = 0; i < totalSamples; ++i) {
-            callbackBuffer_[i] = 0.0f;
-        }
-
-        callback_(callbackBuffer_.data(), frameCount, channels);
-
-        // Mix callback output with existing output
-        for (uint32_t i = 0; i < totalSamples; ++i) {
-            output[i] += callbackBuffer_[i];
-        }
-    }
-
-    // Apply volume
-    const float volume = volume_.load();
-    for (uint32_t i = 0; i < totalSamples; ++i) {
-        output[i] *= volume;
-
-        // Soft clipping
-        if (output[i] > 1.0f) output[i] = 1.0f;
-        if (output[i] < -1.0f) output[i] = -1.0f;
-    }
+  // 3. Apply volume and mute
+  const float vol = muted.load() ? 0.0f : volume.load();
+  for (uint32_t i = 0; i < totalSamples; ++i) {
+    output[i] *= vol;
+    
+    // Final safety clamp
+    if (output[i] > 1.0f) output[i] = 1.0f;
+    if (output[i] < -1.0f) output[i] = -1.0f;
+  }
 }

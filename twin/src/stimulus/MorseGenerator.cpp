@@ -71,10 +71,10 @@ constexpr size_t morseTableSize = sizeof(morseTable) / sizeof(morseTable[0]);
 // Implementation
 //======================================================================
 
-MorseGenerator::MorseGenerator(double freq_hz, double amplitude_v,
+MorseGenerator::MorseGenerator(double freqHz, double amplitudeV,
                                const std::string& text, double wpm)
-    : freq_hz_(freq_hz)
-    , amplitude_v_(amplitude_v)
+    : freq_hz_(freqHz)
+    , amplitude_v_(amplitudeV)
     , text_(text)
     , wpm_(wpm)
 {
@@ -206,17 +206,17 @@ double MorseGenerator::getEnvelope(double posInElement, double elementDuration) 
     }
 }
 
-double MorseGenerator::getSample(double time_s) const {
+double MorseGenerator::getSample(double timeS) const {
     if (sequence_.empty()) {
         return 0.0;
     }
 
     // Handle repeat mode
-    double effectiveTime = time_s;
+    double effectiveTime = timeS;
     if (repeat_ && totalDuration_s_ > 0) {
         // Add a word gap at the end before repeating
         double cycleTime = totalDuration_s_ + 7.0 * ditDuration_s_;
-        effectiveTime = std::fmod(time_s, cycleTime);
+        effectiveTime = std::fmod(timeS, cycleTime);
     }
 
     // Find which element we're in
@@ -228,7 +228,7 @@ double MorseGenerator::getSample(double time_s) const {
                 // Key is down - generate tone with envelope
                 double posInElement = effectiveTime - event.startTime;
                 double envelope = getEnvelope(posInElement, event.duration);
-                double phase = 2.0 * M_PI * freq_hz_ * time_s;  // Use absolute time for phase continuity
+                double phase = 2.0 * M_PI * freq_hz_ * timeS;  // Use absolute time for phase continuity
                 return amplitude_v_ * envelope * std::sin(phase);
             } else {
                 // Key is up - silence
@@ -256,23 +256,23 @@ void MorseGenerator::reset() {
     lastEventIdx_ = 0;
 }
 
-bool MorseGenerator::hasMore(double time_s) const {
+bool MorseGenerator::hasMore(double timeS) const {
     if (repeat_) {
         return true;  // Infinite when repeating
     }
-    return time_s < totalDuration_s_;
+    return timeS < totalDuration_s_;
 }
 
-double MorseGenerator::getEnvelope(double time_s) const {
+double MorseGenerator::getEnvelope(double timeS) const {
     if (sequence_.empty()) {
         return 0.0;
     }
 
     // Handle repeat mode
-    double effectiveTime = time_s;
+    double effectiveTime = timeS;
     double cycleTime = totalDuration_s_ + 7.0 * ditDuration_s_;
     if (repeat_ && totalDuration_s_ > 0) {
-        effectiveTime = std::fmod(time_s, cycleTime);
+        effectiveTime = std::fmod(timeS, cycleTime);
         if (effectiveTime < 0) effectiveTime += cycleTime;
     }
 
@@ -321,18 +321,18 @@ double MorseGenerator::getEnvelope(double time_s) const {
     return 0.0;
 }
 
-void MorseGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
+void MorseGenerator::getRfIQ(double timeS, double& out_i, double& out_q) const {
     // Detect backward time jump or first call
-    if (time_s < lastTime_ || lastTime_ < 0) {
-        currentPhase_ = std::fmod(2.0 * M_PI * freq_hz_ * time_s, 2.0 * M_PI);
+    if (timeS < lastTime_ || lastTime_ < 0) {
+        currentPhase_ = std::fmod(2.0 * M_PI * freq_hz_ * timeS, 2.0 * M_PI);
         lastEventIdx_ = 0;
     } else {
-        double dt = time_s - lastTime_;
+        double dt = timeS - lastTime_;
         currentPhase_ = std::fmod(currentPhase_ + 2.0 * M_PI * freq_hz_ * dt, 2.0 * M_PI);
     }
-    lastTime_ = time_s;
+    lastTime_ = timeS;
 
-    double env = getEnvelope(time_s) * amplitude_v_;
+    double env = getEnvelope(timeS) * amplitude_v_;
 
     if (env < 1e-12) {
         out_i = out_q = 0.0;

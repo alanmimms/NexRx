@@ -17,6 +17,11 @@
   an error message if the detected USB power is inadequate for full operation
   (< 15W/3A).
 
+- [ ] **LittleFS File System**: Implement a littleFS based file system
+      in a region of MCU flash memory to contain firmware files for
+      STM32C011 GPIO expanders (NexBus), the FPGA config image, and
+      the calibration data for the hardware.
+
 ## Phase 2: Host Connectivity (USB)
 - [ ] **USB High-Speed PHY (ULPI)**: Configure Zephyr to use the external 
   USB3343 ULPI PHY for 480Mb/s operation.

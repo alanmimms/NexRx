@@ -1,44 +1,48 @@
+// NexRx Digital Twin - Attenuator Model
+//
+// Models the switched Pi-attenuator network (3, 6, 12, 24 dB stages).
+//
+// Copyright 2026 NexRx Project - MIT License
+
 #pragma once
+
 #include <atomic>
 #include <cmath>
-#include <algorithm>
 
 namespace nexrx {
 
 class AttenuatorModel {
 public:
-    void setAtten3dB(bool enabled) { atten3dB_.store(enabled, std::memory_order_relaxed); }
-    void setAtten6dB(bool enabled) { atten6dB_.store(enabled, std::memory_order_relaxed); }
-    void setAtten12dB(bool enabled) { atten12dB_.store(enabled, std::memory_order_relaxed); }
-    void setAtten24dB(bool enabled) { atten24dB_.store(enabled, std::memory_order_relaxed); }
+  AttenuatorModel() {
+    atten3dB.store(false);
+    atten6dB.store(false);
+    atten12dB.store(false);
+    atten24dB.store(false);
+  }
 
-    bool getAtten3dB() const { return atten3dB_.load(std::memory_order_relaxed); }
-    bool getAtten6dB() const { return atten6dB_.load(std::memory_order_relaxed); }
-    bool getAtten12dB() const { return atten12dB_.load(std::memory_order_relaxed); }
-    bool getAtten24dB() const { return atten24dB_.load(std::memory_order_relaxed); }
+  void setAtten3dB(bool en) { atten3dB.store(en); }
+  void setAtten6dB(bool en) { atten6dB.store(en); }
+  void setAtten12dB(bool en) { atten12dB.store(en); }
+  void setAtten24dB(bool en) { atten24dB.store(en); }
 
-    double getTotalDb() const {
-        double total = 0.0;
-        if (atten3dB_.load(std::memory_order_relaxed))  total += 3.0;
-        if (atten6dB_.load(std::memory_order_relaxed))  total += 6.0;
-        if (atten12dB_.load(std::memory_order_relaxed)) total += 12.0;
-        if (atten24dB_.load(std::memory_order_relaxed)) total += 24.0;
-        return total;
-    }
+  double getTotalAttenDB() const {
+    double total = 0;
+    if (atten3dB.load()) total += 3.0;
+    if (atten6dB.load()) total += 6.0;
+    if (atten12dB.load()) total += 12.0;
+    if (atten24dB.load()) total += 24.0;
+    return total;
+  }
 
-    double getVoltageGain() const { return std::pow(10.0, -getTotalDb() / 20.0); }
-
-    void setTotalDb(double target_db) {
-        int steps = std::max(0, std::min(15, (int)std::round(target_db / 3.0)));
-        double actual_db = steps * 3.0;
-        atten24dB_.store(actual_db >= 24.0, std::memory_order_relaxed); if (actual_db >= 24.0) actual_db -= 24.0;
-        atten12dB_.store(actual_db >= 12.0, std::memory_order_relaxed); if (actual_db >= 12.0) actual_db -= 12.0;
-        atten6dB_.store(actual_db >= 6.0, std::memory_order_relaxed); if (actual_db >= 6.0) actual_db -= 6.0;
-        atten3dB_.store(actual_db >= 3.0, std::memory_order_relaxed);
-    }
+  double getVoltageGain() const {
+    return std::pow(10.0, -getTotalAttenDB() / 20.0);
+  }
 
 private:
-    std::atomic<bool> atten3dB_{false}, atten6dB_{false}, atten12dB_{false}, atten24dB_{false};
+  std::atomic<bool> atten3dB;
+  std::atomic<bool> atten6dB;
+  std::atomic<bool> atten12dB;
+  std::atomic<bool> atten24dB;
 };
 
 } // namespace nexrx

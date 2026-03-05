@@ -9,6 +9,7 @@
 #include <functional>
 #include <atomic>
 #include <cstdint>
+#include <vector>
 
 // Forward declare miniaudio types to avoid including the large header here
 struct ma_device;
@@ -27,117 +28,117 @@ using AudioCallback = std::function<void(float* output, uint32_t frameCount, uin
  */
 class AudioEngine {
 public:
-    AudioEngine();
-    ~AudioEngine();
+  AudioEngine();
+  ~AudioEngine();
 
-    // Non-copyable
-    AudioEngine(const AudioEngine&) = delete;
-    AudioEngine& operator=(const AudioEngine&) = delete;
+  // Non-copyable
+  AudioEngine(const AudioEngine&) = delete;
+  AudioEngine& operator=(const AudioEngine&) = delete;
 
-    /**
-     * @brief Initialize the audio device
-     * @param sampleRate Desired sample rate (e.g., 48000)
-     * @param channels Number of channels (1 for mono, 2 for stereo)
-     * @return true if successful
-     */
-    bool init(uint32_t sampleRate = 48000, uint32_t channels = 2);
+  /**
+   * @brief Initialize the audio device
+   * @param sampleRate Desired sample rate (e.g., 48000)
+   * @param channels Number of channels (1 for mono, 2 for stereo)
+   * @return true if successful
+   */
+  bool init(uint32_t sampleRate = 48000, uint32_t channels = 2);
 
-    /**
-     * @brief Shutdown the audio device
-     */
-    void shutdown();
+  /**
+   * @brief Shutdown the audio device
+   */
+  void shutdown();
 
-    /**
-     * @brief Start audio playback
-     * @return true if successful
-     */
-    bool start();
+  /**
+   * @brief Start audio playback
+   * @return true if successful
+   */
+  bool start();
 
-    /**
-     * @brief Stop audio playback
-     */
-    void stop();
+  /**
+   * @brief Stop audio playback
+   */
+  void stop();
 
-    /**
-     * @brief Check if audio is currently playing
-     */
-    bool isPlaying() const { return playing_.load(); }
+  /**
+   * @brief Check if audio is currently playing
+   */
+  bool isPlaying() const { return playing.load(); }
 
-    /**
-     * @brief Set the audio callback for generating samples
-     */
-    void setCallback(AudioCallback callback) { callback_ = std::move(callback); }
+  /**
+   * @brief Set the audio callback for generating samples
+   */
+  void setCallback(AudioCallback callback) { this->callback = std::move(callback); }
 
-    /**
-     * @brief Set master volume (0.0 to 1.0)
-     */
-    void setVolume(float volume);
+  /**
+   * @brief Set master volume (0.0 to 1.0)
+   */
+  void setVolume(float volume);
 
-    /**
-     * @brief Get current volume
-     */
-    float getVolume() const { return volume_.load(); }
+  /**
+   * @brief Get current volume
+   */
+  float getVolume() const { return volume.load(); }
 
-    /**
-     * @brief Set mute state
-     */
-    void setMuted(bool muted) { muted_.store(muted); }
+  /**
+   * @brief Set mute state
+   */
+  void setMuted(bool muted) { this->muted.store(muted); }
 
-    /**
-     * @brief Get mute state
-     */
-    bool isMuted() const { return muted_.load(); }
+  /**
+   * @brief Get mute state
+   */
+  bool isMuted() const { return muted.load(); }
 
-    /**
-     * @brief Get current sample rate
-     */
-    uint32_t getSampleRate() const { return sampleRate_; }
+  /**
+   * @brief Get current sample rate
+   */
+  uint32_t getSampleRate() const { return sampleRate; }
 
-    /**
-     * @brief Get number of channels
-     */
-    uint32_t getChannels() const { return channels_; }
+  /**
+   * @brief Get number of channels
+   */
+  uint32_t getChannels() const { return channels; }
 
-    /**
-     * @brief Check if engine is initialized
-     */
-    bool isInitialized() const { return initialized_; }
+  /**
+   * @brief Check if engine is initialized
+   */
+  bool isInitialized() const { return initialized; }
 
-    // --- Built-in test tone generator ---
+  // --- Built-in test tone generator ---
 
-    /**
-     * @brief Enable/disable test tone
-     * @param enabled Whether to play test tone
-     * @param frequency Tone frequency in Hz (default 440 Hz = A4)
-     */
-    void setTestTone(bool enabled, float frequency = 440.0f);
+  /**
+   * @brief Enable/disable test tone
+   * @param enabled Whether to play test tone
+   * @param frequency Tone frequency in Hz (default 440 Hz = A4)
+   */
+  void setTestTone(bool enabled, float frequency = 440.0f);
 
-    /**
-     * @brief Check if test tone is enabled
-     */
-    bool isTestToneEnabled() const { return testToneEnabled_.load(); }
+  /**
+   * @brief Check if test tone is enabled
+   */
+  bool isTestToneEnabled() const { return testToneEnabled.load(); }
 
 private:
-    // Called by miniaudio
-    static void dataCallback(ma_device* device, void* output, const void* input, uint32_t frameCount);
-    void processAudio(float* output, uint32_t frameCount);
+  // Called by miniaudio
+  static void dataCallback(ma_device* device, void* output, const void* input, uint32_t frameCount);
+  void processAudio(float* output, uint32_t frameCount);
 
-    ma_device* device_ = nullptr;
-    AudioCallback callback_;
+  ma_device* device = nullptr;
+  AudioCallback callback;
 
-    uint32_t sampleRate_ = 48000;
-    uint32_t channels_ = 2;
-    bool initialized_ = false;
+  uint32_t sampleRate = 48000;
+  uint32_t channels = 2;
+  bool initialized = false;
 
-    std::atomic<bool> playing_{false};
-    std::atomic<float> volume_{0.8f};
-    std::atomic<bool> muted_{false};
+  std::atomic<bool> playing{false};
+  std::atomic<float> volume{0.8f};
+  std::atomic<bool> muted{false};
 
-    // Test tone state
-    std::atomic<bool> testToneEnabled_{false};
-    std::atomic<float> testToneFrequency_{440.0f};
-    float testTonePhase_ = 0.0f;
+  // Test tone state
+  std::atomic<bool> testToneEnabled{false};
+  std::atomic<float> testToneFrequency{440.0f};
+  float testTonePhase = 0.0f;
 
-    // Pre-allocated buffer for callback (avoid allocation in audio thread)
-    std::vector<float> callbackBuffer_;
+  // Pre-allocated buffer for callback (avoid allocation in audio thread)
+  std::vector<float> callbackBuffer;
 };

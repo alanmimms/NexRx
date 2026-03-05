@@ -274,7 +274,8 @@ function draw()
         layout.setRegion(rT.x, rT.y, rT.w, rT.h, "top-bar")
         events.registerWidget("top-bar", rT, {"widget.StatusBar"})
         drawRect(rT.x, rT.y, rT.w, rT.h, 0.08, 0.08, 0.12, 1.0)
-        drawText(rT.x + 10, rT.y + 8, string.format("NexRx | %.0f FPS", fps), 0.6, 0.7, 0.9, 1.0)
+        local frameCount = hwConnected and hw.getFramesReceived and hw.getFramesReceived() or 0
+        drawText(rT.x + 10, rT.y + 8, string.format("NexRx | %.0f FPS | Frames: %d", fps, frameCount), 0.6, 0.7, 0.9, 1.0)
         layout.endRegion()
     end
 
@@ -316,6 +317,12 @@ function draw()
         local nV = ui.slider("vol-slider", cx, cy, rL.w - 24, -60, 0, state.volumeDb, nil, "volumeDb")
         if nV ~= state.volumeDb then state.volumeDb = nV end
         layout.newLine(24)
+
+        cx, cy = layout.getCursor(); ui.label("rfg-l", cx, cy, "RF Gain", {"Title"}); layout.newLine(24)
+        cx, cy = layout.getCursor()
+        local nG = ui.slider("rfg-slider", cx, cy, rL.w - 24, 0, 60, state.rfGainDb, nil, "rfGainDb")
+        if nG ~= state.rfGainDb then state.rfGainDb = nG end
+        layout.newLine(24)
         layout.endRegion()
     end
 
@@ -355,6 +362,20 @@ function draw()
         cx, cy = layout.getCursor(); ui.label("sm-l", cx, cy, "S-Meter", {"Title"}); layout.newLine(24)
         cx, cy = layout.getCursor(); ui.smeter("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading()); layout.newLine(48)
         
+        -- AGC Mode
+        cx, cy = layout.getCursor(); ui.label("agc-l", cx, cy, "AGC Mode", {"Title"}); layout.newLine(24)
+        layout.beginHorizontal(2)
+        local modes = {"Off", "Fast", "Med", "Slow"}
+        for i, m in ipairs(modes) do
+            if i == 3 then layout.endHorizontal(); layout.newLine(28); layout.beginHorizontal(2) end
+            local bx, by = layout.reserveSpace((rR.w-36)/2, 24)
+            local active = state.agcMode == (i-1) and {"Active"} or {}
+            if ui.button("agc-"..m:lower(), m, bx, by, (rR.w-36)/2, 24, {"AgcMode", table.unpack(active)}) then
+                setProperty("agcMode", i-1)
+            end
+        end
+        layout.endHorizontal(); layout.newLine(24)
+
         cx, cy = layout.getCursor(); ui.label("ps-l", cx, cy, "Preselector", {"Title"}); layout.newLine(24)
         cx, cy = layout.getCursor(); ui.checkbox("ps-auto", "Auto-tune", cx, cy, state.preselectorAuto, {"PreselAuto"}, "preselectorAuto"); layout.newLine(28)
         cx, cy = layout.getCursor(); ui.checkbox("ps-l1", "Inductor L1", cx, cy, state.preselL1, {"PreselToggle"}, "preselL1"); layout.newLine(28)
@@ -378,7 +399,13 @@ function draw()
         cx, cy = layout.getCursor()
         local nbF = ui.slider("isg-fr", cx, cy, rR.w - 24, 0.1, 30.0, state.isgFrequency, {"IsgControl"}, "isgFrequency")
         if nbF ~= state.isgFrequency then state.isgFrequency = nbF end
-        layout.newLine(24)
+        layout.newLine(32)
+
+        -- Audio Utilities
+        cx, cy = layout.getCursor(); ui.label("aud-t", cx, cy, "Audio Utilities", {"Title"}); layout.newLine(24)
+        cx, cy = layout.getCursor(); ui.checkbox("mut-en", "Master Mute", cx, cy, state.muteEnabled, {"MuteToggle"}, "muteEnabled"); layout.newLine(28)
+        cx, cy = layout.getCursor(); ui.checkbox("tst-en", "440Hz Test Tone", cx, cy, state.testToneEnabled, {"TestToneToggle"}, "testToneEnabled"); layout.newLine(28)
+        
         layout.endRegion()
     end
 

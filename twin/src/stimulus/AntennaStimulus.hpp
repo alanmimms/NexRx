@@ -26,7 +26,7 @@ public:
 
     // Get voltage at specified simulation time (seconds)
     // Returns voltage in volts (typically -1 to +1 range for normalized signals)
-    [[nodiscard]] virtual double getSample(double time_s) const = 0;
+    [[nodiscard]] virtual double getSample(double timeS) const = 0;
 
     // Get description of stimulus for logging
     [[nodiscard]] virtual std::string description() const = 0;
@@ -35,8 +35,8 @@ public:
     virtual void reset() {}
 
     // Check if stimulus has more samples (for finite-length sources)
-    [[nodiscard]] virtual bool hasMore(double time_s) const {
-        (void)time_s;
+    [[nodiscard]] virtual bool hasMore(double timeS) const {
+        (void)timeS;
         return true;
     }
 
@@ -45,8 +45,8 @@ public:
     // This represents the RF signal WITHOUT any knowledge of receiver LO.
     // The QSD simulation layer will mix this with LO to produce baseband.
     // Default returns zero - override for carrier-based signals.
-    virtual void getRfIQ(double time_s, double& out_i, double& out_q) const {
-        (void)time_s;
+    virtual void getRfIQ(double timeS, double& out_i, double& out_q) const {
+        (void)timeS;
         out_i = out_q = 0.0;
     }
 
@@ -54,8 +54,8 @@ public:
     [[nodiscard]] virtual double carrierFrequency() const { return 0.0; }
 
     // Get current envelope/amplitude (for keyed signals like CW)
-    [[nodiscard]] virtual double getEnvelope(double time_s) const {
-        (void)time_s;
+    [[nodiscard]] virtual double getEnvelope(double timeS) const {
+        (void)timeS;
         return 1.0;  // Default: constant envelope
     }
 };
@@ -69,10 +69,10 @@ public:
         sources_.push_back(std::move(source));
     }
 
-    [[nodiscard]] double getSample(double time_s) const override {
+    [[nodiscard]] double getSample(double timeS) const override {
         double sum = 0.0;
         for (const auto& src : sources_) {
-            sum += src->getSample(time_s);
+            sum += src->getSample(timeS);
         }
         return sum;
     }
@@ -93,9 +93,9 @@ public:
         }
     }
 
-    [[nodiscard]] bool hasMore(double time_s) const override {
+    [[nodiscard]] bool hasMore(double timeS) const override {
         for (const auto& src : sources_) {
-            if (!src->hasMore(time_s)) return false;
+            if (!src->hasMore(timeS)) return false;
         }
         return true;
     }

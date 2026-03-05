@@ -3,219 +3,251 @@
 // Copyright 2026 NexRx Project - MIT License
 
 #include "StimulusManager.hpp"
-
 #include <algorithm>
-#include <cmath>
+#include <iostream>
 
 namespace nexrx {
 
 void StimulusManager::addStimulus(const std::string& name, StimulusPtr stimulus,
-                                   const std::string& type,
-                                   double freq_hz, double amplitude_v) {
-    std::lock_guard<std::mutex> lock(mutex_);
+                                const std::string& type, double freqHz, double amplitudeV) {
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  
+  StimulusInfo info;
+  info.name = name;
+  info.type = type;
+  info.frequencyHz = freqHz;
+  info.amplitudeV = amplitudeV;
+  info.active = true;
 
-    Entry entry;
-    entry.stimulus = std::move(stimulus);
-    entry.info.name = name;
-    entry.info.type = type;
-    entry.info.frequency_hz = freq_hz;
-    entry.info.amplitude_v = amplitude_v;
-    entry.info.active = true;
-    entry.enabled = true;
-
-    stimuli_[name] = std::move(entry);
+  stimuli[name] = {std::move(stimulus), info, true};
+  
+  if (frozen.load()) {
+    unfreeze();
+  }
 }
 
 bool StimulusManager::removeStimulus(const std::string& name) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return stimuli_.erase(name) > 0;
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  auto it = stimuli.find(name);
+  if (it != stimuli.end()) {
+    stimuli.erase(it);
+    if (frozen.load()) {
+      unfreeze();
+    }
+    return true;
+  }
+  return false;
 }
 
 void StimulusManager::clearAll() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    stimuli_.clear();
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  stimuli.clear();
+  if (frozen.load()) {
+    unfreeze();
+  }
 }
 
 bool StimulusManager::hasStimulus(const std::string& name) const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return stimuli_.find(name) != stimuli_.end();
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  return stimuli.find(name) != stimuli.end();
 }
 
 std::vector<std::string> StimulusManager::listNames() const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    std::vector<std::string> names;
-    names.reserve(stimuli_.size());
-    for (const auto& [name, entry] : stimuli_) {
-        names.push_back(name);
-    }
-    return names;
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  std::vector<std::string> names;
+  for (const auto& pair : stimuli) {
+    names.push_back(pair.first);
+  }
+  return names;
 }
 
 std::vector<StimulusInfo> StimulusManager::listInfo() const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    std::vector<StimulusInfo> infos;
-    infos.reserve(stimuli_.size());
-    for (const auto& [name, entry] : stimuli_) {
-        infos.push_back(entry.info);
-    }
-    return infos;
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  std::vector<StimulusInfo> infoList;
+  for (const auto& pair : stimuli) {
+    infoList.push_back(pair.second.info);
+  }
+  return infoList;
 }
 
 size_t StimulusManager::count() const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return stimuli_.size();
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  return stimuli.size();
 }
 
-double StimulusManager::getSample(double time_s) const {
-    std::lock_guard<std::mutex> lock(mutex_);
-
+double StimulusManager::getSample(double timeS) const {
+  if (frozen.load()) {
     double sum = 0.0;
-    for (const auto& [name, entry] : stimuli_) {
-        if (entry.enabled && entry.stimulus) {
-            sum += entry.stimulus->getSample(time_s);
-        }
+    for (const auto& stim : frozenStimuli) {
+      sum += stim->getSample(timeS);
     }
-    return sum * global_gain_.load();
+    return sum * globalGain.load();
+  }
+
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  double sum = 0.0;
+  for (const auto& pair : stimuli) {
+    if (pair.second.enabled) {
+      sum += pair.second.stimulus->getSample(timeS);
+    }
+  }
+  return sum * globalGain.load();
 }
 
-void StimulusManager::getRfIQ(double time_s, double& out_i, double& out_q,
-                               double center_hz, double bandwidth_hz) const {
-    // Use fast path if frozen
-    if (frozen_.load(std::memory_order_relaxed)) {
-        getRfIQ_fast(time_s, out_i, out_q, center_hz, bandwidth_hz);
-        return;
+void StimulusManager::getRfIQ(double timeS, double& outI, double& outQ, 
+                             double centerHz, double bandwidthHz) const {
+  outI = 0.0;
+  outQ = 0.0;
+
+  if (frozen.load()) {
+    for (const auto& stim : frozenStimuli) {
+      if (bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+        double i, q;
+        stim->getRfIQ(timeS, i, q);
+        outI += i;
+        outQ += q;
+      }
     }
+    double g = globalGain.load();
+    outI *= g;
+    outQ *= g;
+    return;
+  }
 
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    out_i = out_q = 0.0;
-    for (const auto& [name, entry] : stimuli_) {
-        if (entry.enabled && entry.stimulus) {
-            // Roofing Filter: check if stimulus is within passband
-            if (bandwidth_hz > 0) {
-                double f = entry.stimulus->carrierFrequency();
-                if (f != 0 && std::abs(f - center_hz) > bandwidth_hz / 2.0) {
-                    continue; // Out of band
-                }
-            }
-
-            double i, q;
-            entry.stimulus->getRfIQ(time_s, i, q);
-            out_i += i;
-            out_q += q;
-        }
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  for (const auto& pair : stimuli) {
+    if (pair.second.enabled) {
+      auto stim = pair.second.stimulus;
+      if (bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+        double i, q;
+        stim->getRfIQ(timeS, i, q);
+        outI += i;
+        outQ += q;
+      }
     }
-    double g = global_gain_.load();
-    out_i *= g;
-    out_q *= g;
+  }
+  double g = globalGain.load();
+  outI *= g;
+  outQ *= g;
 }
 
 void StimulusManager::freeze() {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    // Create snapshot of enabled stimuli
-    frozenStimuli_.clear();
-    frozenStimuli_.reserve(stimuli_.size());
-    for (const auto& [name, entry] : stimuli_) {
-        if (entry.enabled && entry.stimulus) {
-            frozenStimuli_.push_back(entry.stimulus);
-        }
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  frozenStimuli.clear();
+  for (const auto& pair : stimuli) {
+    if (pair.second.enabled) {
+      frozenStimuli.push_back(pair.second.stimulus);
     }
-
-    frozen_.store(true, std::memory_order_release);
+  }
+  frozen.store(true);
 }
 
 void StimulusManager::unfreeze() {
-    frozen_.store(false, std::memory_order_release);
-    frozenStimuli_.clear();
+  frozen.store(false);
 }
 
-void StimulusManager::getRfIQ_fast(double time_s, double& out_i, double& out_q,
-                                   double center_hz, double bandwidth_hz) const {
-    // Lock-free access to frozen snapshot
-    out_i = out_q = 0.0;
-    for (const auto& stim : frozenStimuli_) {
-        // Roofing Filter: check if stimulus is within passband
-        if (bandwidth_hz > 0) {
-            double f = stim->carrierFrequency();
-            if (f != 0 && std::abs(f - center_hz) > bandwidth_hz / 2.0) {
-                continue; // Out of band
-            }
-        }
-
-        double i, q;
-        stim->getRfIQ(time_s, i, q);
-        out_i += i;
-        out_q += q;
+void StimulusManager::getRfIQFast(double timeS, double& outI, double& outQ,
+                                 double centerHz, double bandwidthHz) const {
+  outI = 0.0;
+  outQ = 0.0;
+  for (const auto& stim : frozenStimuli) {
+    if (bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+      double i, q;
+      stim->getRfIQ(timeS, i, q);
+      outI += i;
+      outQ += q;
     }
-    double g = global_gain_.load();
-    out_i *= g;
-    out_q *= g;
+  }
+  double g = globalGain.load();
+  outI *= g;
+  outQ *= g;
 }
 
-void StimulusManager::generateBatch(double start_time, double sample_period,
-                                     size_t count, double* out_iq) const {
-    // Initialize output to zero
-    for (size_t i = 0; i < count * 2; ++i) {
-        out_iq[i] = 0.0;
+void StimulusManager::generateBatch(double startTime, double samplePeriod,
+                                   size_t count, double* outIQ) const {
+  std::fill(outIQ, outIQ + 2 * count, 0.0);
+  
+  const auto& activeStims = frozen.load() ? frozenStimuli : std::vector<StimulusPtr>();
+  
+  if (frozen.load()) {
+    for (const auto& stim : activeStims) {
+      for (size_t i = 0; i < count; ++i) {
+        double t = startTime + i * samplePeriod;
+        double sI, sQ;
+        stim->getRfIQ(t, sI, sQ);
+        outIQ[i * 2] += sI;
+        outIQ[i * 2 + 1] += sQ;
+      }
     }
-
-    // Sum contributions from all frozen stimuli
-    for (const auto& stim : frozenStimuli_) {
-        double t = start_time;
+  } else {
+    std::lock_guard<std::mutex> lock(stimulusMutex);
+    for (const auto& pair : stimuli) {
+      if (pair.second.enabled) {
+        auto stim = pair.second.stimulus;
         for (size_t i = 0; i < count; ++i) {
-            double rf_i, rf_q;
-            stim->getRfIQ(t, rf_i, rf_q);
-            out_iq[i * 2] += rf_i;
-            out_iq[i * 2 + 1] += rf_q;
-            t += sample_period;
+          double t = startTime + i * samplePeriod;
+          double sI, sQ;
+          stim->getRfIQ(t, sI, sQ);
+          outIQ[i * 2] += sI;
+          outIQ[i * 2 + 1] += sQ;
         }
+      }
     }
-    
-    double g = global_gain_.load();
-    for (size_t i = 0; i < count * 2; ++i) {
-        out_iq[i] *= g;
-    }
+  }
+
+  double g = globalGain.load();
+  for (size_t i = 0; i < count * 2; ++i) {
+    outIQ[i] *= g;
+  }
 }
 
 void StimulusManager::setEnabled(const std::string& name, bool enabled) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = stimuli_.find(name);
-    if (it != stimuli_.end()) {
-        it->second.enabled = enabled;
-        it->second.info.active = enabled;
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  auto it = stimuli.find(name);
+  if (it != stimuli.end()) {
+    it->second.enabled = enabled;
+    if (frozen.load()) {
+      unfreeze();
     }
+  }
 }
 
 void StimulusManager::setAllEnabled(bool enabled) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& [name, entry] : stimuli_) {
-        entry.enabled = enabled;
-        entry.info.active = enabled;
-    }
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  for (auto& pair : stimuli) {
+    pair.second.enabled = enabled;
+  }
+  if (frozen.load()) {
+    unfreeze();
+  }
 }
 
 void StimulusManager::resetAll() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& [name, entry] : stimuli_) {
-        if (entry.stimulus) {
-            entry.stimulus->reset();
-        }
-    }
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  for (auto& pair : stimuli) {
+    pair.second.stimulus->reset();
+  }
 }
 
-bool StimulusManager::isAnyWithin(double center_hz, double bandwidth_hz) const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (const auto& [name, entry] : stimuli_) {
-        if (entry.enabled && entry.stimulus) {
-            double f = entry.stimulus->carrierFrequency();
-            if (f == 0) continue; // Skip wideband noise
-            if (std::abs(f - center_hz) <= bandwidth_hz / 2.0) {
-                return true;
-            }
-        }
+bool StimulusManager::isAnyWithin(double centerHz, double bandwidthHz) const {
+  if (frozen.load()) {
+    for (const auto& stim : frozenStimuli) {
+      if (std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+        return true;
+      }
     }
     return false;
+  }
+
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  for (const auto& pair : stimuli) {
+    if (pair.second.enabled) {
+      if (std::abs(pair.second.stimulus->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 } // namespace nexrx

@@ -24,11 +24,11 @@ namespace nexrx {
 class MorseGenerator : public AntennaStimulus {
 public:
     // Constructor
-    // freq_hz: carrier frequency in Hz
-    // amplitude_v: peak amplitude in volts
+    // freqHz: carrier frequency in Hz
+    // amplitudeV: peak amplitude in volts
     // text: message to send (converted to uppercase)
     // wpm: words per minute (PARIS standard)
-    MorseGenerator(double freq_hz, double amplitude_v,
+    MorseGenerator(double freqHz, double amplitudeV,
                    const std::string& text, double wpm = 20.0);
 
     //------------------------------------------------------------------
@@ -37,8 +37,8 @@ public:
 
     void setText(const std::string& text);
     void setWpm(double wpm);
-    void setFrequency(double freq_hz) { freq_hz_ = freq_hz; }
-    void setAmplitude(double amplitude_v) { amplitude_v_ = amplitude_v; }
+    void setFrequency(double freqHz) { freq_hz_ = freqHz; }
+    void setAmplitude(double amplitudeV) { amplitude_v_ = amplitudeV; }
     void setRepeat(bool repeat) { repeat_ = repeat; }
 
     // Envelope rise/fall time in milliseconds (default 5ms)
@@ -48,15 +48,15 @@ public:
     // AntennaStimulus interface
     //------------------------------------------------------------------
 
-    [[nodiscard]] double getSample(double time_s) const override;
+    [[nodiscard]] double getSample(double timeS) const override;
     [[nodiscard]] std::string description() const override;
     void reset() override;
-    [[nodiscard]] bool hasMore(double time_s) const override;
+    [[nodiscard]] bool hasMore(double timeS) const override;
 
     // Analytic RF signal (complex envelope at carrier)
-    void getRfIQ(double time_s, double& out_i, double& out_q) const override;
+    void getRfIQ(double timeS, double& out_i, double& out_q) const override;
     [[nodiscard]] double carrierFrequency() const override { return freq_hz_; }
-    [[nodiscard]] double getEnvelope(double time_s) const override;
+    [[nodiscard]] double getEnvelope(double timeS) const override;
 
     //------------------------------------------------------------------
     // Accessors

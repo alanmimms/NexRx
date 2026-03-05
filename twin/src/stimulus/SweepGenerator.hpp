@@ -38,10 +38,10 @@ public:
     // Constructor
     // start_hz: starting frequency
     // end_hz: ending frequency
-    // amplitude_v: signal amplitude in volts
+    // amplitudeV: signal amplitude in volts
     // sweep_rate: Hz/s for linear, decades/s for log
     SweepGenerator(double start_hz, double end_hz,
-                   double amplitude_v, double sweep_rate_hz_per_s);
+                   double amplitudeV, double sweep_rate_hz_per_s);
 
     //------------------------------------------------------------------
     // Configuration
@@ -49,7 +49,7 @@ public:
 
     void setFrequencyRange(double start_hz, double end_hz);
     void setSweepRate(double rate_hz_per_s);
-    void setAmplitude(double amplitude_v) { amplitude_v_ = amplitude_v; }
+    void setAmplitude(double amplitudeV) { amplitude_v_ = amplitudeV; }
     void setSweepMode(SweepMode mode) { sweepMode_ = mode; }
     void setRepeatMode(RepeatMode mode) { repeatMode_ = mode; }
 
@@ -60,13 +60,13 @@ public:
     // AntennaStimulus interface
     //------------------------------------------------------------------
 
-    [[nodiscard]] double getSample(double time_s) const override;
+    [[nodiscard]] double getSample(double timeS) const override;
     [[nodiscard]] std::string description() const override;
     void reset() override;
-    [[nodiscard]] bool hasMore(double time_s) const override;
+    [[nodiscard]] bool hasMore(double timeS) const override;
 
     // Analytic RF signal
-    void getRfIQ(double time_s, double& out_i, double& out_q) const override;
+    void getRfIQ(double timeS, double& out_i, double& out_q) const override;
     [[nodiscard]] double carrierFrequency() const override { return (startFreq_hz_ + endFreq_hz_) / 2.0; }
 
     //------------------------------------------------------------------
@@ -80,7 +80,7 @@ public:
     [[nodiscard]] double sweepDuration() const { return sweepDuration_s_; }
 
     // Get instantaneous frequency at given time
-    [[nodiscard]] double frequencyAt(double time_s) const;
+    [[nodiscard]] double frequencyAt(double timeS) const;
 
     //------------------------------------------------------------------
     // Factory methods for common configurations
@@ -88,18 +88,18 @@ public:
 
     // Create a linear sweep from start to end at given rate
     static SweepGenerator linearSweep(double start_hz, double end_hz,
-                                       double amplitude_v, double rate_hz_per_s);
+                                       double amplitudeV, double rate_hz_per_s);
 
     // Create a sweep that covers a range in a specific duration
     static SweepGenerator timedSweep(double start_hz, double end_hz,
-                                      double amplitude_v, double duration_s);
+                                      double amplitudeV, double duration_s);
 
     // Create an HF band sweep (1-30 MHz) for receiver characterization
-    static SweepGenerator hfBandSweep(double amplitude_v, double duration_s);
+    static SweepGenerator hfBandSweep(double amplitudeV, double duration_s);
 
 private:
     // Calculate phase-continuous instantaneous phase
-    double getPhase(double time_s) const;
+    double getPhase(double timeS) const;
 
     // Get phase accumulated over duration (for forward sweep)
     double getPhaseForDuration(double t) const;
@@ -108,7 +108,7 @@ private:
     double getPhaseForReverse(double t) const;
 
     // Get envelope at time (for smooth start/stop)
-    double getEnvelope(double time_s) const;
+    double getEnvelope(double timeS) const;
 
     double startFreq_hz_;
     double endFreq_hz_;

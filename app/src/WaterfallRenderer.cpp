@@ -15,39 +15,40 @@ namespace {
 
 // Helper to pack RGBA
 constexpr uint32_t packRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
-    return (a << 24) | (b << 16) | (g << 8) | r;
+  return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(b) << 16) | 
+         (static_cast<uint32_t>(g) << 8) | static_cast<uint32_t>(r);
 }
 
 // Interpolate between two colors
 uint32_t lerpColor(uint32_t c1, uint32_t c2, float t) {
-    uint8_t r1 = c1 & 0xFF, g1 = (c1 >> 8) & 0xFF, b1 = (c1 >> 16) & 0xFF;
-    uint8_t r2 = c2 & 0xFF, g2 = (c2 >> 8) & 0xFF, b2 = (c2 >> 16) & 0xFF;
-    uint8_t r = r1 + (r2 - r1) * t;
-    uint8_t g = g1 + (g2 - g1) * t;
-    uint8_t b = b1 + (b2 - b1) * t;
-    return packRGBA(r, g, b);
+  uint8_t r1 = c1 & 0xFF, g1 = (c1 >> 8) & 0xFF, b1 = (c1 >> 16) & 0xFF;
+  uint8_t r2 = c2 & 0xFF, g2 = (c2 >> 8) & 0xFF, b2 = (c2 >> 16) & 0xFF;
+  uint8_t r = static_cast<uint8_t>(r1 + (r2 - r1) * t);
+  uint8_t g = static_cast<uint8_t>(g1 + (g2 - g1) * t);
+  uint8_t b = static_cast<uint8_t>(b1 + (b2 - b1) * t);
+  return packRGBA(r, g, b);
 }
 
 // Build colormap from color stops
 std::vector<uint32_t> buildGradient(const std::vector<std::pair<float, uint32_t>>& stops) {
-    std::vector<uint32_t> lut(256);
-    for (int i = 0; i < 256; ++i) {
-        float t = i / 255.0f;
-        // Find the two stops we're between
-        size_t idx = 0;
-        while (idx < stops.size() - 1 && stops[idx + 1].first < t) {
-            ++idx;
-        }
-        if (idx >= stops.size() - 1) {
-            lut[i] = stops.back().second;
-        } else {
-            float t0 = stops[idx].first;
-            float t1 = stops[idx + 1].first;
-            float localT = (t - t0) / (t1 - t0);
-            lut[i] = lerpColor(stops[idx].second, stops[idx + 1].second, localT);
-        }
+  std::vector<uint32_t> lut(256);
+  for (int i = 0; i < 256; ++i) {
+    float t = i / 255.0f;
+    // Find the two stops we're between
+    size_t idx = 0;
+    while (idx < stops.size() - 1 && stops[idx + 1].first < t) {
+      ++idx;
     }
-    return lut;
+    if (idx >= stops.size() - 1) {
+      lut[i] = stops.back().second;
+    } else {
+      float t0 = stops[idx].first;
+      float t1 = stops[idx + 1].first;
+      float localT = (t - t0) / (t1 - t0);
+      lut[i] = lerpColor(stops[idx].second, stops[idx + 1].second, localT);
+    }
+  }
+  return lut;
 }
 
 } // anonymous namespace
@@ -55,253 +56,247 @@ std::vector<uint32_t> buildGradient(const std::vector<std::pair<float, uint32_t>
 WaterfallRenderer::WaterfallRenderer() = default;
 
 WaterfallRenderer::~WaterfallRenderer() {
-    shutdown();
+  shutdown();
 }
 
-bool WaterfallRenderer::init(int width, int height) {
-    if (initialized_) {
-        shutdown();
-    }
+bool WaterfallRenderer::init(int widthIn, int heightIn) {
+  if (initialized) {
+    shutdown();
+  }
 
-    width_ = width;
-    height_ = height;
+  width = widthIn;
+  height = heightIn;
 
-    // Initialize row buffer
-    rows_.resize(height);
-    for (auto& row : rows_) {
-        row.resize(width, minDb_);
-    }
-    topRow_ = 0;
+  // Initialize row buffer
+  rows.resize(height);
+  for (auto& row : rows) {
+    row.resize(width, minDB);
+  }
+  topRow = 0;
 
-    // Initialize texture data
-    textureData_.resize(width * height, packRGBA(0, 0, 0));
+  // Initialize texture data
+  textureData.resize(width * height, packRGBA(0, 0, 0));
 
-    // Create OpenGL texture
-    glGenTextures(1, &textureId_);
-    glBindTexture(GL_TEXTURE_2D, textureId_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData_.data());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // Create OpenGL texture
+  glGenTextures(1, &textureID);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData.data());
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // Initialize default colormap (will be replaced when Lua calls setColormapData)
-    initDefaultColormap();
+  // Initialize default colormap
+  initDefaultColormap();
 
-    initialized_ = true;
-    textureDirty_ = true;
+  initialized = true;
+  textureDirty = true;
 
-    std::cout << "Waterfall initialized: " << width << "x" << height << std::endl;
-    return true;
+  std::cout << "Waterfall initialized: " << width << "x" << height << std::endl;
+  return true;
 }
 
 void WaterfallRenderer::shutdown() {
-    if (textureId_ != 0) {
-        glDeleteTextures(1, &textureId_);
-        textureId_ = 0;
-    }
-    rows_.clear();
-    textureData_.clear();
-    initialized_ = false;
+  if (textureID != 0) {
+    glDeleteTextures(1, &textureID);
+    textureID = 0;
+  }
+  rows.clear();
+  textureData.clear();
+  initialized = false;
 }
 
 void WaterfallRenderer::addRow(const float* data, int count) {
-    if (!initialized_) return;
+  if (!initialized) {
+    return;
+  }
 
-    // Move to next row (circular buffer)
-    topRow_ = (topRow_ + 1) % height_;
+  // Move to next row (circular buffer)
+  topRow = (topRow + 1) % height;
 
-    // Copy data to the new top row
-    auto& row = rows_[topRow_];
-    int copyCount = std::min(count, width_);
-    for (int i = 0; i < copyCount; ++i) {
-        row[i] = data[i];
-    }
-    // Fill remaining with min dB if data is shorter
-    for (int i = copyCount; i < width_; ++i) {
-        row[i] = minDb_;
-    }
+  // Copy data to the new top row
+  auto& row = rows[topRow];
+  int copyCount = std::min(count, width);
+  for (int i = 0; i < copyCount; ++i) {
+    row[i] = data[i];
+  }
+  // Fill remaining with min dB if data is shorter
+  for (int i = copyCount; i < width; ++i) {
+    row[i] = minDB;
+  }
 
-    textureDirty_ = true;
+  textureDirty = true;
 }
 
 void WaterfallRenderer::render(float x, float y, float w, float h) {
-    if (!initialized_) return;
+  if (!initialized) {
+    return;
+  }
 
-    // Update texture if needed
-    if (textureDirty_) {
-        updateTexture();
-    }
+  // Update texture if needed
+  if (textureDirty) {
+    updateTexture();
+  }
 
-    // Render textured quad - texture is already in correct order from updateTexture()
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textureId_);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  // Render textured quad
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-    glBegin(GL_QUADS);
-    // Simple quad - texture row 0 is newest, row height-1 is oldest
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(x, y);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(x + w, y);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(x + w, y + h);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(x, y + h);
-    glEnd();
+  glBegin(GL_QUADS);
+  glTexCoord2f(0.0f, 0.0f); glVertex2f(x, y);
+  glTexCoord2f(1.0f, 0.0f); glVertex2f(x + w, y);
+  glTexCoord2f(1.0f, 1.0f); glVertex2f(x + w, y + h);
+  glTexCoord2f(0.0f, 1.0f); glVertex2f(x, y + h);
+  glEnd();
 
-    glDisable(GL_TEXTURE_2D);
+  glDisable(GL_TEXTURE_2D);
 
-    // Draw center frequency graticule line over waterfall
-    glLineWidth(2.0f);
-    glColor4f(1.0f, 1.0f, 1.0f, 0.4f); // Semi-transparent white
-    glBegin(GL_LINES);
-    glVertex2f(x + w * 0.5f, y);
-    glVertex2f(x + w * 0.5f, y + h);
-    glEnd();
-    glLineWidth(1.0f);
+  // Draw center frequency graticule line over waterfall
+  glLineWidth(2.0f);
+  glColor4f(1.0f, 1.0f, 1.0f, 0.4f); 
+  glBegin(GL_LINES);
+  glVertex2f(x + w * 0.5f, y);
+  glVertex2f(x + w * 0.5f, y + h);
+  glEnd();
+  glLineWidth(1.0f);
 }
 
 void WaterfallRenderer::renderSpectrum(const float* data, int count, float x, float y, float w, float h) {
-    if (!data || count <= 0) return;
+  if (!data || count <= 0) {
+    return;
+  }
 
-    // Draw background
-    glColor4f(0.05f, 0.05f, 0.08f, 1.0f);
-    glBegin(GL_QUADS);
-    glVertex2f(x, y);
-    glVertex2f(x + w, y);
-    glVertex2f(x + w, y + h);
-    glVertex2f(x, y + h);
-    glEnd();
+  // Draw background
+  glColor4f(0.05f, 0.05f, 0.08f, 1.0f);
+  glBegin(GL_QUADS);
+  glVertex2f(x, y);
+  glVertex2f(x + w, y);
+  glVertex2f(x + w, y + h);
+  glVertex2f(x, y + h);
+  glEnd();
 
-    // Draw grid lines
+  // Draw grid lines
+  glBegin(GL_LINES);
+  // Horizontal grid lines
+  glColor4f(0.2f, 0.2f, 0.25f, 0.8f);
+  for (int i = 1; i < 5; ++i) {
+    float gy = y + h * i / 5.0f;
+    glVertex2f(x, gy);
+    glVertex2f(x + w, gy);
+  }
+  // Vertical grid lines
+  for (int i = 1; i < 10; ++i) {
+    float gx = x + w * i / 10.0f;
+    if (i == 5) {
+      glLineWidth(2.0f);
+      glColor4f(1.0f, 1.0f, 1.0f, 0.8f); 
+    } else {
+      glLineWidth(1.0f);
+      glColor4f(0.2f, 0.2f, 0.25f, 0.8f);
+    }
     glBegin(GL_LINES);
-    // Horizontal grid lines (dB levels)
-    glColor4f(0.2f, 0.2f, 0.25f, 0.8f);
-    for (int i = 1; i < 5; ++i) {
-        float gy = y + h * i / 5.0f;
-        glVertex2f(x, gy);
-        glVertex2f(x + w, gy);
-    }
-    // Vertical grid lines
-    for (int i = 1; i < 10; ++i) {
-        float gx = x + w * i / 10.0f;
-        if (i == 5) {
-            glLineWidth(2.0f);
-            glColor4f(1.0f, 1.0f, 1.0f, 0.8f); // Bright white for center
-        } else {
-            glLineWidth(1.0f);
-            glColor4f(0.2f, 0.2f, 0.25f, 0.8f);
-        }
-        glBegin(GL_LINES);
-        glVertex2f(gx, y);
-        glVertex2f(gx, y + h);
-        glEnd();
-    }
-    glLineWidth(1.0f);
-
-    // Draw spectrum line
-    float range = maxDb_ - minDb_;
-    float binWidth = w / count;
-
-    // Fill under the curve
-    glBegin(GL_TRIANGLE_STRIP);
-    for (int i = 0; i < count; ++i) {
-        float db = std::clamp(data[i], minDb_, maxDb_);
-        float normalized = (db - minDb_) / range;
-        float px = x + (i + 0.5f) * binWidth;
-        float py = y + h * (1.0f - normalized);
-
-        // Color based on level
-        uint32_t color = dbToColor(db);
-        float r = (color & 0xFF) / 255.0f;
-        float g = ((color >> 8) & 0xFF) / 255.0f;
-        float b = ((color >> 16) & 0xFF) / 255.0f;
-
-        glColor4f(r * 0.5f, g * 0.5f, b * 0.5f, 0.6f);
-        glVertex2f(px, y + h);
-        glColor4f(r, g, b, 0.8f);
-        glVertex2f(px, py);
-    }
+    glVertex2f(gx, y);
+    glVertex2f(gx, y + h);
     glEnd();
+  }
+  glLineWidth(1.0f);
 
-    // Draw spectrum line on top
-    glLineWidth(1.5f);
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < count; ++i) {
-        float db = std::clamp(data[i], minDb_, maxDb_);
-        float normalized = (db - minDb_) / range;
-        float px = x + (i + 0.5f) * binWidth;
-        float py = y + h * (1.0f - normalized);
+  // Draw spectrum line
+  float range = maxDB - minDB;
+  float binWidth = w / count;
 
-        uint32_t color = dbToColor(db);
-        float r = (color & 0xFF) / 255.0f;
-        float g = ((color >> 8) & 0xFF) / 255.0f;
-        float b = ((color >> 16) & 0xFF) / 255.0f;
-        glColor4f(r, g, b, 1.0f);
-        glVertex2f(px, py);
-    }
-    glEnd();
-    glLineWidth(1.0f);
+  glBegin(GL_TRIANGLE_STRIP);
+  for (int i = 0; i < count; ++i) {
+    float db = std::clamp(data[i], minDB, maxDB);
+    float normalized = (db - minDB) / range;
+    float px = x + (static_cast<float>(i) + 0.5f) * binWidth;
+    float py = y + h * (1.0f - normalized);
+
+    uint32_t color = dbToColor(db);
+    float r = (color & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = ((color >> 16) & 0xFF) / 255.0f;
+
+    glColor4f(r * 0.5f, g * 0.5f, b * 0.5f, 0.6f);
+    glVertex2f(px, y + h);
+    glColor4f(r, g, b, 0.8f);
+    glVertex2f(px, py);
+  }
+  glEnd();
+
+  glLineWidth(1.5f);
+  glBegin(GL_LINE_STRIP);
+  for (int i = 0; i < count; ++i) {
+    float db = std::clamp(data[i], minDB, maxDB);
+    float normalized = (db - minDB) / range;
+    float px = x + (static_cast<float>(i) + 0.5f) * binWidth;
+    float py = y + h * (1.0f - normalized);
+
+    uint32_t color = dbToColor(db);
+    float r = (color & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = ((color >> 16) & 0xFF) / 255.0f;
+    glColor4f(r, g, b, 1.0f);
+    glVertex2f(px, py);
+  }
+  glEnd();
+  glLineWidth(1.0f);
 }
 
 void WaterfallRenderer::setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops) {
-    if (stops.empty()) return;
+  if (stops.empty()) {
+    return;
+  }
 
-    // Convert to internal gradient format and build LUT
-    std::vector<std::pair<float, uint32_t>> gradientStops;
-    gradientStops.reserve(stops.size());
+  std::vector<std::pair<float, uint32_t>> gradientStops;
+  gradientStops.reserve(stops.size());
 
-    for (const auto& [pos, r, g, b] : stops) {
-        gradientStops.push_back({pos, packRGBA(r, g, b)});
-    }
+  for (const auto& [pos, r, g, b] : stops) {
+    gradientStops.push_back({pos, packRGBA(r, g, b)});
+  }
 
-    colormapLUT_ = buildGradient(gradientStops);
-    textureDirty_ = true;
+  colormapLUT = buildGradient(gradientStops);
+  textureDirty = true;
 }
 
-void WaterfallRenderer::setRange(float minDb, float maxDb) {
-    minDb_ = minDb;
-    maxDb_ = maxDb;
-    textureDirty_ = true;
+void WaterfallRenderer::setRange(float minDBIn, float maxDBIn) {
+  minDB = minDBIn;
+  maxDB = maxDBIn;
+  textureDirty = true;
 }
 
 void WaterfallRenderer::initDefaultColormap() {
-    // Simple grayscale default - replaced when Lua calls setColormapData()
-    // This ensures the waterfall works even before Lua colormap is loaded
-    colormapLUT_ = buildGradient({
-        {0.0f, packRGBA(0, 0, 0)},
-        {1.0f, packRGBA(255, 255, 255)}
-    });
+  colormapLUT = buildGradient({
+    {0.0f, packRGBA(0, 0, 0)},
+    {1.0f, packRGBA(255, 255, 255)}
+  });
 }
 
 void WaterfallRenderer::updateTexture() {
-    if (!initialized_) return;
+  if (!initialized) {
+    return;
+  }
 
-    // Convert all rows to RGBA using colormap
-    for (int row = 0; row < height_; ++row) {
-        // Calculate which row in our circular buffer this corresponds to
-        // Row 0 in texture = topRow_ (newest)
-        // Row height_-1 = oldest
-        int bufferRow = (topRow_ - row + height_) % height_;
-        const auto& rowData = rows_[bufferRow];
+  for (int row = 0; row < height; ++row) {
+    int bufferRow = (topRow - row + height) % height;
+    const auto& rowData = rows[bufferRow];
 
-        for (int col = 0; col < width_; ++col) {
-            float db = rowData[col];
-            textureData_[row * width_ + col] = dbToColor(db);
-        }
+    for (int col = 0; col < width; ++col) {
+      float db = rowData[col];
+      textureData[row * width + col] = dbToColor(db);
     }
+  }
 
-    // Upload to GPU
-    glBindTexture(GL_TEXTURE_2D, textureId_);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width_, height_, GL_RGBA, GL_UNSIGNED_BYTE, textureData_.data());
+  glBindTexture(GL_TEXTURE_2D, textureID);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, textureData.data());
 
-    textureDirty_ = false;
+  textureDirty = false;
 }
 
 uint32_t WaterfallRenderer::dbToColor(float db) {
-    float range = maxDb_ - minDb_;
-    float normalized = std::clamp((db - minDb_) / range, 0.0f, 1.0f);
-    int index = static_cast<int>(normalized * 255);
-    return colormapLUT_[index];
+  float range = maxDB - minDB;
+  float normalized = std::clamp((db - minDB) / range, 0.0f, 1.0f);
+  int index = static_cast<int>(normalized * 255);
+  return colormapLUT[index];
 }

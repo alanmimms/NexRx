@@ -192,9 +192,9 @@ std::string HostApp::sendCommand(const std::string& cmd) {
     return std::string(result.value.begin(), result.value.end());
 }
 
-bool HostApp::setLO(double freq_hz) {
+bool HostApp::setLO(double freqHz) {
     std::ostringstream cmd;
-    cmd << "SET_LO " << std::fixed << freq_hz << "\n";
+    cmd << "SET_LO " << std::fixed << freqHz << "\n";
 
     std::string response = sendCommand(cmd.str());
     return response.find("OK") == 0;

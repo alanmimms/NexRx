@@ -11,10 +11,10 @@
 namespace nexrx {
 
 SweepGenerator::SweepGenerator(double start_hz, double end_hz,
-                               double amplitude_v, double sweep_rate_hz_per_s)
+                               double amplitudeV, double sweep_rate_hz_per_s)
     : startFreq_hz_(start_hz)
     , endFreq_hz_(end_hz)
-    , amplitude_v_(amplitude_v)
+    , amplitude_v_(amplitudeV)
     , sweepRate_hz_per_s_(std::abs(sweep_rate_hz_per_s))
 {
     freqRange_hz_ = end_hz - start_hz;
@@ -33,23 +33,23 @@ void SweepGenerator::setSweepRate(double rate_hz_per_s) {
     sweepDuration_s_ = std::abs(freqRange_hz_) / sweepRate_hz_per_s_;
 }
 
-double SweepGenerator::frequencyAt(double time_s) const {
-    double effectiveTime = time_s;
+double SweepGenerator::frequencyAt(double timeS) const {
+    double effectiveTime = timeS;
     bool reverse = false;
 
     switch (repeatMode_) {
         case RepeatMode::OneShot:
-            effectiveTime = std::clamp(time_s, 0.0, sweepDuration_s_);
+            effectiveTime = std::clamp(timeS, 0.0, sweepDuration_s_);
             break;
 
         case RepeatMode::Repeat:
-            effectiveTime = std::fmod(time_s, sweepDuration_s_);
+            effectiveTime = std::fmod(timeS, sweepDuration_s_);
             if (effectiveTime < 0) effectiveTime += sweepDuration_s_;
             break;
 
         case RepeatMode::PingPong: {
             double cycleDuration = 2.0 * sweepDuration_s_;
-            effectiveTime = std::fmod(time_s, cycleDuration);
+            effectiveTime = std::fmod(timeS, cycleDuration);
             if (effectiveTime < 0) effectiveTime += cycleDuration;
             if (effectiveTime > sweepDuration_s_) {
                 effectiveTime = cycleDuration - effectiveTime;
@@ -75,31 +75,31 @@ double SweepGenerator::frequencyAt(double time_s) const {
     return startFreq_hz_;
 }
 
-double SweepGenerator::getPhase(double time_s) const {
+double SweepGenerator::getPhase(double timeS) const {
     // For phase-continuous sweep, we need to integrate frequency over time
     // For linear sweep: f(t) = f0 + k*t where k = sweep_rate
     // Phase: φ(t) = ∫ 2π f(τ) dτ = 2π (f0*t + k*t²/2)
 
-    double effectiveTime = time_s;
+    double effectiveTime = timeS;
     double phaseOffset = 0.0;
     int cycleCount = 0;
 
     switch (repeatMode_) {
         case RepeatMode::OneShot:
-            effectiveTime = std::min(time_s, sweepDuration_s_);
+            effectiveTime = std::min(timeS, sweepDuration_s_);
             break;
 
         case RepeatMode::Repeat:
-            cycleCount = static_cast<int>(time_s / sweepDuration_s_);
-            effectiveTime = time_s - cycleCount * sweepDuration_s_;
+            cycleCount = static_cast<int>(timeS / sweepDuration_s_);
+            effectiveTime = timeS - cycleCount * sweepDuration_s_;
             // Add phase from completed cycles
             phaseOffset = cycleCount * getPhaseForDuration(sweepDuration_s_);
             break;
 
         case RepeatMode::PingPong: {
             double cycleDuration = 2.0 * sweepDuration_s_;
-            cycleCount = static_cast<int>(time_s / cycleDuration);
-            double timeInCycle = time_s - cycleCount * cycleDuration;
+            cycleCount = static_cast<int>(timeS / cycleDuration);
+            double timeInCycle = timeS - cycleCount * cycleDuration;
 
             // Phase accumulated in one full ping-pong cycle
             double fullCyclePhase = 2.0 * getPhaseForDuration(sweepDuration_s_);
@@ -165,22 +165,22 @@ double SweepGenerator::getPhaseForReverse(double t) const {
     return 0.0;
 }
 
-double SweepGenerator::getEnvelope(double time_s) const {
+double SweepGenerator::getEnvelope(double timeS) const {
     double envelopeTime_s = envelopeTime_ms_ / 1000.0;
 
     // Smooth start
-    if (time_s < envelopeTime_s) {
-        double t = time_s / envelopeTime_s;
+    if (timeS < envelopeTime_s) {
+        double t = timeS / envelopeTime_s;
         return 0.5 * (1.0 - std::cos(M_PI * t));  // Raised cosine
     }
 
     // For one-shot mode, smooth end
     if (repeatMode_ == RepeatMode::OneShot) {
-        if (time_s > sweepDuration_s_ - envelopeTime_s) {
-            double t = (sweepDuration_s_ - time_s) / envelopeTime_s;
+        if (timeS > sweepDuration_s_ - envelopeTime_s) {
+            double t = (sweepDuration_s_ - timeS) / envelopeTime_s;
             return 0.5 * (1.0 - std::cos(M_PI * t));
         }
-        if (time_s >= sweepDuration_s_) {
+        if (timeS >= sweepDuration_s_) {
             return 0.0;
         }
     }
@@ -188,16 +188,16 @@ double SweepGenerator::getEnvelope(double time_s) const {
     return 1.0;
 }
 
-double SweepGenerator::getSample(double time_s) const {
-    if (time_s < 0) return 0.0;
+double SweepGenerator::getSample(double timeS) const {
+    if (timeS < 0) return 0.0;
 
     // One-shot mode: stop after sweep completes
-    if (repeatMode_ == RepeatMode::OneShot && time_s > sweepDuration_s_) {
+    if (repeatMode_ == RepeatMode::OneShot && timeS > sweepDuration_s_) {
         return 0.0;
     }
 
-    double phase = getPhase(time_s);
-    double envelope = getEnvelope(time_s);
+    double phase = getPhase(timeS);
+    double envelope = getEnvelope(timeS);
 
     return amplitude_v_ * envelope * std::sin(phase);
 }
@@ -218,26 +218,26 @@ void SweepGenerator::reset() {
     // Nothing to reset - time-indexed
 }
 
-bool SweepGenerator::hasMore(double time_s) const {
+bool SweepGenerator::hasMore(double timeS) const {
     if (repeatMode_ == RepeatMode::OneShot) {
-        return time_s < sweepDuration_s_;
+        return timeS < sweepDuration_s_;
     }
     return true;
 }
 
-void SweepGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const {
-    if (time_s < 0) {
+void SweepGenerator::getRfIQ(double timeS, double& out_i, double& out_q) const {
+    if (timeS < 0) {
         out_i = out_q = 0.0;
         return;
     }
 
-    if (repeatMode_ == RepeatMode::OneShot && time_s > sweepDuration_s_) {
+    if (repeatMode_ == RepeatMode::OneShot && timeS > sweepDuration_s_) {
         out_i = out_q = 0.0;
         return;
     }
 
-    double phase = getPhase(time_s);
-    double envelope = getEnvelope(time_s) * amplitude_v_;
+    double phase = getPhase(timeS);
+    double envelope = getEnvelope(timeS) * amplitude_v_;
 
     out_i = envelope * std::cos(phase);
     out_q = envelope * std::sin(phase);
@@ -246,19 +246,19 @@ void SweepGenerator::getRfIQ(double time_s, double& out_i, double& out_q) const 
 // Factory methods
 
 SweepGenerator SweepGenerator::linearSweep(double start_hz, double end_hz,
-                                            double amplitude_v, double rate_hz_per_s) {
-    return SweepGenerator(start_hz, end_hz, amplitude_v, rate_hz_per_s);
+                                            double amplitudeV, double rate_hz_per_s) {
+    return SweepGenerator(start_hz, end_hz, amplitudeV, rate_hz_per_s);
 }
 
 SweepGenerator SweepGenerator::timedSweep(double start_hz, double end_hz,
-                                           double amplitude_v, double duration_s) {
+                                           double amplitudeV, double duration_s) {
     double rate = std::abs(end_hz - start_hz) / duration_s;
-    return SweepGenerator(start_hz, end_hz, amplitude_v, rate);
+    return SweepGenerator(start_hz, end_hz, amplitudeV, rate);
 }
 
-SweepGenerator SweepGenerator::hfBandSweep(double amplitude_v, double duration_s) {
+SweepGenerator SweepGenerator::hfBandSweep(double amplitudeV, double duration_s) {
     // 1 MHz to 30 MHz sweep
-    return timedSweep(1.0e6, 30.0e6, amplitude_v, duration_s);
+    return timedSweep(1.0e6, 30.0e6, amplitudeV, duration_s);
 }
 
 } // namespace nexrx

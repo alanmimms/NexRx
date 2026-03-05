@@ -1,10 +1,6 @@
 /**
  * @file WaterfallRenderer.hpp
  * @brief OpenGL-based waterfall/spectrogram display
- *
- * Colormaps are defined in Lua (config/colormaps.lua) and provided to C++
- * via setColormapData(). This keeps colormap definitions configurable without
- * C++ changes.
  */
 
 #pragma once
@@ -12,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <tuple>
 
 /**
  * @brief Waterfall/spectrogram display renderer
@@ -21,117 +18,113 @@
  */
 class WaterfallRenderer {
 public:
-    WaterfallRenderer();
-    ~WaterfallRenderer();
+  WaterfallRenderer();
+  ~WaterfallRenderer();
 
-    // Non-copyable
-    WaterfallRenderer(const WaterfallRenderer&) = delete;
-    WaterfallRenderer& operator=(const WaterfallRenderer&) = delete;
+  // Non-copyable
+  WaterfallRenderer(const WaterfallRenderer&) = delete;
+  WaterfallRenderer& operator=(const WaterfallRenderer&) = delete;
 
-    /**
-     * @brief Initialize the waterfall display
-     * @param width Number of FFT bins (horizontal resolution)
-     * @param height Number of waterfall rows (scroll history)
-     * @return true if successful
-     */
-    bool init(int width, int height);
+  /**
+   * @brief Initialize the waterfall display
+   * @param width Number of FFT bins (horizontal resolution)
+   * @param height Number of waterfall rows (scroll history)
+   * @return true if successful
+   */
+  bool init(int width, int height);
 
-    /**
-     * @brief Shutdown and free resources
-     */
-    void shutdown();
+  /**
+   * @brief Shutdown and free resources
+   */
+  void shutdown();
 
-    /**
-     * @brief Add a new row of spectrum data
-     * @param data Array of power values in dB (should have 'width' elements)
-     * @param count Number of elements in data array
-     */
-    void addRow(const float* data, int count);
+  /**
+   * @brief Add a new row of spectrum data
+   * @param data Array of power values in dB (should have 'width' elements)
+   * @param count Number of elements in data array
+   */
+  void addRow(const float* data, int count);
 
-    /**
-     * @brief Render the waterfall at the specified position
-     * @param x X position (screen coordinates)
-     * @param y Y position (screen coordinates)
-     * @param w Width to render
-     * @param h Height to render
-     */
-    void render(float x, float y, float w, float h);
+  /**
+   * @brief Render the waterfall at the specified position
+   * @param x X position (screen coordinates)
+   * @param y Y position (screen coordinates)
+   * @param w Width to render
+   * @param h Height to render
+   */
+  void render(float x, float y, float w, float h);
 
-    /**
-     * @brief Set colormap from gradient stops
-     * @param stops Vector of {position, r, g, b} where position is 0-1 and RGB are 0-255
-     *
-     * Colormaps are defined in Lua (config/colormaps.lua) and passed here.
-     */
-    void setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops);
+  /**
+   * @brief Set colormap from gradient stops
+   * @param stops Vector of {position, r, g, b} where position is 0-1 and RGB are 0-255
+   */
+  void setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops);
 
-    /**
-     * @brief Set the dB range for mapping
-     * @param minDb Minimum dB value (maps to colormap start)
-     * @param maxDb Maximum dB value (maps to colormap end)
-     */
-    void setRange(float minDb, float maxDb);
+  /**
+   * @brief Set the dB range for mapping
+   * @param minDB Minimum dB value (maps to colormap start)
+   * @param maxDB Maximum dB value (maps to colormap end)
+   */
+  void setRange(float minDB, float maxDB);
 
-    /**
-     * @brief Get min dB
-     */
-    float getMinDb() const { return minDb_; }
+  /**
+   * @brief Get min dB
+   */
+  float getMinDB() const { return minDB; }
 
-    /**
-     * @brief Get max dB
-     */
-    float getMaxDb() const { return maxDb_; }
+  /**
+   * @brief Get max dB
+   */
+  float getMaxDB() const { return maxDB; }
 
-    /**
-     * @brief Check if initialized
-     */
-    bool isInitialized() const { return initialized_; }
+  /**
+   * @brief Check if initialized
+   */
+  bool isInitialized() const { return initialized; }
 
-    /**
-     * @brief Get width (FFT bins)
-     */
-    int getWidth() const { return width_; }
+  /**
+   * @brief Get width (FFT bins)
+   */
+  int getWidth() const { return width; }
 
-    /**
-     * @brief Get height (history rows)
-     */
-    int getHeight() const { return height_; }
+  /**
+   * @brief Get height (history rows)
+   */
+  int getHeight() const { return height; }
 
-    // --- Spectrum display (top portion) ---
-
-    /**
-     * @brief Render spectrum analyzer above waterfall
-     * @param data Current spectrum data
-     * @param count Number of data points
-     * @param x X position
-     * @param y Y position
-     * @param w Width
-     * @param h Height
-     */
-    void renderSpectrum(const float* data, int count, float x, float y, float w, float h);
+  /**
+   * @brief Render spectrum analyzer above waterfall
+   * @param data Current spectrum data
+   * @param count Number of data points
+   * @param x X position
+   * @param y Y position
+   * @param w Width
+   * @param h Height
+   */
+  void renderSpectrum(const float* data, int count, float x, float y, float w, float h);
 
 private:
-    void initDefaultColormap();
-    void updateTexture();
-    uint32_t dbToColor(float db);
+  void initDefaultColormap();
+  void updateTexture();
+  uint32_t dbToColor(float db);
 
-    unsigned int textureId_ = 0;
-    int width_ = 0;
-    int height_ = 0;
-    bool initialized_ = false;
+  unsigned int textureID = 0;
+  int width = 0;
+  int height = 0;
+  bool initialized = false;
 
-    // Circular buffer for waterfall rows
-    std::vector<std::vector<float>> rows_;
-    int topRow_ = 0;  // Index of the newest row
+  // Circular buffer for waterfall rows
+  std::vector<std::vector<float>> rows;
+  int topRow = 0;  // Index of the newest row
 
-    // Colormap LUT (256-entry lookup table, populated from Lua via setColormapData)
-    std::vector<uint32_t> colormapLUT_;
+  // Colormap LUT (256-entry lookup table)
+  std::vector<uint32_t> colormapLUT;
 
-    // Range
-    float minDb_ = -120.0f;
-    float maxDb_ = -40.0f;
+  // Range
+  float minDB = -120.0f;
+  float maxDB = -40.0f;
 
-    // Texture data buffer (RGBA)
-    std::vector<uint32_t> textureData_;
-    bool textureDirty_ = true;
+  // Texture data buffer (RGBA)
+  std::vector<uint32_t> textureData;
+  bool textureDirty = true;
 };

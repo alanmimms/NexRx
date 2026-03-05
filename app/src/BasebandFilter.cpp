@@ -5,6 +5,7 @@
 
 #include "BasebandFilter.hpp"
 #include <cmath>
+#include <numeric>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -12,425 +13,403 @@
 
 namespace nexrx {
 
-BasebandFilter::BasebandFilter(float sampleRate)
-    : sampleRate_(sampleRate) {
-    // Initialize history buffers
-    bpHistoryI_.resize(bpTaps_, 0.0f);
-    bpHistoryQ_.resize(bpTaps_, 0.0f);
-    notchHistoryI_.resize(notchTaps_, 0.0f);
-    notchHistoryQ_.resize(notchTaps_, 0.0f);
+BasebandFilter::BasebandFilter(float sampleRateIn)
+  : sampleRate(sampleRateIn) {
+  // Initialize history buffers
+  bandpassHistoryI.resize(bandpassTaps, 0.0f);
+  bandpassHistoryQ.resize(bandpassTaps, 0.0f);
+  notchHistoryI.resize(notchTaps, 0.0f);
+  notchHistoryQ.resize(notchTaps, 0.0f);
 }
 
 void BasebandFilter::setBandpassEnabled(bool en) {
-    bpEnabled_ = en;
+  bandpassEnabled = en;
 }
 
 void BasebandFilter::setBandpassCenter(float hz) {
-    if (bpCenter_ != hz) {
-        if (bpEnabled_ && !bpCoeffsI_.empty()) {
-            startBandpassCrossfade();
-        }
-        bpCenter_ = hz;
-        bpCoeffsDirty_ = true;
+  if (bandpassCenter != hz) {
+    if (bandpassEnabled && !bandpassCoeffsI.empty()) {
+      startBandpassCrossfade();
     }
+    bandpassCenter = hz;
+    bandpassCoeffsDirty = true;
+  }
 }
 
 void BasebandFilter::setBandpassWidth(float hz) {
-    if (bpWidth_ != hz) {
-        if (bpEnabled_ && !bpCoeffsI_.empty()) {
-            startBandpassCrossfade();
-        }
-        bpWidth_ = std::max(10.0f, hz);  // Minimum 10 Hz
-        bpCoeffsDirty_ = true;
+  if (bandpassWidth != hz) {
+    if (bandpassEnabled && !bandpassCoeffsI.empty()) {
+      startBandpassCrossfade();
     }
+    bandpassWidth = std::max(10.0f, hz);  // Minimum 10 Hz
+    bandpassCoeffsDirty = true;
+  }
 }
 
 void BasebandFilter::setBandpassTaps(int taps) {
-    // Ensure odd number of taps for symmetric FIR
-    taps = taps | 1;
-    taps = std::clamp(taps, 15, 1023);
+  // Ensure odd number of taps for symmetric FIR
+  taps = taps | 1;
+  taps = std::clamp(taps, 15, 1023);
 
-    if (bpTaps_ != taps) {
-        if (bpEnabled_ && !bpCoeffsI_.empty()) {
-            startBandpassCrossfade();
-        }
-        bpTaps_ = taps;
-        bpHistoryI_.resize(taps, 0.0f);
-        bpHistoryQ_.resize(taps, 0.0f);
-        bpIndex_ = 0;
-        bpCoeffsDirty_ = true;
+  if (bandpassTaps != taps) {
+    if (bandpassEnabled && !bandpassCoeffsI.empty()) {
+      startBandpassCrossfade();
     }
+    bandpassTaps = taps;
+    bandpassHistoryI.assign(taps, 0.0f);
+    bandpassHistoryQ.assign(taps, 0.0f);
+    bandpassIndex = 0;
+    bandpassCoeffsDirty = true;
+  }
 }
 
 void BasebandFilter::setNotchEnabled(bool en) {
-    notchEnabled_ = en;
+  notchEnabled = en;
 }
 
 void BasebandFilter::setNotchCenter(float hz) {
-    if (notchCenter_ != hz) {
-        if (notchEnabled_ && !notchCoeffsI_.empty()) {
-            startNotchCrossfade();
-        }
-        notchCenter_ = hz;
-        notchCoeffsDirty_ = true;
+  if (notchCenter != hz) {
+    if (notchEnabled && !notchCoeffsI.empty()) {
+      startNotchCrossfade();
     }
+    notchCenter = hz;
+    notchCoeffsDirty = true;
+  }
 }
 
 void BasebandFilter::setNotchWidth(float hz) {
-    if (notchWidth_ != hz) {
-        if (notchEnabled_ && !notchCoeffsI_.empty()) {
-            startNotchCrossfade();
-        }
-        notchWidth_ = std::max(10.0f, hz);
-        notchCoeffsDirty_ = true;
+  if (notchWidth != hz) {
+    if (notchEnabled && !notchCoeffsI.empty()) {
+      startNotchCrossfade();
     }
+    notchWidth = std::max(10.0f, hz);
+    notchCoeffsDirty = true;
+  }
 }
 
 bool BasebandFilter::recompute() {
-    // Force coefficient recomputation if parameters have changed.
-    // This allows batching multiple parameter changes and then
-    // triggering a single recomputation outside of realtime DSP.
-    bool recomputed = false;
+  bool recomputed = false;
 
-    if (bpCoeffsDirty_) {
-        designBandpass();
-        bpCoeffsDirty_ = false;
-        recomputed = true;
-    }
+  if (bandpassCoeffsDirty) {
+    designBandpass();
+    bandpassCoeffsDirty = false;
+    recomputed = true;
+  }
 
-    if (notchCoeffsDirty_) {
-        designNotch();
-        notchCoeffsDirty_ = false;
-        recomputed = true;
-    }
+  if (notchCoeffsDirty) {
+    designNotch();
+    notchCoeffsDirty = false;
+    recomputed = true;
+  }
 
-    return recomputed;
+  return recomputed;
 }
 
 void BasebandFilter::process(float& i, float& q) {
-    // Recompute coefficients if parameters changed
-    if (bpEnabled_ && bpCoeffsDirty_) {
-        designBandpass();
-        bpCoeffsDirty_ = false;
-    }
-    if (notchEnabled_ && notchCoeffsDirty_) {
-        designNotch();
-        notchCoeffsDirty_ = false;
-    }
+  // Recompute coefficients if parameters changed
+  if (bandpassEnabled && bandpassCoeffsDirty) {
+    designBandpass();
+    bandpassCoeffsDirty = false;
+  }
+  if (notchEnabled && notchCoeffsDirty) {
+    designNotch();
+    notchCoeffsDirty = false;
+  }
 
-    if (bpEnabled_) {
-        // Store input in circular history buffer
-        bpHistoryI_[bpIndex_] = i;
-        bpHistoryQ_[bpIndex_] = q;
+  if (bandpassEnabled) {
+    // Store input in circular history buffer
+    bandpassHistoryI[bandpassIndex] = i;
+    bandpassHistoryQ[bandpassIndex] = q;
 
-        // Complex FIR convolution
-        // Output = input ⊛ (coeffsI + j*coeffsQ)
-        // (a + jb) * (c + jd) = (ac - bd) + j(ad + bc)
-        float outI = 0.0f, outQ = 0.0f;
-        size_t idx = bpIndex_;
+    float outI = 0.0f, outQ = 0.0f;
+    size_t idx = bandpassIndex;
 
-        for (int n = 0; n < bpTaps_; n++) {
-            float hi = bpHistoryI_[idx];
-            float hq = bpHistoryQ_[idx];
-            float cI = bpCoeffsI_[n];
-            float cQ = bpCoeffsQ_[n];
+    for (int n = 0; n < bandpassTaps; n++) {
+      float hi = bandpassHistoryI[idx];
+      float hq = bandpassHistoryQ[idx];
+      float cI = bandpassCoeffsI[n];
+      float cQ = bandpassCoeffsQ[n];
 
-            // Complex multiply: (hi + j*hq) * (cI + j*cQ)
-            outI += hi * cI - hq * cQ;
-            outQ += hi * cQ + hq * cI;
+      // Complex multiply: (hi + j*hq) * (cI + j*cQ)
+      outI += hi * cI - hq * cQ;
+      outQ += hi * cQ + hq * cI;
 
-            // Decrement with wrap
-            if (idx == 0) idx = bpTaps_ - 1;
-            else idx--;
-        }
-
-        // Handle crossfade if active
-        if (bpCrossfading_) {
-            float oldI, oldQ;
-            processOldBandpass(i, q, oldI, oldQ);
-
-            // Linear crossfade from old to new
-            float alpha = static_cast<float>(bpCrossfadePos_) / kCrossfadeSamples;
-            outI = (1.0f - alpha) * oldI + alpha * outI;
-            outQ = (1.0f - alpha) * oldQ + alpha * outQ;
-
-            bpCrossfadePos_++;
-            if (bpCrossfadePos_ >= kCrossfadeSamples) {
-                bpCrossfading_ = false;
-                bpOldCoeffsI_.clear();
-                bpOldCoeffsQ_.clear();
-                bpOldHistoryI_.clear();
-                bpOldHistoryQ_.clear();
-            }
-        }
-
-        i = outI;
-        q = outQ;
-        bpIndex_ = (bpIndex_ + 1) % bpTaps_;
+      if (idx == 0) {
+        idx = bandpassTaps - 1;
+      } else {
+        idx--;
+      }
     }
 
-    if (notchEnabled_) {
-        // Store input in circular history buffer
-        notchHistoryI_[notchIndex_] = i;
-        notchHistoryQ_[notchIndex_] = q;
+    if (bandpassCrossfading) {
+      float oldI, oldQ;
+      processOldBandpass(i, q, oldI, oldQ);
 
-        // Compute bandpass output at notch frequency
-        float bpI = 0.0f, bpQ = 0.0f;
-        size_t idx = notchIndex_;
+      float alpha = static_cast<float>(bandpassCrossfadePos) / kCrossfadeSamples;
+      outI = (1.0f - alpha) * oldI + alpha * outI;
+      outQ = (1.0f - alpha) * oldQ + alpha * outQ;
 
-        for (int n = 0; n < notchTaps_; n++) {
-            float hi = notchHistoryI_[idx];
-            float hq = notchHistoryQ_[idx];
-            float cI = notchCoeffsI_[n];
-            float cQ = notchCoeffsQ_[n];
-
-            bpI += hi * cI - hq * cQ;
-            bpQ += hi * cQ + hq * cI;
-
-            if (idx == 0) idx = notchTaps_ - 1;
-            else idx--;
-        }
-
-        // Notch = delayed input - bandpass
-        // Get delayed input (center of filter = group delay)
-        int delay = notchTaps_ / 2;
-        size_t delayIdx = (notchIndex_ + notchTaps_ - delay) % notchTaps_;
-
-        float outI = notchHistoryI_[delayIdx] - bpI;
-        float outQ = notchHistoryQ_[delayIdx] - bpQ;
-
-        // Handle crossfade if active
-        if (notchCrossfading_) {
-            float oldI, oldQ;
-            processOldNotch(i, q, oldI, oldQ);
-
-            // Linear crossfade from old to new
-            float alpha = static_cast<float>(notchCrossfadePos_) / kCrossfadeSamples;
-            outI = (1.0f - alpha) * oldI + alpha * outI;
-            outQ = (1.0f - alpha) * oldQ + alpha * outQ;
-
-            notchCrossfadePos_++;
-            if (notchCrossfadePos_ >= kCrossfadeSamples) {
-                notchCrossfading_ = false;
-                notchOldCoeffsI_.clear();
-                notchOldCoeffsQ_.clear();
-                notchOldHistoryI_.clear();
-                notchOldHistoryQ_.clear();
-            }
-        }
-
-        i = outI;
-        q = outQ;
-
-        notchIndex_ = (notchIndex_ + 1) % notchTaps_;
+      bandpassCrossfadePos++;
+      if (bandpassCrossfadePos >= kCrossfadeSamples) {
+        bandpassCrossfading = false;
+        bandpassOldCoeffsI.clear();
+        bandpassOldCoeffsQ.clear();
+        bandpassOldHistoryI.clear();
+        bandpassOldHistoryQ.clear();
+      }
     }
+
+    i = outI;
+    q = outQ;
+    bandpassIndex = (bandpassIndex + 1) % bandpassTaps;
+  }
+
+  if (notchEnabled) {
+    notchHistoryI[notchIndex] = i;
+    notchHistoryQ[notchIndex] = q;
+
+    float bpI = 0.0f, bpQ = 0.0f;
+    size_t idx = notchIndex;
+
+    for (int n = 0; n < notchTaps; n++) {
+      float hi = notchHistoryI[idx];
+      float hq = notchHistoryQ[idx];
+      float cI = notchCoeffsI[n];
+      float cQ = notchCoeffsQ[n];
+
+      bpI += hi * cI - hq * cQ;
+      bpQ += hi * cQ + hq * cI;
+
+      if (idx == 0) {
+        idx = notchTaps - 1;
+      } else {
+        idx--;
+      }
+    }
+
+    int delay = notchTaps / 2;
+    size_t delayIdx = (notchIndex + notchTaps - delay) % notchTaps;
+
+    float outI = notchHistoryI[delayIdx] - bpI;
+    float outQ = notchHistoryQ[delayIdx] - bpQ;
+
+    if (notchCrossfading) {
+      float oldI, oldQ;
+      processOldNotch(i, q, oldI, oldQ);
+
+      float alpha = static_cast<float>(notchCrossfadePos) / kCrossfadeSamples;
+      outI = (1.0f - alpha) * oldI + alpha * outI;
+      outQ = (1.0f - alpha) * oldQ + alpha * outQ;
+
+      notchCrossfadePos++;
+      if (notchCrossfadePos >= kCrossfadeSamples) {
+        notchCrossfading = false;
+        notchOldCoeffsI.clear();
+        notchOldCoeffsQ.clear();
+        notchOldHistoryI.clear();
+        notchOldHistoryQ.clear();
+      }
+    }
+
+    i = outI;
+    q = outQ;
+
+    notchIndex = (notchIndex + 1) % notchTaps;
+  }
 }
 
 void BasebandFilter::designBandpass() {
-    // Design complex bandpass FIR using windowed-sinc method
-    // 1. Design lowpass with cutoff = bandwidth/2
-    // 2. Modulate to center frequency
+  bandpassCoeffsI.resize(bandpassTaps);
+  bandpassCoeffsQ.resize(bandpassTaps);
 
-    bpCoeffsI_.resize(bpTaps_);
-    bpCoeffsQ_.resize(bpTaps_);
+  int center = bandpassTaps / 2;
+  float cutoff = bandpassWidth / (2.0f * sampleRate); 
+  float beta = 6.0f;
 
-    int center = bpTaps_ / 2;
-    float cutoff = bpWidth_ / (2.0f * sampleRate_);  // Normalized cutoff
+  std::vector<float> lpfCoeffs(bandpassTaps);
+  float sum = 0;
 
-    // Kaiser window beta for ~60 dB stopband attenuation
-    float beta = 6.0f;
-
-    // Step 1: Design lowpass prototype
-    std::vector<float> lpfCoeffs(bpTaps_);
-
-    for (int n = 0; n < bpTaps_; n++) {
-        int k = n - center;
-
-        // Sinc lowpass
-        float h;
-        if (k == 0) {
-            h = 2.0f * cutoff;  // Value at center
-        } else {
-            float x = 2.0f * M_PI * cutoff * k;
-            h = std::sin(x) / (M_PI * k);
-        }
-
-        // Apply Kaiser window
-        float w = kaiser(n, bpTaps_, beta);
-        lpfCoeffs[n] = h * w;
+  for (int n = 0; n < bandpassTaps; n++) {
+    int k = n - center;
+    float h;
+    if (k == 0) {
+      h = 2.0f * cutoff;
+    } else {
+      float x = 2.0f * static_cast<float>(M_PI) * cutoff * static_cast<float>(k);
+      h = std::sin(x) / (static_cast<float>(M_PI) * static_cast<float>(k));
     }
-
-    // Step 2: Modulate to center frequency (complex exponential)
-    // coeffs[n] = lpf[n] * exp(j * 2π * fc * (n - center) / fs)
-    for (int n = 0; n < bpTaps_; n++) {
-        float phase = 2.0f * M_PI * bpCenter_ * (n - center) / sampleRate_;
-        bpCoeffsI_[n] = lpfCoeffs[n] * std::cos(phase);
-        bpCoeffsQ_[n] = lpfCoeffs[n] * std::sin(phase);
+    float w = kaiser(n, bandpassTaps, beta);
+    lpfCoeffs[n] = h * w;
+    sum += lpfCoeffs[n];
+  }
+  
+  // Normalize to unity gain at DC
+  if (sum > 0) {
+    for (int n = 0; n < bandpassTaps; n++) {
+      lpfCoeffs[n] /= sum;
     }
+  }
+
+  for (int n = 0; n < bandpassTaps; n++) {
+    float phase = 2.0f * static_cast<float>(M_PI) * bandpassCenter * static_cast<float>(n - center) / sampleRate;
+    bandpassCoeffsI[n] = lpfCoeffs[n] * std::cos(phase);
+    bandpassCoeffsQ[n] = lpfCoeffs[n] * std::sin(phase);
+  }
 }
 
 void BasebandFilter::designNotch() {
-    // Design narrow bandpass at notch frequency
-    // Notch output = input - bandpass (computed in process())
+  notchCoeffsI.resize(notchTaps);
+  notchCoeffsQ.resize(notchTaps);
 
-    notchCoeffsI_.resize(notchTaps_);
-    notchCoeffsQ_.resize(notchTaps_);
+  int center = notchTaps / 2;
+  float cutoff = notchWidth / (2.0f * sampleRate);
+  float beta = 8.0f;
 
-    int center = notchTaps_ / 2;
-    float cutoff = notchWidth_ / (2.0f * sampleRate_);
+  std::vector<float> lpfCoeffs(notchTaps);
+  float sum = 0;
 
-    // Higher beta for narrower notch with better rejection
-    float beta = 8.0f;
-
-    // Design lowpass prototype
-    std::vector<float> lpfCoeffs(notchTaps_);
-
-    for (int n = 0; n < notchTaps_; n++) {
-        int k = n - center;
-
-        float h;
-        if (k == 0) {
-            h = 2.0f * cutoff;
-        } else {
-            float x = 2.0f * M_PI * cutoff * k;
-            h = std::sin(x) / (M_PI * k);
-        }
-
-        float w = kaiser(n, notchTaps_, beta);
-        lpfCoeffs[n] = h * w;
+  for (int n = 0; n < notchTaps; n++) {
+    int k = n - center;
+    float h;
+    if (k == 0) {
+      h = 2.0f * cutoff;
+    } else {
+      float x = 2.0f * static_cast<float>(M_PI) * cutoff * static_cast<float>(k);
+      h = std::sin(x) / (static_cast<float>(M_PI) * static_cast<float>(k));
     }
-
-    // Modulate to notch center frequency
-    for (int n = 0; n < notchTaps_; n++) {
-        float phase = 2.0f * M_PI * notchCenter_ * (n - center) / sampleRate_;
-        notchCoeffsI_[n] = lpfCoeffs[n] * std::cos(phase);
-        notchCoeffsQ_[n] = lpfCoeffs[n] * std::sin(phase);
+    float w = kaiser(n, notchTaps, beta);
+    lpfCoeffs[n] = h * w;
+    sum += lpfCoeffs[n];
+  }
+  
+  // Normalize
+  if (sum > 0) {
+    for (int n = 0; n < notchTaps; n++) {
+      lpfCoeffs[n] /= sum;
     }
+  }
+
+  for (int n = 0; n < notchTaps; n++) {
+    float phase = 2.0f * static_cast<float>(M_PI) * notchCenter * static_cast<float>(n - center) / sampleRate;
+    notchCoeffsI[n] = lpfCoeffs[n] * std::cos(phase);
+    notchCoeffsQ[n] = lpfCoeffs[n] * std::sin(phase);
+  }
 }
 
 float BasebandFilter::kaiser(int n, int N, float beta) {
-    // Kaiser window: w[n] = I0(beta * sqrt(1 - ((n - M) / M)^2)) / I0(beta)
-    // where M = (N - 1) / 2
-    float M = (N - 1) / 2.0f;
-    float ratio = (n - M) / M;
-    float arg = beta * std::sqrt(1.0f - ratio * ratio);
-    return bessel_i0(arg) / bessel_i0(beta);
+  float M = (static_cast<float>(N) - 1.0f) / 2.0f;
+  float ratio = (static_cast<float>(n) - M) / M;
+  float arg = beta * std::sqrt(std::max(0.0f, 1.0f - ratio * ratio));
+  return besselI0(arg) / besselI0(beta);
 }
 
-float BasebandFilter::bessel_i0(float x) {
-    // Modified Bessel function of the first kind, order 0
-    // Using series expansion: I0(x) = sum_{k=0}^inf ((x/2)^k / k!)^2
-    float sum = 1.0f;
-    float term = 1.0f;
-    float x2 = x * x / 4.0f;
+float BasebandFilter::besselI0(float x) {
+  float sum = 1.0f;
+  float term = 1.0f;
+  float x2 = x * x / 4.0f;
 
-    for (int k = 1; k <= 25; k++) {
-        term *= x2 / (k * k);
-        sum += term;
-        if (term < 1e-10f * sum) break;
+  for (int k = 1; k <= 25; k++) {
+    term *= x2 / (static_cast<float>(k) * static_cast<float>(k));
+    sum += term;
+    if (term < 1e-10f * sum) {
+      break;
     }
+  }
 
-    return sum;
+  return sum;
 }
 
 void BasebandFilter::startBandpassCrossfade() {
-    // Save current filter state for crossfading
-    if (bpCrossfading_) {
-        // Already crossfading - just restart with current "new" as old
-    }
-    bpOldCoeffsI_ = bpCoeffsI_;
-    bpOldCoeffsQ_ = bpCoeffsQ_;
-    bpOldHistoryI_ = bpHistoryI_;
-    bpOldHistoryQ_ = bpHistoryQ_;
-    bpOldIndex_ = bpIndex_;
-    bpOldTaps_ = bpTaps_;
-    bpCrossfadePos_ = 0;
-    bpCrossfading_ = true;
+  bandpassOldCoeffsI = bandpassCoeffsI;
+  bandpassOldCoeffsQ = bandpassCoeffsQ;
+  bandpassOldHistoryI = bandpassHistoryI;
+  bandpassOldHistoryQ = bandpassHistoryQ;
+  bandpassOldIndex = bandpassIndex;
+  bandpassOldTaps = bandpassTaps;
+  bandpassCrossfadePos = 0;
+  bandpassCrossfading = true;
 }
 
 void BasebandFilter::startNotchCrossfade() {
-    // Save current filter state for crossfading
-    notchOldCoeffsI_ = notchCoeffsI_;
-    notchOldCoeffsQ_ = notchCoeffsQ_;
-    notchOldHistoryI_ = notchHistoryI_;
-    notchOldHistoryQ_ = notchHistoryQ_;
-    notchOldIndex_ = notchIndex_;
-    notchCrossfadePos_ = 0;
-    notchCrossfading_ = true;
+  notchOldCoeffsI = notchCoeffsI;
+  notchOldCoeffsQ = notchCoeffsQ;
+  notchOldHistoryI = notchHistoryI;
+  notchOldHistoryQ = notchHistoryQ;
+  notchOldIndex = notchIndex;
+  notchCrossfadePos = 0;
+  notchCrossfading = true;
 }
 
 void BasebandFilter::processOldBandpass(float i, float q, float& outI, float& outQ) {
-    // Process using old coefficients (during crossfade)
-    if (bpOldCoeffsI_.empty() || bpOldTaps_ == 0) {
-        outI = i;
-        outQ = q;
-        return;
+  if (bandpassOldCoeffsI.empty() || bandpassOldTaps == 0) {
+    outI = i;
+    outQ = q;
+    return;
+  }
+
+  bandpassOldHistoryI[bandpassOldIndex] = i;
+  bandpassOldHistoryQ[bandpassOldIndex] = q;
+
+  outI = 0.0f;
+  outQ = 0.0f;
+  size_t idx = bandpassOldIndex;
+
+  for (int n = 0; n < bandpassOldTaps; n++) {
+    float hi = bandpassOldHistoryI[idx];
+    float hq = bandpassOldHistoryQ[idx];
+    float cI = bandpassOldCoeffsI[n];
+    float cQ = bandpassOldCoeffsQ[n];
+
+    outI += hi * cI - hq * cQ;
+    outQ += hi * cQ + hq * cI;
+
+    if (idx == 0) {
+      idx = bandpassOldTaps - 1;
+    } else {
+      idx--;
     }
+  }
 
-    // Store input in old history buffer
-    bpOldHistoryI_[bpOldIndex_] = i;
-    bpOldHistoryQ_[bpOldIndex_] = q;
-
-    // FIR convolution with old coefficients
-    outI = 0.0f;
-    outQ = 0.0f;
-    size_t idx = bpOldIndex_;
-
-    for (int n = 0; n < bpOldTaps_; n++) {
-        float hi = bpOldHistoryI_[idx];
-        float hq = bpOldHistoryQ_[idx];
-        float cI = bpOldCoeffsI_[n];
-        float cQ = bpOldCoeffsQ_[n];
-
-        outI += hi * cI - hq * cQ;
-        outQ += hi * cQ + hq * cI;
-
-        if (idx == 0) idx = bpOldTaps_ - 1;
-        else idx--;
-    }
-
-    bpOldIndex_ = (bpOldIndex_ + 1) % bpOldTaps_;
+  bandpassOldIndex = (bandpassOldIndex + 1) % bandpassOldTaps;
 }
 
 void BasebandFilter::processOldNotch(float i, float q, float& outI, float& outQ) {
-    // Process using old notch coefficients (during crossfade)
-    if (notchOldCoeffsI_.empty()) {
-        outI = i;
-        outQ = q;
-        return;
+  if (notchOldCoeffsI.empty()) {
+    outI = i;
+    outQ = q;
+    return;
+  }
+
+  int oldTaps = static_cast<int>(notchOldCoeffsI.size());
+  notchOldHistoryI[notchOldIndex] = i;
+  notchOldHistoryQ[notchOldIndex] = q;
+
+  float bpI = 0.0f, bpQ = 0.0f;
+  size_t idx = notchOldIndex;
+
+  for (int n = 0; n < oldTaps; n++) {
+    float hi = notchOldHistoryI[idx];
+    float hq = notchOldHistoryQ[idx];
+    float cI = notchOldCoeffsI[n];
+    float cQ = notchOldCoeffsQ[n];
+
+    bpI += hi * cI - hq * cQ;
+    bpQ += hi * cQ + hq * cI;
+
+    if (idx == 0) {
+      idx = oldTaps - 1;
+    } else {
+      idx--;
     }
+  }
 
-    int oldTaps = static_cast<int>(notchOldCoeffsI_.size());
+  int delay = oldTaps / 2;
+  size_t delayIdx = (notchOldIndex + oldTaps - delay) % oldTaps;
 
-    // Store input in old history buffer
-    notchOldHistoryI_[notchOldIndex_] = i;
-    notchOldHistoryQ_[notchOldIndex_] = q;
+  outI = notchOldHistoryI[delayIdx] - bpI;
+  outQ = notchOldHistoryQ[delayIdx] - bpQ;
 
-    // Compute bandpass at old notch frequency
-    float bpI = 0.0f, bpQ = 0.0f;
-    size_t idx = notchOldIndex_;
-
-    for (int n = 0; n < oldTaps; n++) {
-        float hi = notchOldHistoryI_[idx];
-        float hq = notchOldHistoryQ_[idx];
-        float cI = notchOldCoeffsI_[n];
-        float cQ = notchOldCoeffsQ_[n];
-
-        bpI += hi * cI - hq * cQ;
-        bpQ += hi * cQ + hq * cI;
-
-        if (idx == 0) idx = oldTaps - 1;
-        else idx--;
-    }
-
-    // Notch = delayed input - bandpass
-    int delay = oldTaps / 2;
-    size_t delayIdx = (notchOldIndex_ + oldTaps - delay) % oldTaps;
-
-    outI = notchOldHistoryI_[delayIdx] - bpI;
-    outQ = notchOldHistoryQ_[delayIdx] - bpQ;
-
-    notchOldIndex_ = (notchOldIndex_ + 1) % oldTaps;
+  notchOldIndex = (notchOldIndex + 1) % oldTaps;
 }
 
 } // namespace nexrx

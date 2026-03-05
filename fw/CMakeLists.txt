@@ -13,16 +13,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Source files
 target_sources(app PRIVATE 
     src/main.cpp
-    src/app/agc-manager.cpp
-    src/drivers/fpga-manager.cpp
-    src/drivers/ak5578.cpp
-    src/drivers/max9939.cpp
-    src/drivers/nexbus.cpp
-    src/drivers/display-manager.cpp
-    src/transport/usb-manager.cpp
-    src/transport/qsd-capture.cpp
-    src/transport/control-handler.cpp
-    src/transport/usb-cdc-transport.cpp
+    src/app/AGCManager.cpp
+    src/drivers/FPGAManager.cpp
+    src/drivers/AK5578.cpp
+    src/drivers/MAX9939.cpp
+    src/drivers/NexBus.cpp
+    src/drivers/DisplayManager.cpp
+    src/transport/USBManager.cpp
+    src/transport/QSDCapture.cpp
+    src/transport/ControlHandler.cpp
+    src/transport/USBCDCTransport.cpp
 )
 
 # Include directories

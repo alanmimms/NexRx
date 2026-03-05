@@ -87,7 +87,7 @@ public:
     //------------------------------------------------------------------
 
     // Set local oscillator frequency
-    bool setLO(double freq_hz);
+    bool setLO(double freqHz);
 
     // Get twin status
     bool getStatus(double& lo_freq_hz, bool& streaming);

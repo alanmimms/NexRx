@@ -43,7 +43,7 @@ Complex DspPipeline::process(const IQFrame& frame) {
 
     // Call output callback
     if (outputCallback_) {
-        outputCallback_(output, frame.timestamp_ns);
+        outputCallback_(output, frame.timestampNS);
     }
 
     return output;

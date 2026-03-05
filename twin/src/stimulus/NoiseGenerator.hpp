@@ -42,15 +42,15 @@ public:
         , dist_(0.0, 1.0)
     {}
 
-    [[nodiscard]] double getSample(double time_s) const override {
-        (void)time_s;  // White noise is time-independent
+    [[nodiscard]] double getSample(double timeS) const override {
+        (void)timeS;  // White noise is time-independent
         return rms_v_ * dist_(gen_);
     }
 
     // RF I/Q for noise: independent Gaussian samples on I and Q
     // Noise is broadband - no carrier, mixing doesn't change its character
-    void getRfIQ(double time_s, double& out_i, double& out_q) const override {
-        (void)time_s;
+    void getRfIQ(double timeS, double& out_i, double& out_q) const override {
+        (void)timeS;
         // Noise is broadband - equal contribution to I and Q
         // Divide by sqrt(2) to maintain total power
         double scale = rms_v_ / std::sqrt(2.0);
@@ -86,10 +86,10 @@ public:
 
     // Thermal noise at given temperature and bandwidth into impedance
     // V_rms = sqrt(4 * k * T * B * R) for Johnson noise
-    static NoiseGenerator thermal(double temp_k, double bandwidth_hz,
+    static NoiseGenerator thermal(double temp_k, double bandwidthHz,
                                    double impedance_ohm = 50.0, uint64_t seed = 0) {
         constexpr double kBoltzmann = 1.380649e-23;  // J/K
-        double power_w = kBoltzmann * temp_k * bandwidth_hz;
+        double power_w = kBoltzmann * temp_k * bandwidthHz;
         double rms_v = std::sqrt(4.0 * power_w * impedance_ohm);
         return NoiseGenerator(rms_v, seed);
     }
@@ -98,7 +98,7 @@ public:
     // NF = 10*log10(SNR_in / SNR_out) = 10*log10(1 + Te/T0)
     // Te = T0 * (10^(NF/10) - 1)
     // Total noise = thermal + added noise
-    static NoiseGenerator fromNoiseFigure(double noise_figure_db, double bandwidth_hz,
+    static NoiseGenerator fromNoiseFigure(double noise_figure_db, double bandwidthHz,
                                            double impedance_ohm = 50.0,
                                            double ref_temp_k = 290.0,
                                            uint64_t seed = 0) {
@@ -109,7 +109,7 @@ public:
         double te = ref_temp_k * (nf_linear - 1.0);
         double total_temp = ref_temp_k + te;
 
-        double power_w = kBoltzmann * total_temp * bandwidth_hz;
+        double power_w = kBoltzmann * total_temp * bandwidthHz;
         double rms_v = std::sqrt(4.0 * power_w * impedance_ohm);
         return NoiseGenerator(rms_v, seed);
     }
@@ -117,12 +117,12 @@ public:
     // Atmospheric noise at HF (simplified model)
     // Fa = atmospheric noise figure in dB above kT0B
     // Typical values: 50-80 dB at 1 MHz, 20-40 dB at 30 MHz
-    static NoiseGenerator atmospheric(double freq_hz, double bandwidth_hz,
+    static NoiseGenerator atmospheric(double freqHz, double bandwidthHz,
                                        double impedance_ohm = 50.0,
                                        uint64_t seed = 0) {
         // Simplified ITU-R P.372 model for quiet rural location
         // Fa = 55 - 28*log10(f_MHz) for f > 2 MHz
-        double f_mhz = freq_hz / 1e6;
+        double f_mhz = freqHz / 1e6;
         double fa_db;
         if (f_mhz < 2.0) {
             fa_db = 76.0 - 20.0 * std::log10(f_mhz);
@@ -135,7 +135,7 @@ public:
         constexpr double kBoltzmann = 1.380649e-23;
         double ta = T0 * std::pow(10.0, fa_db / 10.0);
 
-        double power_w = kBoltzmann * ta * bandwidth_hz;
+        double power_w = kBoltzmann * ta * bandwidthHz;
         double rms_v = std::sqrt(4.0 * power_w * impedance_ohm);
         return NoiseGenerator(rms_v, seed);
     }
