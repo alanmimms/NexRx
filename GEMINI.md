@@ -25,6 +25,15 @@ that symbol.
 Never use "_" in filenames unless you must for compatibility with APIs
 or something like Python module names.
 
+In code that uses four character ASCII values like 'abcd' (e.g., the
+control plane for NexRx between app and twin or MCU), don't write the
+value as hex constant in code with a comment saying what it is.
+Instead, define a macro or compile-time-constant for each unique value
+and reference that. Use in ControlHandler class something like
+`constexpr uint32_t SVFO = 0x5356464F;` and then refer to
+ControlHandler's symbol in switch/case statements and to construct the
+four byte CBOR uint32_t values that should flow on the wire.
+
 When appropriate, refactor source code that has accumulated a number
 of modular components into separate module source files. Don't let our
 work grow the size of source modules to such a size that handling them

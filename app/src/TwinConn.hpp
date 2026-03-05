@@ -3,6 +3,7 @@
 #include "TCPControlClient.hpp"
 #include "UDPStreamClient.hpp"
 #include "transport/IQFrame.hpp"
+#include "Control.hpp"
 
 #include <atomic>
 #include <functional>
@@ -62,21 +63,23 @@ public:
   bool setAGCMode(int mode);
   bool setISGFreq(double freqHz);
   bool setISGEnable(bool enabled);
-  bool setPreselectorInd(bool shorted);
+  bool setPreselectorL(bool shorted);
   bool setPreselectorCap(int index, bool enabled);
+  bool setPreselectorEnabled(bool enabled);
+  bool setTrMode(int mode);
   bool setQsdOffsetKHz(double khz);
   bool startStream();
   bool stopStream();
   uint64_t getTimestamp();
 
-  std::vector<uint8_t> sendCBORRequest(const std::string& cmdId, const std::vector<uint8_t>& argsCBOR);
+  std::vector<uint8_t> sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& argsCBOR);
 
   [[nodiscard]] uint64_t getFramesReceived() const { return framesReceivedCount; }
   [[nodiscard]] uint64_t getLastSequence() const { return lastSequenceReceived; }
 
 private:
   void receiveLoop();
-  std::vector<uint8_t> processResponse(const std::vector<uint8_t>& responseData, const std::string& cmdId);
+  std::vector<uint8_t> processResponse(const std::vector<uint8_t>& responseData, uint32_t cmdId);
 
   TwinConfig config;
   std::unique_ptr<TCPControlClient> control;

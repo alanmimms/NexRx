@@ -54,12 +54,18 @@ rule {
         -- =================================================================
         qsdOffsetK = 12.0,              -- kHz
         rfAttenDb = 0,                  -- dB (0-45 in 3 dB steps)
+        rfGainDb = 20.0,                -- dB (Digital gain)
 
         -- Preselector
         preselL1 = false,
         preselC0 = false, preselC1 = false, preselC2 = false, preselC3 = false, preselC4 = false,
         preselC5 = false, preselC6 = false, preselC7 = false, preselC8 = false, preselC9 = false,
         preselC10 = false,
+        preselectorAuto = true,
+
+        -- Internal Signal Generator
+        isgEnabled = false,
+        isgFrequency = 14.201e6,        -- Hz (1 kHz offset from default frequency)
 
         -- =================================================================
         -- Display Defaults
@@ -68,7 +74,7 @@ rule {
         wfRows = 256,
         wfColormap = "viridis",
         wfMinDb = -140,
-        wfMaxDb = -40,
+        wfMaxDb = 0,
         spectrumEmaAlpha = 0.3,         -- Spectrum smoothing
 
         -- =================================================================
@@ -97,7 +103,7 @@ rule {
         -- =================================================================
         -- Audio Defaults
         -- =================================================================
-        volumeDb = -40,             -- dB, range -60 to 0
+        volumeDb = -20,             -- dB, range -60 to 0
         muted = false,
 
         -- =================================================================

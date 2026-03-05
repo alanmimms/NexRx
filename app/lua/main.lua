@@ -219,7 +219,12 @@ end
 function update(dt)
     frameCount = frameCount + 1
     fpsAccum = fpsAccum + dt; fpsFrames = fpsFrames + 1
-    if fpsAccum >= 1.0 then fps = fpsFrames / fpsAccum; fpsAccum = 0; fpsFrames = 0 end
+    if fpsAccum >= 1.0 then 
+        fps = fpsFrames / fpsAccum; 
+        fpsAccum = 0; 
+        fpsFrames = 0 
+        if diag and diag.logLevels then diag.logLevels() end
+    end
     animate.update(dt)
     freqEntryBlink = (freqEntryBlink + dt) % 1.0
     for _, sc in ipairs(keys.getAllScancodes()) do local n = keys.getName(sc); if n then activeTags["input."..n] = isKeyDown(sc) or nil end end
@@ -317,14 +322,14 @@ function draw()
 
         cx, cy = layout.getCursor(); ui.label("vol-l", cx, cy, "Volume", {"Title"}); layout.newLine(24)
         cx, cy = layout.getCursor()
-        local nV = ui.slider("vol-slider", cx, cy, rL.w - 24, -60, 0, state.volumeDb, nil, "volumeDb")
+        local nV = ui.slider("vol-slider", cx, cy, rL.w - 24, -60, 20, state.volumeDb, nil, "volumeDb")
         if nV ~= state.volumeDb then state.volumeDb = nV end
         layout.newLine(24)
 
         cx, cy = layout.getCursor(); ui.label("rfg-l", cx, cy, "RF Gain", {"Title"}); layout.newLine(24)
         cx, cy = layout.getCursor()
-        local nG = ui.slider("rfg-slider", cx, cy, rL.w - 24, 0, 60, state.rfGainDb, nil, "rfGainDb")
-        if nG ~= state.rfGainDb then state.rfGainDb = nG end
+        local nRG = ui.slider("rfg-slider", cx, cy, rL.w - 24, -20, 60, state.rfGainDb, nil, "rfGainDb")
+        if nRG ~= state.rfGainDb then state.rfGainDb = nRG end
         layout.newLine(24)
         layout.endRegion()
     end
@@ -380,6 +385,7 @@ function draw()
         layout.endHorizontal(); layout.newLine(24)
 
         cx, cy = layout.getCursor(); ui.label("ps-l", cx, cy, "Preselector", {"Title"}); layout.newLine(24)
+        cx, cy = layout.getCursor(); ui.checkbox("ps-en", "Preselector Enabled", cx, cy, state.preselectorEnabled, {"PreToggle"}, "preselectorEnabled"); layout.newLine(28)
         cx, cy = layout.getCursor(); ui.checkbox("ps-auto", "Auto-tune", cx, cy, state.preselectorAuto, {"PreselAuto"}, "preselectorAuto"); layout.newLine(28)
         cx, cy = layout.getCursor(); ui.checkbox("ps-l1", "Inductor L1", cx, cy, state.preselL1, {"PreselToggle"}, "preselL1"); layout.newLine(28)
         for i = 0, 10 do
@@ -407,6 +413,7 @@ function draw()
         -- Audio Utilities
         cx, cy = layout.getCursor(); ui.label("aud-t", cx, cy, "Audio Utilities", {"Title"}); layout.newLine(24)
         cx, cy = layout.getCursor(); ui.checkbox("mut-en", "Master Mute", cx, cy, state.muteEnabled, {"MuteToggle"}, "muteEnabled"); layout.newLine(28)
+        cx, cy = layout.getCursor(); ui.checkbox("flt-en", "Demod Filters", cx, cy, state.demodFilterEnabled, {"FilterToggle"}, "demodFilterEnabled"); layout.newLine(28)
         cx, cy = layout.getCursor(); ui.checkbox("tst-en", "440Hz Test Tone", cx, cy, state.testToneEnabled, {"TestToneToggle"}, "testToneEnabled"); layout.newLine(28)
         
         layout.endRegion()

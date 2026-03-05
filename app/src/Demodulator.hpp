@@ -79,6 +79,7 @@ public:
         // If the twin sends analytic baseband (positive freq only for USB),
         // then I+Q or I-Q works. If it's real RF mixed with quadrature LO:
         audio = (mode == Mode::USB) ? (i + q) : (i - q);
+        audio *= 10.0f; // Boost demodulated audio
         break;
       }
     }
@@ -132,7 +133,14 @@ private:
     float snHP = std::sin(omegaHP), csHP = std::cos(omegaHP);
     float alphaHP = snHP / (2.0f * 0.707f);
     float a0HP = 1.0f + alphaHP;
-    hpCoeffs[0] = {(1.0f+csHP)/2.0f/a0HP, -(1.0f+csHP)/a0HP, (1.0f+csHP)/2.0f/a0HP, -2.0f*csHP/a0HP, (1.0f-alphaHP)/a0HP};
+    // Standard High-pass biquad:
+    // b0 = (1 + cos(w))/2, b1 = -(1 + cos(w)), b2 = (1 + cos(w))/2
+    // a0 = 1 + alpha, a1 = -2*cos(w), a2 = 1 - alpha
+    hpCoeffs[0] = { (1.0f + csHP) / 2.0f / a0HP, 
+                    -(1.0f + csHP) / a0HP, 
+                    (1.0f + csHP) / 2.0f / a0HP, 
+                    -2.0f * csHP / a0HP, 
+                    (1.0f - alphaHP) / a0HP };
 
     float omegaLP = 2.0f * pi * 3000.0f / sampleRate;
     float snLP = std::sin(omegaLP), csLP = std::cos(omegaLP);

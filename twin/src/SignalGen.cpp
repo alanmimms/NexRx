@@ -153,20 +153,27 @@ void getPreselParams(const PreselectorModel& model, double& fRes, double& qFacto
   }
   double totalL = model.isL1Shorted() ? 220e-9 : (1.5e-6 + 220e-9);
   fRes = 1.0 / (2.0 * M_PI * std::sqrt(totalL * totalC));
-  qFactor = 40.0 * (1.0 - (fRes / 150e6));
-  if (qFactor < 5.0) qFactor = 5.0;
+  qFactor = 5.0; // Widened for simulation stability
 }
 
 double getPreselGain(double freqHz, const PreselectorModel& model) {
+  if (!model.isEnabled()) {
+    return 1.0;
+  }
   double fRes, qFactor;
   getPreselParams(model, fRes, qFactor);
+  
+  // Model as a resonant passband
+  // BW = fRes/Q. At fRes, gain is 1.0.
   double bw = fRes / qFactor;
   double relF = std::abs(freqHz - fRes) / (bw / 2.0);
-  double atten = 1.0 / std::sqrt(1.0 + std::pow(relF, 4.0));
+  
+  // Standard 2nd order bandpass shape
+  double gain = 1.0 / std::sqrt(1.0 + std::pow(relF, 4.0));
   
   // High-frequency leakage floor
-  double leak = 0.003; // -50dB floor for simulation visibility
-  return std::max(atten, leak);
+  double leak = 0.05; // -26dB floor for simulation visibility
+  return std::max(gain, leak);
 }
 
 int runFunctionalMode(const Options& opts) {
@@ -212,7 +219,7 @@ int runFunctionalMode(const Options& opts) {
     PGAModel pga;
     
     // Default PGA to healthy 20dB gain for testing
-    pga.setGainCode(2); 
+    pga.setGainCode(5); 
 
     UDPStreamConfig streamConfig; 
     streamConfig.host = control->peerIP(); 
@@ -311,7 +318,7 @@ int runFunctionalMode(const Options& opts) {
           double rfBBi = 0, rfBBq = 0;
           if (stimulusManager) {
             double antI = 0, antQ = 0;
-            stimulusManager->getRfIQ(t, antI, antQ, vfo, 0.050); // 50mV peak stimulus
+            stimulusManager->getRfIQ(t, antI, antQ, vfo, 100000.0); // 100kHz roofing filter for simulation
 
             loPhases[ch] = std::fmod(loPhases[ch] + 2.0 * M_PI * vfo * samplePeriod, 2.0 * M_PI);
             double cosLO = std::cos(loPhases[ch]);
@@ -319,10 +326,14 @@ int runFunctionalMode(const Options& opts) {
             
             rfBBi = antI * cosLO + antQ * sinLO;
             rfBBq = antQ * cosLO - antI * sinLO;
-            
-            double presel = getPreselGain(vfo, preselector);
-            rfBBi *= presel;
-            rfBBq *= presel;
+
+            // XFMR_IDEAL NRATIO=2 in netlist means 2x voltage step-up
+            rfBBi *= 2.0; 
+            rfBBq *= 2.0;
+
+            double pg = getPreselGain(vfo, preselector);
+            rfBBi *= pg;
+            rfBBq *= pg;
           }
           
           double isgBBi = 0, isgBBq = 0;

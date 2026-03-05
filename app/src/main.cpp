@@ -77,6 +77,8 @@ public:
       w = (int)getNum("windowWidth", 1280).get<double>(); 
       h = (int)getNum("windowHeight", 850).get<double>(); 
       fS = (float)getNum("fontSize", 16.0).get<double>(); 
+      rfGainDB.store((float)getNum("rfGainDb", 20.0).get<double>());
+      qsdOffsetKhz = getNum("qsdOffsetK", 12.0).get<double>();
     }
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
       return false;
@@ -122,8 +124,20 @@ public:
     audioBuffer.configure(aC);
     
     demod.setSampleRate(96000.0f);
-    demod.setMode(Demodulator::Mode::USB);
-    demod.setBfoOffset(700.0f);
+    
+    if (getNum.valid()) {
+      audioVolume.store((float)getNum("rxVolume", 0.5).get<double>());
+      demod.setBfoOffset((float)getNum("sidetoneFreq", 700.0).get<double>());
+    }
+    
+    sol::function getStr = lua["setbox"]["getString"];
+    if (getStr.valid()) {
+      std::string mode = getStr("defaultMode", "USB").get<std::string>();
+      if (mode == "USB") demod.setMode(Demodulator::Mode::USB);
+      else if (mode == "LSB") demod.setMode(Demodulator::Mode::LSB);
+      else if (mode == "AM") demod.setMode(Demodulator::Mode::AM);
+      else if (mode == "CW") demod.setMode(Demodulator::Mode::CW);
+    }
     
     audio.setCallback([this](float* out, uint32_t fC, uint32_t ch) {
       const float vol = audioVolume.load();
@@ -431,8 +445,10 @@ private:
     hw["setIsgFreq"] = hw["setISGFreq"];
     hw["setISGEnable"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setISGEnable(en); }); } };
     hw["setIsgEnable"] = hw["setISGEnable"];
-    hw["setPreselectorInd"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorInd(en); }); } };
+    hw["setPreselectorInd"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorL(en); }); } };
     hw["setPreselectorCap"] = [this](int idx, bool en) { if (twinConnected.load()) { postCommand([this, idx, en]() { twinHost.setPreselectorCap(idx, en); }); } };
+    hw["setPreselectorEnabled"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorEnabled(en); }); } };
+    hw["setTrMode"] = [this](int m) { if (twinConnected.load()) { postCommand([this, m]() { twinHost.setTrMode(m); }); } };
     hw["setQsdOffset"] = [this](double k) { qsdOffsetKhz = k; if (twinConnected.load()) { postCommand([this, k]() { twinHost.setVFO(lastVFOHz, k * 1000.0); }); } };
     hw["setRfGain"] = [this](double db) { rfGainDB.store(db); };
     lua["hw"] = hw;
@@ -446,18 +462,33 @@ private:
     rx["setNotchEnabled"] = [this](bool en) { basebandFilter.setNotchEnabled(en); };
     rx["setNotchCenter"] = [this](float hz) { basebandFilter.setNotchCenter(hz); };
     rx["setNotchWidth"] = [this](float hz) { basebandFilter.setNotchWidth(hz); };
+    rx["setAgcEnabled"] = [this](bool en) { /* TODO */ };
+    rx["setNrEnabled"] = [this](bool en) { /* TODO */ };
+    rx["setNbEnabled"] = [this](bool en) { /* TODO */ };
     rx["setLmsMu"] = [this](float mu) { lmsMu = std::clamp(mu, 0.0001f, 1.0f); };
     rx["setMute"] = [this](bool en) { audio.setMuted(en); };
-    rx["setVfo"] = [this](double f) { 
-      lastVFOHz = f; 
-      if (twinConnected.load()) { 
-        double k = qsdOffsetKhz * 1000.0; 
-        postCommand([this, f, k]() { twinHost.setVFO(f, k); }); 
-      } 
+    rx["setDemodFilterEnabled"] = [this](bool en) { demod.setFilterEnabled(en); };
+    rx["setVfo"] = [this](double f) {
+      lastVFOHz = f;
+      if (twinConnected.load()) {
+        double k = qsdOffsetKhz * 1000.0;
+        postCommand([this, f, k]() { twinHost.setVFO(f, k); });
+      }
     };
     rx["getSignalRms"] = [this]() { return signalLevelRMS.load(); };
     lua["rx"] = rx;
 
+    // Diagnostic log every 1 second
+    static uint32_t lastLogTime = 0;
+
+    sol::table diag = lua.create_table();
+    diag["logLevels"] = [this]() {
+      float rms = signalLevelRMS.load();
+      float vol = audioVolume.load();
+      float rfg = rfGainDB.load();
+      std::cout << "[DIAG] RMS=" << rms << " RFG=" << rfg << " VOL=" << vol << " Connected=" << (twinConnected.load()?"Y":"N") << std::endl;
+    };
+    lua["diag"] = diag;
     try {
       auto res = lua.safe_script_file("lua/main.lua", sol::script_pass_on_error);
       if (!res.valid()) {
@@ -575,6 +606,8 @@ private:
     iF *= rfGain;
     qF *= rfGain;
 
+    float iRaw = iF, qRaw = qF;
+
     // Diagnostic Point 1: LEVEL AFTER GAIN
     static float maxGainedRaw = 0;
     maxGainedRaw = std::max({maxGainedRaw, std::abs(iF), std::abs(qF)});
@@ -588,6 +621,7 @@ private:
     
     basebandFilter.recompute();
     basebandFilter.process(iF, qF);
+    float iFilt = iF, qFilt = qF;
     
     float aOut = demod.process(iF, qF);
     signalLevelRMS.store(demod.getSignalLevelRMS(), std::memory_order_relaxed);
@@ -603,7 +637,7 @@ private:
     audioDecimateSkip = !audioDecimateSkip;
 
     if (frameCounter % 10000 == 0) {
-      std::cout << "[DSP] Stat: MaxGainedRaw=" << maxGainedRaw << " MaxAudio=" << maxAudio << " BufAvail=" << audioBuffer.available() << std::endl;
+      std::cout << "[DSP] Stat: iRaw=" << iRaw << " iFilt=" << iFilt << " aOut=" << aOut << " MaxGainedRaw=" << maxGainedRaw << " MaxAudio=" << maxAudio << std::endl;
       maxGainedRaw = 0; maxAudio = 0;
     }
     frameCounter++;
@@ -700,8 +734,8 @@ private:
   
   static constexpr size_t FFT_SIZE = 1024;
   std::atomic<bool> twinConnected{false};
-  double qsdOffsetKhz = 12.0;
-  std::atomic<float> rfGainDB{40.0f};
+  double qsdOffsetKhz = 0.0;
+  std::atomic<float> rfGainDB{0.0f};
   
   float shiftCos0 = 1.0f, shiftSin0 = 0.0f;
   float shiftCos1 = 1.0f, shiftSin1 = 0.0f;

@@ -109,7 +109,16 @@ int main(void) {
         /* SYNC Frame Delimiter */
         if (bitCount == FRAME_BITS) {
           uint8_t mode = (uint8_t)(frameData & 0x0F);
-          if (mode == myId) {
+          if ((mode & 0x01) == 0) {
+            /* Mode 0: Runtime update. Handle txrx bit (mode bit 1). */
+            uint8_t txrx = (mode >> 1) & 0x01;
+            if (myId == 0) {
+              if (txrx) GPIOA->BSRR = (1U << 8); else GPIOA->BSRR = (1U << (8 + 16));
+            } else {
+              if (txrx) GPIOB->BSRR = (1U << 7); else GPIOB->BSRR = (1U << (7 + 16));
+            }
+          } else if ((mode & 0x0F) == myId) {
+            /* Maintenance mode for this ID */
             jumpToBootloader();
           }
         }

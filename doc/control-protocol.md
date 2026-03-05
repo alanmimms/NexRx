@@ -77,7 +77,9 @@ A response is a CBOR array:
 | `SET_ATTEN` | `SATT` | `[db_value, enabled]` | Enables/disables a specific attenuator stage (3, 6, 12, or 24 dB). |
 | `SET_PRESEL_C` | `SPRC` | `[index, enabled]` | Enables/disables one of the 11 preselector capacitors. |
 | `SET_PRESEL_L` | `SPRL` | `[index, enabled]` | Enables/disables a preselector inductor (index 0 for L701 bypass). |
+| `SET_PRESEL_EN`| `SPRE` | `[enabled]` | Master enable/disable for the entire preselector stage. |
 | `SET_PGA_GAIN` | `SPGA` | `[gain_db]` | Sets the gain for all 6 MAX9939 PGAs. |
+| `SET_TR_MODE`  | `STRM` | `[mode]` | Sets T/R mode: 0=RX (default), 1=TX. |
 
 ### 5.3 Internal Signal Generator (ISG)
 

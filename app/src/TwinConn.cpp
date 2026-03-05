@@ -39,7 +39,7 @@ bool TwinConn::initialize(const TwinConfig& cfg) {
 void TwinConn::shutdown() {
   stopReceiving();
   if (control && connected) {
-    sendCBORRequest("GBYE", {});
+    sendCBORRequest(Control::CMD_GBYE, {});
     control->disconnect();
   }
   if (stream) {
@@ -108,7 +108,8 @@ void TwinConn::receiveLoop() {
   }
 }
 
-std::vector<uint8_t> TwinConn::processResponse(const std::vector<uint8_t>& data, const std::string& cmdId) {
+std::vector<uint8_t> TwinConn::processResponse(const std::vector<uint8_t>& data, uint32_t cmdId) {
+  (void)cmdId;
   if (data.empty()) {
     return {};
   }
@@ -126,7 +127,7 @@ std::vector<uint8_t> TwinConn::processResponse(const std::vector<uint8_t>& data,
   return data;
 }
 
-std::vector<uint8_t> TwinConn::sendCBORRequest(const std::string& cmdId, const std::vector<uint8_t>& request) {
+std::vector<uint8_t> TwinConn::sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& request) {
   auto res = control->sendRequest(request, std::chrono::milliseconds(500));
   if (!res.ok()) {
     return {};
@@ -139,11 +140,11 @@ bool TwinConn::setVFO(double freqHz, double offsetHz) {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 3);
-  cbor_encode_text_stringz(&arr, "SVFO");
+  cbor_encode_uint(&arr, Control::CMD_SET_VFO);
   cbor_encode_double(&arr, freqHz);
   cbor_encode_double(&arr, offsetHz);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SVFO", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_VFO, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setAtten(int dbValue) {
@@ -151,10 +152,10 @@ bool TwinConn::setAtten(int dbValue) {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_text_stringz(&arr, "SATT");
+  cbor_encode_uint(&arr, Control::CMD_SET_ATTEN);
   cbor_encode_int(&arr, dbValue);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SATT", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_ATTEN, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setPGAGain(int code) {
@@ -162,10 +163,10 @@ bool TwinConn::setPGAGain(int code) {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_text_stringz(&arr, "SPGA");
+  cbor_encode_uint(&arr, Control::CMD_SET_PGA_GAIN);
   cbor_encode_int(&arr, code);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SPGA", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_PGA_GAIN, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setAGCMode(int mode) {
@@ -173,10 +174,10 @@ bool TwinConn::setAGCMode(int mode) {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_text_stringz(&arr, "SAGC");
+  cbor_encode_uint(&arr, Control::CMD_SET_AGC_MODE);
   cbor_encode_int(&arr, mode);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SAGC", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_AGC_MODE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setISGFreq(double freqHz) {
@@ -184,10 +185,10 @@ bool TwinConn::setISGFreq(double freqHz) {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_text_stringz(&arr, "SIFQ");
+  cbor_encode_uint(&arr, Control::CMD_SET_ISG_FREQ);
   cbor_encode_double(&arr, freqHz);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SIFQ", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_ISG_FREQ, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setISGEnable(bool enabled) {
@@ -195,38 +196,59 @@ bool TwinConn::setISGEnable(bool enabled) {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_text_stringz(&arr, "SIEN");
+  cbor_encode_uint(&arr, Control::CMD_SET_ISG_ENABLE);
   cbor_encode_boolean(&arr, enabled);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SIEN", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_ISG_ENABLE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
-bool TwinConn::setPreselectorInd(bool shorted) {
-  uint8_t buf[64];
+bool TwinConn::setPreselectorL(bool shorted) {
+  uint8_t buf[128];
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_text_stringz(&arr, "SPRI");
+  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_L);
   cbor_encode_boolean(&arr, shorted);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SPRI", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_PRESEL_L, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setPreselectorCap(int index, bool enabled) {
-  uint8_t buf[64];
+  uint8_t buf[128];
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 3);
-  cbor_encode_text_stringz(&arr, "SPRC");
-  cbor_encode_int(&arr, index);
+  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_C);
+  cbor_encode_uint(&arr, index);
   cbor_encode_boolean(&arr, enabled);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("SPRC", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_PRESEL_C, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+}
+
+bool TwinConn::setPreselectorEnabled(bool enabled) {
+  uint8_t buf[128];
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+  cbor_encoder_create_array(&enc, &arr, 2);
+  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_EN);
+  cbor_encode_boolean(&arr, enabled);
+  cbor_encoder_close_container(&enc, &arr);
+  return !sendCBORRequest(Control::CMD_SET_PRESEL_EN, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+}
+
+bool TwinConn::setTrMode(int mode) {
+  uint8_t buf[128];
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+  cbor_encoder_create_array(&enc, &arr, 2);
+  cbor_encode_uint(&arr, Control::CMD_SET_TR_MODE);
+  cbor_encode_int(&arr, mode);
+  cbor_encoder_close_container(&enc, &arr);
+  return !sendCBORRequest(Control::CMD_SET_TR_MODE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setQsdOffsetKHz(double khz) {
   (void)khz;
-  // This is an app-side state change, but we could notify hardware if needed
   return true;
 }
 
@@ -235,9 +257,9 @@ bool TwinConn::startStream() {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 1);
-  cbor_encode_text_stringz(&arr, "STM[");
+  cbor_encode_uint(&arr, Control::CMD_START_STREAM);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("STM[", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_START_STREAM, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::stopStream() {
@@ -245,9 +267,9 @@ bool TwinConn::stopStream() {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 1);
-  cbor_encode_text_stringz(&arr, "]STM");
+  cbor_encode_uint(&arr, Control::CMD_STOP_STREAM);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest("]STM", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_STOP_STREAM, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 uint64_t TwinConn::getTimestamp() {
@@ -255,9 +277,9 @@ uint64_t TwinConn::getTimestamp() {
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 1);
-  cbor_encode_text_stringz(&arr, "GTIM");
+  cbor_encode_uint(&arr, Control::CMD_GET_TIMESTAMP);
   cbor_encoder_close_container(&enc, &arr);
-  auto res = sendCBORRequest("GTIM", {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)});
+  auto res = sendCBORRequest(Control::CMD_GET_TIMESTAMP, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)});
   if (res.empty()) {
     return 0;
   }

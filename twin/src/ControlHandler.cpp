@@ -23,6 +23,7 @@ ControlHandler::ControlHandler(double f0, double f1, double f2,
   isgEnabled.store(false);
   isgFreqHz.store(14201000.0);
   agcMode.store(0);
+  trMode.store(0);
   
   if (presel) {
     presel->autoTune(f2);
@@ -74,93 +75,117 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
   }
 
   cbor_value_enter_container(&it, &arrayIt);
-  char cmd[16];
-  size_t cmdLen = sizeof(cmd);
-  cbor_value_copy_text_string(&arrayIt, cmd, &cmdLen, &arrayIt);
-  std::string sCmd(cmd);
+  uint64_t cmdID = 0;
+  if (cbor_value_get_uint64(&arrayIt, &cmdID) != CborNoError) {
+    return encodeResponse(1, "Command ID Error");
+  }
+  cbor_value_advance(&arrayIt);
 
   if (verbose_) {
-    std::cout << "[Control] Received command: " << sCmd << std::endl;
+    std::printf("[Control] Received command: 0x%08X\n", (uint32_t)cmdID);
   }
 
-  if (sCmd == CMD_SET_VFO) {
-    double f, k;
-    cbor_value_get_double(&arrayIt, &f);
-    cbor_value_advance(&arrayIt);
-    cbor_value_get_double(&arrayIt, &k);
-    qsdFreqHz[0].store(f - k);
-    qsdFreqHz[1].store(f + k);
-    qsdFreqHz[2].store(f);
-    if (presel) {
-      presel->autoTune(f);
+  switch ((uint32_t)cmdID) {
+    case Control::CMD_SET_VFO: {
+      double f, k;
+      cbor_value_get_double(&arrayIt, &f);
+      cbor_value_advance(&arrayIt);
+      cbor_value_get_double(&arrayIt, &k);
+      qsdFreqHz[0].store(f - k);
+      qsdFreqHz[1].store(f + k);
+      qsdFreqHz[2].store(f);
+      if (presel) {
+        presel->autoTune(f);
+      }
+      return encodeResponse(0, "OK");
+    } 
+    case Control::CMD_SET_ATTEN: {
+      uint64_t db;
+      cbor_value_get_uint64(&arrayIt, &db);
+      if (attenuator) {
+        attenuator->setAtten3dB(db & 0x01);
+        attenuator->setAtten6dB(db & 0x02);
+        attenuator->setAtten12dB(db & 0x04);
+        attenuator->setAtten24dB(db & 0x08);
+      }
+      return encodeResponse(0, "OK");
     }
-    return encodeResponse(0, "OK");
-  } 
-  else if (sCmd == CMD_SET_ATTEN) {
-    uint64_t db;
-    cbor_value_get_uint64(&arrayIt, &db);
-    if (attenuator) {
-      attenuator->setAtten3dB(db & 0x01);
-      attenuator->setAtten6dB(db & 0x02);
-      attenuator->setAtten12dB(db & 0x04);
-      attenuator->setAtten24dB(db & 0x08);
+    case Control::CMD_SET_PGA_GAIN: {
+      uint64_t code;
+      cbor_value_get_uint64(&arrayIt, &code);
+      if (pga) {
+        pga->setGainCode((int)code);
+      }
+      return encodeResponse(0, "OK");
     }
-    return encodeResponse(0, "OK");
-  }
-  else if (sCmd == CMD_SET_PGA_GAIN) {
-    uint64_t code;
-    cbor_value_get_uint64(&arrayIt, &code);
-    if (pga) {
-      pga->setGainCode((int)code);
+    case Control::CMD_SET_AGC_MODE: {
+      uint64_t mode;
+      cbor_value_get_uint64(&arrayIt, &mode);
+      agcMode.store((int)mode);
+      return encodeResponse(0, "OK");
     }
-    return encodeResponse(0, "OK");
-  }
-  else if (sCmd == CMD_START_STREAM) {
-    if (verbose_) std::cout << "[Control] STREAMING START requested" << std::endl;
-    streaming.store(true);
-    return encodeResponse(0, "OK");
-  }
-  else if (sCmd == CMD_STOP_STREAM) {
-    if (verbose_) std::cout << "[Control] STREAMING STOP requested" << std::endl;
-    streaming.store(false);
-    return encodeResponse(0, "OK");
-  }
-  else if (sCmd == CMD_GET_TIMESTAMP) {
-    return encodeResponse(0, std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
-  }
-  else if (sCmd == CMD_SET_ISG_FREQ) {
-    double f;
-    cbor_value_get_double(&arrayIt, &f);
-    isgFreqHz.store(f);
-    return encodeResponse(0, "OK");
-  }
-  else if (sCmd == CMD_SET_ISG_ENABLE) {
-    bool en;
-    cbor_value_get_boolean(&arrayIt, &en);
-    isgEnabled.store(en);
-    return encodeResponse(0, "OK");
-  }
-  else if (sCmd == CMD_SET_PRESEL_IND) {
-    bool en;
-    cbor_value_get_boolean(&arrayIt, &en);
-    if (presel) {
-      presel->setInd(0, en);
+    case Control::CMD_SET_TR_MODE: {
+      uint64_t mode;
+      cbor_value_get_uint64(&arrayIt, &mode);
+      trMode.store((int)mode);
+      return encodeResponse(0, "OK");
     }
-    return encodeResponse(0, "OK");
-  }
-  else if (sCmd == CMD_SET_PRESEL_CAP) {
-    uint64_t idx;
-    bool en;
-    cbor_value_get_uint64(&arrayIt, &idx);
-    cbor_value_advance(&arrayIt);
-    cbor_value_get_boolean(&arrayIt, &en);
-    if (presel) {
-      presel->setCap((int)idx, en);
+    case Control::CMD_START_STREAM:
+      if (verbose_) std::cout << "[Control] STREAMING START requested" << std::endl;
+      streaming.store(true);
+      return encodeResponse(0, "OK");
+    case Control::CMD_STOP_STREAM:
+      if (verbose_) std::cout << "[Control] STREAMING STOP requested" << std::endl;
+      streaming.store(false);
+      return encodeResponse(0, "OK");
+    case Control::CMD_GET_TIMESTAMP:
+      return encodeResponse(0, std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    case Control::CMD_SET_ISG_FREQ: {
+      double f;
+      cbor_value_get_double(&arrayIt, &f);
+      isgFreqHz.store(f);
+      return encodeResponse(0, "OK");
     }
-    return encodeResponse(0, "OK");
+    case Control::CMD_SET_ISG_ENABLE: {
+      bool en;
+      cbor_value_get_boolean(&arrayIt, &en);
+      isgEnabled.store(en);
+      return encodeResponse(0, "OK");
+    }
+    case Control::CMD_SET_PRESEL_L: {
+      bool en;
+      cbor_value_get_boolean(&arrayIt, &en);
+      if (presel) {
+        presel->setInd(0, en);
+      }
+      return encodeResponse(0, "OK");
+    }
+    case Control::CMD_SET_PRESEL_C: {
+      uint64_t idx;
+      bool en;
+      cbor_value_get_uint64(&arrayIt, &idx);
+      cbor_value_advance(&arrayIt);
+      cbor_value_get_boolean(&arrayIt, &en);
+      if (presel) {
+        presel->setCap((int)idx, en);
+      }
+      return encodeResponse(0, "OK");
+    }
+    case Control::CMD_SET_PRESEL_EN: {
+      bool en;
+      cbor_value_get_boolean(&arrayIt, &en);
+      if (presel) {
+        presel->setEnabled(en);
+      }
+      return encodeResponse(0, "OK");
+    }
+    case Control::CMD_GBYE:
+      connected.store(false);
+      return encodeResponse(0, "BYE");
+    default:
+      std::printf("[Control] Unknown command: 0x%08X\n", (uint32_t)cmdID);
+      return encodeResponse(1, "Unknown command");
   }
-
-  return encodeResponse(1, "Unknown: " + sCmd);
 }
 
 std::vector<uint8_t> ControlHandler::encodeResponse(int status, const std::string& payload) {
