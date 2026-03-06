@@ -34,7 +34,7 @@
      application to feed the sound card (via SDL_Audio).
 
    * *Responsibilities*: Reads from the audioBuffer (populated by
-     DSP), applies master volume, and mixes the optional sidetone.
+     DSP), and applies master volume.
 
    * *Constraints*: Must return quickly to prevent audio under-runs
      (clicks/pops).
