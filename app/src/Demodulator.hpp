@@ -19,7 +19,9 @@ public:
 
   Demodulator() {
     computeFilterCoeffs();
-    hilbertHistory.resize(hilbertTaps, 0.0f);
+    computeHilbertCoeffs();
+    hilbertHistoryI.resize(hilbertTaps, 0.0f);
+    hilbertHistoryQ.resize(hilbertTaps, 0.0f);
   }
 
   void setMode(Mode m) { mode = m; }
@@ -51,6 +53,10 @@ public:
       sampleAccum = 0;
     }
 
+    // Update Hilbert history for all modes to keep it warm
+    hilbertHistoryI[hilbertIndex] = i;
+    hilbertHistoryQ[hilbertIndex] = q;
+
     float audio = 0.0f;
 
     switch (mode) {
@@ -74,15 +80,27 @@ public:
       }
       case Mode::USB:
       case Mode::LSB: {
-        // For proper phasing SSB, we need to shift Q by 90 degrees (Hilbert)
-        // or use the analytic signal property.
-        // If the twin sends analytic baseband (positive freq only for USB),
-        // then I+Q or I-Q works. If it's real RF mixed with quadrature LO:
-        audio = (mode == Mode::USB) ? (i + q) : (i - q);
-        audio *= 10.0f; // Boost demodulated audio
+        // Proper phasing SSB using Hilbert transform
+        // For USB: Audio = I_delayed - Hilbert(Q)
+        // For LSB: Audio = I_delayed + Hilbert(Q)
+        
+        float hQ = 0.0f;
+        int center = (hilbertTaps - 1) / 2;
+        for (int n = 0; n < hilbertTaps; n++) {
+          int idx = (hilbertIndex + hilbertTaps - n) % hilbertTaps;
+          hQ += hilbertHistoryQ[idx] * hilbertCoeffs[n];
+        }
+        
+        int delayedIdx = (hilbertIndex + hilbertTaps - center) % hilbertTaps;
+        float iDelayed = hilbertHistoryI[delayedIdx];
+        
+        audio = (mode == Mode::USB) ? (iDelayed - hQ) : (iDelayed + hQ);
+        audio *= 16.0f; // High-fidelity boost for simulated RF chain
         break;
       }
     }
+
+    hilbertIndex = (hilbertIndex + 1) % hilbertTaps;
 
     if (filterEnabled && mode != Mode::BYPASS) {
       audio = applyBandpassFilter(audio);
@@ -103,9 +121,33 @@ private:
   double rmsAccum = 0;
   int sampleAccum = 0;
 
-  // Hilbert for phasing (optional, not used in simple sum/diff yet)
+  // Hilbert for phasing
   static constexpr int hilbertTaps = 31;
-  std::vector<float> hilbertHistory;
+  std::vector<float> hilbertHistoryI;
+  std::vector<float> hilbertHistoryQ;
+  std::array<float, hilbertTaps> hilbertCoeffs;
+  int hilbertIndex = 0;
+
+  void computeHilbertCoeffs() {
+    int M = (hilbertTaps - 1) / 2;
+    constexpr float PI = 3.14159265f;
+    for (int n = 0; n < hilbertTaps; n++) {
+      if (n == M) {
+        hilbertCoeffs[n] = 0;
+      } else {
+        float x = static_cast<float>(n - M);
+        if (static_cast<int>(x) % 2 == 0) {
+          hilbertCoeffs[n] = 0;
+        } else {
+          // h(n) = 2/(pi * (n-M))
+          hilbertCoeffs[n] = 2.0f / (PI * x);
+          // Apply Hamming window
+          float w = 0.54f - 0.46f * std::cos(2.0f * PI * n / (hilbertTaps - 1));
+          hilbertCoeffs[n] *= w;
+        }
+      }
+    }
+  }
 
   // Audio bandpass filter
   static constexpr int lpStages = 2;

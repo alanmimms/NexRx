@@ -63,8 +63,8 @@ public:
   bool setAGCMode(int mode);
   bool setISGFreq(double freqHz);
   bool setISGEnable(bool enabled);
-  bool setPreselectorL(bool shorted);
-  bool setPreselectorCap(int index, bool enabled);
+  bool setPreselectorL(uint32_t mask);
+  bool setPreselectorCap(uint32_t mask);
   bool setPreselectorEnabled(bool enabled);
   bool setTrMode(int mode);
   bool setQsdOffsetKHz(double khz);

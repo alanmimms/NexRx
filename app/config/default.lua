@@ -667,4 +667,37 @@ rule {
     }
 }
 
+rule {
+    id = "agc-mode-button",
+    tags = {"widget.Button", "widget.AgcMode"},
+    priority = 10,
+    apply = {
+        background = "#1e293b",
+        foreground = "#94a3b8",
+    }
+}
+
+rule {
+    id = "agc-mode-active",
+    tags = {"widget.Button", "widget.AgcMode", "state.Active"},
+    priority = 20,
+    apply = {
+        background = "#3b82f6",
+        foreground = "#ffffff",
+    }
+}
+
+-- Graticule Legend
+rule {
+    id = "graticule-legend",
+    tags = {"widget.GraticuleLegend"},
+    apply = {
+        background = "#0f172a",
+        foreground = "#94a3b8",
+        width = 100,
+        height = 45,
+        padding = 6,
+    }
+}
+
 print("[default.lua] Configuration loaded")

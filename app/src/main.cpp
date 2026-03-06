@@ -63,7 +63,10 @@ struct InputState {
 
 class App {
 public:
-  App() = default;
+  App() {
+    iqBuffer.assign(FFT_SIZE * 2, 0.0f);
+    lmsMu = 0.001f;
+  }
   ~App() { shutdown(); }
 
   bool init(const std::string& title, bool vsyncEnabled = true) {
@@ -420,6 +423,11 @@ private:
       c.host = h.value_or("127.0.0.1");
       c.controlPort = (uint16_t)cp.value_or(5000);
       c.streamPort = (uint16_t)sp.value_or(5001);
+      
+      // Initialize spectrum buffer
+      iqBuffer.assign(FFT_SIZE * 2, 0.0f);
+      iqBufferWritePos.store(0);
+
       if (twinHost.initialize(c)) {
         twinHost.setFrameCallback([this](const nexrx::IQFrame& f) { processIQFrame(f); });
         if (twinHost.startReceiving()) {
@@ -460,8 +468,8 @@ private:
     hw["setIsgFreq"] = hw["setISGFreq"];
     hw["setISGEnable"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setISGEnable(en); }); } };
     hw["setIsgEnable"] = hw["setISGEnable"];
-    hw["setPreselectorInd"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorL(en); }); } };
-    hw["setPreselectorCap"] = [this](int idx, bool en) { if (twinConnected.load()) { postCommand([this, idx, en]() { twinHost.setPreselectorCap(idx, en); }); } };
+    hw["setPreselectorInd"] = [this](uint32_t mask) { if (twinConnected.load()) { postCommand([this, mask]() { twinHost.setPreselectorL(mask); }); } };
+    hw["setPreselectorCap"] = [this](uint32_t mask) { if (twinConnected.load()) { postCommand([this, mask]() { twinHost.setPreselectorCap(mask); }); } };
     hw["setPreselectorEnabled"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorEnabled(en); }); } };
     hw["setTrMode"] = [this](int m) { if (twinConnected.load()) { postCommand([this, m]() { twinHost.setTrMode(m); }); } };
     hw["setQsdOffset"] = [this](double k) { qsdOffsetKhz = k; if (twinConnected.load()) { postCommand([this, k]() { twinHost.setVFO(lastVFOHz, k * 1000.0); }); } };
@@ -642,8 +650,11 @@ private:
     float s1 = shiftSin1 * shiftCosD + shiftCos1 * shiftSinD;
     shiftCos1 = c1; shiftSin1 = s1;
 
+    // Mixer 0 (f-k): Target is at +k. Shift by -k.
     float i0_s = i0 * shiftCos0 + q0 * shiftSin0;
     float q0_s = q0 * shiftCos0 - i0 * shiftSin0;
+
+    // Mixer 1 (f+k): Target is at -k. Shift by +k.
     float i1_s = i1 * shiftCos1 - q1 * shiftSin1;
     float q1_s = q1 * shiftCos1 + i1 * shiftSin1;
 
@@ -656,9 +667,14 @@ private:
       renorm(shiftCos1, shiftSin1);
     }
 
-    float error_i = i0_s - (lmsW0_r * i1_s - lmsW0_i * q1_s);
-    float error_q = q0_s - (lmsW0_r * q1_s + lmsW0_i * i1_s);
+    // LMS should correlate the two shifted perspectives to align them
+    float w1_i_r = lmsW0_r * i1_s - lmsW0_i * q1_s;
+    float w1_i_q = lmsW0_r * q1_s + lmsW0_i * i1_s;
 
+    float error_i = i0_s - w1_i_r;
+    float error_q = q0_s - w1_i_q;
+
+    // Update weights to minimize difference (correlation)
     lmsAcc_r += (error_i * i1_s + error_q * q1_s);
     lmsAcc_i += (error_q * i1_s - error_i * q1_s);
     
@@ -678,8 +694,9 @@ private:
       sampleBlockCounter = 0;
     }
 
-    float iF = 0.5f * i2 + 0.25f * i0_s + 0.25f * (lmsW0_r * i1_s - lmsW0_i * q1_s);
-    float qF = 0.5f * q2 + 0.25f * q0_s + 0.25f * (lmsW0_r * q1_s + lmsW0_i * i1_s);
+    // Fundamental combining: 0.5*S_low + 0.5*S_high
+    float iF = 0.5f * i0_s + 0.5f * w1_i_r;
+    float qF = 0.5f * q0_s + 0.5f * w1_i_q;
     
     float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
     iF *= rfGain; qF *= rfGain;
@@ -687,14 +704,14 @@ private:
     float maxR = std::max(std::abs(iF), std::abs(qF));
     if (maxR > dspDiag.maxRaw.load()) dspDiag.maxRaw.store(maxR, std::memory_order_relaxed);
 
+    basebandFilter.recompute();
+    basebandFilter.process(iF, qF);
+
     size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 
     if (iqBuffer.size() >= FFT_SIZE*2) {
       iqBuffer[pos*2] = iF; iqBuffer[pos*2+1] = qF;
       iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
     }
-    
-    basebandFilter.recompute();
-    basebandFilter.process(iF, qF);
     
     float aOut = demod.process(iF, qF);
     dspDiag.signalRms.store(demod.getSignalLevelRMS(), std::memory_order_relaxed);
@@ -807,7 +824,7 @@ private:
   
   float lmsW0_r = 1.0f, lmsW0_i = 0.0f;
   float lmsW1_r = 1.0f, lmsW1_i = 0.0f;
-  float lmsMu = 0.0f;
+  float lmsMu = 0.01f;
   uint32_t sampleBlockCounter = 0;
   float lmsAcc_r = 0.0f, lmsAcc_i = 0.0f;
   

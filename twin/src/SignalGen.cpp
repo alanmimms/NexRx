@@ -166,13 +166,13 @@ namespace nexrx {
     double fRes, qFactor;
     getPreselParams(model, fRes, qFactor);
   
-    // Model as a resonant passband
-    // BW = fRes/Q. At fRes, gain is 1.0.
-    double bw = fRes / qFactor;
-    double relF = std::abs(freqHz - fRes) / (bw / 2.0);
-  
-    // Standard 2nd order bandpass shape
-    double gain = 1.0 / std::sqrt(1.0 + std::pow(relF, 4.0));
+    if (std::abs(freqHz) < 1.0) return 0.001;
+
+    // Standard 2nd order LC bandpass magnitude:
+    // |H(jw)| = 1 / sqrt(1 + Q^2 * (f/f0 - f0/f)^2)
+    double x = freqHz / fRes;
+    double y = fRes / freqHz;
+    double gain = 1.0 / std::sqrt(1.0 + std::pow(qFactor * (x - y), 2.0));
   
     // High-frequency leakage floor
     double leak = 0.001; // -60dB floor
@@ -315,7 +315,7 @@ namespace nexrx {
 	  double qsdK = controlHandler->getQSDOffset();
 
 	  for (int ch = 0; ch < 3; ++ch) {
-	    double vfo = (ch == 0) ? (baseVFO - qsdK) : ((ch == 1) ? (baseVFO + qsdK) : baseVFO);
+	    double vfo = (ch == 0) ? (baseVFO - qsdK) : ((ch == 1) ? (baseVFO + qsdK) : (6.0 * baseVFO));
 	    if (std::abs(vfo - currentVFOs[ch]) > 0.1) {
 	      currentVFOs[ch] = vfo;
 	      memset(isgNoiseZi[ch], 0, sizeof(isgNoiseZi[ch]));
@@ -333,10 +333,9 @@ namespace nexrx {
 		double cosLO = std::cos(loPhases[ch]);
 		double sinLO = std::sin(loPhases[ch]);
             
-		// Down-convert analytic RF signal to baseband: S_rf * exp(-j*w_lo*t)
-		// (I+jQ)*(C-jS) = (IC+QS) + j(QC-IS)
-		rfBBi = antI * cosLO + antQ * sinLO;
-		rfBBq = antQ * cosLO - antI * sinLO;
+		// Standard QSD quadrature mixing: I = RF * cos, Q = -RF * sin
+		rfBBi = antI * cosLO;
+		rfBBq = -antI * sinLO;
 
 		// XFMR_IDEAL NRATIO=2 in netlist means 2x voltage step-up
 		rfBBi *= 2.0; 

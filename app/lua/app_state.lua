@@ -10,17 +10,35 @@ local AppState = {}
 -- =============================================================================
 local Preselector = {
     auto = true,
-    -- Simple linear interpolation/approximation for now
-    -- In a real system, this would be loaded via hw.getCalibration("preselector")
+    internalUpdate = 0,
+    -- Calibration table based on 200 Ohm LC Tank: 
+    -- L1=220nH (always), L2=1.5uH (switchable) -> Total L=220nH (shorted) or 1.72uH (unshorted)
+    -- L=true means L2 is shorted (220nH), L=false means L2 is in series (1.72uH)
     calTable = {
-        { f = 1.0e6,  L = true,  C = 0x7FF },
-        { f = 3.5e6,  L = true,  C = 0x400 },
-        { f = 7.0e6,  L = false, C = 0x600 },
-        { f = 14.0e6, L = false, C = 0x300 },
-        { f = 21.0e6, L = false, C = 0x150 },
-        { f = 28.0e6, L = false, C = 0x080 },
+        { f = 1.0e6,  L = false, C = 0x740 }, -- 1.72uH, ~14.8nF
+        { f = 3.5e6,  L = false, C = 0x0A0 }, -- 1.72uH, ~1.2nF
+        { f = 7.0e6,  L = true,  C = 0x112 }, -- 220nH,  ~2.33nF
+        { f = 14.0e6, L = true,  C = 0x040 }, -- 220nH,  ~560pF
+        { f = 21.0e6, L = true,  C = 0x020 }, -- 220nH,  ~250pF
+        { f = 28.0e6, L = true,  C = 0x011 }, -- 220nH,  ~128pF
     }
 }
+
+function Preselector.onManualCapChange()
+    if Preselector.internalUpdate > 0 then return end
+    AppState.set("preselectorAuto", false)
+    hw.setPreselectorCap(Preselector.getCurrentCapMask())
+end
+
+function Preselector.getCurrentCapMask()
+    local mask = 0
+    for i = 0, 10 do
+        if AppState.get("preselC" .. i) then
+            mask = mask + math.pow(2, i)
+        end
+    end
+    return mask
+end
 
 function Preselector.tune(freqHz)
     if not Preselector.auto then return end
@@ -33,11 +51,17 @@ function Preselector.tune(freqHz)
     end
     
     -- Update AppState properties (which triggers hardware sync)
+    Preselector.internalUpdate = Preselector.internalUpdate + 1
     AppState.set("preselL1", best.L)
     for i = 0, 10 do
         local bit = math.floor(best.C / math.pow(2, i)) % 2
         AppState.set("preselC" .. i, bit == 1)
     end
+    Preselector.internalUpdate = Preselector.internalUpdate - 1
+
+    -- Send atomic hardware commands
+    hw.setPreselectorInd(best.L and 1 or 0)
+    hw.setPreselectorCap(best.C)
 end
 
 -- =============================================================================
@@ -70,7 +94,7 @@ local specs = {
         if v then if audio and audio.start then audio.start() end; dispatch.setRxActive(true)
         else if audio and audio.stop then audio.stop() end; dispatch.setRxActive(false) end
     end },
-    bandpassEnabled = { defaultValue = false, setter = function(v) rx.setBandpassEnabled(v) end },
+    bandpassEnabled = { defaultValue = true, setter = function(v) rx.setBandpassEnabled(v) end },
     notchEnabled    = { defaultValue = false, setter = function(v) rx.setNotchEnabled(v) end },
     agcEnabled      = { defaultValue = true, setter = function(v) rx.setAgcEnabled(v) end },
     nrEnabled       = { defaultValue = false, setter = function(v) rx.setNrEnabled(v) end },
@@ -83,25 +107,30 @@ local specs = {
     bandpassWidth  = { defaultValue = 2400, min = 50, max = 4000, setter = function(v) rx.setBandpassWidth(v) end },
     notchCenter    = { defaultValue = 0, min = -10000, max = 10000, setter = function(v) rx.setNotchCenter(v) end },
     notchWidth     = { defaultValue = 100, min = 10, max = 500, setter = function(v) rx.setNotchWidth(v) end },
-    volumeDb       = { defaultValue = -20, min = -60, max = 20, setter = function(v) audio.setVolume(math.pow(10, v / 20)) end },
+    volumeDb       = { defaultValue = -6, min = -60, max = 20, setter = function(v) audio.setVolume(math.pow(10, v / 20)) end },
     squelch        = { defaultValue = 0.3, min = 0, max = 1 },
-    lmsMu          = { defaultValue = 0.5, min = 0.00001, max = 0.1, setter = function(v) rx.setLmsMu(v) end },
+    lmsMu          = { defaultValue = 0.001, min = 0.00001, max = 0.1, setter = function(v) rx.setLmsMu(v) end },
     rfGainDb       = { defaultValue = 20, min = -20, max = 60, setter = function(v) hw.setRfGain(v) end },
     agcMode        = { defaultValue = 0, min = 0, max = 3, setter = function(v) hw.setAGCMode(v) end },
     qsdOffsetK     = { defaultValue = 12, min = 1, max = 24, setter = function(v) hw.setQsdOffset(v) end, requiresHw = true },
     rfAttenDb      = { defaultValue = 0, min = 0, max = 45, setter = function(v) hw.setAttenuation(v) end, requiresHw = true },
-    preselL1       = { defaultValue = false, setter = function(v) hw.setPreselectorInd(v) end },
-    preselC0       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(0, v) end },
-    preselC1       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(1, v) end },
-    preselC2       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(2, v) end },
-    preselC3       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(3, v) end },
-    preselC4       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(4, v) end },
-    preselC5       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(5, v) end },
-    preselC6       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(6, v) end },
-    preselC7       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(7, v) end },
-    preselC8       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(8, v) end },
-    preselC9       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(9, v) end },
-    preselC10      = { defaultValue = false, setter = function(v) hw.setPreselectorCap(10, v) end },
+    preselL1       = { defaultValue = false, setter = function(v) 
+        if Preselector.internalUpdate == 0 then 
+            AppState.set("preselectorAuto", false) 
+            hw.setPreselectorInd(v and 1 or 0)
+        end
+    end },
+    preselC0       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC1       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC2       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC3       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC4       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC5       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC6       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC7       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC8       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC9       = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
+    preselC10      = { defaultValue = false, setter = function(v) if not Preselector.internalUpdate then Preselector.onManualCapChange() end end },
     wfMinDb        = { defaultValue = -120, min = -140, max = -60 },
     wfMaxDb        = { defaultValue = -40, min = -100, max = -20 },
     wfColormap     = { defaultValue = "viridis" },
@@ -111,7 +140,10 @@ local specs = {
         hw.setIsgEnable(v) 
     end },
     isgFrequency   = { defaultValue = 14.201, min = 0.1, max = 30.0, setter = function(v) hw.setIsgFreq(v * 1e6) end },
-    preselectorAuto = { defaultValue = true, setter = function(v) Preselector.auto = v end },
+    preselectorAuto = { defaultValue = true, setter = function(v) 
+        Preselector.auto = v 
+        if v then Preselector.tune(AppState.get("frequency") * 1e6) end
+    end },
 }
 
 local observables = {}
@@ -164,36 +196,47 @@ function AppState.init()
     if initialized then return end
     print("[AppState] Initializing state...")
 
+    -- Initial pass to ensure preselectorAuto exists before any setters run
+    local autoInit = setbox.getBool("preselectorAuto", true)
+    Preselector.auto = autoInit
+
     AppState.batch(function()
+        -- Phase 1: Create all observables first
         for name, spec in pairs(specs) do
-            -- Get initial value from SetBox rules
             local valueToSet = setbox.get(name)
-
-            -- If no SetBox rule matched, use spec default if provided
-            if valueToSet == nil then
-                valueToSet = spec.defaultValue
-            end
-
-            -- Special case for frequency if not found: try defaultFrequency rule
+            if valueToSet == nil then valueToSet = spec.defaultValue end
             if name == "frequency" and valueToSet == nil then
                 local defFreq = setbox.getNumber("defaultFrequency")
                 if defFreq then valueToSet = defFreq / 1e6 end
             end
-
-            -- Create the observable with the resolved initial value
+            
+            -- Use the early resolved autoInit for preselectorAuto
+            if name == "preselectorAuto" then valueToSet = autoInit end
+            
             observables[name] = createObservable(name, spec, valueToSet)
+        end
 
-            -- If we have a value and a setter, call the setter (untracked to avoid self-dependency)
-            if valueToSet ~= nil and spec.setter then 
-                R.untrack(function() 
-                    local ok, err = pcall(spec.setter, valueToSet) 
-                    if not ok then print("[AppState] Init setter error for " .. name .. ": " .. tostring(err)) end
-                end) 
+        -- Phase 2: Call setters now that all targets exist
+        Preselector.internalUpdate = Preselector.internalUpdate + 1
+        for name, spec in pairs(specs) do
+            if spec.setter then
+                local val = observables[name]:peek()
+                if val ~= nil then
+                    R.untrack(function() 
+                        local ok, err = pcall(spec.setter, val) 
+                        if not ok then print("[AppState] Init setter error for " .. name .. ": " .. tostring(err)) end
+                    end) 
+                end
             end
         end
+        Preselector.internalUpdate = Preselector.internalUpdate - 1
     end)
 
-    -- Set up cross-property watchers
+    -- Final synchronization: Force preselector to match initial frequency
+    -- This ensures SPRC/SPRL commands are sent even if setter logic was deferred
+    Preselector.tune(AppState.get("frequency") * 1e6)
+
+    -- Set up cross-property watchers (for runtime updates)
     AppState.watch("frequency", function(v)
         if observables.activeVFO:peek() == "A" then 
             if observables.vfoA:peek() ~= v then observables.vfoA:set(v) end

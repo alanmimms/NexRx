@@ -38,10 +38,20 @@ public:
     }
   }
 
+  void setCapMask(uint32_t mask) {
+    for (int i = 0; i < 11; ++i) {
+      caps[i].store((mask >> i) & 1, std::memory_order_relaxed);
+    }
+  }
+
   void setInd(int idx, bool enabled) { 
     if (idx == 0) {
       l1Shorted.store(enabled, std::memory_order_relaxed); 
     }
+  }
+
+  void setIndMask(uint32_t mask) {
+    l1Shorted.store(mask & 1, std::memory_order_relaxed);
   }
 
   bool getCap(int idx) const { 

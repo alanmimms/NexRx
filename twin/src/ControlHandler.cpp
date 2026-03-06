@@ -166,21 +166,18 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       return encodeResponse(0, "OK");
     }
     case Control::CMD_SET_PRESEL_L: {
-      bool en;
-      cbor_value_get_boolean(&arrayIt, &en);
+      uint64_t mask;
+      cbor_value_get_uint64(&arrayIt, &mask);
       if (presel) {
-        presel->setInd(0, en);
+        presel->setIndMask((uint32_t)mask);
       }
       return encodeResponse(0, "OK");
     }
     case Control::CMD_SET_PRESEL_C: {
-      uint64_t idx;
-      bool en;
-      cbor_value_get_uint64(&arrayIt, &idx);
-      cbor_value_advance(&arrayIt);
-      cbor_value_get_boolean(&arrayIt, &en);
+      uint64_t mask;
+      cbor_value_get_uint64(&arrayIt, &mask);
       if (presel) {
-        presel->setCap((int)idx, en);
+        presel->setCapMask((uint32_t)mask);
       }
       return encodeResponse(0, "OK");
     }

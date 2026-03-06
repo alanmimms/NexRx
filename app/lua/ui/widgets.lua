@@ -901,4 +901,28 @@ function ui.activeTagsViewer(id, x, y, w, h, activeTags, tags)
     drawText(x + w - padding - countW, y + h - padding - lineH, countText, 0.5, 0.5, 0.55, 1.0)
 end
 
+--- Spectrum Graticule Legend
+-- @param id Unique widget ID
+-- @param x, y position
+-- @param w, h size
+-- @param xUnits horizontal scale string (e.g. "10 kHz/div")
+-- @param yUnits vertical scale string (e.g. "10 dB/div")
+-- @param tags optional tags
+function ui.graticuleLegend(id, x, y, w, h, xUnits, yUnits, tags)
+    local widgetTags = {"widget.GraticuleLegend"}
+    if tags then for _, t in ipairs(tags) do table.insert(widgetTags, t) end end
+    
+    w, h = getWidgetSize(id, widgetTags, w, h)
+    local bounds = {x=x, y=y, w=w, h=h}
+    registerWidget(id, bounds, widgetTags)
+    
+    local style = theme.getStyle(widgetTags)
+    local bg = style.bgR and {style.bgR, style.bgG, style.bgB, 0.7} or {0.05, 0.05, 0.05, 0.7}
+    local fg = style.fgR and {style.fgR, style.fgG, style.fgB, 1.0} or {0.7, 0.7, 0.7, 1.0}
+    
+    drawRect(x, y, w, h, bg[1], bg[2], bg[3], bg[4])
+    drawText(x + 6, y + 6, xUnits, fg[1], fg[2], fg[3], fg[4])
+    drawText(x + 6, y + 22, yUnits, fg[1], fg[2], fg[3], fg[4])
+end
+
 return ui

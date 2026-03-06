@@ -77,7 +77,6 @@ local freqEntryBlink = 0
 
 function init()
     print("[Lua] init() called - Version 1.1.0")
-    AppState.init()
     wfBins = math.floor(state.wfBins or 512)
     wfRows = math.floor(state.wfRows or 256)
     for i = 1, wfBins do spectrumData[i] = -100 end
@@ -95,12 +94,14 @@ function init()
     layout.setEventsModule(events)
     ui.setEventsModule(events)
     ui.setLayoutModule(layout)
+    
     if hw.connect("127.0.0.1", 5000, 5001) then
         hwConnected = true
         dispatch.enableHardware()
-        dispatch.setVfo(state.frequency * 1e6)
-        dispatch.setRxActive(state.rxActive)
-        hw.setQsdOffset(state.qsdOffsetK)
+        -- Initialize AppState AFTER connection so setters can send commands
+        AppState.init()
+    else
+        AppState.init()
     end
     events.registerHandler("vfo_control", function(e, w, p)
         local delta = e.delta or (e.key == "RIGHT" and 1 or (e.key == "LEFT" and -1 or 0))
@@ -303,7 +304,7 @@ function draw()
         layout.beginHorizontal(4)
         for _, m in ipairs(modeHelper.names) do
             local bx, by = layout.reserveSpace(40, 26)
-            local active = state.selectedMode == m and {"Active"} or {}
+            local active = state.selectedMode == m and {"state.Active"} or {}
             local label = m == "BYPASS" and "RAW" or m
             if ui.button("mode-"..m:lower(), label, bx, by, 40, 26, {"Mode"..m, table.unpack(active)}) then
                 setProperty("selectedMode", m)
@@ -346,6 +347,10 @@ function draw()
             local rs = sub["spec"]
             layout.setRegion(rs.x, rs.y, rs.w, rs.h, "spec")
             dispatch.renderSpectrum(spectrumData, rs.x, rs.y, rs.w, rs.h)
+            
+            -- Draw Legend (Units for horizontal and vertical grid squares)
+            ui.graticuleLegend("spec-legend", rs.x + 10, rs.y + 10, 100, 45, "9.6 kHz/div", "20 dB/div")
+            
             events.registerWidget("spec", rs, {"widget.Spectrum", "widget.VFOControl"})
             layout.endRegion()
         end
@@ -378,7 +383,7 @@ function draw()
             if i == 3 then layout.endHorizontal(); layout.newLine(28); layout.beginHorizontal(2) end
             local bx, by = layout.reserveSpace((rR.w-36)/2, 24)
             local buttonTags = {"AgcMode"}
-            if state.agcMode == (i-1) then table.insert(buttonTags, "Active") end
+            if state.agcMode == (i-1) then table.insert(buttonTags, "state.Active") end
             if ui.button("agc-"..m:lower(), m, bx, by, (rR.w-36)/2, 24, buttonTags) then
                 setProperty("agcMode", i-1)
             end

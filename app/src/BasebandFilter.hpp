@@ -52,10 +52,10 @@ private:
   float sampleRate;
 
   // Bandpass FIR state
-  bool bandpassEnabled = false;
+  bool bandpassEnabled = true;
   float bandpassCenter = 700.0f;
-  float bandpassWidth = 500.0f;
-  int bandpassTaps = 127;
+  float bandpassWidth = 2400.0f;
+  int bandpassTaps = 255;
   std::vector<float> bandpassCoeffsI;      // Complex FIR coefficients (I component)
   std::vector<float> bandpassCoeffsQ;      // Complex FIR coefficients (Q component)
   std::vector<float> bandpassHistoryI;     // Circular delay line for I

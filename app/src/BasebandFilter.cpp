@@ -20,6 +20,8 @@ BasebandFilter::BasebandFilter(float sampleRateIn)
   bandpassHistoryQ.resize(bandpassTaps, 0.0f);
   notchHistoryI.resize(notchTaps, 0.0f);
   notchHistoryQ.resize(notchTaps, 0.0f);
+  bandpassEnabled = true; // Image rejection depends on this
+  bandpassCoeffsDirty = true;
 }
 
 void BasebandFilter::setBandpassEnabled(bool en) {
