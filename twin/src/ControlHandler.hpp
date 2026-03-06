@@ -123,6 +123,9 @@ public:
     return (idx >= 0 && idx < 3) ? qsdFreqHz[idx].load(std::memory_order_relaxed) : 0; 
   }
 
+  double getVFO() const { return vfoHz.load(std::memory_order_relaxed); }
+  double getQSDOffset() const { return qsdKHz.load(std::memory_order_relaxed); }
+
   bool isStreaming() const { return streaming.load(std::memory_order_acquire); }
   bool isConnected() const { return connected.load(std::memory_order_acquire); }
   bool isISGEnabled() const { return isgEnabled.load(std::memory_order_relaxed); }
@@ -142,6 +145,8 @@ private:
 
   TCPControlTransport* control_ = nullptr;
   bool verbose_ = false;
+  std::atomic<double> vfoHz{14.2e6};
+  std::atomic<double> qsdKHz{12000.0};
   std::atomic<double> qsdFreqHz[3];
   AttenuatorModel* attenuator = nullptr;
   PreselectorModel* presel = nullptr;

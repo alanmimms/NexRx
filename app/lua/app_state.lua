@@ -89,7 +89,7 @@ local specs = {
     rfGainDb       = { defaultValue = 20, min = -20, max = 60, setter = function(v) hw.setRfGain(v) end },
     agcMode        = { defaultValue = 0, min = 0, max = 3, setter = function(v) hw.setAGCMode(v) end },
     qsdOffsetK     = { defaultValue = 12, min = 1, max = 24, setter = function(v) hw.setQsdOffset(v) end, requiresHw = true },
-    rfAttenDb      = { defaultValue = 0, min = 0, max = 45, step = 3, setter = function(v) hw.setAttenuation(v) end, requiresHw = true },
+    rfAttenDb      = { defaultValue = 0, min = 0, max = 45, setter = function(v) hw.setAttenuation(v) end, requiresHw = true },
     preselL1       = { defaultValue = false, setter = function(v) hw.setPreselectorInd(v) end },
     preselC0       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(0, v) end },
     preselC1       = { defaultValue = false, setter = function(v) hw.setPreselectorCap(1, v) end },

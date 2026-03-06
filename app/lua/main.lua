@@ -377,8 +377,9 @@ function draw()
         for i, m in ipairs(modes) do
             if i == 3 then layout.endHorizontal(); layout.newLine(28); layout.beginHorizontal(2) end
             local bx, by = layout.reserveSpace((rR.w-36)/2, 24)
-            local active = state.agcMode == (i-1) and {"Active"} or {}
-            if ui.button("agc-"..m:lower(), m, bx, by, (rR.w-36)/2, 24, {"AgcMode", table.unpack(active)}) then
+            local buttonTags = {"AgcMode"}
+            if state.agcMode == (i-1) then table.insert(buttonTags, "Active") end
+            if ui.button("agc-"..m:lower(), m, bx, by, (rR.w-36)/2, 24, buttonTags) then
                 setProperty("agcMode", i-1)
             end
         end

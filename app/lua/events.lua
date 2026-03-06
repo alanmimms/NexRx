@@ -287,10 +287,11 @@ function Events.dispatch(event)
     local currentWidget = targetWidget
     local handled = false
     
-    if Events.debugDispatch then
+    if event.type == Events.Type.MOUSE_WHEEL or event.type == Events.Type.KEY_DOWN then
         local wName = targetWidget and targetWidget.id or "none"
-        print(string.format("[Events] Dispatching %s at (%s,%s) widget=%s", 
-            event.type, event.x or "?", event.y or "?", wName))
+        local modStr = event.modifiers and table.concat(event.modifiers, ",") or "none"
+        print(string.format("[Events] Dispatching %s at (%s,%s) widget=%s mods={%s}", 
+            event.type, event.x or "?", event.y or "?", wName, modStr))
     end
 
     while true do

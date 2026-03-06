@@ -375,6 +375,9 @@ private:
     if (!luaConfigLoaded) {
       lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table, sol::lib::math, sol::lib::io, sol::lib::os);
     }
+    lua["isShiftDown"] = [this]() { return input.shiftDown; };
+    lua["isCtrlDown"] = [this]() { return input.ctrlDown; };
+    lua["isAltDown"] = [this]() { return input.altDown; };
     lua.set_function("quit", [this]() { running = false; });
     lua.set_function("getWindowSize", [this]() { return std::make_tuple(windowWidth, windowHeight); });
     lua.set_function("getMousePos", [this]() { return std::make_tuple(input.mouseX, input.mouseY); });
@@ -383,14 +386,11 @@ private:
     lua.set_function("isMouseReleased", [this](int b) { if (b >= 0 && b < 3) return input.mouseReleased[b]; return false; });
     lua.set_function("isKeyDown", [this](int k) { if (k >= 0 && k < 512) return input.keyDown[k]; return false; });
     lua.set_function("getMouseWheel", [this]() { return input.mouseWheel; });
-    lua.set_function("isShiftDown", [this]() { return input.shiftDown; });
-    lua.set_function("isCtrlDown", [this]() { return input.ctrlDown; });
-    lua.set_function("isAltDown", [this]() { return input.altDown; });
     lua.set_function("getTextInput", [this]() { return input.textInput; });
     lua.set_function("drawRect", [this](float x, float y, float w, float h, float r, float g, float b, float a) { drawRect(x, y, w, h, r, g, b, a); });
     lua.set_function("drawRectOutline", [this](float x, float y, float w, float h, float r, float g, float b, float a, float t) { drawRectOutline(x, y, w, h, r, g, b, a, t); });
     lua.set_function("drawCircle", [this](float cx, float cy, float rad, float r, float g, float b, float a) { drawCircle(cx, cy, rad, r, g, b, a); });
-    lua.set_function("drawCircleOutline", [this](float cx, float cy, float rad, float r, float g, float b, float a, float t) { drawCircleOutline(cx, cy, rad, r, g, b, a, t); });
+    lua.set_function("drawCircleOutline", [this](float cx, float cy, float rad, float r, float g, float b, float a, float t, int seg = 32) { drawCircleOutline(cx, cy, rad, r, g, b, a, t, seg); });
     lua.set_function("setClearColor", [this](float r, float g, float b) { setClearColor(r, g, b); });
     lua.set_function("drawText", [this](float x, float y, const std::string& t, float r, float g, float b, float a) { return drawText(x, y, t, r, g, b, a); });
     lua.set_function("measureText", [this](const std::string& t) { return measureText(t); });
@@ -436,6 +436,21 @@ private:
     hw["startStream"] = [this]() { if (twinConnected.load()) { audioBuffer.clear(); return twinHost.startStream(); } return false; };
     hw["stopStream"] = [this]() { if (twinConnected.load()) return twinHost.stopStream(); return false; };
     hw["getFramesReceived"] = [this]() { return twinHost.getFramesReceived(); };
+    hw["getDspStats"] = [this](sol::this_state s) {
+      sol::state_view lView(s);
+      sol::table res = lView.create_table();
+      res["signalRms"] = dspDiag.signalRms.load();
+      res["maxRaw"] = dspDiag.maxRaw.load();
+      res["maxAudio"] = dspDiag.maxAudio.load();
+      res["lmsWeightR"] = dspDiag.lmsWeightR.load();
+      res["lmsWeightI"] = dspDiag.lmsWeightI.load();
+      res["framesProcessed"] = dspDiag.framesProcessed.load();
+      return res;
+    };
+    hw["resetDspStats"] = [this]() {
+      dspDiag.maxRaw.store(0);
+      dspDiag.maxAudio.store(0);
+    };
     
     hw["setVFO"] = [this](double f, double k) { if (twinConnected.load()) { postCommand([this, f, k]() { twinHost.setVFO(f, k); }); } };
     hw["setAttenuation"] = [this](int db) { if (twinConnected.load()) { postCommand([this, db]() { twinHost.setAtten(db); }); } };
@@ -470,6 +485,14 @@ private:
     rx["setDemodFilterEnabled"] = [this](bool en) { demod.setFilterEnabled(en); };
     rx["setVfo"] = [this](double f) {
       lastVFOHz = f;
+      // Reset phase rotators and LMS weights
+      shiftCos0 = 1.0f; shiftSin0 = 0.0f;
+      shiftCos1 = 1.0f; shiftSin1 = 0.0f;
+      lmsW0_r = 1.0f; lmsW0_i = 0.0f;
+      lmsW1_r = 1.0f; lmsW1_i = 0.0f;
+      sampleBlockCounter = 0;
+      lmsAcc_r = 0.0f; lmsAcc_i = 0.0f;
+      
       if (twinConnected.load()) {
         double k = qsdOffsetKhz * 1000.0;
         postCommand([this, f, k]() { twinHost.setVFO(f, k); });
@@ -478,17 +501,6 @@ private:
     rx["getSignalRms"] = [this]() { return signalLevelRMS.load(); };
     lua["rx"] = rx;
 
-    // Diagnostic log every 1 second
-    static uint32_t lastLogTime = 0;
-
-    sol::table diag = lua.create_table();
-    diag["logLevels"] = [this]() {
-      float rms = signalLevelRMS.load();
-      float vol = audioVolume.load();
-      float rfg = rfGainDB.load();
-      std::cout << "[DIAG] RMS=" << rms << " RFG=" << rfg << " VOL=" << vol << " Connected=" << (twinConnected.load()?"Y":"N") << std::endl;
-    };
-    lua["diag"] = diag;
     try {
       auto res = lua.safe_script_file("lua/main.lua", sol::script_pass_on_error);
       if (!res.valid()) {
@@ -546,9 +558,10 @@ private:
           input.mouseWheel = e.wheel.y;
           break;
         case SDL_KEYDOWN:
+        case SDL_KEYUP:
           if (e.key.keysym.scancode < 512) {
-            input.keyDown[e.key.keysym.scancode] = true;
-            if (!e.key.repeat) {
+            input.keyDown[e.key.keysym.scancode] = (e.type == SDL_KEYDOWN);
+            if (e.type == SDL_KEYDOWN && !e.key.repeat) {
               input.keyPressed[e.key.keysym.scancode] = true;
             }
           }
@@ -558,6 +571,11 @@ private:
           break;
       }
     }
+    // Robustly update modifiers using SDL state
+    SDL_Keymod mod = SDL_GetModState();
+    input.shiftDown = (mod & KMOD_SHIFT) != 0;
+    input.ctrlDown = (mod & KMOD_CTRL) != 0;
+    input.altDown = (mod & KMOD_ALT) != 0;
   }
 
   void setup2DProjection() {
@@ -591,56 +609,101 @@ private:
     }
   }
 
+  struct DSPDiagnostics {
+    std::atomic<float> signalRms{0.0f};
+    std::atomic<float> maxRaw{0.0f};
+    std::atomic<float> maxAudio{0.0f};
+    std::atomic<float> lmsWeightR{1.0f};
+    std::atomic<float> lmsWeightI{0.0f};
+    std::atomic<uint32_t> framesProcessed{0};
+  } dspDiag;
+
   void processIQFrame(const nexrx::IQFrame& frame) {
-    static uint32_t frameCounter = 0;
     float i0, q0, i1, q1, i2, q2;
     frame.qsd[0].toFloat(i0, q0);
     frame.qsd[1].toFloat(i1, q1);
     frame.qsd[2].toFloat(i2, q2);
     
-    // QSD2 is the 6-phase sextature channel, best for image rejection
-    float iF = i2, qF = q2;
+    constexpr float sampleRate = 96000.0f;
+    float k_hz = static_cast<float>(qsdOffsetKhz * 1000.0);
+
+    if (k_hz != lastShiftK) {
+      float phaseInc = 2.0f * 3.14159265f * k_hz / sampleRate;
+      shiftCosD = std::cos(phaseInc);
+      shiftSinD = std::sin(phaseInc);
+      lastShiftK = k_hz;
+    }
+
+    float c0 = shiftCos0 * shiftCosD - shiftSin0 * shiftSinD;
+    float s0 = shiftSin0 * shiftCosD + shiftCos0 * shiftSinD;
+    shiftCos0 = c0; shiftSin0 = s0;
+
+    float c1 = shiftCos1 * shiftCosD - shiftSin1 * shiftSinD;
+    float s1 = shiftSin1 * shiftCosD + shiftCos1 * shiftSinD;
+    shiftCos1 = c1; shiftSin1 = s1;
+
+    float i0_s = i0 * shiftCos0 + q0 * shiftSin0;
+    float q0_s = q0 * shiftCos0 - i0 * shiftSin0;
+    float i1_s = i1 * shiftCos1 - q1 * shiftSin1;
+    float q1_s = q1 * shiftCos1 + i1 * shiftSin1;
+
+    if ((dspDiag.framesProcessed.load() & 0x3FFF) == 0) {
+      auto renorm = [](float& c, float& s) {
+        float mag = std::sqrt(c*c + s*s);
+        if (mag > 0) { c /= mag; s /= mag; }
+      };
+      renorm(shiftCos0, shiftSin0);
+      renorm(shiftCos1, shiftSin1);
+    }
+
+    float error_i = i0_s - (lmsW0_r * i1_s - lmsW0_i * q1_s);
+    float error_q = q0_s - (lmsW0_r * q1_s + lmsW0_i * i1_s);
+
+    lmsAcc_r += (error_i * i1_s + error_q * q1_s);
+    lmsAcc_i += (error_q * i1_s - error_i * q1_s);
     
-    // Apply digital RF Gain
+    if (++sampleBlockCounter >= 32) {
+      lmsW0_r += lmsMu * lmsAcc_r;
+      lmsW0_i += lmsMu * lmsAcc_i;
+      
+      float magSq = lmsW0_r * lmsW0_r + lmsW0_i * lmsW0_i;
+      if (magSq > 4.0f) {
+        float scale = 2.0f / std::sqrt(magSq);
+        lmsW0_r *= scale; lmsW0_i *= scale;
+      }
+      
+      dspDiag.lmsWeightR.store(lmsW0_r, std::memory_order_relaxed);
+      dspDiag.lmsWeightI.store(lmsW0_i, std::memory_order_relaxed);
+      lmsAcc_r = 0.0f; lmsAcc_i = 0.0f;
+      sampleBlockCounter = 0;
+    }
+
+    float iF = 0.5f * i2 + 0.25f * i0_s + 0.25f * (lmsW0_r * i1_s - lmsW0_i * q1_s);
+    float qF = 0.5f * q2 + 0.25f * q0_s + 0.25f * (lmsW0_r * q1_s + lmsW0_i * i1_s);
+    
     float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
-    iF *= rfGain;
-    qF *= rfGain;
+    iF *= rfGain; qF *= rfGain;
 
-    float iRaw = iF, qRaw = qF;
-
-    // Diagnostic Point 1: LEVEL AFTER GAIN
-    static float maxGainedRaw = 0;
-    maxGainedRaw = std::max({maxGainedRaw, std::abs(iF), std::abs(qF)});
+    float maxR = std::max(std::abs(iF), std::abs(qF));
+    if (maxR > dspDiag.maxRaw.load()) dspDiag.maxRaw.store(maxR, std::memory_order_relaxed);
 
     size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 
     if (iqBuffer.size() >= FFT_SIZE*2) {
-      iqBuffer[pos*2] = iF;
-      iqBuffer[pos*2+1] = qF;
+      iqBuffer[pos*2] = iF; iqBuffer[pos*2+1] = qF;
       iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
     }
     
     basebandFilter.recompute();
     basebandFilter.process(iF, qF);
-    float iFilt = iF, qFilt = qF;
     
     float aOut = demod.process(iF, qF);
-    signalLevelRMS.store(demod.getSignalLevelRMS(), std::memory_order_relaxed);
+    dspDiag.signalRms.store(demod.getSignalLevelRMS(), std::memory_order_relaxed);
     
-    // Diagnostic Point 2: Demodulated Output Level
-    static float maxAudio = 0;
-    maxAudio = std::max(maxAudio, std::abs(aOut));
+    if (std::abs(aOut) > dspDiag.maxAudio.load()) dspDiag.maxAudio.store(std::abs(aOut), std::memory_order_relaxed);
 
-    // Decimate by 2 (96kHz IQ -> 48kHz Audio)
-    if (!audioDecimateSkip) {
-      audioBuffer.write(aOut);
-    }
+    if (!audioDecimateSkip) { audioBuffer.write(aOut); }
     audioDecimateSkip = !audioDecimateSkip;
-
-    if (frameCounter % 10000 == 0) {
-      std::cout << "[DSP] Stat: iRaw=" << iRaw << " iFilt=" << iFilt << " aOut=" << aOut << " MaxGainedRaw=" << maxGainedRaw << " MaxAudio=" << maxAudio << std::endl;
-      maxGainedRaw = 0; maxAudio = 0;
-    }
-    frameCounter++;
+    dspDiag.framesProcessed.fetch_add(1, std::memory_order_relaxed);
   }
 
   void fftInPlace(float* re, float* im, size_t n) {
@@ -742,9 +805,11 @@ private:
   float shiftCosD = 1.0f, shiftSinD = 0.0f;
   float lastShiftK = -1.0f;
   
-  float lmsW0_r = 0.0f, lmsW0_i = 0.0f;
-  float lmsW1_r = 0.0f, lmsW1_i = 0.0f;
-  float lmsMu = 0.05f;
+  float lmsW0_r = 1.0f, lmsW0_i = 0.0f;
+  float lmsW1_r = 1.0f, lmsW1_i = 0.0f;
+  float lmsMu = 0.0f;
+  uint32_t sampleBlockCounter = 0;
+  float lmsAcc_r = 0.0f, lmsAcc_i = 0.0f;
   
   Demodulator demod;
   nexrx::BasebandFilter basebandFilter{96000.0f};

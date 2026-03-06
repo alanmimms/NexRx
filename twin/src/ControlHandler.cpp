@@ -17,6 +17,8 @@ ControlHandler::ControlHandler(double f0, double f1, double f2,
   , running(false)
   , connected(false)
   , reconnected(false) {
+  vfoHz.store(f2);
+  qsdKHz.store(f1 - f2);
   qsdFreqHz[0].store(f0, std::memory_order_relaxed);
   qsdFreqHz[1].store(f1, std::memory_order_relaxed);
   qsdFreqHz[2].store(f2, std::memory_order_relaxed);
@@ -82,7 +84,14 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
   cbor_value_advance(&arrayIt);
 
   if (verbose_) {
-    std::printf("[Control] Received command: 0x%08X\n", (uint32_t)cmdID);
+    char cmdChars[5] = {
+      (char)((cmdID >> 24) & 0xFF),
+      (char)((cmdID >> 16) & 0xFF),
+      (char)((cmdID >> 8) & 0xFF),
+      (char)(cmdID & 0xFF),
+      0
+    };
+    std::printf("[Control] Received command: %s\n", cmdChars);
   }
 
   switch ((uint32_t)cmdID) {
@@ -91,6 +100,10 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       cbor_value_get_double(&arrayIt, &f);
       cbor_value_advance(&arrayIt);
       cbor_value_get_double(&arrayIt, &k);
+      
+      vfoHz.store(f);
+      qsdKHz.store(k);
+      
       qsdFreqHz[0].store(f - k);
       qsdFreqHz[1].store(f + k);
       qsdFreqHz[2].store(f);

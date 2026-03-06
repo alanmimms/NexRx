@@ -694,26 +694,21 @@ void SSBGenerator::getRfIQ(double timeS, double& outI, double& outQ) const {
     return;
   }
 
-  if (timeS < lastTime || lastTime < 0) {
-    carrierPhase = std::fmod(2.0 * M_PI * carrierHz * timeS, 2.0 * M_PI);
-  } else {
-    double dt = timeS - lastTime;
-    carrierPhase = std::fmod(carrierPhase + 2.0 * M_PI * carrierHz * dt, 2.0 * M_PI);
-  }
-  lastTime = timeS;
-
   double audioI, audioQ;
   getAudioIQ(timeS, audioI, audioQ);
 
-  double cosPhase = std::cos(carrierPhase);
-  double sinPhase = std::sin(carrierPhase);
+  double phase = 2.0 * M_PI * carrierHz * timeS;
+  double cosP = std::cos(phase);
+  double sinP = std::sin(phase);
 
   if (mode == Mode::USB) {
-    outI = amplitudeV * (audioI * cosPhase - audioQ * sinPhase);
-    outQ = amplitudeV * (audioI * sinPhase + audioQ * cosPhase);
+    // (audioI + j*audioQ) * exp(j*phase) = (audioI*cos - audioQ*sin) + j(audioI*sin + audioQ*cos)
+    outI = amplitudeV * (audioI * cosP - audioQ * sinP);
+    outQ = amplitudeV * (audioI * sinP + audioQ * cosP);
   } else {
-    outI = amplitudeV * (audioI * cosPhase + audioQ * sinPhase);
-    outQ = amplitudeV * (audioI * sinPhase - audioQ * cosPhase);
+    // (audioI - j*audioQ) * exp(j*phase) = (audioI*cos + audioQ*sin) + j(audioI*sin - audioQ*cos)
+    outI = amplitudeV * (audioI * cosP + audioQ * sinP);
+    outQ = amplitudeV * (audioI * sinP - audioQ * cosP);
   }
 }
 

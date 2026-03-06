@@ -250,4 +250,19 @@ bool StimulusManager::isAnyWithin(double centerHz, double bandwidthHz) const {
   return false;
 }
 
+double StimulusManager::carrierFrequency() const {
+  if (frozen.load()) {
+    if (frozenStimuli.empty()) return 0.0;
+    return frozenStimuli[0]->carrierFrequency();
+  }
+
+  std::lock_guard<std::mutex> lock(stimulusMutex);
+  for (const auto& pair : stimuli) {
+    if (pair.second.enabled) {
+      return pair.second.stimulus->carrierFrequency();
+    }
+  }
+  return 0.0;
+}
+
 } // namespace nexrx

@@ -84,41 +84,12 @@ rule {
 -- Frequency is in MHz, so: 1kHz=0.001, 10kHz=0.01, 100kHz=0.1, 1MHz=1.0
 -- =============================================================================
 
--- VFO Wheel: 1 kHz steps (no modifiers)
+-- VFO Wheel: 100 Hz steps (no modifiers)
 rule {
     id = "event-vfo-wheel",
     tags = {"event.MouseWheel"},
     priority = 20,
-    apply = { handler = "vfo_control", step = 0.001 }
-}
-
--- VFO Arrows: 1 kHz steps
-rule {
-    id = "event-vfo-arrow-right",
-    tags = {"event.KeyDown-RIGHT"},
-    priority = 20,
-    apply = { handler = "vfo_control", step = 0.001 }
-}
-
-rule {
-    id = "event-vfo-arrow-left",
-    tags = {"event.KeyDown-LEFT"},
-    priority = 20,
-    apply = { handler = "vfo_control", step = -0.001 }
-}
-
-rule {
-    id = "event-vfo-arrow-up",
-    tags = {"event.KeyDown-UP"},
-    priority = 20,
-    apply = { handler = "vfo_control", step = 0.001 }
-}
-
-rule {
-    id = "event-vfo-arrow-down",
-    tags = {"event.KeyDown-DOWN"},
-    priority = 20,
-    apply = { handler = "vfo_control", step = -0.001 }
+    apply = { handler = "vfo_control", step = 0.0001 }
 }
 
 -- VFO + CTRL: 10 kHz steps
@@ -129,20 +100,20 @@ rule {
     apply = { handler = "vfo_control", step = 0.01 }
 }
 
--- VFO + SHIFT: 1 MHz steps
+-- VFO + SHIFT: 100 kHz steps
 rule {
     id = "event-vfo-wheel-shift",
     tags = {"event.MouseWheel", "input.SHIFT"},
     priority = 30,
-    apply = { handler = "vfo_control", step = 1.0 }
+    apply = { handler = "vfo_control", step = 0.1 }
 }
 
--- VFO + CTRL + SHIFT: 100 kHz steps
+-- VFO + CTRL + SHIFT: 1 kHz steps
 rule {
     id = "event-vfo-wheel-ctrl-shift",
     tags = {"event.MouseWheel", "input.CTRL", "input.SHIFT"},
     priority = 40,
-    apply = { handler = "vfo_control", step = 0.1 }
+    apply = { handler = "vfo_control", step = 0.001 }
 }
 
 -- VFO + H: 10 Hz fine tuning
@@ -169,7 +140,7 @@ rule {
     id = "event-isg-wheel",
     tags = {"event.MouseWheel", "widget.IsgControl"},
     priority = 100,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.001 }
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.0001 }
 }
 
 rule {
@@ -183,14 +154,14 @@ rule {
     id = "event-isg-wheel-shift",
     tags = {"event.MouseWheel", "widget.IsgControl", "input.SHIFT"},
     priority = 110,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 1.0 }
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.1 }
 }
 
 rule {
     id = "event-isg-wheel-ctrl-shift",
     tags = {"event.MouseWheel", "widget.IsgControl", "input.CTRL", "input.SHIFT"},
     priority = 120,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.1 }
+    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.001 }
 }
 
 rule {

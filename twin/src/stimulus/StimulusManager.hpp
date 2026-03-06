@@ -92,6 +92,9 @@ public:
   void getRfIQ(double timeS, double& outI, double& outQ, 
                double centerHz = 0, double bandwidthHz = 0) const;
 
+  // Get dominant carrier frequency (e.g. from first active stimulus)
+  double carrierFrequency() const;
+
   //------------------------------------------------------------------
   // High-performance batch generation (lock-free after freeze)
   //------------------------------------------------------------------
