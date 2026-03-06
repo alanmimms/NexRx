@@ -20,6 +20,7 @@ public:
   static constexpr uint32_t CMD_SET_PRESEL_L    = 0x5350524C; /* "SPRL" */
   static constexpr uint32_t CMD_SET_PRESEL_C    = 0x53505243; /* "SPRC" */
   static constexpr uint32_t CMD_SET_PRESEL_EN   = 0x53505245; /* "SPRE" */
+  static constexpr uint32_t CMD_GET_STATE       = 0x47535441; /* "GSTA" */
   static constexpr uint32_t CMD_GBYE            = 0x47425945; /* "GBYE" */
 };
 

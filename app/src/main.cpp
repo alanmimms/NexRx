@@ -10,6 +10,7 @@
 #include "BasebandFilter.hpp"
 #include "Socket.hpp"
 #include "TwinConn.hpp"
+#include <cbor.h>
 #include "transport/IQFrame.hpp"
 #include "Demodulator.hpp"
 
@@ -474,6 +475,43 @@ private:
     hw["setTrMode"] = [this](int m) { if (twinConnected.load()) { postCommand([this, m]() { twinHost.setTrMode(m); }); } };
     hw["setQsdOffset"] = [this](double k) { qsdOffsetKhz = k; if (twinConnected.load()) { postCommand([this, k]() { twinHost.setVFO(lastVFOHz, k * 1000.0); }); } };
     hw["setRfGain"] = [this](double db) { rfGainDB.store(db); };
+    hw["getState"] = [this]() -> sol::optional<sol::table> {
+      if (!twinConnected.load()) return sol::nullopt;
+      auto stateCBOR = twinHost.getState();
+      if (stateCBOR.empty()) return sol::nullopt;
+
+      CborParser parser;
+      CborValue it;
+      if (cbor_parser_init(stateCBOR.data(), stateCBOR.size(), 0, &parser, &it) != CborNoError) return sol::nullopt;
+      if (!cbor_value_is_map(&it)) return sol::nullopt;
+
+      sol::table res = lua.create_table();
+      CborValue mapIt;
+      cbor_value_enter_container(&it, &mapIt);
+      while (!cbor_value_at_end(&mapIt)) {
+        char key[64];
+        size_t len = sizeof(key);
+        if (cbor_value_get_type(&mapIt) == CborTextStringType) {
+          cbor_value_copy_text_string(&mapIt, key, &len, &mapIt);
+        } else {
+          cbor_value_advance(&mapIt); // Skip non-string key
+          continue;
+        }
+
+        if (cbor_value_is_double(&mapIt)) {
+          double val; cbor_value_get_double(&mapIt, &val);
+          res[key] = val;
+        } else if (cbor_value_is_integer(&mapIt)) {
+          int64_t val; cbor_value_get_int64(&mapIt, &val);
+          res[key] = val;
+        } else if (cbor_value_is_boolean(&mapIt)) {
+          bool val; cbor_value_get_boolean(&mapIt, &val);
+          res[key] = val;
+        }
+        cbor_value_advance(&mapIt);
+      }
+      return res;
+    };
     lua["hw"] = hw;
 
     sol::table rx = lua.create_table();

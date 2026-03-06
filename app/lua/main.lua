@@ -21,6 +21,7 @@ local smeter = require("smeter")
 local AppState = require("app_state")
 local Edit = require("edit")
 local layoutOverrides = require("layout_overrides")
+local Preselector = require("ui.preselector")
 
 local frameCount = 0
 local fps = 0
@@ -33,6 +34,8 @@ local state = setmetatable({}, {
     __index = function(_, k) return AppState.get(k) end,
     __newindex = function(_, k, v) AppState.set(k, v) end
 })
+
+local preselectorWidget = Preselector.new(state)
 
 local function setProperty(name, v)
     local prevTags = setbox.getActiveTags()
@@ -390,19 +393,13 @@ function draw()
         end
         layout.endHorizontal(); layout.newLine(24)
 
-        cx, cy = layout.getCursor(); ui.label("ps-l", cx, cy, "Preselector", {"Title"}); layout.newLine(24)
-        cx, cy = layout.getCursor(); ui.checkbox("ps-en", "Preselector Enabled", cx, cy, state.preselectorEnabled, {"PreToggle"}, "preselectorEnabled"); layout.newLine(28)
-        cx, cy = layout.getCursor(); ui.checkbox("ps-auto", "Auto-tune", cx, cy, state.preselectorAuto, {"PreselAuto"}, "preselectorAuto"); layout.newLine(28)
-        cx, cy = layout.getCursor(); ui.checkbox("ps-l1", "Inductor L1", cx, cy, state.preselL1, {"PreselToggle"}, "preselL1"); layout.newLine(28)
-        for i = 0, 10 do
-            if i % 4 == 0 and i > 0 then layout.newLine(28) end
-            if i % 4 == 0 then layout.beginHorizontal(4) end
-            local cid = "preselC"..i
-            local bx, by = layout.reserveSpace(45, 24)
-            ui.checkbox(cid, "C"..i, bx, by, state[cid], {"PreselToggle"}, cid)
-            if i % 4 == 3 or i == 10 then layout.endHorizontal() end
-        end
+        -- Preselector Section
+        local psW = rR.w - 24
+        local psH = 220
+        local psX, psY = layout.reserveSpace(psW, psH)
+        preselectorWidget:draw("preselector-main", psX, psY, psW, psH)
         layout.newLine(12)
+
         cx, cy = layout.getCursor(); ui.label("isg-t", cx, cy, "Int. Signal Gen.", {"Title"}); layout.newLine(24)
         
         -- ISG Frequency Display

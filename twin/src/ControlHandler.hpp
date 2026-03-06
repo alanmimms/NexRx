@@ -62,6 +62,16 @@ public:
     return l1Shorted.load(std::memory_order_relaxed);
   }
 
+  uint32_t getCapMask() const {
+    uint32_t mask = 0;
+    for (int i = 0; i < 11; ++i) {
+        if (caps[i].load(std::memory_order_relaxed)) {
+            mask |= (1 << i);
+        }
+    }
+    return mask;
+  }
+
   void autoTune(double freqHz) {
     const double pi = 3.141592653589793;
     bool useShort = freqHz > 5.0e6;

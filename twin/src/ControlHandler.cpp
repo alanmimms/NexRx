@@ -188,10 +188,50 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
         presel->setEnabled(en);
       }
       return encodeResponse(0, "OK");
+      }
+    case Control::CMD_GET_STATE: {
+      uint8_t buf[1024];
+      CborEncoder enc, map;
+      cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+      cbor_encoder_create_map(&enc, &map, 10);
+
+      cbor_encode_text_stringz(&map, "vfo");
+      cbor_encode_double(&map, vfoHz.load());
+
+      cbor_encode_text_stringz(&map, "atten");
+      cbor_encode_double(&map, attenuator ? attenuator->getTotalAttenDB() : 0.0);
+
+      cbor_encode_text_stringz(&map, "pga");
+      cbor_encode_int(&map, pga ? pga->getGainCode() : 0);
+
+      cbor_encode_text_stringz(&map, "agc");
+      cbor_encode_int(&map, agcMode.load());
+
+      cbor_encode_text_stringz(&map, "isgFreq");
+      cbor_encode_double(&map, isgFreqHz.load());
+
+      cbor_encode_text_stringz(&map, "isgEn");
+      cbor_encode_boolean(&map, isgEnabled.load());
+
+      cbor_encode_text_stringz(&map, "psL");
+      cbor_encode_int(&map, presel ? (presel->isL1Shorted() ? 1 : 0) : 0);
+
+      cbor_encode_text_stringz(&map, "psC");
+      cbor_encode_int(&map, presel ? presel->getCapMask() : 0);
+
+      cbor_encode_text_stringz(&map, "psEn");
+      cbor_encode_boolean(&map, presel ? presel->isEnabled() : true);
+
+      cbor_encode_text_stringz(&map, "tr");
+      cbor_encode_int(&map, trMode.load());
+
+      cbor_encoder_close_container(&enc, &map);
+      return {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)};
     }
-    case Control::CMD_GBYE:
+    case Control::CMD_GBYE: {
       connected.store(false);
       return encodeResponse(0, "BYE");
+    }
     default:
       std::printf("[Control] Unknown command: 0x%08X\n", (uint32_t)cmdID);
       return encodeResponse(1, "Unknown command");

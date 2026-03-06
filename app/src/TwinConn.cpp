@@ -285,4 +285,23 @@ uint64_t TwinConn::getTimestamp() {
   return 0; // TODO: Implement CBOR decode
 }
 
+std::vector<uint8_t> TwinConn::getState() {
+  uint8_t buf[64];
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+  cbor_encoder_create_array(&enc, &arr, 1);
+  cbor_encode_uint(&arr, Control::CMD_GET_STATE);
+  cbor_encoder_close_container(&enc, &arr);
+  auto resp = sendCBORRequest(Control::CMD_GET_STATE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)});
+  if (resp.empty()) return {};
+  
+  // The response is [status, payload]
+  // We want the payload (which is the CBOR map)
+  // For now we just return the whole thing minus status if it's there
+  if (resp.size() > 1) {
+    return {resp.begin() + 1, resp.end()};
+  }
+  return {};
+}
+
 } // namespace nexrx

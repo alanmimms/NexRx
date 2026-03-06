@@ -196,6 +196,12 @@ function AppState.init()
     if initialized then return end
     print("[AppState] Initializing state...")
 
+    local hwState = nil
+    if hw and hw.getState then
+        hwState = hw.getState()
+        if hwState then print("[AppState] Received hardware state for initialization") end
+    end
+
     -- Initial pass to ensure preselectorAuto exists before any setters run
     local autoInit = setbox.getBool("preselectorAuto", true)
     Preselector.auto = autoInit
@@ -205,6 +211,25 @@ function AppState.init()
         for name, spec in pairs(specs) do
             local valueToSet = setbox.get(name)
             if valueToSet == nil then valueToSet = spec.defaultValue end
+            
+            -- Override with hardware state if available
+            if hwState then
+                if name == "frequency" and hwState.vfo then valueToSet = hwState.vfo / 1e6
+                elseif name == "rfAttenDb" and hwState.atten then valueToSet = hwState.atten
+                elseif name == "agcMode" and hwState.agc ~= nil then valueToSet = hwState.agc
+                elseif name == "isgFrequency" and hwState.isgFreq then valueToSet = hwState.isgFreq / 1e6
+                elseif name == "isgEnabled" and hwState.isgEn ~= nil then valueToSet = hwState.isgEn
+                elseif name == "preselectorEnabled" and hwState.psEn ~= nil then valueToSet = hwState.psEn
+                elseif name == "preselL1" and hwState.psL ~= nil then valueToSet = (hwState.psL == 1)
+                elseif name:find("preselC") and hwState.psC ~= nil then
+                    local idx = tonumber(name:match("preselC(%d+)"))
+                    if idx then
+                        local bit = math.floor(hwState.psC / math.pow(2, idx)) % 2
+                        valueToSet = (bit == 1)
+                    end
+                end
+            end
+
             if name == "frequency" and valueToSet == nil then
                 local defFreq = setbox.getNumber("defaultFrequency")
                 if defFreq then valueToSet = defFreq / 1e6 end

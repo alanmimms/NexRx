@@ -316,6 +316,16 @@ rule {
     }
 }
 
+rule {
+    id = "preselector-frame",
+    tags = {"widget.Panel", "widget.PreselectorFrame"},
+    apply = {
+        background = "#242d42",
+        border = "#3b82f6",
+        borderRadius = 8,
+    }
+}
+
 -- Slider styles
 rule {
     id = "slider-base",

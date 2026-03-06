@@ -71,6 +71,7 @@ public:
   bool startStream();
   bool stopStream();
   uint64_t getTimestamp();
+  std::vector<uint8_t> getState();
 
   std::vector<uint8_t> sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& argsCBOR);
 
