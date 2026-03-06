@@ -234,7 +234,6 @@ must manually adjust:
 - Frequency (VFO)
 - Mode (CW → SSB)
 - Antenna selection (20m beam → 40m dipole)
-- Audio equalization (CW sidetone → SSB mic)
 - Filter bandwidth (CW narrow → SSB wide)
 - AGC settings (CW fast → SSB slow)
 - Waterfall span and color scheme
@@ -280,7 +279,6 @@ Global-Defaults
 **Contest-20m-CW** inherits from Contest-20m and overrides:
 - Mode: CW
 - Filter bandwidth: 500 Hz
-- Sidetone frequency: 600 Hz
 - AGC: Fast
 - Keyboard shortcuts: CW-specific
 
