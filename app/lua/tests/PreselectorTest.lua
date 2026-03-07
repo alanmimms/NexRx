@@ -3,7 +3,7 @@
     Verifies Local Widget Context (LWC) nesting and property inheritance.
 ]]
 
-local setbox = require("setbox")
+local setbox = require("SetBox")
 local Preselector = require("ui.Preselector")
 
 local Tests = {}
@@ -64,6 +64,15 @@ local function setupTestConfig()
             gridCols = 4,
             boxSize = 18,
             spacing = 8,
+        }
+    }
+
+    -- 1b. Label defaults
+    setbox.rule {
+        id = "label-defaults",
+        tags = {"widget.Label"},
+        apply = {
+            text = "Label",
         }
     }
 

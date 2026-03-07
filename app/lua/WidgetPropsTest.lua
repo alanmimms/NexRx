@@ -1,9 +1,9 @@
 --[[
-    test_widget_props.lua - Tests for reactive widget properties
+    WidgetPropsTest.lua - Tests for reactive widget properties
 ]]
 
-local WidgetProps = require("widget_props")
-local R = require("reactive")
+local WidgetProps = require("WidgetProps")
+local R = require("Reactive")
 
 local passed = 0
 local failed = 0

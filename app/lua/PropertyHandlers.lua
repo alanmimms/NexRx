@@ -8,7 +8,7 @@
   control plane more flexible and extensible.
 
   Usage:
-    local handlers = require("property_handlers")
+    local handlers = require("PropertyHandlers")
     handlers.dispatch("volume", 0.8)
 ]]
 

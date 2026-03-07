@@ -10,7 +10,7 @@
   - Above S9: report as S9+dB
 
   Usage:
-    local smeter = require("smeter")
+    local smeter = require("SMeter")
     local reading = smeter.getReading()
 ]]
 

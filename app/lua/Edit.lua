@@ -14,7 +14,7 @@
     Rules in config/events.lua determine when these handlers fire.
 
     Usage:
-        local Edit = require("edit")
+        local Edit = require("Edit")
         Edit.init(events, AppState)
 
         -- In draw(), after widgets but before endFrame:
@@ -25,7 +25,7 @@ local Edit = {}
 
 -- Dependencies
 local events = nil
-local layoutOverrides = require("layout_overrides")
+local layoutOverrides = require("LayoutOverrides")
 local constraints = require("ui.Constraints")
 
 -- Drag state (only while actively dragging)

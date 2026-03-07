@@ -6,8 +6,8 @@
 
 local ui = require("ui.Widgets")
 local layout = require("ui.Layout")
-local AppState = require("app_state")
-local setbox = require("setbox")
+local AppState = require("AppState")
+local setbox = require("SetBox")
 
 local Preselector = {}
 Preselector.__index = Preselector

@@ -7,7 +7,7 @@
     - Rule-resolved defaults from SetBox when no explicit value is set
 
     Usage:
-        local WidgetProps = require("widget_props")
+        local WidgetProps = require("WidgetProps")
 
         -- Create a widget with reactive properties
         local sidebar = WidgetProps.create("sidebar", {
@@ -29,8 +29,8 @@
         print(main:get("x"))  -- 300
 ]]
 
-local R = require("reactive")
-local setbox = require("setbox")
+local R = require("Reactive")
+local setbox = require("SetBox")
 
 local WidgetProps = {}
 

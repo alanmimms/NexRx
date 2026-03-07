@@ -7,7 +7,7 @@
     triggering re-evaluation of band-specific SetBox rules.
 
     Usage:
-        local bands = require("bands")
+        local bands = require("Bands")
         bands.init()
         bands.setCurrent(14.2e6)  -- Automatically updates "20m" tag
         local band = bands.getCurrent()  -- Returns "20m"

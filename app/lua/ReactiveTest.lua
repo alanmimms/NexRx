@@ -1,8 +1,8 @@
 --[[
-    test_reactive.lua - Tests for the reactive property system
+    ReactiveTest.lua - Tests for the reactive property system
 ]]
 
-local R = require("reactive")
+local R = require("Reactive")
 
 local passed = 0
 local failed = 0

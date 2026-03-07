@@ -8,7 +8,7 @@
   All other tables and constants are derived from it.
 
   Usage:
-    local modes = require("modes")
+    local modes = require("Modes")
     modes.setMode("USB")
     local name = modes.getModeName()
 ]]

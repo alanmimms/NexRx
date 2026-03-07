@@ -1,7 +1,7 @@
-local R = require("reactive")
-local animate = require("animate")
-local setbox = require("setbox")
-local bands = require("bands")
+local R = require("Reactive")
+local animate = require("Animate")
+local setbox = require("SetBox")
+local bands = require("Bands")
 
 local AppState = {}
 
@@ -80,7 +80,7 @@ local specs = {
     vfoB          = { defaultValue = 7.050e6, min = 0.1e6, max = 30.0e6 },
     activeVFO     = { defaultValue = "A" },
     selectedMode  = { defaultValue = "USB", setter = function(v) 
-        local modeHelper = require("modes")
+        local modeHelper = require("Modes")
         modeHelper.setMode(v) 
         if v == "AM" then
             AppState.set("bandpassEnabled", true)
@@ -90,7 +90,7 @@ local specs = {
     end },
     selectedBand  = { defaultValue = "20m" },
     rxActive      = { defaultValue = false, setter = function(v)
-        local dispatch = require("dispatch")
+        local dispatch = require("Dispatch")
         if v then 
             if audio and audio.start then audio.start() end
             dispatch.setRxActive(true)
@@ -270,7 +270,7 @@ function AppState.init()
         if f then AppState.set("frequency", f) end 
     end)
 
-    AppState.watch("selectedMode", function(m) require("modes").setMode(m) end)
+    AppState.watch("selectedMode", function(m) require("Modes").setMode(m) end)
 
     initialized = true
 end

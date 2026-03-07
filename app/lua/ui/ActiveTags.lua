@@ -4,7 +4,7 @@
   Behavior and style driven entirely by SetBox rules.
 ]]
 
-local setbox = require("setbox")
+local setbox = require("SetBox")
 local Label = require("ui.Label")
 
 local ActiveTags = {}

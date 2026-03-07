@@ -4,7 +4,7 @@
   Everything comes from SetBox rules.
 ]]
 
-local setbox = require("setbox")
+local setbox = require("SetBox")
 
 local Label = {}
 Label.__index = Label

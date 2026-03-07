@@ -5,12 +5,12 @@
     Runs all test modules and reports results.
 
     Usage:
-        lua tests/run_tests.lua
+        lua tests/RunTests.lua
         -- or from app/lua directory:
-        lua tests/run_tests.lua
+        lua tests/RunTests.lua
 
     Individual test modules:
-        lua -e "package.path='?.lua;?/init.lua;'..package.path; require('tests.layout_test').runAll()"
+        lua -e "package.path='?.lua;?/init.lua;'..package.path; require('tests.LayoutTest').runAll()"
 ]]
 
 -- Set up package path to find modules
@@ -33,12 +33,12 @@ local modules = {}
 
 -- Try to load and run each test module
 local testModules = {
-    {"layout_test", "Layout System"},
-    {"events_test", "Event Dispatch"},
-    {"animate_test", "Animation System"},
-    {"bands_test", "Band Detection"},
-    {"setbox_test", "SetBox Engine"},
-    {"preselectorTest", "Preselector Widget"},
+    {"LayoutTest", "Layout System"},
+    {"EventsTest", "Event Dispatch"},
+    {"AnimateTest", "Animation System"},
+    {"BandsTest", "Band Detection"},
+    {"SetBoxTest", "SetBox Engine"},
+    {"PreselectorTest", "Preselector Widget"},
 }
 
 for _, info in ipairs(testModules) do

@@ -20,8 +20,8 @@
 local container = {}
 
 local constraints = require("ui.Constraints")
-local layoutOverrides = require("layout_overrides")
-local setbox = require("setbox")
+local layoutOverrides = require("LayoutOverrides")
+local setbox = require("SetBox")
 
 -- Default rules for Container layout fallbacks (very low priority)
 setbox.rule {

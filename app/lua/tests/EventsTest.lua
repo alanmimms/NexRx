@@ -2,7 +2,7 @@
     Unit tests for events.lua module
 ]]
 
-local events = require("events")
+local events = require("Events")
 
 local Tests = {}
 local passed = 0
@@ -274,34 +274,33 @@ function Tests.test_build_event_tags()
     local event = {
         type = "MouseDown",
         x = 100, y = 100,
-        modifiers = {"Shift", "Ctrl"}
+        modifiers = {"input.SHIFT", "input.CTRL"}
     }
 
     local widget = {
         id = "btn",
-        tags = {"Button", "Primary"}
+        tags = {"widget.Button", "widget.Primary"}
     }
 
     local tags = events._buildEventTags(event, widget)
 
     assert_true(#tags >= 5, "at least 5 tags")
-    assert_eq("Event", tags[1], "first tag is Event")
-    assert_eq("MouseDown", tags[2], "second tag is event type")
+    assert_eq("event.MouseDown", tags[1], "first tag is namespaced event")
     -- Widget tags
     local hasButton = false
     local hasPrimary = false
     local hasShift = false
     local hasCtrl = false
     for _, t in ipairs(tags) do
-        if t == "Button" then hasButton = true end
-        if t == "Primary" then hasPrimary = true end
-        if t == "Shift" then hasShift = true end
-        if t == "Ctrl" then hasCtrl = true end
+        if t == "widget.Button" then hasButton = true end
+        if t == "widget.Primary" then hasPrimary = true end
+        if t == "input.SHIFT" then hasShift = true end
+        if t == "input.CTRL" then hasCtrl = true end
     end
-    assert_true(hasButton, "has Button tag")
-    assert_true(hasPrimary, "has Primary tag")
-    assert_true(hasShift, "has Shift modifier")
-    assert_true(hasCtrl, "has Ctrl modifier")
+    assert_true(hasButton, "has widget.Button tag")
+    assert_true(hasPrimary, "has widget.Primary tag")
+    assert_true(hasShift, "has input.SHIFT modifier")
+    assert_true(hasCtrl, "has input.CTRL modifier")
 end
 
 function Tests.test_build_event_tags_no_widget()
@@ -314,9 +313,8 @@ function Tests.test_build_event_tags_no_widget()
     }
 
     local tags = events._buildEventTags(event, nil)
-    assert_eq(2, #tags, "only 2 tags without widget")
-    assert_eq("Event", tags[1], "first tag is Event")
-    assert_eq("KeyDown", tags[2], "second tag is event type")
+    assert_eq(1, #tags, "only 1 tag for KeyDown without key info")
+    assert_eq("event.KeyDown", tags[1], "first tag is namespaced event")
 end
 
 function Tests.test_create_event()

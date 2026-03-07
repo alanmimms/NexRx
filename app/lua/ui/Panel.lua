@@ -4,7 +4,7 @@
   Style and behavior driven entirely by SetBox rules.
 ]]
 
-local setbox = require("setbox")
+local setbox = require("SetBox")
 
 local Panel = {}
 Panel.__index = Panel

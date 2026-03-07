@@ -1,5 +1,5 @@
 --[[
-    test_app_state.lua - Tests for reactive application state
+    AppStateTest.lua - Tests for reactive application state
 ]]
 
 -- Mock C++ APIs
@@ -11,8 +11,8 @@ hw = { setQsdOffset = function() end, setAttenuation = function() end, isConnect
 setbox = { getNumber = function(_, d) return d end, getString = function(_, d) return d end, getBool = function(_, d) return d end }
 function getWindowSize() return 1600, 900 end
 
-local R = require("reactive")
-local AppState = require("app_state")
+local R = require("Reactive")
+local AppState = require("AppState")
 
 local passed = 0
 local failed = 0

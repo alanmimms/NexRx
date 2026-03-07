@@ -25,40 +25,11 @@ local cacheValid = false
 -- Internal Helpers
 -- =============================================================================
 
-local function _invalidateCache(silent)
-    cacheValid = false
-    if not globalCtx then return end
-    
-    local oldProps = cachedProperties
-    cachedProperties = globalCtx:resolve()
-    cacheValid = true
-
-    if silent then return end
-
-    -- Notify callbacks of all properties (simplistic for tests)
-    for _, cb in ipairs(changeCallbacks) do
-        for name, value in pairs(cachedProperties) do
-            if value ~= oldProps[name] then
-                pcall(cb, name, value)
-            end
-        end
-    end
-end
-
-function SetBox._clear()
-    rules = {}
-    activeTags = {}
-    globalContext = {}
-    nextRuleOrder = 1
-    changeCallbacks = {}
-    _invalidateCache()
-end
-
 --- Parse a tag string like "tag@10" into name and priority
 local function parseTag(tagStr)
     if not tagStr then return "nil", 0 end
     local name, pri = tagStr:match("([^@]+)@?(%d*)")
-    return name, tonumber(pri) or 0
+    return name or tagStr, tonumber(pri) or 0
 end
 
 -- =============================================================================
@@ -67,8 +38,6 @@ end
 
 local Context = {}
 Context.__index = Context
-
-local globalCtx = setmetatable({localTags = {}}, Context)
 
 function Context.new(tags, parent)
     local self = setmetatable({}, Context)
@@ -87,6 +56,7 @@ end
 function Context:hasTag(tag)
     if self.localTags[tag] then return true end
     if self.parent then return self.parent:hasTag(tag) end
+    -- Use the upvalue activeTags directly from the module scope
     return activeTags[tag] == true
 end
 
@@ -98,7 +68,7 @@ function Context:getHierarchyTags()
     -- Parent tags
     if self.parent then
         local pTags = self.parent:getHierarchyTags()
-        for t in pairs(pTags) do tags[t] = true end
+        for _, t in ipairs(pTags) do tags[t] = true end
     end
     -- Local tags last (overrides)
     for t in pairs(self.localTags) do tags[t] = true end
@@ -106,20 +76,6 @@ function Context:getHierarchyTags()
     local list = {}
     for t in pairs(tags) do table.insert(list, t) end
     return list
-end
-
---- Resolve properties for this specific context
-function Context:resolve()
-    local matching = self:getMatchingRules()
-    
-    -- Merge properties (higher score wins)
-    local result = {}
-    for i = #matching, 1, -1 do
-        for name, value in pairs(matching[i].rule.properties) do
-            result[name] = value
-        end
-    end
-    return result
 end
 
 function Context:getMatchingRules()
@@ -165,6 +121,20 @@ function Context:getMatchingRules()
     return matching
 end
 
+--- Resolve properties for this specific context
+function Context:resolve()
+    local matching = self:getMatchingRules()
+    
+    -- Merge properties (higher score wins)
+    local result = {}
+    for i = #matching, 1, -1 do
+        for name, value in pairs(matching[i].rule.properties) do
+            result[name] = value
+        end
+    end
+    return result
+end
+
 function Context:get(name)
     local props = self:resolve()
     local val = props[name]
@@ -201,15 +171,32 @@ function Context:getBool(name)
     return val == true or val == "true" or val == 1 or val == "1" or val == "yes"
 end
 
+local globalCtx = setmetatable({localTags = {}}, Context)
+
+local function _invalidateCache()
+    cacheValid = false
+    if not globalCtx then return end
+    
+    cachedProperties = globalCtx:resolve()
+    cacheValid = true
+
+    -- Notify callbacks of all properties
+    for _, cb in ipairs(changeCallbacks) do
+        for name, value in pairs(cachedProperties) do
+            pcall(cb, name, value)
+        end
+    end
+end
+
 -- =============================================================================
--- Tag Management (Global)
+-- Public API - Tag Management
 -- =============================================================================
 
 function SetBox.addTag(tag)
     local name, _ = parseTag(tag)
     if not activeTags[name] then
         activeTags[name] = true
-        _invalidateCache(true)
+        _invalidateCache()
     end
 end
 
@@ -217,7 +204,7 @@ function SetBox.removeTag(tag)
     local name, _ = parseTag(tag)
     if activeTags[name] then
         activeTags[name] = nil
-        _invalidateCache(true)
+        _invalidateCache()
     end
 end
 
@@ -228,7 +215,7 @@ function SetBox.setActiveTags(tags)
         newTags[name] = true
     end
     activeTags = newTags
-    _invalidateCache(true)
+    _invalidateCache()
 end
 
 function SetBox.getActiveTags()
@@ -263,8 +250,18 @@ function SetBox.onPropertyChange(callback)
     table.insert(changeCallbacks, callback)
 end
 
+function SetBox._clear()
+    rules = {}
+    activeTags = {}
+    globalContext = {}
+    nextRuleOrder = 1
+    changeCallbacks = {}
+    cachedProperties = {}
+    cacheValid = false
+end
+
 -- =============================================================================
--- Rule Registration
+-- Public API - Rule Registration
 -- =============================================================================
 
 function SetBox.rule(def)
@@ -310,7 +307,7 @@ function SetBox.getRules()
 end
 
 -- =============================================================================
--- Property Resolution (Global / Legacy)
+-- Public API - Resolution (Global / Legacy)
 -- =============================================================================
 
 function SetBox.resolve()

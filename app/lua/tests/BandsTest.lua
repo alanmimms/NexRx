@@ -2,7 +2,7 @@
     Unit tests for bands.lua module
 ]]
 
-local bands = require("bands")
+local bands = require("Bands")
 
 local Tests = {}
 local passed = 0

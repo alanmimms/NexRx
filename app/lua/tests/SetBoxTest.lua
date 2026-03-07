@@ -4,7 +4,7 @@
     Tests equivalent to C++ setbox_test.cpp, plus additional coverage.
 ]]
 
-local setbox = require("setbox")
+local setbox = require("SetBox")
 
 local Tests = {}
 local passed = 0
@@ -229,7 +229,7 @@ function Tests.test_single_tag_syntax()
     setbox.rule { tag = "SingleTag", apply = { value = 99 } }
     setbox.setActiveTags({"SingleTag"})
 
-    assert_eq(99, setbox.getNumber("value", 0), "single tag match")
+    assert_eq(99, setbox.getNumber("value"), "single tag match")
 end
 
 -- =============================================================================
@@ -310,10 +310,10 @@ function Tests.test_no_tags_base_defaults()
     setupTestConfig()
     setbox.setActiveTags({})
 
-    assert_eq("#1a1a2e", setbox.getString("background", ""), "base background")
-    assert_eq("#ffffff", setbox.getString("foreground", ""), "base foreground")
-    assert_eq(14, setbox.getNumber("fontSize", 0), "base fontSize")
-    assert_eq(4, setbox.getNumber("borderRadius", 0), "base borderRadius")
+    assert_eq("#1a1a2e", setbox.getString("background"), "base background")
+    assert_eq("#ffffff", setbox.getString("foreground"), "base foreground")
+    assert_eq(14, setbox.getNumber("fontSize"), "base fontSize")
+    assert_eq(4, setbox.getNumber("borderRadius"), "base borderRadius")
 end
 
 -- =============================================================================
@@ -325,10 +325,10 @@ function Tests.test_button_tag()
     setupTestConfig()
     setbox.setActiveTags({"Button"})
 
-    assert_eq("#3b82f6", setbox.getString("background", ""), "button background")
-    assert_eq("#ffffff", setbox.getString("foreground", ""), "button foreground")
-    assert_eq(8, setbox.getNumber("padding", 0), "button padding")
-    assert_eq(6, setbox.getNumber("borderRadius", 0), "button borderRadius")
+    assert_eq("#3b82f6", setbox.getString("background"), "button background")
+    assert_eq("#ffffff", setbox.getString("foreground"), "button foreground")
+    assert_eq(8, setbox.getNumber("padding"), "button padding")
+    assert_eq(6, setbox.getNumber("borderRadius"), "button borderRadius")
 end
 
 -- =============================================================================
@@ -341,10 +341,10 @@ function Tests.test_primary_button()
     setbox.setActiveTags({"Button", "Primary"})
 
     -- Primary variant overrides background
-    assert_eq("#2563eb", setbox.getString("background", ""), "primary background")
-    assert_eq("bold", setbox.getString("fontWeight", ""), "primary fontWeight")
+    assert_eq("#2563eb", setbox.getString("background"), "primary background")
+    assert_eq("bold", setbox.getString("fontWeight"), "primary fontWeight")
     -- Inherits from Button
-    assert_eq(8, setbox.getNumber("padding", 0), "inherited padding")
+    assert_eq(8, setbox.getNumber("padding"), "inherited padding")
 end
 
 -- =============================================================================
@@ -357,10 +357,10 @@ function Tests.test_primary_button_in_sidebar()
     setbox.setActiveTags({"Button", "Primary", "Sidebar"})
 
     -- Most specific rule (3 tags) wins for background
-    assert_eq("#1d4ed8", setbox.getString("background", ""), "sidebar primary background")
+    assert_eq("#1d4ed8", setbox.getString("background"), "sidebar primary background")
     -- Button+Sidebar rule wins for borderRadius
-    assert_eq(0, setbox.getNumber("borderRadius", -1), "sidebar borderRadius")
-    assert_eq("100%", setbox.getString("width", ""), "sidebar button width")
+    assert_eq(0, setbox.getNumber("borderRadius"), "sidebar borderRadius")
+    assert_eq("100%", setbox.getString("width"), "sidebar button width")
 end
 
 -- =============================================================================
@@ -376,8 +376,8 @@ function Tests.test_experimental_override()
     setbox.setActiveTags({"Button", "experimental"})
 
     -- High priority (100) override wins over regular Button rule
-    assert_eq("#dc2626", setbox.getString("background", ""), "experimental background")
-    assert_eq(20, setbox.getNumber("borderRadius", -1), "experimental borderRadius")
+    assert_eq("#dc2626", setbox.getString("background"), "experimental background")
+    assert_eq(20, setbox.getNumber("borderRadius"), "experimental borderRadius")
 end
 
 function Tests.test_specificity_beats_priority()
@@ -387,7 +387,7 @@ function Tests.test_specificity_beats_priority()
     setbox.setActiveTags({"Button", "Primary", "Sidebar", "experimental"})
 
     -- Button+Primary+Sidebar (3 tags) beats Button+experimental (2 tags, priority 100)
-    assert_eq("#1d4ed8", setbox.getString("background", ""), "specificity wins")
+    assert_eq("#1d4ed8", setbox.getString("background"), "specificity wins")
 end
 
 -- =============================================================================
@@ -400,16 +400,16 @@ function Tests.test_hover_state()
     setbox.setActiveTags({"Button"})
 
     -- Without hover context
-    assert_eq("#3b82f6", setbox.getString("background", ""), "unhovered background")
+    assert_eq("#3b82f6", setbox.getString("background"), "unhovered background")
 
     -- With hover context
     setbox.setContext("hovered", true)
-    assert_eq("#60a5fa", setbox.getString("background", ""), "hovered background")
-    assert_eq("pointer", setbox.getString("cursor", ""), "hovered cursor")
+    assert_eq("#60a5fa", setbox.getString("background"), "hovered background")
+    assert_eq("pointer", setbox.getString("cursor"), "hovered cursor")
 
     -- Clear context
     setbox.clearContext()
-    assert_eq("#3b82f6", setbox.getString("background", ""), "context cleared background")
+    assert_eq("#3b82f6", setbox.getString("background"), "context cleared background")
 end
 
 -- =============================================================================
@@ -421,10 +421,10 @@ function Tests.test_radio_20m_cw()
     setupTestConfig()
     setbox.setActiveTags({"Radio", "20m", "CW"})
 
-    assert_close(14.035e6, setbox.getNumber("frequency", 0), 1, "20m CW frequency")
-    assert_eq("CW", setbox.getString("mode", ""), "20m CW mode")
-    assert_eq(500, setbox.getNumber("filterWidth", 0), "20m CW filterWidth")
-    assert_eq("beam", setbox.getString("antenna", ""), "20m antenna")
+    assert_close(14.035e6, setbox.getNumber("frequency"), 1, "20m CW frequency")
+    assert_eq("CW", setbox.getString("mode"), "20m CW mode")
+    assert_eq(500, setbox.getNumber("filterWidth"), "20m CW filterWidth")
+    assert_eq("beam", setbox.getString("antenna"), "20m antenna")
 end
 
 -- =============================================================================
@@ -436,9 +436,9 @@ function Tests.test_radio_40m_ssb()
     setupTestConfig()
     setbox.setActiveTags({"Radio", "40m", "SSB"})
 
-    assert_close(7.2e6, setbox.getNumber("frequency", 0), 1, "40m SSB frequency")
-    assert_eq("LSB", setbox.getString("mode", ""), "40m SSB mode")
-    assert_eq(2400, setbox.getNumber("filterWidth", 0), "40m SSB filterWidth")
+    assert_close(7.2e6, setbox.getNumber("frequency"), 1, "40m SSB frequency")
+    assert_eq("LSB", setbox.getString("mode"), "40m SSB mode")
+    assert_eq(2400, setbox.getNumber("filterWidth"), "40m SSB filterWidth")
 end
 
 -- =============================================================================
@@ -479,10 +479,10 @@ function Tests.test_property_types()
     }
     setbox.setActiveTags({"Test"})
 
-    assert_eq("hello", setbox.getString("strVal", ""), "string value")
-    assert_eq(42.5, setbox.getNumber("numVal", 0), "number value")
-    assert_eq(true, setbox.getBool("boolVal", false), "bool true value")
-    assert_eq(false, setbox.getBool("boolFalse", true), "bool false value")
+    assert_eq("hello", setbox.getString("strVal"), "string value")
+    assert_eq(42.5, setbox.getNumber("numVal"), "number value")
+    assert_eq(true, setbox.getBool("boolVal"), "bool true value")
+    assert_eq(false, setbox.getBool("boolFalse"), "bool false value")
 end
 
 function Tests.test_default_values()
@@ -490,15 +490,16 @@ function Tests.test_default_values()
     setbox._clear()
     setbox.setActiveTags({})
 
-    -- Non-existent properties return defaults
-    assert_eq("default", setbox.getString("missing", "default"), "string default")
-    assert_eq(123, setbox.getNumber("missing", 123), "number default")
-    assert_eq(true, setbox.getBool("missing", true), "bool default true")
-    assert_eq(false, setbox.getBool("missing", false), "bool default false")
+    -- setbox.has() replaces legacy default parameters
+    assert_false(setbox.has("missing"), "has() returns false for missing property")
+
+    -- Getting a missing property must now throw an error
+    local ok, err = pcall(function() setbox.get("missing") end)
+    assert_false(ok, "get() throws error for missing property")
 end
 
-function Tests.test_type_mismatch_returns_default()
-    print("test_type_mismatch_returns_default")
+function Tests.test_type_mismatch_throws()
+    print("test_type_mismatch_throws")
     setbox._clear()
 
     setbox.rule {
@@ -507,8 +508,9 @@ function Tests.test_type_mismatch_returns_default()
     }
     setbox.setActiveTags({"Test"})
 
-    -- Requesting number for string value returns default
-    assert_eq(99, setbox.getNumber("value", 99), "type mismatch default")
+    -- Requesting number for string value should throw
+    local ok, err = pcall(function() setbox.getNumber("value") end)
+    assert_false(ok, "getNumber() throws error for type mismatch")
 end
 
 -- =============================================================================
@@ -525,7 +527,7 @@ function Tests.test_specificity_more_tags_wins()
     setbox.rule { tags = {"A", "B"}, apply = { value = 2 } }
 
     setbox.setActiveTags({"A", "B"})
-    assert_eq(2, setbox.getNumber("value", 0), "more specific wins")
+    assert_eq(2, setbox.getNumber("value"), "more specific wins")
 end
 
 -- =============================================================================
@@ -540,7 +542,7 @@ function Tests.test_priority_higher_wins()
     setbox.rule { tags = {"A"}, priority = 10, apply = { value = 2 } }
 
     setbox.setActiveTags({"A"})
-    assert_eq(2, setbox.getNumber("value", 0), "higher priority wins")
+    assert_eq(2, setbox.getNumber("value"), "higher priority wins")
 end
 
 function Tests.test_priority_negative()
@@ -551,7 +553,7 @@ function Tests.test_priority_negative()
     setbox.rule { tags = {"A"}, priority = -10, apply = { value = 2 } }
 
     setbox.setActiveTags({"A"})
-    assert_eq(1, setbox.getNumber("value", 0), "priority 0 beats -10")
+    assert_eq(1, setbox.getNumber("value"), "priority 0 beats -10")
 end
 
 -- =============================================================================
@@ -567,7 +569,7 @@ function Tests.test_declaration_order_later_wins()
     setbox.rule { tags = {"A"}, apply = { value = 2 } }
 
     setbox.setActiveTags({"A"})
-    assert_eq(2, setbox.getNumber("value", 0), "later declaration wins")
+    assert_eq(2, setbox.getNumber("value"), "later declaration wins")
 end
 
 -- =============================================================================
@@ -582,7 +584,7 @@ function Tests.test_disabled_rule()
     setbox.rule { tags = {"A"}, enabled = false, apply = { value = 2 } }
 
     setbox.setActiveTags({"A"})
-    assert_eq(1, setbox.getNumber("value", 0), "disabled rule ignored")
+    assert_eq(1, setbox.getNumber("value"), "disabled rule ignored")
 end
 
 -- =============================================================================
@@ -662,7 +664,7 @@ function Tests.test_context_condition_false()
     setbox.setActiveTags({"A"})
 
     -- Condition is false (enabled not set), so fallback rule wins
-    assert_eq(50, setbox.getNumber("value", 0), "condition false, fallback")
+    assert_eq(50, setbox.getNumber("value"), "condition false, fallback")
 end
 
 function Tests.test_context_condition_true()
@@ -680,7 +682,7 @@ function Tests.test_context_condition_true()
     setbox.setActiveTags({"A"})
     setbox.setContext("enabled", true)
 
-    assert_eq(100, setbox.getNumber("value", 0), "condition true, high priority")
+    assert_eq(100, setbox.getNumber("value"), "condition true, high priority")
 end
 
 -- =============================================================================
@@ -697,9 +699,9 @@ function Tests.test_property_merge()
     setbox.setActiveTags({"A", "B"})
 
     -- x from {A}, y overridden by {A,B}, z from {A,B}
-    assert_eq(1, setbox.getNumber("x", 0), "inherited x")
-    assert_eq(20, setbox.getNumber("y", 0), "overridden y")
-    assert_eq(30, setbox.getNumber("z", 0), "new z")
+    assert_eq(1, setbox.getNumber("x"), "inherited x")
+    assert_eq(20, setbox.getNumber("y"), "overridden y")
+    assert_eq(30, setbox.getNumber("z"), "new z")
 end
 
 -- =============================================================================
@@ -715,13 +717,13 @@ function Tests.test_global_rule_empty_tags()
 
     -- With no tags, global rule applies
     setbox.setActiveTags({})
-    assert_eq("always", setbox.getString("globalProp", ""), "global with no tags")
-    assert_nil(setbox.get("otherProp"), "X rule not matched")
+    assert_eq("always", setbox.getString("globalProp"), "global with no tags")
+    assert_false(setbox.has("otherProp"), "X rule not matched")
 
     -- With X tag, both apply
     setbox.setActiveTags({"X"})
-    assert_eq("always", setbox.getString("globalProp", ""), "global with tags")
-    assert_eq("onlyX", setbox.getString("otherProp", ""), "X rule matched")
+    assert_eq("always", setbox.getString("globalProp"), "global with tags")
+    assert_eq("onlyX", setbox.getString("otherProp"), "X rule matched")
 end
 
 -- =============================================================================
@@ -778,7 +780,7 @@ function Tests.test_clear()
 
     assert_eq(0, #setbox.getRules(), "rules cleared")
     assert_eq(0, #setbox.getActiveTags(), "tags cleared")
-    assert_nil(setbox.get("value"), "properties cleared")
+    assert_false(setbox.has("value"), "properties cleared")
 end
 
 -- =============================================================================

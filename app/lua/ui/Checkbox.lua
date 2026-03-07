@@ -4,7 +4,7 @@
   Fully rule-driven via SetBox.
 ]]
 
-local setbox = require("setbox")
+local setbox = require("SetBox")
 local state = require("ui.State")
 
 local Checkbox = {}

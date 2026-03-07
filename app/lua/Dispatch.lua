@@ -6,7 +6,7 @@
     and are replaced with real implementations when subsystems become ready.
 
     Usage:
-        local dispatch = require("dispatch")
+        local dispatch = require("Dispatch")
         dispatch.init()
 
         -- In update():

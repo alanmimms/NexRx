@@ -5,7 +5,7 @@
     Supports multiple keyframes with various easing curves.
 
     Usage:
-        local animate = require("animate")
+        local animate = require("Animate")
 
         -- Simple A→B animation
         animate.to(myTable, "x", 0, 100, 0.3, "easeOut")

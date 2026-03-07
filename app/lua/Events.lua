@@ -12,7 +12,7 @@
     Unhandled events are logged with full context.
 
     Usage:
-        local events = require("events")
+        local events = require("Events")
         events.init()
 
         -- Register a handler

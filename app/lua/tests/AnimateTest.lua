@@ -2,7 +2,7 @@
     Unit tests for animate.lua module
 ]]
 
-local animate = require("animate")
+local animate = require("Animate")
 
 local Tests = {}
 local passed = 0

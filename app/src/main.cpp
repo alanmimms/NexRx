@@ -62,8 +62,11 @@ struct InputState {
 
 class App {
 public:
+  static constexpr int FFT_SIZE = 1024;
+
   App() {
     iqBuffer.assign(FFT_SIZE * 2, 0.0f);
+    spectrumData.assign(FFT_SIZE, -100.0f);
     lmsMu = 0.001f;
   }
   ~App() { shutdown(); }
@@ -357,7 +360,6 @@ public:
     if (!font.isLoaded()) std::cerr << "WARNING: No font loaded!" << std::endl;
 
     if (!audio.init(48000, 2)) return false;
-    static const int FFT_SIZE = 1024;
     iqBuffer.assign(FFT_SIZE * 2, 0.0f);
     audioBuffer.configure(BufferConfig{32768});
     demod.setSampleRate(96000.0f);
@@ -504,9 +506,8 @@ private:
 
     basebandFilter.recompute(); basebandFilter.process(iF, qF);
     size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 
-    static const int LOCAL_FFT_SIZE = 1024;
     iqBuffer[pos*2] = iF; iqBuffer[pos*2+1] = qF;
-    iqBufferWritePos.store((pos+1)%LOCAL_FFT_SIZE, std::memory_order_release);
+    iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
 
     float aOut = demod.process(iF, qF);
     dspDiag.signalRms.store(demod.getSignalLevelRMS());
@@ -542,31 +543,30 @@ private:
 
   void computeSpectrum() {
     static std::vector<float> win;
-    static const int LOCAL_FFT_SIZE = 1024;
-    if (win.size() != LOCAL_FFT_SIZE) {
-      win.resize(LOCAL_FFT_SIZE);
-      for (size_t n=0; n<LOCAL_FFT_SIZE; ++n) win[n] = 0.5f*(1.0f-std::cos(2.0f*3.14159265f*n/(LOCAL_FFT_SIZE-1)));
+    if (win.size() != FFT_SIZE) {
+      win.resize(FFT_SIZE);
+      for (size_t n=0; n<FFT_SIZE; ++n) win[n] = 0.5f*(1.0f-std::cos(2.0f*3.14159265f*n/(FFT_SIZE-1)));
     }
-    static std::vector<float> fRe(LOCAL_FFT_SIZE), fIm(LOCAL_FFT_SIZE), avgS;
+    static std::vector<float> fRe(FFT_SIZE), fIm(FFT_SIZE), avgS;
     static bool avgI = false;
     {
       std::lock_guard<std::mutex> l(spectrumMutex);
-      if (iqBuffer.size() < LOCAL_FFT_SIZE*2) return;
+      if (iqBuffer.size() < FFT_SIZE*2) return;
       size_t wP = iqBufferWritePos.load(std::memory_order_acquire);
-      for (size_t n=0; n<LOCAL_FFT_SIZE; ++n) {
-        size_t idx = (wP+n)%LOCAL_FFT_SIZE;
+      for (size_t n=0; n<FFT_SIZE; ++n) {
+        size_t idx = (wP+n)%FFT_SIZE;
         fRe[n] = iqBuffer[idx*2]*win[n];
         fIm[n] = iqBuffer[idx*2+1]*win[n];
       }
     }
-    fftInPlace(fRe.data(), fIm.data(), LOCAL_FFT_SIZE);
-    std::vector<float> lS(LOCAL_FFT_SIZE);
-    for (size_t k=0; k<LOCAL_FFT_SIZE; ++k) {
-      float mag = std::sqrt(fRe[k]*fRe[k] + fIm[k]*fIm[k])/LOCAL_FFT_SIZE*2.0f;
-      lS[(k+LOCAL_FFT_SIZE/2)%LOCAL_FFT_SIZE] = (mag > 1e-10f) ? 20.0f*std::log10(mag) : -100.0f;
+    fftInPlace(fRe.data(), fIm.data(), FFT_SIZE);
+    std::vector<float> lS(FFT_SIZE);
+    for (size_t k=0; k<FFT_SIZE; ++k) {
+      float mag = std::sqrt(fRe[k]*fRe[k] + fIm[k]*fIm[k])/FFT_SIZE*2.0f;
+      lS[(k+FFT_SIZE/2)%FFT_SIZE] = (mag > 1e-10f) ? 20.0f*std::log10(mag) : -100.0f;
     }
-    if (!avgI || avgS.size() != LOCAL_FFT_SIZE) { avgS = lS; avgI = true; } 
-    else { for (size_t k=0; k<LOCAL_FFT_SIZE; ++k) avgS[k] = 0.3f*lS[k] + 0.7f*avgS[k]; }
+    if (!avgI || avgS.size() != FFT_SIZE) { avgS = lS; avgI = true; } 
+    else { for (size_t k=0; k<FFT_SIZE; ++k) avgS[k] = 0.3f*lS[k] + 0.7f*avgS[k]; }
     { std::lock_guard<std::mutex> l(spectrumMutex); spectrumData = avgS; }
   }
 
@@ -575,9 +575,9 @@ private:
   std::mutex spectrumMutex; std::vector<float> spectrumData; std::vector<float> iqBuffer;
   std::atomic<size_t> iqBufferWritePos{0};
   
-  static const int FFT_SIZE = 512;
   std::atomic<bool> twinConnected{false};
   std::atomic<float> rfGainDB{20.0f};
+  float sidetoneFreq = 700.0f;
   double qsdOffsetKhz = 12.0; double lastVFOHz = 14.2e6;
   Demodulator demod; BasebandFilter basebandFilter{96000}; DspDiagnostics dspDiag;
   float shiftCos0 = 1.0f, shiftSin0 = 0.0f, shiftCos1 = 1.0f, shiftSin1 = 0.0f;

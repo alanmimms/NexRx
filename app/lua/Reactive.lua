@@ -6,7 +6,7 @@
     in topological order via lazy recomputation.
 
     Usage:
-        local R = require("reactive")
+        local R = require("Reactive")
 
         local width = R.observable(100)
         local height = R.observable(50)

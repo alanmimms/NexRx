@@ -5,7 +5,7 @@
     between scan codes and human-readable key names.
 
     Usage:
-        local keys = require("keycodes")
+        local keys = require("Keycodes")
 
         if event.scancode == keys.SC_ESCAPE then ... end
         local name = keys.getName(event.scancode)  -- "Escape"

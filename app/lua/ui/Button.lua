@@ -4,7 +4,7 @@
   Behavior and style driven entirely by SetBox rules.
 ]]
 
-local setbox = require("setbox")
+local setbox = require("SetBox")
 local state = require("ui.State")
 
 local Button = {}
