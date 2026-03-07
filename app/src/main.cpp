@@ -82,7 +82,7 @@ public:
 
     // Load setbox and add platform tags
     try {
-      lua.safe_script_file("lua/setbox.lua");
+      lua.safe_script_file("lua/SetBox.lua");
 #ifdef _WIN32
       lua["setbox"]["addTag"]("platform.Windows");
 #elif __APPLE__
@@ -342,7 +342,7 @@ public:
 
     // 5. Load Main Lua
     try {
-      lua.safe_script_file("lua/main.lua");
+      lua.safe_script_file("lua/Main.lua");
     } catch (sol::error& e) { std::cerr << "Lua main load error: " << e.what() << std::endl; return false; }
 
     // 6. Font Initialization (must be after SetBox populated by main.lua)
