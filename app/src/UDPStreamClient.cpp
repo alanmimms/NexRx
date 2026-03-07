@@ -79,7 +79,6 @@ void UDPStreamClient::receiveLoop() {
     }
 
     if (firstLog) {
-      std::cout << "[UDP] Received first valid IQ packet, seq=" << header->sequence << ", frames=" << header->frameCount << std::endl;
       firstLog = false;
     }
 

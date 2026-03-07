@@ -50,11 +50,7 @@ local currentEdge = nil
 function Edit.init(eventsModule)
     events = eventsModule
 
-    -- Load any existing layout overrides
-    layoutOverrides.load()
-
     Edit._registerHandlers()
-    print("[Edit] Handlers registered (Ctrl+Alt+drag to resize/move)")
 end
 
 function Edit._registerHandlers()

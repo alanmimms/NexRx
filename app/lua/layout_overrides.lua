@@ -78,7 +78,6 @@ function M.save(path)
     if file then
         file:write(M.serialize())
         file:close()
-        print("[LayoutOverrides] Saved: " .. path)
         return true
     end
     return false
@@ -96,7 +95,6 @@ function M.load(path)
             local ok, data = pcall(fn)
             if ok and type(data) == "table" then
                 M.loadFrom(data)
-                print("[LayoutOverrides] Loaded: " .. path)
                 return true
             end
         end

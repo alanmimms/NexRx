@@ -260,6 +260,52 @@ function container.solve(winW, winH)
     return container.solveSublayout({x = 0, y = 0, w = winW, h = winH}, widgetOrder)
 end
 
+-- Solve layout for widgets that declare a specific parent via SetBox rules
+function container.solveDynamicSublayout(parentRegion, parentId)
+    local dynamicOrder = {}
+    local allRules = setbox.getRules()
+    
+    -- Find rules that have a 'parent' property matching parentId
+    -- and identify the widget IDs
+    local seenWidgets = {}
+    for _, rule in ipairs(allRules) do
+        if rule.properties and rule.properties.parent == parentId then
+            -- We need a widget ID. If the rule is for a specific widget, 
+            -- it should have it in its tags or we use its ID.
+            local widgetId = nil
+            for tag, _ in pairs(rule.tags or {}) do
+                if tag:find("^id%.") then
+                    widgetId = tag:sub(4)
+                    break
+                end
+            end
+            
+            if widgetId and not seenWidgets[widgetId] then
+                seenWidgets[widgetId] = true
+                -- Query SetBox for this widget's full properties to get anchor, group, etc.
+                local prevTags = setbox.getActiveTags()
+                setbox.setActiveTags({"id." .. widgetId})
+                
+                table.insert(dynamicOrder, {
+                    id = widgetId,
+                    tags = {"id." .. widgetId},
+                    anchor = setbox.getString("anchor", "top"),
+                    group = setbox.getString("group"),
+                    priority = setbox.getNumber("order", 0)
+                })
+                
+                setbox.setActiveTags(prevTags)
+            end
+        end
+    end
+    
+    -- Sort by order priority
+    table.sort(dynamicOrder, function(a, b) return a.priority < b.priority end)
+    
+    local result = container.solveSublayout(parentRegion, dynamicOrder)
+    return result
+end
+
 -- Get the widget order (for external iteration)
 function container.getWidgetOrder()
     return widgetOrder

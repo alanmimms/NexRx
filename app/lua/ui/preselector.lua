@@ -41,11 +41,6 @@ function Preselector:draw(id, x, y, w, h)
     local state = self.state
     local cx, cy
     
-    -- Enabled Toggle
-    cx, cy = layout.getCursor()
-    ui.checkbox(id .. "-en", "Enabled", cx, cy, state.preselectorEnabled, {"PreToggle"}, "preselectorEnabled")
-    layout.newLine(28)
-    
     -- Auto-tune Toggle
     cx, cy = layout.getCursor()
     ui.checkbox(id .. "-auto", "Auto-tune", cx, cy, state.preselectorAuto, {"PreselAuto"}, "preselectorAuto")

@@ -87,6 +87,5 @@ function Modes.toId(name)
     return Modes.nameToId[name] or 0
 end
 
-print("[modes.lua] Mode definitions loaded")
 
 return Modes

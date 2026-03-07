@@ -135,7 +135,6 @@ end
 --- Initialize dispatch system
 -- Call after subsystems are created but may not be fully ready
 function Dispatch.init()
-    print("[Dispatch] Initializing function dispatch system")
 end
 
 --- Enable waterfall functions
@@ -144,7 +143,6 @@ function Dispatch.enableWaterfall()
     Dispatch.updateWaterfall = waterfallAddRow
     Dispatch.renderWaterfall = waterfallRender
     Dispatch.renderSpectrum = waterfallRenderSpectrum
-    print("[Dispatch] Waterfall functions enabled")
 end
 
 --- Disable waterfall functions (revert to no-op)
@@ -152,7 +150,6 @@ function Dispatch.disableWaterfall()
     Dispatch.updateWaterfall = function(data) end
     Dispatch.renderWaterfall = function(x, y, w, h) end
     Dispatch.renderSpectrum = function(data, x, y, w, h) end
-    print("[Dispatch] Waterfall functions disabled")
 end
 
 --- Enable hardware functions
@@ -163,7 +160,6 @@ function Dispatch.enableHardware()
     Dispatch.setRxActive = hwSetRxActive
     Dispatch.setQsdOffset = hwSetQsdOffset
     Dispatch.setAttenuation = hwSetAttenuation
-    print("[Dispatch] Hardware functions enabled")
 end
 
 --- Disable hardware functions (revert to no-op/fallback)
@@ -174,7 +170,6 @@ function Dispatch.disableHardware()
     Dispatch.setRxActive = function(active) end
     Dispatch.setQsdOffset = function(kHz) end
     Dispatch.setAttenuation = function(dB) end
-    print("[Dispatch] Hardware functions disabled")
 end
 
 --- Set fallback spectrum generator function

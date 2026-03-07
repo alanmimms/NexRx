@@ -48,9 +48,7 @@ function Bands.init()
     -- If no bands loaded from SetBox, use defaults
     if #Bands.definitions == 0 then
         Bands.definitions = defaultBands
-        print("[Bands] Using built-in band definitions")
     else
-        print("[Bands] Loaded " .. #Bands.definitions .. " bands from SetBox")
     end
 end
 
@@ -168,12 +166,6 @@ function Bands._updateBandTag(oldBand, newBand)
     -- Add new band tag
     if newBand and newBand ~= "OOB" and setbox.addTag then
         setbox.addTag(newBand)
-    end
-
-    -- Log the change
-    if oldBand ~= newBand then
-        print(string.format("[Bands] Band changed: %s -> %s",
-            oldBand or "none", newBand))
     end
 end
 

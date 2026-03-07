@@ -156,7 +156,6 @@ function PropertyHandlers.dispatch(name, value)
     if handler then
         local ok, err = pcall(handler, value)
         if not ok then
-            print("[PropertyHandlers] Error in handler for '" .. name .. "': " .. tostring(err))
             return false
         end
         return true
@@ -186,6 +185,5 @@ _G.onPropertyChange = function(name, value)
     PropertyHandlers.dispatch(name, value)
 end
 
-print("[property_handlers.lua] Property handlers loaded")
 
 return PropertyHandlers

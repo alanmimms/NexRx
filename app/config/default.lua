@@ -326,6 +326,42 @@ rule {
     }
 }
 
+rule {
+    id = "isg-frame",
+    tags = {"widget.Panel", "widget.ISGFrame"},
+    apply = {
+        background = "#242d42",
+        border = "#3b82f6",
+        borderRadius = 8,
+    }
+}
+
+rule {
+    id = "agc-frame",
+    tags = {"widget.Panel", "widget.AGCFrame"},
+    apply = {
+        background = "#242d42",
+        border = "#3b82f6",
+        borderRadius = 8,
+    }
+}
+
+rule {
+    id = "audio-utils-frame",
+    tags = {"widget.Panel", "widget.AudioUtilsFrame"},
+    apply = {
+        background = "#242d42",
+        border = "#3b82f6",
+        borderRadius = 8,
+    }
+}
+
+-- Sidebar Widgets Ordering
+rule { id = "id-isg",   tags = {"id.isg"},   apply = { parent = "right-sidebar", order = 10, height = 160 } }
+rule { id = "id-presel",tags = {"id.presel"},apply = { parent = "right-sidebar", order = 20, height = 240 } }
+rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 100 } }
+rule { id = "id-audio", tags = {"id.audio"}, apply = { parent = "right-sidebar", order = 40, height = 140 } }
+
 -- Slider styles
 rule {
     id = "slider-base",

@@ -22,6 +22,9 @@ local AppState = require("app_state")
 local Edit = require("edit")
 local layoutOverrides = require("layout_overrides")
 local Preselector = require("ui.preselector")
+local ISG = require("ui.isg")
+local AGC = require("ui.agc")
+local AudioUtils = require("ui.audioutils")
 
 local frameCount = 0
 local fps = 0
@@ -29,6 +32,7 @@ local fpsAccum = 0
 local fpsFrames = 0
 local lastMouseX, lastMouseY = 0, 0
 local BUTTON_NAMES = {"LEFT", "MIDDLE", "RIGHT"}
+_G.isgFreqEntryText = ""
 
 local state = setmetatable({}, {
     __index = function(_, k) return AppState.get(k) end,
@@ -36,6 +40,16 @@ local state = setmetatable({}, {
 })
 
 local preselectorWidget = Preselector.new(state)
+local isgWidget = ISG.new(state)
+local agcWidget = AGC.new(state)
+local audioWidget = AudioUtils.new(state)
+
+local widgets = {
+    presel = preselectorWidget,
+    isg = isgWidget,
+    agc = agcWidget,
+    audio = audioWidget
+}
 
 local function setProperty(name, v)
     local prevTags = setbox.getActiveTags()
@@ -73,18 +87,28 @@ local function getAllActiveTags()
     return allTags
 end
 
+-- Load configuration files
+local configFiles = {
+    "config/default.lua",
+    "config/settings.lua",
+    "config/bands.lua", 
+    "config/colormaps.lua", 
+    "config/events.lua", 
+    "config/layout.lua", 
+    "config/modes.lua", 
+    "config/constraints.lua"
+}
+for _, file in ipairs(configFiles) do setbox.loadFile(file) end
+
 local hwConnected = false
 local freqEntryText = ""
-local isgFreqEntryText = ""
 local freqEntryBlink = 0
 
 function init()
-    print("[Lua] init() called - Version 1.1.0")
     wfBins = math.floor(state.wfBins or 512)
     wfRows = math.floor(state.wfRows or 256)
     for i = 1, wfBins do spectrumData[i] = -100 end
-    local configFiles = {"config/bands.lua", "config/colormaps.lua", "config/events.lua", "config/layout.lua", "config/modes.lua", "config/constraints.lua"}
-    for _, file in ipairs(configFiles) do setbox.loadFile(file) end
+    
     setClearColor(0.1, 0.1, 0.15)
     if audio.isInitialized() then audio.start() end
     if waterfall.init(wfBins, wfRows) then
@@ -111,7 +135,6 @@ function init()
         local prop = p.property or "frequency"
         if delta ~= 0 and p and p.step then 
             local newVal = state[prop] + delta * p.step
-            -- print(string.format("[Main] vfo_control: %s -> %s", prop, tostring(newVal)))
             setProperty(prop, newVal); return true 
         end
         return false
@@ -303,7 +326,10 @@ function draw()
         if nF ~= state.frequency then state.frequency = nF end
         layout.newLine(24)
 
-        cx, cy = layout.getCursor(); ui.label("mode-l", cx, cy, "Mode", {"Title"}); layout.newLine(24)
+        cx, cy = layout.getCursor(); 
+        ui.label("mode-l", cx, cy, "Mode", {"Title"}); 
+        layout.newLine(24)
+        
         layout.beginHorizontal(4)
         for _, m in ipairs(modeHelper.names) do
             local bx, by = layout.reserveSpace(40, 26)
@@ -313,18 +339,25 @@ function draw()
                 setProperty("selectedMode", m)
             end
         end
-        layout.endHorizontal(); layout.newLine(12)
+        layout.endHorizontal(); 
+        layout.newLine(12)
 
-        cx, cy = layout.getCursor(); ui.label("band-l", cx, cy, "Band", {"Title"}); layout.newLine(24)
+        local bcx, bcy = layout.getCursor(); 
+        ui.label("band-l", bcx, bcy, "Band", {"Title"}); 
+        layout.newLine(24)
+
         layout.beginHorizontal(4)
         for _, b in ipairs({"160m","80m","40m","20m","15m","10m"}) do
             local bx, by = layout.reserveSpace(40, 26)
             local active = state.selectedBand == b and {"Active"} or {}
             ui.button("band-"..b, b, bx, by, 40, 26, {"Band"..b, table.unpack(active)})
         end
-        layout.endHorizontal(); layout.newLine(24)
+        layout.endHorizontal(); 
+        layout.newLine(24)
 
-        cx, cy = layout.getCursor(); ui.label("vol-l", cx, cy, "Volume", {"Title"}); layout.newLine(24)
+        cx, cy = layout.getCursor(); 
+        ui.label("vol-l", cx, cy, "Volume", {"Title"}); 
+        layout.newLine(24)
         cx, cy = layout.getCursor()
         local nV = ui.slider("vol-slider", cx, cy, rL.w - 24, -60, 20, state.volumeDb, nil, "volumeDb")
         if nV ~= state.volumeDb then state.volumeDb = nV end
@@ -378,47 +411,22 @@ function draw()
         cx, cy = layout.getCursor(); ui.label("sm-l", cx, cy, "S-Meter", {"Title"}); layout.newLine(24)
         cx, cy = layout.getCursor(); ui.smeter("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading()); layout.newLine(48)
         
-        -- AGC Mode
-        cx, cy = layout.getCursor(); ui.label("agc-l", cx, cy, "AGC Mode", {"Title"}); layout.newLine(24)
-        layout.beginHorizontal(2)
-        local modes = {"Off", "Fast", "Med", "Slow"}
-        for i, m in ipairs(modes) do
-            if i == 3 then layout.endHorizontal(); layout.newLine(28); layout.beginHorizontal(2) end
-            local bx, by = layout.reserveSpace((rR.w-36)/2, 24)
-            local buttonTags = {"AgcMode"}
-            if state.agcMode == (i-1) then table.insert(buttonTags, "state.Active") end
-            if ui.button("agc-"..m:lower(), m, bx, by, (rR.w-36)/2, 24, buttonTags) then
-                setProperty("agcMode", i-1)
+        -- Solve dynamic sublayout for the rest of the sidebar
+        cx, cy = layout.getCursor()
+        -- IMPORTANT: Calculate remaining height from cursor to BOTTOM of region
+        local remainingH = (rR.y + rR.h) - cy - 12
+        local currentR = { x = rR.x + 12, y = cy, w = rR.w - 24, h = remainingH }
+        local subRegions = container.solveDynamicSublayout(currentR, "right-sidebar")
+        
+        -- Draw widgets that are part of this sublayout
+        -- Note: solveDynamicSublayout results are keyed by widget ID
+        for id, reg in pairs(subRegions) do
+            local widget = widgets[id]
+            if widget then
+                widget:draw(id, reg.x, reg.y, reg.w, reg.h)
             end
         end
-        layout.endHorizontal(); layout.newLine(24)
 
-        -- Preselector Section
-        local psW = rR.w - 24
-        local psH = 220
-        local psX, psY = layout.reserveSpace(psW, psH)
-        preselectorWidget:draw("preselector-main", psX, psY, psW, psH)
-        layout.newLine(12)
-
-        cx, cy = layout.getCursor(); ui.label("isg-t", cx, cy, "Int. Signal Gen.", {"Title"}); layout.newLine(24)
-        
-        -- ISG Frequency Display
-        cx, cy = layout.getCursor()
-        ui.frequencyDisplay("isg-freq-disp", cx, cy, rR.w - 24, 36, state.isgFrequency, isgFreqEntryText, {"IsgControl"})
-        layout.newLine(44)
-
-        cx, cy = layout.getCursor(); ui.checkbox("isg-en", "Generator Enabled", cx, cy, state.isgEnabled, {"IsgToggle"}, "isgEnabled"); layout.newLine(28)
-        cx, cy = layout.getCursor()
-        local nbF = ui.slider("isg-fr", cx, cy, rR.w - 24, 0.1, 30.0, state.isgFrequency, {"IsgControl"}, "isgFrequency")
-        if nbF ~= state.isgFrequency then state.isgFrequency = nbF end
-        layout.newLine(32)
-
-        -- Audio Utilities
-        cx, cy = layout.getCursor(); ui.label("aud-t", cx, cy, "Audio Utilities", {"Title"}); layout.newLine(24)
-        cx, cy = layout.getCursor(); ui.checkbox("mut-en", "Master Mute", cx, cy, state.muteEnabled, {"MuteToggle"}, "muteEnabled"); layout.newLine(28)
-        cx, cy = layout.getCursor(); ui.checkbox("flt-en", "Demod Filters", cx, cy, state.demodFilterEnabled, {"FilterToggle"}, "demodFilterEnabled"); layout.newLine(28)
-        cx, cy = layout.getCursor(); ui.checkbox("tst-en", "440Hz Test Tone", cx, cy, state.testToneEnabled, {"TestToneToggle"}, "testToneEnabled"); layout.newLine(28)
-        
         layout.endRegion()
     end
 

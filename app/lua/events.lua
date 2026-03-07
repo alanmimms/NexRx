@@ -96,21 +96,17 @@ function Events.init()
 
     -- Verify setbox is available for event resolution
     if not setbox then
-        print("[Events] WARNING: setbox global not available - event handlers will not resolve!")
     else
         -- Verify required functions exist
         if not setbox.setActiveTags then
-            print("[Events] WARNING: setbox.setActiveTags not available")
         end
         if not setbox.getString then
-            print("[Events] WARNING: setbox.getString not available")
         end
         -- Count rules to verify config loaded
         local ruleCount = 0
         if setbox.getRules then
             ruleCount = #setbox.getRules()
         end
-        print(string.format("[Events] Event dispatch system initialized (setbox OK, %d rules)", ruleCount))
     end
 end
 
@@ -288,10 +284,6 @@ function Events.dispatch(event)
     local handled = false
     
     if event.type == Events.Type.MOUSE_WHEEL or event.type == Events.Type.KEY_DOWN then
-        local wName = targetWidget and targetWidget.id or "none"
-        local modStr = event.modifiers and table.concat(event.modifiers, ",") or "none"
-        print(string.format("[Events] Dispatching %s at (%s,%s) widget=%s mods={%s}", 
-            event.type, event.x or "?", event.y or "?", wName, modStr))
     end
 
     while true do
@@ -301,24 +293,15 @@ function Events.dispatch(event)
         -- Resolve handler and properties via SetBox
         local props = Events._resolveHandler(tags)
 
-        if Events.debugDispatch then
-            local tagStr = table.concat(tags, ",")
-            local hName = props and props.handler or "NONE"
-            print(string.format("  - bubble widget=%s tags={%s} -> handler=%s", 
-                currentWidget and currentWidget.id or "ROOT", tagStr, hName))
-        end
-
         if props and props.handler then
             local handler = Events.handlers[props.handler]
             if handler then
                 local ok, result = pcall(handler, event, currentWidget, props)
                 if ok and result == true then
                     handled = true
-                    if Events.debugDispatch then print("    [HANDLED]") end
                     break
                 end
                 if not ok then
-                    print(string.format("[Events] Handler '%s' error: %s", props.handler, result))
                 end
             end
         end
@@ -337,14 +320,9 @@ function Events.dispatch(event)
         local globalTags = Events._buildEventTags(event, nil)
         local props = Events._resolveHandler(globalTags)
         if props and props.handler and Events.handlers[props.handler] then
-            if Events.debugDispatch then
-                print(string.format("  - global fallback tags={%s} -> handler=%s", 
-                    table.concat(globalTags, ","), props.handler))
-            end
             local ok, result = pcall(Events.handlers[props.handler], event, nil, props)
             if ok and result == true then
                 handled = true
-                if Events.debugDispatch then print("    [HANDLED GLOBAL]") end
             end
         end
     end
@@ -488,7 +466,6 @@ local MODIFIER_TAGS = {
 function Events._querySetBoxProperties(tags)
     if not setbox then
         if Events.debugDispatch then
-            print("[Events DEBUG] setbox is nil!")
         end
         return nil
     end

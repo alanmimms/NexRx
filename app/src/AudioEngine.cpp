@@ -52,7 +52,6 @@ bool AudioEngine::init(uint32_t sampleRateIn, uint32_t channelsIn) {
   // Pre-allocate callback buffer
   callbackBuffer.resize(8192 * channels, 0.0f);
 
-  std::cout << "Audio initialized: " << sampleRate << " Hz, " << channels << " channels" << std::endl;
   return true;
 }
 

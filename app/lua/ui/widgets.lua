@@ -18,7 +18,6 @@
 
     -- Register handler
     events.registerHandler("my_button_click", function(event, widget)
-        print("Button clicked!")
         return true
     end)
 

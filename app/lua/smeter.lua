@@ -12,7 +12,6 @@
   Usage:
     local smeter = require("smeter")
     local reading = smeter.getReading()
-    print(reading.sUnits, reading.dBm, reading.text)
 ]]
 
 local SMeter = {}
@@ -102,6 +101,5 @@ function SMeter.getValues()
     return r.rms, r.dBm, r.sUnits, r.dBOverS9
 end
 
-print("[smeter.lua] S-meter calculations loaded")
 
 return SMeter
