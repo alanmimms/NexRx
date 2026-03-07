@@ -5,7 +5,7 @@
 ]]
 
 local setbox = require("setbox")
-local state = require("ui.state")
+local state = require("ui.State")
 
 local Checkbox = {}
 Checkbox.__index = Checkbox
@@ -71,10 +71,10 @@ function Checkbox:draw(id, x, y, checked, parentLWC)
     end
     
     -- Styling from rules
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = require("ui.widgets").hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = require("ui.widgets").hexToRgb(lwc:getString("border"))
-    local aR, aG, aB = require("ui.widgets").hexToRgb(lwc:getString("accent"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
+    local aR, aG, aB = require("ui.Widgets").hexToRgb(lwc:getString("accent"))
     local bWidth = lwc:getNumber("borderWidth")
     local alpha = lwc:getNumber("opacity")
     

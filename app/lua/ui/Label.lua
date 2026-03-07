@@ -43,7 +43,7 @@ function Label:draw(id, x, y, parentLWC)
     end
     
     -- All styling comes from rules
-    local fgR, fgG, fgB = require("ui.widgets").hexToRgb(lwc:getString("foreground"))
+    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
     local alpha = lwc:getNumber("opacity")
     
     drawText(x, y, text, fgR, fgG, fgB, alpha)

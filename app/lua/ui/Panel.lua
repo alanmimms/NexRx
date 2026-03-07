@@ -32,8 +32,8 @@ function Panel:draw(id, x, y, w, h, parentLWC)
     local lwc = setbox.newContext({"widget.Panel", "id." .. id}, parentLWC)
     
     -- Style resolution from rules
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = require("ui.widgets").hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")

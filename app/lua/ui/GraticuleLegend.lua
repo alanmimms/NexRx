@@ -57,8 +57,8 @@ function GraticuleLegend:draw(id, x, y, w, h, hText, vText, parentLWC)
     local lwc = setbox.newContext({"widget.GraticuleLegend", "id." .. id}, parentLWC)
     
     -- Properties from rules
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = require("ui.widgets").hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")

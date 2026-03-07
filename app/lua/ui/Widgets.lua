@@ -3,8 +3,8 @@
   Provides shared state and styling utilities for the modular widget system.
 ]]
 
-local state = require("ui.state")
-local layout = require("ui.layout")
+local state = require("ui.State")
+local layout = require("ui.Layout")
 
 local ui = {}
 
@@ -14,7 +14,7 @@ ui.Button = require("ui.Button")
 ui.Checkbox = require("ui.Checkbox")
 ui.Slider = require("ui.Slider")
 ui.Panel = require("ui.Panel")
-ui.SMeterWidget = require("ui.SMeterWidget")
+ui.SMeter = require("ui.SMeter")
 ui.ActiveTags = require("ui.ActiveTags")
 ui.GraticuleLegend = require("ui.GraticuleLegend")
 ui.FrequencyDisplay = require("ui.FrequencyDisplay")

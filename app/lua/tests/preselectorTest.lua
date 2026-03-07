@@ -31,13 +31,13 @@ _G.measureText = function() return 50 end
 _G.getLineHeight = function() return 16 end
 
 -- Mock modules
-package.loaded["ui.widgets"] = require("ui.widgets")
-package.loaded["ui.layout"] = require("ui.layout")
-package.loaded["ui.state"] = require("ui.state")
+package.loaded["ui.Widgets"] = require("ui.Widgets")
+package.loaded["ui.Layout"] = require("ui.Layout")
+package.loaded["ui.State"] = require("ui.State")
 
-local ui = require("ui.widgets")
-local layout = require("ui.layout")
-local state = require("ui.state")
+local ui = require("ui.Widgets")
+local layout = require("ui.Layout")
+local state = require("ui.State")
 
 -- Helper: setup test configuration
 local function setupTestConfig()

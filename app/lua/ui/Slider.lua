@@ -5,7 +5,7 @@
 ]]
 
 local setbox = require("setbox")
-local state = require("ui.state")
+local state = require("ui.State")
 
 local Slider = {}
 Slider.__index = Slider
@@ -58,9 +58,9 @@ function Slider:draw(id, x, y, w, minVal, maxVal, value, parentLWC)
     end
     
     -- Styling resolution
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
-    local aR, aG, aB = require("ui.widgets").hexToRgb(lwc:getString("accent"))
-    local bR, bG, bB = require("ui.widgets").hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local aR, aG, aB = require("ui.Widgets").hexToRgb(lwc:getString("accent"))
+    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local alpha = lwc:getNumber("opacity")
     

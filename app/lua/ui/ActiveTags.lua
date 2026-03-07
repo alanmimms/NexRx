@@ -46,7 +46,7 @@ function ActiveTags:draw(id, x, y, w, h, tags, parentLWC)
     local lwc = setbox.newContext({"widget.ActiveTagsViewer", "id." .. id}, parentLWC)
     
     -- Style resolution
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local pad = lwc:getNumber("padding")

@@ -4,8 +4,8 @@
   Fully rule-driven behavior and style.
 ]]
 
-local ui = require("ui.widgets")
-local layout = require("ui.layout")
+local ui = require("ui.Widgets")
+local layout = require("ui.Layout")
 local AppState = require("app_state")
 local setbox = require("setbox")
 

@@ -2,7 +2,7 @@
     Unit tests for ui.layout module
 ]]
 
-local layout = require("ui.layout")
+local layout = require("ui.Layout")
 
 local Tests = {}
 local passed = 0

@@ -42,9 +42,9 @@ function FrequencyDisplay:draw(id, x, y, w, h, frequency, freqEntryText, tags, p
     w = w or lwc:getNumber("width")
     h = h or lwc:getNumber("height")
     
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = require("ui.widgets").hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = require("ui.widgets").hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")

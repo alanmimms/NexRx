@@ -5,7 +5,7 @@
 ]]
 
 local setbox = require("setbox")
-local state = require("ui.state")
+local state = require("ui.State")
 
 local Button = {}
 Button.__index = Button
@@ -64,9 +64,9 @@ function Button:draw(id, x, y, w, h, extraTags, parentLWC)
     end
     
     -- Style resolution
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = require("ui.widgets").hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = require("ui.widgets").hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")

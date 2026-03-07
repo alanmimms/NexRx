@@ -7,8 +7,8 @@
 local setbox = require("setbox")
 local Label = require("ui.Label")
 
-local SMeterWidget = {}
-SMeterWidget.__index = SMeterWidget
+local SMeter = {}
+SMeter.__index = SMeter
 
 -- Default rules for S-Meter widget (very low priority)
 setbox.rule {
@@ -29,21 +29,21 @@ setbox.rule {
     }
 }
 
-function SMeterWidget.new()
-    local self = setmetatable({}, SMeterWidget)
+function SMeter.new()
+    local self = setmetatable({}, SMeter)
     self.titleLabel = Label.new()
     return self
 end
 
-function SMeterWidget:draw(id, x, y, w, h, reading, parentLWC)
+function SMeter:draw(id, x, y, w, h, reading, parentLWC)
     local lwc = setbox.newContext({"widget.SMeter", "id." .. id}, parentLWC)
     
     -- Properties from rules
-    local bgR, bgG, bgB = require("ui.widgets").hexToRgb(lwc:getString("background"))
-    local weakR, weakG, weakB = require("ui.widgets").hexToRgb(lwc:getString("colorWeak"))
-    local midR, midG, midB = require("ui.widgets").hexToRgb(lwc:getString("colorMid"))
-    local strongR, strongG, strongB = require("ui.widgets").hexToRgb(lwc:getString("colorStrong"))
-    local offR, offG, offB = require("ui.widgets").hexToRgb(lwc:getString("colorOff"))
+    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local weakR, weakG, weakB = require("ui.Widgets").hexToRgb(lwc:getString("colorWeak"))
+    local midR, midG, midB = require("ui.Widgets").hexToRgb(lwc:getString("colorMid"))
+    local strongR, strongG, strongB = require("ui.Widgets").hexToRgb(lwc:getString("colorStrong"))
+    local offR, offG, offB = require("ui.Widgets").hexToRgb(lwc:getString("colorOff"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local pad = lwc:getNumber("padding")
@@ -80,4 +80,5 @@ end
     drawText(startX + sW + 10, ty, reading.dBmText, 0.5, 0.5, 0.55, alpha)
 end
 
-return SMeterWidget
+return SMeter
+
