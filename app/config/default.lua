@@ -35,7 +35,8 @@ rule {
         -- DSP Defaults
         -- =================================================================
         squelch = 0.3,
-        agcEnabled = true,
+        agcEnabled = false,
+        agcMode = 0,
         nrEnabled = false,
         nbEnabled = false,
         lmsMu = 0.5,                    -- LMS adaptive filter learning rate
@@ -513,10 +514,10 @@ rule {
     tags = {"widget.SMeter"},
     apply = {
         background = "#1e293b",
-        color_weak = "#22c55e",   -- Green (S1-S5)
-        color_mid = "#eab308",    -- Yellow (S6-S9)
-        color_strong = "#ef4444", -- Red (S9+)
-        color_off = "#334155",    -- Dark blue-gray (inactive)
+        colorWeak = "#22c55e",   -- Green (S1-S5)
+        colorMid = "#eab308",    -- Yellow (S6-S9)
+        colorStrong = "#ef4444", -- Red (S9+)
+        colorOff = "#334155",    -- Dark blue-gray (inactive)
     }
 }
 

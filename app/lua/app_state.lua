@@ -104,7 +104,7 @@ local specs = {
     muteEnabled   = { defaultValue = false, setter = function(v) if rx and rx.setMute then rx.setMute(v) end end },
     demodFilterEnabled = { defaultValue = true, setter = function(v) if rx and rx.setDemodFilterEnabled then rx.setDemodFilterEnabled(v) end end },
     rfGainDb       = { defaultValue = 20, min = -20, max = 60, setter = function(v) if hw and hw.setRfGain then hw.setRfGain(v) end end },
-    agcMode        = { defaultValue = 1, min = 0, max = 3, setter = function(v) if hw and hw.setAGCMode then hw.setAGCMode(v) end end },
+    agcMode        = { defaultValue = 0, min = 0, max = 3, setter = function(v) if hw and hw.setAGCMode then hw.setAGCMode(v) end end },
     isgFrequency   = { defaultValue = 14.205, min = 0.1, max = 30.0, setter = function(v) if hw and hw.setIsgFreq then hw.setIsgFreq(v * 1e6) end end },
     isgEnabled     = { defaultValue = false, setter = function(v) if hw and hw.setIsgEnable then hw.setIsgEnable(v) end end },
     qsdOffsetK     = { defaultValue = 12.0, min = -50.0, max = 50.0, setter = function(v) if hw and hw.setQsdOffset then hw.setQsdOffset(v) end end },

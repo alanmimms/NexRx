@@ -405,21 +405,30 @@ function draw()
         layout.setRegion(rR.x, rR.y, rR.w, rR.h, "right-sidebar")
         ui.panel("right-sidebar", rR.x, rR.y, rR.w, rR.h, {"Sidebar"})
         layout.pad(12)
+        
+        -- The toggle and s-meter are currently hardcoded but should probably be widgets too.
+        -- For now, let's keep them and ensure we calculate the dynamic sublayout region correctly.
         local cx, cy = layout.getCursor()
         ui.toggle("rx-toggle", state.rxActive and "RX ON" or "RX OFF", cx, cy, rR.w - 24, 40, state.rxActive, {"RxToggle"})
         layout.newLine(52)
-        cx, cy = layout.getCursor(); ui.label("sm-l", cx, cy, "S-Meter", {"Title"}); layout.newLine(24)
-        cx, cy = layout.getCursor(); ui.smeter("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading()); layout.newLine(48)
         
-        -- Solve dynamic sublayout for the rest of the sidebar
+        cx, cy = layout.getCursor(); 
+        ui.label("sm-l", cx, cy, "S-Meter", {"Title"}); 
+        layout.newLine(24)
+        
+        cx, cy = layout.getCursor(); 
+        ui.smeter("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading()); 
+        layout.newLine(48)
+        
+        -- Now solve for the modular widgets in the remaining space
         cx, cy = layout.getCursor()
-        -- IMPORTANT: Calculate remaining height from cursor to BOTTOM of region
         local remainingH = (rR.y + rR.h) - cy - 12
+        if remainingH < 100 then remainingH = 600 end -- Fallback if layout overflowed
+        
         local currentR = { x = rR.x + 12, y = cy, w = rR.w - 24, h = remainingH }
         local subRegions = container.solveDynamicSublayout(currentR, "right-sidebar")
         
         -- Draw widgets that are part of this sublayout
-        -- Note: solveDynamicSublayout results are keyed by widget ID
         for id, reg in pairs(subRegions) do
             local widget = widgets[id]
             if widget then
