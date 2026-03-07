@@ -24,7 +24,7 @@ setbox.rule {
         opacity = 1.0,
         padding = 12,
         topMargin = 32,
-        buttonHeight = 20,
+        buttonHeight = 18,
         buttonGap = 4,
         labelOff = "Off",
         labelSlow = "Slow",

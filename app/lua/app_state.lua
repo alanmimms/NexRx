@@ -141,7 +141,7 @@ local specs = {
     
     wfMinDb        = { defaultValue = -120, min = -140, max = -60 },
     wfMaxDb        = { defaultValue = -40, min = -80, max = 0 },
-    wfColormap     = { defaultValue = "Viridis" },
+    wfColormap     = { defaultValue = "viridis" },
     wfBins         = { defaultValue = 512 },
     wfRows         = { defaultValue = 256 },
 }
