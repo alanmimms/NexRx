@@ -23,6 +23,9 @@ rule {
         -- =================================================================
         -- Radio Defaults
         -- =================================================================
+        frequency = 14.200e6,           -- Hz (Current operating freq)
+        selectedMode = "USB",           -- Current mode
+        selectedBand = "20m",           -- Current band
         defaultFrequency = 14.200e6,    -- Hz (20m band)
         defaultMode = "USB",
         defaultBand = "20m",
@@ -41,6 +44,13 @@ rule {
         nbEnabled = false,
         lmsMu = 0.5,                    -- LMS adaptive filter learning rate
         bfoOffset = 700,                -- Hz (CW sidetone)
+        volumeDb = -20,                 -- dB
+        muteEnabled = false,
+        testToneEnabled = false,
+        demodFilterEnabled = true,
+        
+        -- Animation
+        animated = false,
         
         -- Filter Defaults
         bandpassEnabled = false,
@@ -87,6 +97,18 @@ rule {
 
         -- Fallback font (bundled with app)
         fontPaths = { "fonts/DejaVuSans.ttf" },
+
+        -- =================================================================
+        -- Layout Defaults (Core System)
+        -- =================================================================
+        anchorLeft = 0, anchorRight = 0, anchorTop = 0, anchorBottom = 0,
+        anchor = "top", group = "",
+        width = 0, height = 0, 
+        minWidth = 0, minHeight = 0, maxWidth = 9999, maxHeight = 9999,
+        marginInner = 0, marginOuter = 0,
+        springX = 0, springY = 0,
+        order = 0,
+        parent = "",
 
         -- =================================================================
         -- Connection Defaults (hw abstraction layer)
@@ -748,6 +770,43 @@ rule {
         width = 100,
         height = 45,
         padding = 6,
+    }
+}
+
+-- Sidebar Content Labels
+rule { tags = {"id.mode-label"}, apply = { text = "Mode" } }
+rule { tags = {"id.band-label"}, apply = { text = "Band" } }
+rule { tags = {"id.vol-label"},  apply = { text = "Volume" } }
+rule { tags = {"id.rfg-label"},  apply = { text = "RF Gain" } }
+rule { tags = {"id.sm-label"},   apply = { text = "S-Meter" } }
+
+-- Mode Button Labels
+rule { tags = {"id.mode-usb"},    apply = { label = "USB" } }
+rule { tags = {"id.mode-lsb"},    apply = { label = "LSB" } }
+rule { tags = {"id.mode-cw"},     apply = { label = "CW" } }
+rule { tags = {"id.mode-am"},     apply = { label = "AM" } }
+rule { tags = {"id.mode-bypass"}, apply = { label = "RAW" } }
+
+-- Band Button Labels
+rule { tags = {"id.band-160m"}, apply = { label = "160m" } }
+rule { tags = {"id.band-80m"},  apply = { label = "80m" } }
+rule { tags = {"id.band-40m"},  apply = { label = "40m" } }
+rule { tags = {"id.band-20m"},  apply = { label = "20m" } }
+rule { tags = {"id.band-15m"},  apply = { label = "15m" } }
+rule { tags = {"id.band-10m"},  apply = { label = "10m" } }
+
+-- RX Toggle
+rule { tags = {"id.rx-toggle"}, apply = { label = "RX OFF" } }
+rule { tags = {"id.rx-toggle", "state.Active"}, apply = { label = "RX ON" } }
+
+-- Active Tags Debug Panel
+rule {
+    id = "id-active-tags",
+    tags = {"id.active-tags"},
+    apply = {
+        parent = "active-tags",
+        order = 10,
+        title = "ACTIVE TAGS",
     }
 }
 

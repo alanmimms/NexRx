@@ -1,20 +1,22 @@
 --[[
   AGC Widget Module
   Modular UI component for Automatic Gain Control.
+  Style and layout driven entirely by SetBox rules.
 ]]
 
 local ui = require("ui.widgets")
 local layout = require("ui.layout")
 local AppState = require("app_state")
+local setbox = require("setbox")
 
 local AGC = {}
 AGC.__index = AGC
 
--- Default rules for the AGC widget
+-- Default rules for the AGC widget (very low priority)
 setbox.rule {
     id = "agc-defaults",
     tags = {"widget.AGCFrame"},
-    priority = -50,
+    priority = -1000,
     apply = {
         title = "AGC",
         background = "#242d42",
@@ -36,12 +38,22 @@ setbox.rule {
 function AGC.new(state)
     local self = setmetatable({}, AGC)
     self.state = state
+    
+    -- Initialize widget instances
+    self.titleLabel = ui.Label.new()
+    self.modeButtons = {
+        off  = ui.Button.new({ onClick = function() AppState.set("agcMode", 0) end }),
+        slow = ui.Button.new({ onClick = function() AppState.set("agcMode", 3) end }),
+        med  = ui.Button.new({ onClick = function() AppState.set("agcMode", 2) end }),
+        fast = ui.Button.new({ onClick = function() AppState.set("agcMode", 1) end })
+    }
     return self
 end
 
 function AGC:draw(id, x, y, w, h)
     local lwc = setbox.newContext({"widget.Panel", "widget.AGCFrame", "id." .. id})
     
+    -- Background and border
     local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
     local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
     local radius = lwc:getNumber("borderRadius")
@@ -49,9 +61,12 @@ function AGC:draw(id, x, y, w, h)
     local bWidth = lwc:getNumber("borderWidth")
     
     drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
-    drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
+    if bWidth > 0 then
+        drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
+    end
     
-    ui.label(id .. "-title", x + 12, y + 8, lwc:getString("title"), {"Title"}, lwc)
+    -- Title
+    self.titleLabel:draw(id .. "-title", x + 12, y + 8, lwc)
     
     local padding = lwc:getNumber("padding")
     local topMargin = lwc:getNumber("topMargin")
@@ -62,12 +77,11 @@ function AGC:draw(id, x, y, w, h)
     local bH = lwc:getNumber("buttonHeight")
     local bG = lwc:getNumber("buttonGap")
     
-    -- Compact AGC Mode Buttons (Off, Slow, Med, Fast)
     local modes = {
-        { label = lwc:getString("labelOff"),  val = 0 },
-        { label = lwc:getString("labelSlow"), val = 3 },
-        { label = lwc:getString("labelMed"),  val = 2 },
-        { label = lwc:getString("labelFast"), val = 1 }
+        { id = "off",  label = lwc:getString("labelOff"),  val = 0 },
+        { id = "slow", label = lwc:getString("labelSlow"), val = 3 },
+        { id = "med",  label = lwc:getString("labelMed"),  val = 2 },
+        { id = "fast", label = lwc:getString("labelFast"), val = 1 }
     }
     
     local buttonW = (regionW - (bG * (#modes - 1))) / #modes
@@ -75,15 +89,15 @@ function AGC:draw(id, x, y, w, h)
     layout.beginHorizontal(0)
     for i, m in ipairs(modes) do
         local bx, by = layout.reserveSpace(buttonW, bH)
-        local buttonTags = {"AgcMode"}
+        local btn = self.modeButtons[m.id]
         
-        if state.agcMode == m.val then 
-            table.insert(buttonTags, "state.Active") 
-        end
+        -- Use a closure to get label from rules dynamically
+        btn.getText = function() return m.label end
         
-        if ui.button(id .. "-mode-" .. m.label:lower(), m.label, bx, by, buttonW, bH, buttonTags, lwc) then
-            AppState.set("agcMode", m.val)
-        end
+        -- Add active state tag if matches current mode
+        local activeTags = (state.agcMode == m.val) and {"state.Active"} or {}
+        
+        btn:draw(id .. "-mode-" .. m.id, bx, by, buttonW, bH, activeTags, lwc)
         
         if i < #modes then layout.space(bG) end
     end

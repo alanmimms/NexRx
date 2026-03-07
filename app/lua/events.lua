@@ -476,24 +476,26 @@ function Events._querySetBoxProperties(tags)
     end
 
     -- Query all relevant properties for generic handlers
-    local props = {
-        handler = setbox.getString and setbox.getString("handler", nil) or setbox.get("handler"),
-        property = setbox.getString and setbox.getString("property", nil),
-        value = setbox.get and setbox.get("value"),
-        -- Linear step properties
-        step = setbox.getNumber and setbox.getNumber("step", nil),
-        step_ctrl = setbox.getNumber and setbox.getNumber("step_ctrl", nil),
-        step_shift = setbox.getNumber and setbox.getNumber("step_shift", nil),
-        step_ctrl_shift = setbox.getNumber and setbox.getNumber("step_ctrl_shift", nil),
-        -- Logarithmic factor properties
-        factor = setbox.getNumber and setbox.getNumber("factor", nil),
-        factor_ctrl = setbox.getNumber and setbox.getNumber("factor_ctrl", nil),
-        factor_shift = setbox.getNumber and setbox.getNumber("factor_shift", nil),
-        factor_ctrl_shift = setbox.getNumber and setbox.getNumber("factor_ctrl_shift", nil),
-        -- Range limits
-        min = setbox.getNumber and setbox.getNumber("min", nil),
-        max = setbox.getNumber and setbox.getNumber("max", nil),
-    }
+    local props = {}
+    if setbox.has("handler") then props.handler = setbox.getString("handler") end
+    if setbox.has("property") then props.property = setbox.getString("property") end
+    if setbox.has("value") then props.value = setbox.get("value") end
+    
+    -- Linear step properties
+    if setbox.has("step") then props.step = setbox.getNumber("step") end
+    if setbox.has("step_ctrl") then props.step_ctrl = setbox.getNumber("step_ctrl") end
+    if setbox.has("step_shift") then props.step_shift = setbox.getNumber("step_shift") end
+    if setbox.has("step_ctrl_shift") then props.step_ctrl_shift = setbox.getNumber("step_ctrl_shift") end
+    
+    -- Logarithmic factor properties
+    if setbox.has("factor") then props.factor = setbox.getNumber("factor") end
+    if setbox.has("factor_ctrl") then props.factor_ctrl = setbox.getNumber("factor_ctrl") end
+    if setbox.has("factor_shift") then props.factor_shift = setbox.getNumber("factor_shift") end
+    if setbox.has("factor_ctrl_shift") then props.factor_ctrl_shift = setbox.getNumber("factor_ctrl_shift") end
+    
+    -- Range limits
+    if setbox.has("min") then props.min = setbox.getNumber("min") end
+    if setbox.has("max") then props.max = setbox.getNumber("max") end
 
 
     if setbox.setActiveTags then

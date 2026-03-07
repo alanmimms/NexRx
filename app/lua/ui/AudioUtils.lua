@@ -1,19 +1,22 @@
 --[[
   Audio Utilities Widget Module
+  Modular UI component for audio settings.
+  Style and layout driven entirely by SetBox rules.
 ]]
 
 local ui = require("ui.widgets")
 local layout = require("ui.layout")
 local AppState = require("app_state")
+local setbox = require("setbox")
 
 local AudioUtils = {}
 AudioUtils.__index = AudioUtils
 
--- Define default rules for the Audio Utils widget
+-- Define default rules for the Audio Utils widget (very low priority)
 setbox.rule {
     id = "audio-utils-defaults",
     tags = {"widget.AudioUtilsFrame"},
-    priority = -50,
+    priority = -1000,
     apply = {
         title = "AUDIO UTILS",
         background = "#242d42",
@@ -32,6 +35,19 @@ setbox.rule {
 function AudioUtils.new(state)
     local self = setmetatable({}, AudioUtils)
     self.state = state
+    
+    -- Initialize widget instances
+    self.titleLabel = ui.Label.new()
+    self.muteCheckbox = ui.Checkbox.new({
+        onToggle = function(val) AppState.set("muteEnabled", val) end
+    })
+    self.filterCheckbox = ui.Checkbox.new({
+        onToggle = function(val) AppState.set("demodFilterEnabled", val) end
+    })
+    self.toneCheckbox = ui.Checkbox.new({
+        onToggle = function(val) AppState.set("testToneEnabled", val) end
+    })
+    
     return self
 end
 
@@ -45,9 +61,12 @@ function AudioUtils:draw(id, x, y, w, h)
     local bWidth = lwc:getNumber("borderWidth")
     
     drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
-    drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
+    if bWidth > 0 then
+        drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
+    end
     
-    ui.label(id .. "-title", x + 12, y + 8, lwc:getString("title"), {"Title"}, lwc)
+    -- Title
+    self.titleLabel:draw(id .. "-title", x + 12, y + 8, lwc)
     
     local padding = lwc:getNumber("padding")
     local topMargin = lwc:getNumber("topMargin")
@@ -56,21 +75,18 @@ function AudioUtils:draw(id, x, y, w, h)
     local state = self.state
     
     local cx, cy = layout.getCursor()
-    if ui.checkbox(id .. "-mute", lwc:getString("labelMute"), cx, cy, state.muteEnabled, {"MuteToggle"}, "muteEnabled", lwc) then
-        AppState.set("muteEnabled", not state.muteEnabled)
-    end
+    self.muteCheckbox.getText = function() return lwc:getString("labelMute") end
+    self.muteCheckbox:draw(id .. "-mute", cx, cy, state.muteEnabled, lwc)
     layout.newLine(28)
     
     cx, cy = layout.getCursor()
-    if ui.checkbox(id .. "-filters", lwc:getString("labelFilters"), cx, cy, state.demodFilterEnabled, {"FilterToggle"}, "demodFilterEnabled", lwc) then
-        AppState.set("demodFilterEnabled", not state.demodFilterEnabled)
-    end
+    self.filterCheckbox.getText = function() return lwc:getString("labelFilters") end
+    self.filterCheckbox:draw(id .. "-filters", cx, cy, state.demodFilterEnabled, lwc)
     layout.newLine(28)
     
     cx, cy = layout.getCursor()
-    if ui.checkbox(id .. "-tone", lwc:getString("labelTone"), cx, cy, state.testToneEnabled, {"TestToneToggle"}, "testToneEnabled", lwc) then
-        AppState.set("testToneEnabled", not state.testToneEnabled)
-    end
+    self.toneCheckbox.getText = function() return lwc:getString("labelTone") end
+    self.toneCheckbox:draw(id .. "-tone", cx, cy, state.testToneEnabled, lwc)
     layout.newLine(28)
     
     layout.endRegion()

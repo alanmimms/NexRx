@@ -26,7 +26,7 @@ local Edit = {}
 -- Dependencies
 local events = nil
 local layoutOverrides = require("layout_overrides")
-local constraints = require("ui.constraints")
+local constraints = require("ui.Constraints")
 
 -- Drag state (only while actively dragging)
 local dragState = nil

@@ -8,7 +8,7 @@ package.path = basePath .. "?.lua;" .. basePath .. "?/init.lua;" .. package.path
 local ui = require("ui.widgets")
 local uiState = require("ui.state")
 local layout = require("ui.layout")
-local container = require("ui.container")
+local container = require("ui.Container")
 _G.bands = require("bands")
 local bands = _G.bands
 local dispatch = require("dispatch")
@@ -20,10 +20,21 @@ local smeter = require("smeter")
 local AppState = require("app_state")
 local Edit = require("edit")
 local layoutOverrides = require("layout_overrides")
-local Preselector = require("ui.preselector")
-local ISG = require("ui.isg")
-local AGC = require("ui.agc")
-local AudioUtils = require("ui.audioutils")
+
+-- Modular Widget Classes
+local Preselector = require("ui.Preselector")
+local ISG = require("ui.ISG")
+local AGC = require("ui.AGC")
+local AudioUtils = require("ui.AudioUtils")
+local Label = require("ui.Label")
+local Button = require("ui.Button")
+local Checkbox = require("ui.Checkbox")
+local Slider = require("ui.Slider")
+local Panel = require("ui.Panel")
+local SMeterWidget = require("ui.SMeterWidget")
+local ActiveTags = require("ui.ActiveTags")
+local GraticuleLegend = require("ui.GraticuleLegend")
+local FrequencyDisplay = require("ui.FrequencyDisplay")
 
 local frameCount = 0
 local fps = 0
@@ -32,56 +43,53 @@ local fpsFrames = 0
 local lastMouseX, lastMouseY = 0, 0
 local BUTTON_NAMES = {"LEFT", "MIDDLE", "RIGHT"}
 _G.isgFreqEntryText = ""
+local keyStates = {}
+local activeTags = {}
 
 local state = setmetatable({}, {
     __index = function(_, k) return AppState.get(k) end,
     __newindex = function(_, k, v) AppState.set(k, v) end
 })
 
-local preselectorWidget = Preselector.new(state)
-local isgWidget = ISG.new(state)
-local agcWidget = AGC.new(state)
-local audioWidget = AudioUtils.new(state)
-
+-- Sidebar modular widgets
 local widgets = {
-    presel = preselectorWidget,
-    isg = isgWidget,
-    agc = agcWidget,
-    audio = audioWidget
+    presel = Preselector.new(state),
+    isg = ISG.new(state),
+    agc = AGC.new(state),
+    audio = AudioUtils.new(state)
 }
+
+-- Persistent widget instances for main UI
+local uiInstances = {}
 
 local function setProperty(name, v)
     local prevTags = setbox.getActiveTags()
     setbox.addTag("prop." .. name)
-    local isAnimated = setbox.getBool("animated", false)
+    local isAnimated = setbox.getBool("animated")
     setbox.setActiveTags(prevTags)
-    -- print(string.format("[Main] setProperty(%s, %s) animated=%s", name, tostring(v), tostring(isAnimated)))
     if isAnimated then AppState.animateTo(name, v) else AppState.set(name, v) end
 end
 
-local wfBins = 512
-local wfRows = 256
-local spectrumData = {}
-local keyStates = {}
-local activeTags = {}
-
 local function getAllActiveTags()
     local allTags = {}
-    for tagName, _ in pairs(activeTags) do allTags[tagName] = true end
+    local globalTags = setbox.getActiveTags() -- Use setbox internal tags
+    for _, tagName in ipairs(globalTags) do allTags[tagName] = true end
+
     if activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"] then allTags["input.SHIFT"] = true end
-    if activeTags["input.LCTRL"] or activeTags["input.RCTRL"] then allTags["input.CTRL"] = true end
-    if activeTags["input.LALT"] or activeTags["input.RALT"] then allTags["input.ALT"] = true end
+    if allTags["input.LCTRL"] or allTags["input.RCTRL"] then allTags["input.CTRL"] = true end
+    if allTags["input.LALT"] or allTags["input.RALT"] then allTags["input.ALT"] = true end
+    
     if events and events.getModeTags then for _, t in ipairs(events.getModeTags()) do allTags[t] = true end end
+    
     local mx, my = getMousePos()
     local hovered = events.getWidgetAt(mx, my)
-    if hovered then
-        allTags["state.Hovered"] = true
-        if hovered.id then allTags["state.Hovered:" .. hovered.id] = true end
+    if hovered and hovered.id then
+        allTags["state.Hovered:" .. hovered.id] = true
         if hovered.tags then for _, t in ipairs(hovered.tags) do allTags[t] = true end end
     end
-    if activeTags["input.MouseLEFT"] and hovered then
-        allTags["state.Pressed"] = true
-        if hovered.id then allTags["state.Pressed:" .. hovered.id] = true end
+    
+    if allTags["input.MouseLEFT"] and hovered and hovered.id then
+        allTags["state.Pressed:" .. hovered.id] = true
     end
     
     local list = {}
@@ -106,8 +114,13 @@ for _, file in ipairs(configFiles) do setbox.loadFile(file) end
 local hwConnected = false
 local freqEntryText = ""
 local freqEntryBlink = 0
+local wfBins = 512
+local wfRows = 256
+local spectrumData = {}
 
 function init()
+    AppState.init()
+    
     wfBins = math.floor(state.wfBins or 512)
     wfRows = math.floor(state.wfRows or 256)
     for i = 1, wfBins do spectrumData[i] = -100 end
@@ -116,7 +129,9 @@ function init()
     if audio.isInitialized() then audio.start() end
     if waterfall.init(wfBins, wfRows) then
         waterfall.setRange(state.wfMinDb, state.wfMaxDb)
-        if colormaps and colormaps[state.wfColormap] then waterfall.setColormapData(colormaps[state.wfColormap]) end
+        if _G.colormaps and _G.colormaps[state.wfColormap] then 
+            waterfall.setColormapData(_G.colormaps[state.wfColormap]) 
+        end
         dispatch.enableWaterfall()
     end
     bands.init()
@@ -128,11 +143,38 @@ function init()
     if hw.connect("127.0.0.1", 5000, 5001) then
         hwConnected = true
         dispatch.enableHardware()
-        -- Initialize AppState AFTER connection so setters can send commands
-        AppState.init()
-    else
-        AppState.init()
     end
+
+    -- Create UI Instances
+    uiInstances.leftPanel = Panel.new()
+    uiInstances.rightPanel = Panel.new()
+    uiInstances.centerPanel = Panel.new()
+    uiInstances.freqDisplay = FrequencyDisplay.new()
+    uiInstances.freqSlider = Slider.new({ onAdjust = function(v) AppState.set("frequency", v) end })
+    uiInstances.volumeSlider = Slider.new({ onAdjust = function(v) AppState.set("volumeDb", v) end })
+    uiInstances.rfGainSlider = Slider.new({ onAdjust = function(v) AppState.set("rfGainDb", v) end })
+    uiInstances.smeter = SMeterWidget.new()
+    uiInstances.activeTagsViewer = ActiveTags.new()
+    uiInstances.graticuleLegend = GraticuleLegend.new()
+    uiInstances.rxToggle = Button.new({ onClick = function() AppState.set("rxActive", not state.rxActive) end })
+    
+    uiInstances.modeLabels = Label.new()
+    uiInstances.bandLabels = Label.new()
+    uiInstances.volLabel = Label.new()
+    uiInstances.rfGainLabel = Label.new()
+    uiInstances.smeterLabel = Label.new()
+
+    uiInstances.modeButtons = {}
+    for _, m in ipairs(modeHelper.names) do
+        uiInstances.modeButtons[m] = Button.new({ onClick = function() AppState.set("selectedMode", m) end })
+    end
+
+    uiInstances.bandButtons = {}
+    local bandList = {"160m","80m","40m","20m","15m","10m"}
+    for _, b in ipairs(bandList) do
+        uiInstances.bandButtons[b] = Button.new({ onClick = function() AppState.set("selectedBand", b) end })
+    end
+
     events.registerHandler("vfo_control", function(e, w, p)
         local delta = e.delta or (e.key == "RIGHT" and 1 or (e.key == "LEFT" and -1 or 0))
         local prop = p.property or "frequency"
@@ -158,7 +200,6 @@ function init()
         local step = p.step or (w and w.data and (w.data.max - w.data.min) * 0.01) or 0.01
         if e.delta then 
             local newVal = val + e.delta * step
-            -- print(string.format("[Main] slider_adjust: %s -> %s", prop, tostring(newVal)))
             setProperty(prop, newVal); return true 
         end
         return false
@@ -168,15 +209,11 @@ function init()
         return false
     end)
 
-    -- =======================================================================
     -- Frequency Entry Handlers
-    -- =======================================================================
-    
     events.registerHandler("freq_entry_start", function(event, widget)
         if widget and widget.tags and table.concat(widget.tags, ","):find("IsgControl") then
             isgFreqEntryText = ""
-            events.addModeTag("IsgFreqEntryMode")
-            events.addModeTag("FreqEntryMode") -- Both for global rules
+            events.addModeTag("IsgFreqEntryMode"); events.addModeTag("FreqEntryMode")
         else
             freqEntryText = ""
             events.addModeTag("FreqEntryMode")
@@ -185,11 +222,8 @@ function init()
     end)
 
     events.registerHandler("freq_entry_cancel", function(event, widget)
-        events.removeModeTag("FreqEntryMode")
-        events.removeModeTag("IsgFreqEntryMode")
-        freqEntryText = ""
-        isgFreqEntryText = ""
-        return true
+        events.removeModeTag("FreqEntryMode"); events.removeModeTag("IsgFreqEntryMode")
+        freqEntryText = ""; isgFreqEntryText = ""; return true
     end)
 
     events.registerHandler("freq_entry_backspace", function(event, widget)
@@ -207,13 +241,9 @@ function init()
             local ch = text:sub(i, i)
             if ch:match("[0-9]") or (ch == ".") then
                 if events.hasModeTag("IsgFreqEntryMode") then
-                    if ch ~= "." or not isgFreqEntryText:find("%.") then
-                        isgFreqEntryText = isgFreqEntryText .. ch
-                    end
+                    if ch ~= "." or not isgFreqEntryText:find("%.") then isgFreqEntryText = isgFreqEntryText .. ch end
                 elseif events.hasModeTag("FreqEntryMode") then
-                    if ch ~= "." or not freqEntryText:find("%.") then
-                        freqEntryText = freqEntryText .. ch
-                    end
+                    if ch ~= "." or not freqEntryText:find("%.") then freqEntryText = freqEntryText .. ch end
                 end
             end
         end
@@ -223,21 +253,16 @@ function init()
     events.registerHandler("freq_entry_confirm", function(event, widget)
         if events.hasModeTag("IsgFreqEntryMode") then
             local newFreq = tonumber(isgFreqEntryText)
-            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
-                setProperty("isgFrequency", newFreq)
-            end
-            events.removeModeTag("IsgFreqEntryMode")
-            events.removeModeTag("FreqEntryMode")
-            isgFreqEntryText = ""
+            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then setProperty("isgFrequency", newFreq * 1e6) end
+            events.removeModeTag("IsgFreqEntryMode"); events.removeModeTag("FreqEntryMode"); isgFreqEntryText = ""
         elseif events.hasModeTag("FreqEntryMode") then
             local newFreq = tonumber(freqEntryText)
             if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
-                setProperty("frequency", newFreq)
-                if state.activeVFO == "A" then AppState.set("vfoA", newFreq) else AppState.set("vfoB", newFreq) end
+                setProperty("frequency", newFreq * 1e6)
+                if state.activeVFO == "A" then AppState.set("vfoA", newFreq * 1e6) else AppState.set("vfoB", newFreq * 1e6) end
                 bands.setFrequency(newFreq * 1e6)
             end
-            events.removeModeTag("FreqEntryMode")
-            freqEntryText = ""
+            events.removeModeTag("FreqEntryMode"); freqEntryText = ""
         end
         return true
     end)
@@ -250,23 +275,31 @@ function update(dt)
     frameCount = frameCount + 1
     fpsAccum = fpsAccum + dt; fpsFrames = fpsFrames + 1
     if fpsAccum >= 1.0 then 
-        fps = fpsFrames / fpsAccum; 
-        fpsAccum = 0; 
-        fpsFrames = 0 
-        if diag and diag.logLevels then diag.logLevels() end
+        fps = fpsFrames / fpsAccum; fpsAccum = 0; fpsFrames = 0 
     end
     animate.update(dt)
     freqEntryBlink = (freqEntryBlink + dt) % 1.0
-    for _, sc in ipairs(keys.getAllScancodes()) do local n = keys.getName(sc); if n then activeTags["input."..n] = isKeyDown(sc) or nil end end
+    
+    local scancodes = keys.getAllScancodes()
+    for _, sc in ipairs(scancodes) do
+        local n = keys.getName(sc)
+        if n then
+            activeTags["input."..n] = isKeyDown(sc) or nil
+        end
+    end
+    
     activeTags["input.SHIFT"] = isShiftDown() or nil
     activeTags["input.CTRL"] = isCtrlDown() or nil
     activeTags["input.ALT"] = isAltDown() or nil
     activeTags["input.MouseLEFT"] = isMouseDown(0) or nil
     activeTags["input.MouseMIDDLE"] = isMouseDown(1) or nil
     activeTags["input.MouseRIGHT"] = isMouseDown(2) or nil
+
     local mx, my = getMousePos()
     local tags = getAllActiveTags()
     uiState.beginFrame()
+    setbox.setActiveTags(tags)
+    
     local wheel = getMouseWheel()
     if wheel ~= 0 then events.dispatch(events.createEvent(events.Type.MOUSE_WHEEL, {x=mx,y=my,delta=wheel,modifiers=tags})) end
     for b = 0, 2 do
@@ -277,18 +310,10 @@ function update(dt)
         events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, {x=mx,y=my,dx=mx-lastMouseX,dy=my-lastMouseY,modifiers=tags}))
         lastMouseX, lastMouseY = mx, my
     end
+    
     if hwConnected then
         local hwSpec = hw.getSpectrum()
-        if hwSpec and #hwSpec > 0 then 
-            if #hwSpec ~= wfBins then
-                wfBins = #hwSpec
-                waterfall.init(wfBins, wfRows)
-                waterfall.setRange(state.wfMinDb, state.wfMaxDb)
-                if colormaps and colormaps[state.wfColormap] then waterfall.setColormapData(colormaps[state.wfColormap]) end
-            end
-            spectrumData = hwSpec 
-            dispatch.updateWaterfall(spectrumData)
-        end
+        if hwSpec and #hwSpec > 0 then spectrumData = hwSpec; dispatch.updateWaterfall(spectrumData) end
     else
         dispatch.updateWaterfall(spectrumData)
     end
@@ -297,9 +322,11 @@ end
 function draw()
     local winW, winH = getWindowSize()
     local mx, my = getMousePos()
+    local tags = getAllActiveTags()
     events.clearWidgets()
     ui.beginFrame()
-    setbox.setActiveTags(getAllActiveTags())
+    setbox.setActiveTags(tags)
+    
     layout.begin(0, 0, winW, winH)
     local regions = container.solve(winW, winH)
     if not regions then return end
@@ -310,8 +337,8 @@ function draw()
         layout.setRegion(rT.x, rT.y, rT.w, rT.h, "top-bar")
         events.registerWidget("top-bar", rT, {"widget.StatusBar"})
         drawRect(rT.x, rT.y, rT.w, rT.h, 0.08, 0.08, 0.12, 1.0)
-        local frameCount = hwConnected and hw.getFramesReceived and hw.getFramesReceived() or 0
-        drawText(rT.x + 10, rT.y + 8, string.format("NexRx | %.0f FPS | Frames: %d", fps, frameCount), 0.6, 0.7, 0.9, 1.0)
+        local fC = hwConnected and hw.getFramesReceived and hw.getFramesReceived() or 0
+        drawText(rT.x + 10, rT.y + 8, string.format("NexRx | %.0f FPS | Frames: %d", fps, fC), 0.6, 0.7, 0.9, 1.0)
         layout.endRegion()
     end
 
@@ -320,36 +347,33 @@ function draw()
     if rL then
         local lwc = setbox.newContext({"widget.Sidebar", "widget.LeftSidebar", "id.left-sidebar"})
         layout.setRegion(rL.x, rL.y, rL.w, rL.h, "left-sidebar")
-        ui.panel("left-sidebar", rL.x, rL.y, rL.w, rL.h, {"Sidebar"}, lwc)
+        uiInstances.leftPanel:draw("left-sidebar", rL.x, rL.y, rL.w, rL.h, lwc)
         layout.pad(12)
         local cx, cy = layout.getCursor()
-        ui.frequencyDisplay("freq-disp", cx, cy, rL.w - 24, 36, state.frequency, freqEntryText, nil, lwc)
+        uiInstances.freqDisplay:draw("freq-disp", cx, cy, rL.w - 24, 36, state.frequency, freqEntryText, {"VFOControl"}, lwc)
         layout.newLine(44)
         
         cx, cy = layout.getCursor()
-        local nF = ui.slider("freq-slider", cx, cy, rL.w - 24, 0.1e6, 30.0e6, state.frequency, {"VFOControl"}, "frequency", lwc)
-        if nF ~= state.frequency then AppState.set("frequency", nF) end
+        uiInstances.freqSlider:draw("freq-slider", cx, cy, rL.w - 24, 0.1e6, 30.0e6, state.frequency, lwc)
         layout.newLine(32)
 
         cx, cy = layout.getCursor(); 
-        ui.label("mode-l", cx, cy, "Mode", {"Title"}, lwc); 
+        uiInstances.modeLabels:draw("mode-label", cx, cy, lwc); 
         layout.newLine(24)
         
         layout.beginHorizontal(0)
         for _, m in ipairs(modeHelper.names) do
             local bx, by = layout.reserveSpace(40, 26)
             local active = state.selectedMode == m and {"state.Active"} or {}
-            local label = m == "BYPASS" and "RAW" or m
-            if ui.button("mode-"..m:lower(), label, bx, by, 40, 26, {"Mode"..m, table.unpack(active)}, lwc) then
-                AppState.set("selectedMode", m)
-            end
+            local btn = uiInstances.modeButtons[m]
+            -- btn.label will be resolved from rule matching id.mode-USB etc
+            btn:draw("mode-"..m:lower(), bx, by, 40, 26, active, lwc)
             layout.space(4)
         end
-        layout.endHorizontal(); 
-        layout.newLine(32)
+        layout.endHorizontal(); layout.newLine(32)
 
         local bcx, bcy = layout.getCursor(); 
-        ui.label("band-l", bcx, bcy, "Band", {"Title"}, lwc); 
+        uiInstances.bandLabels:draw("band-label", bcx, bcy, lwc); 
         layout.newLine(24)
 
         layout.beginHorizontal(0)
@@ -357,26 +381,23 @@ function draw()
         for i, b in ipairs(bandList) do
             local bx, by = layout.reserveSpace(40, 26)
             local active = state.selectedBand == b and {"state.Active"} or {}
-            if ui.button("band-"..b, b, bx, by, 40, 26, {"Band"..b, table.unpack(active)}, lwc) then
-                AppState.set("selectedBand", b)
-            end
+            uiInstances.bandButtons[b]:draw("band-"..b, bx, by, 40, 26, active, lwc)
             if i < #bandList then layout.space(4) end
         end
-        layout.endHorizontal();
+        layout.endHorizontal(); layout.newLine(32)
+
+        cx, cy = layout.getCursor(); 
+        uiInstances.volLabel:draw("vol-label", cx, cy, lwc); 
+        layout.newLine(24)
+        cx, cy = layout.getCursor()
+        uiInstances.volumeSlider:draw("volume-slider", cx, cy, rL.w - 24, -60, 0, state.volumeDb, lwc)
         layout.newLine(32)
 
         cx, cy = layout.getCursor(); 
-        ui.label("vol-l", cx, cy, "Volume", {"Title"}, lwc); 
+        uiInstances.rfGainLabel:draw("rfg-label", cx, cy, lwc); 
         layout.newLine(24)
         cx, cy = layout.getCursor()
-        local nV = ui.slider("volume-slider", cx, cy, rL.w - 24, -60, 0, state.volumeDb, {"VolumeControl"}, "volumeDb", lwc)
-        if nV ~= state.volumeDb then AppState.set("volumeDb", nV) end
-        layout.newLine(32)
-
-        cx, cy = layout.getCursor(); ui.label("rfg-l", cx, cy, "RF Gain", {"Title"}, lwc); layout.newLine(24)
-        cx, cy = layout.getCursor()
-        local nRG = ui.slider("rfg-slider", cx, cy, rL.w - 24, -20, 60, state.rfGainDb, {"GainControl"}, "rfGainDb", lwc)
-        if nRG ~= state.rfGainDb then AppState.set("rfGainDb", nRG) end
+        uiInstances.rfGainSlider:draw("rfg-slider", cx, cy, rL.w - 24, -20, 60, state.rfGainDb, lwc)
         layout.newLine(24)
         layout.endRegion()
     end
@@ -384,7 +405,7 @@ function draw()
     -- Center Area
     local rC = regions["center-area"]
     if rC then
-        ui.panel("center-panel", rC.x, rC.y, rC.w, rC.h)
+        uiInstances.centerPanel:draw("center-panel", rC.x, rC.y, rC.w, rC.h)
         local sub = container.solveSublayout(rC, {
             { id = "spec", tags = {"widget.Spectrum"},  anchor = "top", group = "center-col" },
             { id = "wf",   tags = {"widget.Waterfall"}, anchor = "top", group = "center-col" },
@@ -393,10 +414,7 @@ function draw()
             local rs = sub["spec"]
             layout.setRegion(rs.x, rs.y, rs.w, rs.h, "spec")
             dispatch.renderSpectrum(spectrumData, rs.x, rs.y, rs.w, rs.h)
-            
-            -- Draw Legend (Units for horizontal and vertical grid squares)
-            ui.graticuleLegend("spec-legend", rs.x + 10, rs.y + 10, 100, 45, "9.6 kHz/div", "20 dB/div")
-            
+            uiInstances.graticuleLegend:draw("spec-legend", rs.x + 10, rs.y + 10, 100, 45, "9.6 kHz/div", "20 dB/div")
             events.registerWidget("spec", rs, {"widget.Spectrum", "widget.VFOControl"})
             layout.endRegion()
         end
@@ -414,44 +432,31 @@ function draw()
     if rR then
         local lwc = setbox.newContext({"widget.Sidebar", "widget.RightSidebar", "id.right-sidebar"})
         layout.setRegion(rR.x, rR.y, rR.w, rR.h, "right-sidebar")
-        ui.panel("right-sidebar", rR.x, rR.y, rR.w, rR.h, {"Sidebar"}, lwc)
+        uiInstances.rightPanel:draw("right-sidebar", rR.x, rR.y, rR.w, rR.h, lwc)
         layout.pad(12)
         
-        -- The toggle and s-meter are currently hardcoded but should probably be widgets too.
-        -- For now, let's keep them and ensure we calculate the dynamic sublayout region correctly.
-        local cx, cy = layout.getCursor()
-        if ui.toggle("rx-toggle", state.rxActive and "RX ON" or "RX OFF", cx, cy, rR.w - 24, 40, state.rxActive, {"RxToggle"}, lwc) then
-            AppState.set("rxActive", not state.rxActive)
-        end
+        cx, cy = layout.getCursor()
+        uiInstances.rxToggle:draw("rx-toggle", cx, cy, rR.w - 24, 40, state.rxActive and {"state.Active"} or {}, lwc)
         layout.newLine(52)
         
         cx, cy = layout.getCursor(); 
-        ui.label("sm-l", cx, cy, "S-Meter", {"Title"}, lwc); 
+        uiInstances.smeterLabel:draw("sm-label", cx, cy, lwc); 
         layout.newLine(24)
         
         cx, cy = layout.getCursor(); 
-        ui.smeter("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading(), nil, lwc); 
+        uiInstances.smeter:draw("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading(), lwc); 
         layout.newLine(48)
         
-        -- Now solve for the modular widgets in the remaining space
         cx, cy = layout.getCursor()
-        local remainingH = (rR.y + rR.h) - cy - 12
-        if remainingH < 100 then remainingH = 600 end -- Fallback if layout overflowed
-        
-        local currentR = { x = rR.x + 12, y = cy, w = rR.w - 24, h = remainingH }
+        local remH = (rR.y + rR.h) - cy - 12
+        local currentR = { x = rR.x + 12, y = cy, w = rR.w - 24, h = (remH > 100 and remH or 600) }
         local subRegions = container.solveDynamicSublayout(currentR, "right-sidebar")
         
-        -- Draw widgets that are part of this sublayout
         for id, reg in pairs(subRegions) do
-            local widget = widgets[id]
-            if widget then
-                -- print("[Main] Drawing widget: " .. id)
-                widget:draw(id, reg.x, reg.y, reg.w, reg.h)
-            else
-                -- print("[Main] WARNING: Widget not found in registry: " .. tostring(id))
+            if widgets[id] then 
+                widgets[id]:draw(id, reg.x, reg.y, reg.w, reg.h, lwc) 
             end
         end
-
         layout.endRegion()
     end
 
@@ -459,10 +464,10 @@ function draw()
     local rD = regions["active-tags"]
     if rD then
         layout.setRegion(rD.x, rD.y, rD.w, rD.h, "active-tags")
-        ui.activeTagsViewer("at-v", rD.x+8, rD.y+8, rD.w-16, rD.h-16, getAllActiveTags())
+        uiInstances.activeTagsViewer:draw("at-v", rD.x+8, rD.y+8, rD.w-16, rD.h-16, tags, nil)
         layout.endRegion()
     end
 
-    if Edit.isEditModifierHeld(getAllActiveTags()) then Edit.drawHandles(mx, my, events.getWidgetAt(mx, my), true) end
+    if Edit.isEditModifierHeld(tags) then Edit.drawHandles(mx, my, events.getWidgetAt(mx, my), true) end
     layout.finish(); ui.endFrame(); uiState.endFrame()
 end

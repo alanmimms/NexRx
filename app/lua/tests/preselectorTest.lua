@@ -4,7 +4,7 @@
 ]]
 
 local setbox = require("setbox")
-local Preselector = require("ui.preselector")
+local Preselector = require("ui.Preselector")
 
 local Tests = {}
 local passed = 0

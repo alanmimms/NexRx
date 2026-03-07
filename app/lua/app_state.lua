@@ -91,8 +91,13 @@ local specs = {
     selectedBand  = { defaultValue = "20m" },
     rxActive      = { defaultValue = false, setter = function(v)
         local dispatch = require("dispatch")
-        if v then if audio and audio.start then audio.start() end; dispatch.setRxActive(true)
-        else if audio and audio.stop then audio.stop() end; dispatch.setRxActive(false) end
+        if v then 
+            if audio and audio.start then audio.start() end
+            dispatch.setRxActive(true)
+        else 
+            if audio and audio.stop then audio.stop() end
+            dispatch.setRxActive(false) 
+        end
     end },
     bandpassEnabled = { defaultValue = true, setter = function(v) if rx and rx.setBandpassEnabled then rx.setBandpassEnabled(v) end end },
     notchEnabled    = { defaultValue = false, setter = function(v) if rx and rx.setNotchEnabled then rx.setNotchEnabled(v) end end },
@@ -101,7 +106,10 @@ local specs = {
     nbEnabled       = { defaultValue = false, setter = function(v) if rx and rx.setNbEnabled then rx.setNbEnabled(v) end end },
     volumeDb      = { defaultValue = -20, min = -60, max = 0, setter = function(v) if audio and audio.setVolume then audio.setVolume(v) end end },
     muteEnabled   = { defaultValue = false, setter = function(v) if rx and rx.setMute then rx.setMute(v) end end },
-    testToneEnabled = { defaultValue = false, setter = function(v) if audio and audio.setTestTone then audio.setTestTone(v, 440.0) end end },
+    testToneEnabled = { defaultValue = false, setter = function(v) 
+        print("[AppState] testToneEnabled setter: " .. tostring(v))
+        if audio and audio.setTestTone then audio.setTestTone(v, 440.0) end 
+    end },
     demodFilterEnabled = { defaultValue = true, setter = function(v) if rx and rx.setDemodFilterEnabled then rx.setDemodFilterEnabled(v) end end },
     rfGainDb       = { defaultValue = 20, min = -20, max = 60, setter = function(v) if hw and hw.setRfGain then hw.setRfGain(v) end end },
     agcMode        = { defaultValue = 0, min = 0, max = 3, setter = function(v) if hw and hw.setAGCMode then hw.setAGCMode(v) end end },
@@ -174,8 +182,12 @@ function AppState.init()
 
     AppState.batch(function()
         for name, spec in pairs(specs) do
-            local valueToSet = setbox.get(name)
-            if valueToSet == nil then valueToSet = spec.defaultValue end
+            local valueToSet = nil
+            if setbox.has(name) then
+                valueToSet = setbox.get(name)
+            else
+                valueToSet = spec.defaultValue
+            end
             
             if hwState then
                 if name == "frequency" and hwState.vfo then valueToSet = hwState.vfo

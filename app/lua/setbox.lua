@@ -8,6 +8,7 @@
 
 local SetBox = {}
 _G.setbox = SetBox
+_G.rule = function(def) return SetBox.rule(def) end
 
 -- Internal state
 local rules = {}
@@ -164,38 +165,39 @@ function Context:getMatchingRules()
     return matching
 end
 
-function Context:get(name, defaultVal)
+function Context:get(name)
     local props = self:resolve()
     local val = props[name]
     if val == nil then
-        if defaultVal ~= nil then return defaultVal end
         local tagList = table.concat(self:getHierarchyTags(), ", ")
         error(string.format("[SetBox] Property '%s' not found in any matching rule.\nContext Tags: [%s]", name, tagList), 2)
     end
     return val
 end
 
-function Context:getNumber(name, defaultVal)
-    local val = self:get(name, defaultVal)
+function Context:has(name)
+    local props = self:resolve()
+    return props[name] ~= nil
+end
+
+function Context:getNumber(name)
+    local val = self:get(name)
     if type(val) == "number" then return val end
     local num = tonumber(val)
     if not num then
-        if defaultVal ~= nil then return defaultVal end
         error(string.format("[SetBox] Property '%s' expected number, got %s", name, type(val)), 2)
     end
     return num
 end
 
-function Context:getString(name, defaultVal)
-    local val = self:get(name, defaultVal)
-    if val == nil then return defaultVal end
+function Context:getString(name)
+    local val = self:get(name)
     return tostring(val)
 end
 
-function Context:getBool(name, defaultVal)
-    local val = self:get(name, defaultVal)
+function Context:getBool(name)
+    local val = self:get(name)
     if type(val) == "boolean" then return val end
-    if val == nil then return defaultVal end
     return val == true or val == "true" or val == 1 or val == "1" or val == "yes"
 end
 
@@ -322,30 +324,24 @@ function SetBox.getMatchingRules()
     return globalCtx:getMatchingRules()
 end
 
-function SetBox.get(name, defaultVal)
-    -- Legacy support: if defaultVal is provided, we won't error
-    local props = SetBox.resolve()
-    local val = props[name]
-    if val == nil then return defaultVal end
-    return val
+function SetBox.has(name)
+    return globalCtx:has(name)
 end
 
-function SetBox.getNumber(name, defaultVal)
-    local val = SetBox.get(name, defaultVal)
-    if type(val) == "number" then return val end
-    return tonumber(val) or defaultVal
+function SetBox.get(name)
+    return globalCtx:get(name)
 end
 
-function SetBox.getString(name, defaultVal)
-    local val = SetBox.get(name, defaultVal)
-    if val == nil then return defaultVal end
-    return tostring(val)
+function SetBox.getNumber(name)
+    return globalCtx:getNumber(name)
 end
 
-function SetBox.getBool(name, defaultVal)
-    local val = SetBox.get(name, defaultVal)
-    if val == nil then return defaultVal end
-    return val == true or val == "true" or val == 1 or val == "1"
+function SetBox.getString(name)
+    return globalCtx:getString(name)
+end
+
+function SetBox.getBool(name)
+    return globalCtx:getBool(name)
 end
 
 -- =============================================================================
@@ -353,18 +349,7 @@ end
 -- =============================================================================
 
 function SetBox.loadFile(path)
-    local chunk, err = loadfile(path, "t", {
-        rule = SetBox.rule,
-        setbox = SetBox,
-        print = print,
-        table = table,
-        math = math,
-        pairs = pairs,
-        ipairs = ipairs,
-        tonumber = tonumber,
-        tostring = tostring,
-        type = type,
-    })
+    local chunk, err = loadfile(path, "t", _G)
     if not chunk then
         print("[SetBox] Error loading " .. path .. ": " .. tostring(err))
         return false

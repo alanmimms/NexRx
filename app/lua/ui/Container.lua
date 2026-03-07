@@ -19,8 +19,24 @@
 
 local container = {}
 
-local constraints = require("ui.constraints")
+local constraints = require("ui.Constraints")
 local layoutOverrides = require("layout_overrides")
+local setbox = require("setbox")
+
+-- Default rules for Container layout fallbacks (very low priority)
+setbox.rule {
+    id = "container-layout-defaults",
+    tags = {"layout.System"}, -- Generic system tag
+    priority = -2000,
+    apply = {
+        fallbackMinWidth = 50,
+        fallbackMinHeight = 50,
+        fallbackMaxWidth = 4000,
+        fallbackMaxHeight = 4000,
+        fallbackWidth = 260,
+        fallbackHeight = 32,
+    }
+}
 
 -- Widget layout order (processed in sequence)
 -- Widgets with same anchor+group share space proportionally via springs
@@ -135,13 +151,37 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
                 -- Check for manual override
                 local override = layoutOverrides.get(w.id, isHorizontal and "width" or "height")
                 
+                -- Generic system context for fallback lookups
+                local systemLwc = setbox.newContext({"layout.System"})
+
                 -- Determine min/max boundaries
                 local minVal = isHorizontal
-                    and (constraints.eval(cons.minWidth, ctx) or 50)
-                    or (constraints.eval(cons.minHeight, ctx) or 50)
+                    and constraints.eval(cons.minWidth, ctx)
+                    or constraints.eval(cons.minHeight, ctx)
+                
+                -- If min is 0 or nil, fall back to base width/height property
+                if not minVal or minVal < 1 then
+                    minVal = isHorizontal
+                        and (constraints.eval(cons.width, ctx))
+                        or (constraints.eval(cons.height, ctx))
+                end
+                
+                -- Finally, core system fallbacks if still zero/nil
+                if not minVal or minVal < 1 then
+                    minVal = isHorizontal
+                        and systemLwc:getNumber("fallbackMinWidth")
+                        or systemLwc:getNumber("fallbackMinHeight")
+                end
+
                 local maxVal = isHorizontal
-                    and (constraints.eval(cons.maxWidth, ctx) or 4000)
-                    or (constraints.eval(cons.maxHeight, ctx) or 4000)
+                    and constraints.eval(cons.maxWidth, ctx)
+                    or constraints.eval(cons.maxHeight, ctx)
+                
+                if not maxVal or maxVal < 1 then
+                    maxVal = isHorizontal
+                        and systemLwc:getNumber("fallbackMaxWidth")
+                        or systemLwc:getNumber("fallbackMaxHeight")
+                end
                 
                 -- If overridden, treat as fixed size with no strength
                 if override then
@@ -232,14 +272,15 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
             local cons = constraints.query(widget.tags)
             local r = { x = remaining.x, y = remaining.y, w = remaining.w, h = remaining.h }
 
+            local systemLwc = setbox.newContext({"layout.System"})
             if widget.anchor == "top" then
-                local h = getSize(widget.id, "height", cons, ctx) or 32
+                local h = getSize(widget.id, "height", cons, ctx) or systemLwc:getNumber("fallbackHeight")
                 r.h = h; remaining.y = remaining.y + h; remaining.h = remaining.h - h
             elseif widget.anchor == "bottom" then
-                local h = getSize(widget.id, "height", cons, ctx) or 28
+                local h = getSize(widget.id, "height", cons, ctx) or systemLwc:getNumber("fallbackHeight")
                 r.y = remaining.y + remaining.h - h; r.h = h; remaining.h = remaining.h - h
             elseif widget.anchor == "left" then
-                local w = getSize(widget.id, "width", cons, ctx) or 260
+                local w = getSize(widget.id, "width", cons, ctx) or systemLwc:getNumber("fallbackWidth")
                 r.w = w; remaining.x = remaining.x + w; remaining.w = remaining.w - w
             elseif widget.anchor == "right" then
                 local w = getSize(widget.id, "width", cons, ctx) or 200
@@ -289,9 +330,9 @@ function container.solveDynamicSublayout(parentRegion, parentId)
                 table.insert(dynamicOrder, {
                     id = widgetId,
                     tags = {"id." .. widgetId},
-                    anchor = setbox.getString("anchor", "top"),
-                    group = setbox.getString("group"),
-                    priority = setbox.getNumber("order", 0)
+                    anchor = setbox.getString("anchor"),
+                    group = (setbox.has("group") and setbox.getString("group") ~= "") and setbox.getString("group") or "dynamic-sublayout",
+                    priority = setbox.getNumber("order")
                 })
                 
                 setbox.setActiveTags(prevTags)

@@ -288,18 +288,24 @@ public:
     waterfallTable["init"] = [this](int b, int r) { return waterfall.init(b, r); };
     waterfallTable["setRange"] = [this](float min, float max) { waterfall.setRange(min, max); };
     waterfallTable["isInitialized"] = [this]() { return waterfall.isInitialized(); };
-    waterfallTable["addRow"] = [this](sol::table t) {
+    waterfallTable["addRow"] = [this](sol::object obj) {
+      if (!obj.is<sol::table>()) return;
+      sol::table t = obj.as<sol::table>();
       std::vector<float> data; data.reserve(t.size());
-      for (size_t i = 1; i <= t.size(); ++i) { sol::object obj = t[i]; data.push_back(obj.is<float>() ? obj.as<float>() : -100.0f); }
+      for (size_t i = 1; i <= t.size(); ++i) { sol::object item = t[i]; data.push_back(item.is<float>() ? item.as<float>() : -100.0f); }
       waterfall.addRow(data.data(), (int)data.size());
     };
-    waterfallTable["renderSpectrum"] = [this](sol::table t, float x, float y, float w, float h) {
+    waterfallTable["renderSpectrum"] = [this](sol::object obj, float x, float y, float w, float h) {
+      if (!obj.is<sol::table>()) return;
+      sol::table t = obj.as<sol::table>();
       std::vector<float> data; data.reserve(t.size());
-      for (size_t i = 1; i <= t.size(); ++i) { sol::object obj = t[i]; data.push_back(obj.is<float>() ? obj.as<float>() : -100.0f); }
+      for (size_t i = 1; i <= t.size(); ++i) { sol::object item = t[i]; data.push_back(item.is<float>() ? item.as<float>() : -100.0f); }
       waterfall.renderSpectrum(data.data(), (int)data.size(), x, y, w, h);
     };
     waterfallTable["render"] = [this](float x, float y, float w, float h) { waterfall.render(x, y, w, h); };
-    waterfallTable["setColormapData"] = [this](sol::table t) {
+    waterfallTable["setColormapData"] = [this](sol::object obj) {
+      if (!obj.is<sol::table>()) return;
+      sol::table t = obj.as<sol::table>();
       std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>> grad;
       for (size_t i = 1; i <= t.size(); ++i) {
         sol::table s = t[i]; grad.push_back({s[1].get_or(0.0f), (uint8_t)s[2].get_or(0), (uint8_t)s[3].get_or(0), (uint8_t)s[4].get_or(0)});
@@ -310,14 +316,18 @@ public:
 
     sol::table dispatchTable = lua.create_table();
     dispatchTable["enableHardware"] = [this]() { twinConnected.store(true); };
-    dispatchTable["updateWaterfall"] = [this](sol::table t) {
+    dispatchTable["updateWaterfall"] = [this](sol::object obj) {
+      if (!obj.is<sol::table>()) return;
+      sol::table t = obj.as<sol::table>();
       std::vector<float> data; data.reserve(t.size());
-      for (size_t i = 1; i <= t.size(); ++i) { sol::object obj = t[i]; data.push_back(obj.is<float>() ? obj.as<float>() : -100.0f); }
+      for (size_t i = 1; i <= t.size(); ++i) { sol::object item = t[i]; data.push_back(item.is<float>() ? item.as<float>() : -100.0f); }
       waterfall.addRow(data.data(), (int)data.size());
     };
-    dispatchTable["renderSpectrum"] = [this](sol::table t, float x, float y, float w, float h) {
+    dispatchTable["renderSpectrum"] = [this](sol::object obj, float x, float y, float w, float h) {
+      if (!obj.is<sol::table>()) return;
+      sol::table t = obj.as<sol::table>();
       std::vector<float> data; data.reserve(t.size());
-      for (size_t i = 1; i <= t.size(); ++i) { sol::object obj = t[i]; data.push_back(obj.is<float>() ? obj.as<float>() : -100.0f); }
+      for (size_t i = 1; i <= t.size(); ++i) { sol::object item = t[i]; data.push_back(item.is<float>() ? item.as<float>() : -100.0f); }
       waterfall.renderSpectrum(data.data(), (int)data.size(), x, y, w, h);
     };
     dispatchTable["renderWaterfall"] = [this](float x, float y, float w, float h) { waterfall.render(x, y, w, h); };

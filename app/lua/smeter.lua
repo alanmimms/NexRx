@@ -24,7 +24,9 @@ SMeter.RMS_FLOOR = 1e-9       -- Minimum RMS threshold
 
 -- Conversion factor: dBm = 20*log10(RMS) + offset
 -- For 50 ohm: offset = 10*log10(1/(50*0.001)) = 13 dB
-SMeter.RMS_TO_DBM_OFFSET = 13.0
+-- We subtract 40dB to account for digital processing gain and provide 
+-- a more realistic 'at-antenna' reading for the Twin.
+SMeter.RMS_TO_DBM_OFFSET = 13.0 - 40.0
 
 --- Convert RMS voltage to dBm
 -- @param rms RMS voltage level

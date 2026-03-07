@@ -77,16 +77,18 @@ function constraints.query(tags)
 
     local result = {}
     for _, prop in ipairs(props) do
-        local value = setbox.getString(prop, nil)
-        if value then
-            -- Try to convert to number if it's a plain number
-            local num = tonumber(value)
-            result[prop] = num or value
-        else
-            -- Try getNumber for numeric properties
-            local numValue = setbox.getNumber(prop, nil)
-            if numValue then
-                result[prop] = numValue
+        if setbox.has(prop) then
+            local value = setbox.getString(prop)
+            if value then
+                -- Try to convert to number if it's a plain number
+                local num = tonumber(value)
+                result[prop] = num or value
+            else
+                -- Try getNumber for numeric properties
+                local numValue = setbox.getNumber(prop)
+                if numValue then
+                    result[prop] = numValue
+                end
             end
         end
     end
