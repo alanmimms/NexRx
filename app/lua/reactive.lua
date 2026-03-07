@@ -256,6 +256,10 @@ function Reactive.batch(fn)
     end
 end
 
+function Reactive.isBatching()
+    return batchDepth > 0
+end
+
 -- =============================================================================
 -- Utility: Create an observable object with multiple properties
 -- =============================================================================

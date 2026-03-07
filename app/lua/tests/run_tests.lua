@@ -38,6 +38,7 @@ local testModules = {
     {"animate_test", "Animation System"},
     {"bands_test", "Band Detection"},
     {"setbox_test", "SetBox Engine"},
+    {"preselector_test", "Preselector Widget"},
 }
 
 for _, info in ipairs(testModules) do

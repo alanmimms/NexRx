@@ -49,7 +49,7 @@ rule { tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = {
     anchorLeft = 1.0,
     anchorTop = 1.0,
     anchorBottom = 1.0,
-    minWidth = "200",
+    minWidth = "280",
     maxWidth = "350",
     springX = 1.0,  -- Low strength expansion
     marginInner = 0.02,
@@ -137,16 +137,12 @@ rule { tags = {"widget.Panel"}, apply = {
 
 -- Buttons
 rule { tags = {"widget.Button"}, apply = {
-    width = "100",
-    height = "32",
     marginInner = 0.0,
     marginOuter = 0.005,
 }}
 
 -- Toggle buttons (same as regular buttons)
 rule { tags = {"widget.Toggle"}, apply = {
-    width = "100",
-    height = "32",
 }}
 
 -- Checkboxes

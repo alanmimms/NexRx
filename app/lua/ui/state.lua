@@ -31,7 +31,19 @@ state.keyChar = nil      -- Character typed this frame
 -- Widget state storage (for multi-frame state like text input)
 state.widgetData = {}
 
+local eventsModule = nil
+
 -- Begin a new frame - call at start of update/draw
+function state.setEventsModule(ev)
+    eventsModule = ev
+end
+
+function state.registerWidget(id, bounds, tags, data)
+    if eventsModule and eventsModule.registerWidget then
+        eventsModule.registerWidget(id, bounds, tags, nil, data)
+    end
+end
+
 function state.beginFrame()
     state.prevHot = state.hot
     state.prevActive = state.active
@@ -39,10 +51,9 @@ function state.beginFrame()
 
     -- Get input state from C++ host
     state.mouseX, state.mouseY = getMousePos()
-    local wasDown = state.mouseDown
     state.mouseDown = isMouseDown(0)
-    state.mouseClicked = state.mouseDown and not wasDown
-    state.mouseReleased = not state.mouseDown and wasDown
+    state.mouseClicked = isMouseClicked(0)
+    state.mouseReleased = isMouseReleased(0)
     state.mouseWheel = getMouseWheel()
 
     -- Clear single-frame state
@@ -88,12 +99,12 @@ end
 
 -- Check if widget is hot (hovered)
 function state.isHot(id)
-    return state.hot == id
+    return state.prevHot == id
 end
 
 -- Check if widget is active (being pressed/dragged)
 function state.isActive(id)
-    return state.active == id
+    return state.prevActive == id
 end
 
 -- Check if widget has focus

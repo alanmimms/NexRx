@@ -7,7 +7,6 @@ package.path = basePath .. "?.lua;" .. basePath .. "?/init.lua;" .. package.path
 
 local ui = require("ui.widgets")
 local uiState = require("ui.state")
-local theme = require("ui.theme")
 local layout = require("ui.layout")
 local container = require("ui.container")
 _G.bands = require("bands")
@@ -84,7 +83,11 @@ local function getAllActiveTags()
         allTags["state.Pressed"] = true
         if hovered.id then allTags["state.Pressed:" .. hovered.id] = true end
     end
-    return allTags
+    
+    local list = {}
+    for tag, _ in pairs(allTags) do table.insert(list, tag) end
+    table.sort(list)
+    return list
 end
 
 -- Load configuration files
@@ -296,6 +299,7 @@ function draw()
     local mx, my = getMousePos()
     events.clearWidgets()
     ui.beginFrame()
+    setbox.setActiveTags(getAllActiveTags())
     layout.begin(0, 0, winW, winH)
     local regions = container.solve(winW, winH)
     if not regions then return end
@@ -314,59 +318,65 @@ function draw()
     -- Left Sidebar
     local rL = regions["left-sidebar"]
     if rL then
+        local lwc = setbox.newContext({"widget.Sidebar", "widget.LeftSidebar", "id.left-sidebar"})
         layout.setRegion(rL.x, rL.y, rL.w, rL.h, "left-sidebar")
-        ui.panel("left-sidebar", rL.x, rL.y, rL.w, rL.h, {"Sidebar"})
+        ui.panel("left-sidebar", rL.x, rL.y, rL.w, rL.h, {"Sidebar"}, lwc)
         layout.pad(12)
         local cx, cy = layout.getCursor()
-        ui.frequencyDisplay("freq-disp", cx, cy, rL.w - 24, 36, state.frequency, freqEntryText)
+        ui.frequencyDisplay("freq-disp", cx, cy, rL.w - 24, 36, state.frequency, freqEntryText, nil, lwc)
         layout.newLine(44)
         
         cx, cy = layout.getCursor()
-        local nF = ui.slider("freq-slider", cx, cy, rL.w - 24, 0.1, 30.0, state.frequency, {"VFOControl"}, "frequency")
-        if nF ~= state.frequency then state.frequency = nF end
-        layout.newLine(24)
+        local nF = ui.slider("freq-slider", cx, cy, rL.w - 24, 0.1e6, 30.0e6, state.frequency, {"VFOControl"}, "frequency", lwc)
+        if nF ~= state.frequency then AppState.set("frequency", nF) end
+        layout.newLine(32)
 
         cx, cy = layout.getCursor(); 
-        ui.label("mode-l", cx, cy, "Mode", {"Title"}); 
+        ui.label("mode-l", cx, cy, "Mode", {"Title"}, lwc); 
         layout.newLine(24)
         
-        layout.beginHorizontal(4)
+        layout.beginHorizontal(0)
         for _, m in ipairs(modeHelper.names) do
             local bx, by = layout.reserveSpace(40, 26)
             local active = state.selectedMode == m and {"state.Active"} or {}
             local label = m == "BYPASS" and "RAW" or m
-            if ui.button("mode-"..m:lower(), label, bx, by, 40, 26, {"Mode"..m, table.unpack(active)}) then
-                setProperty("selectedMode", m)
+            if ui.button("mode-"..m:lower(), label, bx, by, 40, 26, {"Mode"..m, table.unpack(active)}, lwc) then
+                AppState.set("selectedMode", m)
             end
+            layout.space(4)
         end
         layout.endHorizontal(); 
-        layout.newLine(12)
+        layout.newLine(32)
 
         local bcx, bcy = layout.getCursor(); 
-        ui.label("band-l", bcx, bcy, "Band", {"Title"}); 
+        ui.label("band-l", bcx, bcy, "Band", {"Title"}, lwc); 
         layout.newLine(24)
 
-        layout.beginHorizontal(4)
-        for _, b in ipairs({"160m","80m","40m","20m","15m","10m"}) do
+        layout.beginHorizontal(0)
+        local bandList = {"160m","80m","40m","20m","15m","10m"}
+        for i, b in ipairs(bandList) do
             local bx, by = layout.reserveSpace(40, 26)
-            local active = state.selectedBand == b and {"Active"} or {}
-            ui.button("band-"..b, b, bx, by, 40, 26, {"Band"..b, table.unpack(active)})
+            local active = state.selectedBand == b and {"state.Active"} or {}
+            if ui.button("band-"..b, b, bx, by, 40, 26, {"Band"..b, table.unpack(active)}, lwc) then
+                AppState.set("selectedBand", b)
+            end
+            if i < #bandList then layout.space(4) end
         end
-        layout.endHorizontal(); 
-        layout.newLine(24)
+        layout.endHorizontal();
+        layout.newLine(32)
 
         cx, cy = layout.getCursor(); 
-        ui.label("vol-l", cx, cy, "Volume", {"Title"}); 
+        ui.label("vol-l", cx, cy, "Volume", {"Title"}, lwc); 
         layout.newLine(24)
         cx, cy = layout.getCursor()
-        local nV = ui.slider("vol-slider", cx, cy, rL.w - 24, -60, 20, state.volumeDb, nil, "volumeDb")
-        if nV ~= state.volumeDb then state.volumeDb = nV end
-        layout.newLine(24)
+        local nV = ui.slider("volume-slider", cx, cy, rL.w - 24, -60, 0, state.volumeDb, {"VolumeControl"}, "volumeDb", lwc)
+        if nV ~= state.volumeDb then AppState.set("volumeDb", nV) end
+        layout.newLine(32)
 
-        cx, cy = layout.getCursor(); ui.label("rfg-l", cx, cy, "RF Gain", {"Title"}); layout.newLine(24)
+        cx, cy = layout.getCursor(); ui.label("rfg-l", cx, cy, "RF Gain", {"Title"}, lwc); layout.newLine(24)
         cx, cy = layout.getCursor()
-        local nRG = ui.slider("rfg-slider", cx, cy, rL.w - 24, -20, 60, state.rfGainDb, nil, "rfGainDb")
-        if nRG ~= state.rfGainDb then state.rfGainDb = nRG end
+        local nRG = ui.slider("rfg-slider", cx, cy, rL.w - 24, -20, 60, state.rfGainDb, {"GainControl"}, "rfGainDb", lwc)
+        if nRG ~= state.rfGainDb then AppState.set("rfGainDb", nRG) end
         layout.newLine(24)
         layout.endRegion()
     end
@@ -402,22 +412,25 @@ function draw()
     -- Right Sidebar
     local rR = regions["right-sidebar"]
     if rR then
+        local lwc = setbox.newContext({"widget.Sidebar", "widget.RightSidebar", "id.right-sidebar"})
         layout.setRegion(rR.x, rR.y, rR.w, rR.h, "right-sidebar")
-        ui.panel("right-sidebar", rR.x, rR.y, rR.w, rR.h, {"Sidebar"})
+        ui.panel("right-sidebar", rR.x, rR.y, rR.w, rR.h, {"Sidebar"}, lwc)
         layout.pad(12)
         
         -- The toggle and s-meter are currently hardcoded but should probably be widgets too.
         -- For now, let's keep them and ensure we calculate the dynamic sublayout region correctly.
         local cx, cy = layout.getCursor()
-        ui.toggle("rx-toggle", state.rxActive and "RX ON" or "RX OFF", cx, cy, rR.w - 24, 40, state.rxActive, {"RxToggle"})
+        if ui.toggle("rx-toggle", state.rxActive and "RX ON" or "RX OFF", cx, cy, rR.w - 24, 40, state.rxActive, {"RxToggle"}, lwc) then
+            AppState.set("rxActive", not state.rxActive)
+        end
         layout.newLine(52)
         
         cx, cy = layout.getCursor(); 
-        ui.label("sm-l", cx, cy, "S-Meter", {"Title"}); 
+        ui.label("sm-l", cx, cy, "S-Meter", {"Title"}, lwc); 
         layout.newLine(24)
         
         cx, cy = layout.getCursor(); 
-        ui.smeter("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading()); 
+        ui.smeter("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading(), nil, lwc); 
         layout.newLine(48)
         
         -- Now solve for the modular widgets in the remaining space
@@ -432,7 +445,10 @@ function draw()
         for id, reg in pairs(subRegions) do
             local widget = widgets[id]
             if widget then
+                -- print("[Main] Drawing widget: " .. id)
                 widget:draw(id, reg.x, reg.y, reg.w, reg.h)
+            else
+                -- print("[Main] WARNING: Widget not found in registry: " .. tostring(id))
             end
         end
 

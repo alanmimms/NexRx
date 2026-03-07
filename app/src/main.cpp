@@ -202,7 +202,10 @@ public:
     sol::table audioTable = lua.create_table();
     audioTable["start"] = [this]() { return audio.start(); };
     audioTable["stop"] = [this]() { audio.stop(); };
-    audioTable["setVolume"] = [this](float v) { audio.setVolume(v); };
+    audioTable["setVolume"] = [this](float db) {
+      float linear = (db <= -60.0f) ? 0.0f : std::pow(10.0f, db / 20.0f);
+      audio.setVolume(linear);
+    };
     audioTable["isInitialized"] = [this]() { return audio.isInitialized(); };
     audioTable["setTestTone"] = [this](bool en, float freq) { audio.setTestTone(en, freq); };
     lua["audio"] = audioTable;
@@ -278,6 +281,7 @@ public:
       lmsW0_r = 1.0f; lmsW0_i = 0.0f; sampleBlockCounter = 0; lmsAcc_r = 0.0f; lmsAcc_i = 0.0f;
       if (twinConnected.load()) { postCommand([this, f]() { twinHost.setVFO(f, qsdOffsetKhz * 1000.0); }); }
     };
+    rxTable["getSignalRms"] = [this]() { return dspDiag.signalRms.load(); };
     lua["rx"] = rxTable;
 
     sol::table waterfallTable = lua.create_table();
@@ -343,9 +347,22 @@ public:
     if (!font.isLoaded()) std::cerr << "WARNING: No font loaded!" << std::endl;
 
     if (!audio.init(48000, 2)) return false;
+    static const int FFT_SIZE = 1024;
     iqBuffer.assign(FFT_SIZE * 2, 0.0f);
     audioBuffer.configure(BufferConfig{32768});
     demod.setSampleRate(96000.0f);
+
+    audio.setCallback([this](float* out, uint32_t fC, uint32_t ch) {
+      thread_local std::vector<float> tmp;
+      tmp.resize(fC);
+      size_t read = audioBuffer.read(std::span<float>(tmp.data(), fC));
+      for (uint32_t i = 0; i < fC; ++i) {
+        float s = tmp[i];
+        out[i*ch] = s;
+        if (ch > 1) out[i*ch+1] = s;
+      }
+    });
+
     if (!waterfall.init(FFT_SIZE, 256)) return false;
 
     // 7. Lua init()
@@ -368,6 +385,13 @@ public:
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) running = false;
+        else if (event.type == SDL_WINDOWEVENT) {
+          if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            windowWidth = event.window.data1;
+            windowHeight = event.window.data2;
+            glViewport(0, 0, windowWidth, windowHeight);
+          }
+        }
         else if (event.type == SDL_MOUSEMOTION) { input.mouseX = event.motion.x; input.mouseY = event.motion.y; }
         else if (event.type == SDL_MOUSEWHEEL) input.mouseWheel += event.wheel.y;
         else if (event.type == SDL_MOUSEBUTTONDOWN) { if (event.button.button <= 3) { input.mouseDown[event.button.button-1] = true; input.mouseClicked[event.button.button-1] = true; } }
@@ -417,17 +441,21 @@ private:
   void processIQFrame(const nexrx::IQFrame& frame) {
     float i0, q0, i1, q1, i2, q2;
     frame.qsd[0].toFloat(i0, q0); frame.qsd[1].toFloat(i1, q1); frame.qsd[2].toFloat(i2, q2);
-    
-    float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
-    float phaseInc = 2.0f * 3.14159265f * (float)(qsdOffsetKhz * 1000.0) / 96000.0f;
-    float shiftCosD = std::cos(phaseInc), shiftSinD = std::sin(phaseInc);
+
+    constexpr float sampleRate = 96000.0f;
+    float k_hz = static_cast<float>(qsdOffsetKhz * 1000.0);
+    if (k_hz != lastShiftK) {
+      float phaseInc = 2.0f * 3.14159265f * k_hz / sampleRate;
+      shiftCosD = std::cos(phaseInc); shiftSinD = std::sin(phaseInc);
+      lastShiftK = k_hz;
+    }
 
     float c0 = shiftCos0 * shiftCosD - shiftSin0 * shiftSinD;
     float s0 = shiftSin0 * shiftCosD + shiftCos0 * shiftSinD;
     shiftCos0 = c0; shiftSin0 = s0;
 
-    float c1 = shiftCos1 * shiftCosD + shiftSin1 * shiftSinD;
-    float s1 = shiftSin1 * shiftCosD - shiftCos1 * shiftSinD;
+    float c1 = shiftCos1 * shiftCosD - shiftSin1 * shiftSinD;
+    float s1 = shiftSin1 * shiftCosD + shiftCos1 * shiftSinD;
     shiftCos1 = c1; shiftSin1 = s1;
 
     float i0_s = i0 * shiftCos0 + q0 * shiftSin0;
@@ -435,10 +463,9 @@ private:
     float i1_s = i1 * shiftCos1 - q1 * shiftSin1;
     float q1_s = q1 * shiftCos1 + i1 * shiftSin1;
 
-    if (++sampleBlockCounter >= 4096) {
-      auto renorm = [](float& c, float& s) { float r = std::sqrt(c*c + s*s); if (r > 0) { c /= r; s /= r; } };
+    if ((dspDiag.framesProcessed.load() & 0x3FFF) == 0) {
+      auto renorm = [](float& c, float& s) { float mag = std::sqrt(c*c+s*s); if (mag > 0) { c /= mag; s /= mag; } };
       renorm(shiftCos0, shiftSin0); renorm(shiftCos1, shiftSin1);
-      sampleBlockCounter = 0;
     }
 
     float w1_i_r = lmsW0_r * i1_s - lmsW0_i * q1_s;
@@ -448,35 +475,89 @@ private:
 
     lmsAcc_r += (error_i * i1_s + error_q * q1_s);
     lmsAcc_i += (error_q * i1_s - error_i * q1_s);
-    
-    if (sampleBlockCounter % 64 == 0) {
-      lmsW0_r += lmsMu * lmsAcc_r / 64.0f;
-      lmsW0_i += lmsMu * lmsAcc_i / 64.0f;
-      lmsAcc_r = 0; lmsAcc_i = 0;
+
+    if (++sampleBlockCounter >= 32) {
+      lmsW0_r += lmsMu * lmsAcc_r; lmsW0_i += lmsMu * lmsAcc_i;
+      float magSq = lmsW0_r * lmsW0_r + lmsW0_i * lmsW0_i;
+      if (magSq > 4.0f) { float scale = 2.0f / std::sqrt(magSq); lmsW0_r *= scale; lmsW0_i *= scale; }
       dspDiag.lmsWeightR.store(lmsW0_r); dspDiag.lmsWeightI.store(lmsW0_i);
+      lmsAcc_r = 0.0f; lmsAcc_i = 0.0f; sampleBlockCounter = 0;
     }
 
     float iF = 0.5f * i0_s + 0.5f * w1_i_r;
     float qF = 0.5f * q0_s + 0.5f * w1_i_q;
+
+    float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
     iF *= rfGain; qF *= rfGain;
     float maxR = std::max(std::abs(iF), std::abs(qF));
     if (maxR > dspDiag.maxRaw.load()) dspDiag.maxRaw.store(maxR);
 
     basebandFilter.recompute(); basebandFilter.process(iF, qF);
-    size_t pos = iqBufferWritePos.load(); 
+    size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 
+    static const int LOCAL_FFT_SIZE = 1024;
     iqBuffer[pos*2] = iF; iqBuffer[pos*2+1] = qF;
-    iqBufferWritePos.store((pos+1)%FFT_SIZE);
-    
+    iqBufferWritePos.store((pos+1)%LOCAL_FFT_SIZE, std::memory_order_release);
+
     float aOut = demod.process(iF, qF);
     dspDiag.signalRms.store(demod.getSignalLevelRMS());
     if (std::abs(aOut) > dspDiag.maxAudio.load()) dspDiag.maxAudio.store(std::abs(aOut));
-    audioBuffer.write(aOut);
+
+    if (!audioDecimateSkip) audioBuffer.write(aOut);
+    audioDecimateSkip = !audioDecimateSkip;
     dspDiag.framesProcessed++;
+  }
+  void fftInPlace(float* re, float* im, size_t n) {
+    for (size_t i=1, j=0; i<n; ++i) {
+      size_t bit=n>>1;
+      for (; j&bit; bit>>=1) j^=bit;
+      j^=bit;
+      if (i<j) { std::swap(re[i], re[j]); std::swap(im[i], im[j]); }
+    }
+    for (size_t len=2; len<=n; len<<=1) {
+      float ang = -2.0f*3.14159265f/len;
+      float wRe = std::cos(ang), wIm = std::sin(ang);
+      for (size_t i=0; i<n; i+=len) {
+        float cR = 1.0f, cI = 0.0f;
+        for (size_t j=0; j<len/2; ++j) {
+          size_t u = i+j, v = i+j+len/2;
+          float tR = cR*re[v] - cI*im[v], tI = cR*im[v] + cI*re[v];
+          re[v] = re[u]-tR; im[v] = im[u]-tI;
+          re[u] += tR; im[u] += tI;
+          float nR = cR*wRe - cI*wIm;
+          cI = cR*wIm + cI*wRe; cR = nR;
+        }
+      }
+    }
   }
 
   void computeSpectrum() {
-    std::lock_guard<std::mutex> lock(spectrumMutex);
-    spectrumData.assign(FFT_SIZE, -100.0f);
+    static std::vector<float> win;
+    static const int LOCAL_FFT_SIZE = 1024;
+    if (win.size() != LOCAL_FFT_SIZE) {
+      win.resize(LOCAL_FFT_SIZE);
+      for (size_t n=0; n<LOCAL_FFT_SIZE; ++n) win[n] = 0.5f*(1.0f-std::cos(2.0f*3.14159265f*n/(LOCAL_FFT_SIZE-1)));
+    }
+    static std::vector<float> fRe(LOCAL_FFT_SIZE), fIm(LOCAL_FFT_SIZE), avgS;
+    static bool avgI = false;
+    {
+      std::lock_guard<std::mutex> l(spectrumMutex);
+      if (iqBuffer.size() < LOCAL_FFT_SIZE*2) return;
+      size_t wP = iqBufferWritePos.load(std::memory_order_acquire);
+      for (size_t n=0; n<LOCAL_FFT_SIZE; ++n) {
+        size_t idx = (wP+n)%LOCAL_FFT_SIZE;
+        fRe[n] = iqBuffer[idx*2]*win[n];
+        fIm[n] = iqBuffer[idx*2+1]*win[n];
+      }
+    }
+    fftInPlace(fRe.data(), fIm.data(), LOCAL_FFT_SIZE);
+    std::vector<float> lS(LOCAL_FFT_SIZE);
+    for (size_t k=0; k<LOCAL_FFT_SIZE; ++k) {
+      float mag = std::sqrt(fRe[k]*fRe[k] + fIm[k]*fIm[k])/LOCAL_FFT_SIZE*2.0f;
+      lS[(k+LOCAL_FFT_SIZE/2)%LOCAL_FFT_SIZE] = (mag > 1e-10f) ? 20.0f*std::log10(mag) : -100.0f;
+    }
+    if (!avgI || avgS.size() != LOCAL_FFT_SIZE) { avgS = lS; avgI = true; } 
+    else { for (size_t k=0; k<LOCAL_FFT_SIZE; ++k) avgS[k] = 0.3f*lS[k] + 0.7f*avgS[k]; }
+    { std::lock_guard<std::mutex> l(spectrumMutex); spectrumData = avgS; }
   }
 
   SDL_Window* window = nullptr; SDL_GLContext glContext = nullptr; sol::state lua;
@@ -490,8 +571,11 @@ private:
   double qsdOffsetKhz = 12.0; double lastVFOHz = 14.2e6;
   Demodulator demod; BasebandFilter basebandFilter{96000}; DspDiagnostics dspDiag;
   float shiftCos0 = 1.0f, shiftSin0 = 0.0f, shiftCos1 = 1.0f, shiftSin1 = 0.0f;
+  float shiftCosD = 1.0f, shiftSinD = 0.0f;
+  float lastShiftK = -1.0f;
   float lmsW0_r = 1.0f, lmsW0_i = 0.0f; float lmsMu = 0.01f; uint32_t sampleBlockCounter = 0;
   float lmsAcc_r = 0.0f, lmsAcc_i = 0.0f;
+  bool audioDecimateSkip = false;
   RateAdaptiveBuffer<float> audioBuffer; InputState input;
   std::queue<std::function<void()>> commandQueue; std::mutex cmdMutex;
   std::thread commandThread; std::atomic<bool> commandThreadRunning{false};

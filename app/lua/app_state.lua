@@ -71,14 +71,13 @@ end
 -- =============================================================================
 
 local specs = {
-    frequency     = { defaultValue = 14.200, min = 0.1, max = 30.0, setter = function(v) 
-        local freqHz = v * 1e6
+    frequency     = { defaultValue = 14.200e6, min = 0.1e6, max = 30.0e6, setter = function(v) 
         -- Update VFO (this binding handles both local and remote)
-        if rx and rx.setVfo then rx.setVfo(freqHz) end
-        Preselector.tune(freqHz)
+        if rx and rx.setVfo then rx.setVfo(v) end
+        Preselector.tune(v)
     end },
-    vfoA          = { defaultValue = 14.200, min = 0.1, max = 30.0 },
-    vfoB          = { defaultValue = 7.050, min = 0.1, max = 30.0 },
+    vfoA          = { defaultValue = 14.200e6, min = 0.1e6, max = 30.0e6 },
+    vfoB          = { defaultValue = 7.050e6, min = 0.1e6, max = 30.0e6 },
     activeVFO     = { defaultValue = "A" },
     selectedMode  = { defaultValue = "USB", setter = function(v) 
         local modeHelper = require("modes")
@@ -100,12 +99,13 @@ local specs = {
     agcEnabled      = { defaultValue = false, setter = function(v) if rx and rx.setAgcEnabled then rx.setAgcEnabled(v) end end },
     nrEnabled       = { defaultValue = false, setter = function(v) if rx and rx.setNrEnabled then rx.setNrEnabled(v) end end },
     nbEnabled       = { defaultValue = false, setter = function(v) if rx and rx.setNbEnabled then rx.setNbEnabled(v) end end },
-    volumeDb      = { defaultValue = -20, min = -60, max = 20, setter = function(v) if audio and audio.setVolume then audio.setVolume(v) end end },
+    volumeDb      = { defaultValue = -20, min = -60, max = 0, setter = function(v) if audio and audio.setVolume then audio.setVolume(v) end end },
     muteEnabled   = { defaultValue = false, setter = function(v) if rx and rx.setMute then rx.setMute(v) end end },
+    testToneEnabled = { defaultValue = false, setter = function(v) if audio and audio.setTestTone then audio.setTestTone(v, 440.0) end end },
     demodFilterEnabled = { defaultValue = true, setter = function(v) if rx and rx.setDemodFilterEnabled then rx.setDemodFilterEnabled(v) end end },
     rfGainDb       = { defaultValue = 20, min = -20, max = 60, setter = function(v) if hw and hw.setRfGain then hw.setRfGain(v) end end },
     agcMode        = { defaultValue = 0, min = 0, max = 3, setter = function(v) if hw and hw.setAGCMode then hw.setAGCMode(v) end end },
-    isgFrequency   = { defaultValue = 14.205, min = 0.1, max = 30.0, setter = function(v) if hw and hw.setIsgFreq then hw.setIsgFreq(v * 1e6) end end },
+    isgFrequency   = { defaultValue = 14.205e6, min = 0.1e6, max = 30.0e6, setter = function(v) if hw and hw.setIsgFreq then hw.setIsgFreq(v) end end },
     isgEnabled     = { defaultValue = false, setter = function(v) if hw and hw.setIsgEnable then hw.setIsgEnable(v) end end },
     qsdOffsetK     = { defaultValue = 12.0, min = -50.0, max = 50.0, setter = function(v) if hw and hw.setQsdOffset then hw.setQsdOffset(v) end end },
     
@@ -136,7 +136,7 @@ local specs = {
     
     preselectorAuto = { defaultValue = true, setter = function(v) 
         Preselector.auto = v 
-        if v then Preselector.tune(AppState.get("frequency") * 1e6) end
+        if v then Preselector.tune(AppState.get("frequency")) end
     end },
     
     wfMinDb        = { defaultValue = -120, min = -140, max = -60 },
@@ -178,10 +178,12 @@ function AppState.init()
             if valueToSet == nil then valueToSet = spec.defaultValue end
             
             if hwState then
-                if name == "frequency" and hwState.vfo then valueToSet = hwState.vfo / 1e6
+                if name == "frequency" and hwState.vfo then valueToSet = hwState.vfo
+                elseif name == "vfoA" and hwState.vfoA then valueToSet = hwState.vfoA
+                elseif name == "vfoB" and hwState.vfoB then valueToSet = hwState.vfoB
                 elseif name == "rfAttenDb" and hwState.atten then valueToSet = hwState.atten
                 elseif name == "agcMode" and hwState.agc ~= nil then valueToSet = hwState.agc
-                elseif name == "isgFrequency" and hwState.isgFreq then valueToSet = hwState.isgFreq / 1e6
+                elseif name == "isgFrequency" and hwState.isgFreq then valueToSet = hwState.isgFreq
                 elseif name == "isgEnabled" and hwState.isgEn ~= nil then valueToSet = hwState.isgEn
                 elseif name == "preselectorEnabled" and hwState.psEn ~= nil then valueToSet = hwState.psEn
                 elseif name == "preselL1" and hwState.psL ~= nil then valueToSet = (hwState.psL == 1)
@@ -194,11 +196,22 @@ function AppState.init()
                 end
             end
 
-            if name == "frequency" and valueToSet == nil then
-                local defFreq = setbox.getNumber("defaultFrequency")
-                if defFreq then valueToSet = defFreq / 1e6 end
+            if name == "frequency" and valueToSet == spec.defaultValue then
+                -- Try frequency from SetBox first, then defaultFrequency
+                local freqVal = setbox.getNumber("frequency")
+                if freqVal then 
+                    valueToSet = freqVal
+                    print("[AppState] Initialized frequency from SetBox 'frequency': " .. valueToSet .. " Hz")
+                else
+                    local defFreqHz = setbox.getNumber("defaultFrequency")
+                    if defFreqHz then 
+                        valueToSet = defFreqHz
+                        print("[AppState] Initialized frequency from SetBox 'defaultFrequency': " .. valueToSet .. " Hz")
+                    end
+                end
             end
             if name == "preselectorAuto" then valueToSet = autoInit end
+            if name == "frequency" and valueToSet then print("[AppState] Final frequency for " .. name .. ": " .. tostring(valueToSet)) end
             observables[name] = createObservable(name, spec, valueToSet)
         end
 
@@ -216,7 +229,7 @@ function AppState.init()
         Preselector.internalUpdate = Preselector.internalUpdate - 1
     end)
 
-    Preselector.tune(AppState.get("frequency") * 1e6)
+    Preselector.tune(AppState.get("frequency"))
 
     AppState.watch("frequency", function(v)
         if observables.activeVFO:peek() == "A" then 
@@ -224,7 +237,7 @@ function AppState.init()
         else 
             if observables.vfoB:peek() ~= v then observables.vfoB:set(v) end 
         end
-        bands.setCurrent(v * 1e6)
+        bands.setCurrent(v)
     end)
 
     AppState.watch("activeVFO", function(v)
@@ -242,7 +255,7 @@ function AppState.init()
 
     AppState.watch("selectedBand", function(b) 
         local f = bands.getDefaultFreq(b)
-        if f then AppState.set("frequency", f / 1e6) end 
+        if f then AppState.set("frequency", f) end 
     end)
 
     AppState.watch("selectedMode", function(m) require("modes").setMode(m) end)
@@ -266,6 +279,19 @@ function AppState.watch(name, fn)
         local obs = AppState.observable(name)
         if obs then return R.watch(function() fn(obs:get()) end) end
     else return R.watch(name) end
+end
+
+function AppState.animateTo(name, targetValue)
+    local obs = observables[name]
+    if not obs then return end
+    
+    local prevTags = setbox.getActiveTags()
+    setbox.addTag("prop." .. name)
+    local duration = setbox.getNumber("anim_duration", 0.2)
+    local easing = setbox.getString("anim_easing", "easeInOut")
+    setbox.setActiveTags(prevTags)
+    
+    animate.property(obs, targetValue, duration, easing)
 end
 
 return AppState

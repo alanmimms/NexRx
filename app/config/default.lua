@@ -113,6 +113,8 @@ rule {
         background = "#1a1a2e",
         foreground = "#e2e8f0",
         accent = "#3b82f6",
+        border = "#4a5568",
+        borderWidth = 1,
 
         -- Typography
         fontFamily = "system-ui",
@@ -264,6 +266,7 @@ rule {
     priority = 10,
     apply = {
         background = "#60a5fa",
+        border = "#93c5fd",
     }
 }
 
@@ -273,6 +276,7 @@ rule {
     priority = 11,
     apply = {
         background = "#1d4ed8",
+        border = "#60a5fa",
     }
 }
 
@@ -359,8 +363,8 @@ rule {
 
 -- Sidebar Widgets Ordering
 rule { id = "id-isg",   tags = {"id.isg"},   apply = { parent = "right-sidebar", order = 10, height = 160 } }
-rule { id = "id-presel",tags = {"id.presel"},apply = { parent = "right-sidebar", order = 20, height = 240 } }
-rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 100 } }
+rule { id = "id-presel",tags = {"id.presel"},apply = { parent = "right-sidebar", order = 20, height = 180 } }
+rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 80 } }
 rule { id = "id-audio", tags = {"id.audio"}, apply = { parent = "right-sidebar", order = 40, height = 140 } }
 
 -- Slider styles

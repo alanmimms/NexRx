@@ -79,29 +79,28 @@
 -- Your settings below this line
 -- =============================================================================
 
--- Uncomment and modify to customize:
---
--- rule {
---     id = "user-settings",
---     priority = 50,
---     apply = {
---         -- Radio settings
---         -- vfoA = 14.200e6,
---         -- vfoB = 7.050e6,
---         -- defaultMode = "USB",
---
---         -- Display settings
---         -- colormap = "plasma",
---         -- wfMinDb = -110,
---         -- wfMaxDb = -30,
---
---         -- Window settings
---         -- windowWidth = 1440,
---         -- windowHeight = 900,
---
---         -- Audio settings
---         -- rxVolume = 0.7,
---     }
--- }
+rule {
+    id = "user-settings",
+    priority = 50,
+    apply = {
+        -- Radio settings
+        vfoA = 14.200e6,
+        vfoB = 7.050e6,
+        defaultFrequency = 14.200e6,
+        defaultMode = "USB",
+
+        -- Display settings
+        -- colormap = "plasma",
+        -- wfMinDb = -110,
+        -- wfMaxDb = -30,
+
+        -- Window settings
+        -- windowWidth = 1440,
+        -- windowHeight = 900,
+
+        -- Audio settings
+        -- rxVolume = 0.7,
+    }
+}
 
 print("[settings.lua] User settings loaded")
