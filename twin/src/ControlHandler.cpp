@@ -228,6 +228,26 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       cbor_encoder_close_container(&enc, &map);
       return {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)};
     }
+    case Control::CMD_CAL_STIM: {
+      double f;
+      uint64_t durationMs;
+      cbor_value_get_double(&arrayIt, &f);
+      cbor_value_advance(&arrayIt);
+      cbor_value_get_uint64(&arrayIt, &durationMs);
+      
+      calStimFreqHz.store(f);
+      calStimEnabled.store(true);
+      
+      // Detached thread to turn off after duration
+      std::thread([this, durationMs]() {
+          std::this_thread::sleep_for(std::chrono::milliseconds(durationMs));
+          calStimEnabled.store(false);
+          if (verbose_) std::cout << "[Control] Calibration stimulus timed out" << std::endl;
+      }).detach();
+      
+      if (verbose_) std::cout << "[Control] Calibration stimulus ENABLED at " << f << " Hz for " << durationMs << " ms" << std::endl;
+      return encodeResponse(0, "OK");
+    }
     case Control::CMD_GBYE: {
       connected.store(false);
       return encodeResponse(0, "BYE");

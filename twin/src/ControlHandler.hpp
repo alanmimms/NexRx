@@ -151,6 +151,8 @@ public:
   bool isISGEnabled() const { return isgEnabled.load(std::memory_order_relaxed); }
   double getISGFreq() const { return isgFreqHz.load(std::memory_order_relaxed); }
   bool isTX() const { return trMode.load(std::memory_order_relaxed) == 1; }
+  bool isCalStimActive() const { return calStimEnabled.load(std::memory_order_relaxed); }
+  double getCalStimFreq() const { return calStimFreqHz.load(std::memory_order_relaxed); }
 
   void getCodecConfig(int& rate, std::vector<int>& channelMap) const {
     rate = codec.sampleRate.load(std::memory_order_relaxed);
@@ -175,6 +177,8 @@ private:
   std::atomic<double> isgFreqHz;
   std::atomic<int> agcMode;
   std::atomic<int> trMode{0}; // 0=RX, 1=TX
+  std::atomic<bool> calStimEnabled{false};
+  std::atomic<double> calStimFreqHz{0};
   CodecConfig codec;
   std::map<std::string, std::string> calibrations;
   std::atomic<bool> streaming;

@@ -21,13 +21,45 @@ DspEngine::DspEngine() {
 void DspEngine::setVfo(double freqHz) {
   lastVFOHz = freqHz;
   // Reset phasors and LMS on tuning to ensure stability
-  w0_r = 0.0f; w0_i = 0.0f; 
-  w1_r = 0.0f; w1_i = 0.0f;
-  acc0_r = 0.0f; acc0_i = 0.0f;
-  acc1_r = 0.0f; acc1_i = 0.0f;
-  pwr0 = 0.0f; pwr1 = 0.0f;
+  wIQ0_r = 0; wIQ0_i = 0;
+  wIQ1_r = 0; wIQ1_i = 0;
+  wIQ2_r = 0; wIQ2_i = 0;
+  wA0_r = 0.5f; wA0_i = 0;
+  wA1_r = 0.5f; wA1_i = 0;
+  accIQ0_r = 0; accIQ0_i = 0; pIQ0 = 0;
+  accIQ1_r = 0; accIQ1_i = 0; pIQ1 = 0;
+  accIQ2_r = 0; accIQ2_i = 0; pIQ2 = 0;
+  accA0_r = 0; accA0_i = 0; pA0 = 0;
+  accA1_r = 0; accA1_i = 0; pA1 = 0;
   sampleBlockCounter = 0;
   totalSamplesProcessed = 0;
+}
+
+void DspEngine::setCalibration(int ch, float gainDB, float phaseDeg) {
+  if (ch < 0 || ch > 2) return;
+  staticCal[ch] = {gainDB, phaseDeg};
+  
+  // Convert back to LMS weights immediately for live processing
+  // w approx (1-G)/2 - j(P/2) where G is linear gain and P is phase in rad
+  float g = std::pow(10.0f, -gainDB / 20.0f);
+  float p = -phaseDeg * M_PI / 180.0f;
+  
+  if (ch == 0) { wIQ0_r = (1.0f - g)/2.0f; wIQ0_i = p/2.0f; }
+  else if (ch == 1) { wIQ1_r = (1.0f - g)/2.0f; wIQ1_i = p/2.0f; }
+  else if (ch == 2) { wIQ2_r = (1.0f - g)/2.0f; wIQ2_i = p/2.0f; }
+}
+
+void DspEngine::startManualCalibration() {
+  std::cout << "[DSP] Starting manual calibration sequence..." << std::endl;
+  // Reset LMS to defaults before training
+  wIQ0_r = wIQ0_i = wIQ1_r = wIQ1_i = wIQ2_r = wIQ2_i = 0;
+  wA0_r = wA1_r = 0.5f; wA0_i = wA1_i = 0;
+  accIQ0_r = accIQ0_i = pIQ0 = 0;
+  accIQ1_r = accIQ1_i = pIQ1 = 0;
+  accIQ2_r = accIQ2_i = pIQ2 = 0;
+  accA0_r = accA0_i = 0; accA1_r = accA1_i = 0;
+  sampleBlockCounter = 0;
+  calibrationActive.store(true);
 }
 
 void DspEngine::setQsdOffset(double offsetKhz) {
@@ -49,74 +81,108 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   frame.qsd[1].toFloat(i1, q1); 
   frame.qsd[2].toFloat(i2, q2);
   
-  // DC Offset Correction (running average subtraction)
+  // DC Offset Correction
   constexpr float dcAlpha = 0.0005f;
   dc0_i = (1.0f - dcAlpha) * dc0_i + dcAlpha * i0;
   dc0_q = (1.0f - dcAlpha) * dc0_q + dcAlpha * q0;
   dc1_i = (1.0f - dcAlpha) * dc1_i + dcAlpha * i1;
   dc1_q = (1.0f - dcAlpha) * dc1_q + dcAlpha * q1;
+  dc2_i = (1.0f - dcAlpha) * dc2_i + dcAlpha * i2;
+  dc2_q = (1.0f - dcAlpha) * dc2_q + dcAlpha * q2;
   
   i0 -= dc0_i; q0 -= dc0_q;
   i1 -= dc1_i; q1 -= dc1_q;
+  i2 -= dc2_i; q2 -= dc2_q;
 
+  // 1. Independent Blind I/Q Correction for all 3 mixers
+  // S_corr = S - w*conj(S)
+  Complex s0(i0, q0), s1(i1, q1), s2(i2, q2);
+  Complex wIQ0(wIQ0_r, wIQ0_i), wIQ1(wIQ1_r, wIQ1_i), wIQ2(wIQ2_r, wIQ2_i);
+  
+  Complex s0_c = s0 - wIQ0 * std::conj(s0);
+  Complex s1_c = s1 - wIQ1 * std::conj(s1);
+  Complex s2_c = s2 - wIQ2 * std::conj(s2);
+
+  // 2. High-Precision Frequency Alignment
   constexpr double sampleRate = 96000.0;
   double k_hz = qsdOffsetKhz * 1000.0;
-  double phase = 2.0 * M_PI * k_hz * (static_cast<double>(totalSamplesProcessed) / sampleRate);
+  double phase = 2.0 * M_PI * std::fmod(k_hz * (static_cast<double>(totalSamplesProcessed) / sampleRate), 1.0);
   
-  // High-precision phasors for rotation
-  // Shift QSD0 DOWN by k: (i0 + j*q0) * (cos - j*sin)
-  float i0_s = i0 * std::cos(phase) + q0 * std::sin(phase);
-  float q0_s = q0 * std::cos(phase) - i0 * std::sin(phase);
+  // Shift QSD0 DOWN by k, QSD1 UP by k
+  float cosP = std::cos(phase), sinP = std::sin(phase);
+  Complex s0_s(s0_c.real() * cosP + s0_c.imag() * sinP, s0_c.imag() * cosP - s0_c.real() * sinP);
+  Complex s1_s(s1_c.real() * cosP - s1_c.imag() * sinP, s1_c.imag() * cosP + s1_c.real() * sinP);
 
-  // Shift QSD1 UP by k: (i1 + j*q1) * (cos + j*sin)
-  float i1_s = i1 * std::cos(phase) - q1 * std::sin(phase);
-  float q1_s = q1 * std::cos(phase) + i1 * std::sin(phase);
+  // 3. Channel Alignment (Match S0/S1 to S2 reference)
+  Complex wA0(wA0_r, wA0_i), wA1(wA1_r, wA1_i);
+  Complex out_fund = wA0 * s0_s + wA1 * s1_s;
+  Complex err_vec = s2_c - out_fund;
 
-  // Mixer 2 (6f) is the sextature mixer for harmonic rejection.
-  // It is already at the target fundamental's perspective (center).
-  Complex s2(i2, q2);
+  // Final combined signal (1-2-1 Triple-QSD Matrix)
+  // Synthesizes 0.25*S0 + 0.50*S2 + 0.25*S1 when weights are 0.5
+  Complex err = 0.5f * out_fund + 0.5f * s2_c;
 
-  // Historical LMS Adaptive Image Rejection
-  // output = w0 * QSD0_shifted + w1 * QSD1_shifted ≈ QSD2
-  Complex w0(w0_r, w0_i);
-  Complex w1(w1_r, w1_i);
-  Complex s0_s(i0_s, q0_s);
-  Complex s1_s(i1_s, q1_s);
-
-  Complex out = w0 * s0_s + w1 * s1_s;
-  Complex err_vec = s2 - out;
-
-  // LMS update: w = w + mu * error * conj(input)
-  float mu = lmsMu.load();
-  w0 += mu * err_vec * std::conj(s0_s);
-  w1 += mu * err_vec * std::conj(s1_s);
-
-  // Clamp weights to prevent runaway (converges to ~0.5 each in ideal)
-  auto clampW = [](Complex& w) {
-    float mag = std::abs(w);
-    if (mag > 2.0f) w *= (2.0f / mag);
-  };
-  clampW(w0); clampW(w1);
-  w0_r = w0.real(); w0_i = w0.imag();
-  w1_r = w1.real(); w1_i = w1.imag();
-
-  // The synthesized output is the filtered/nulled signal
-  Complex err = out;
-
-  if (++sampleBlockCounter >= 4093) {
-    sampleBlockCounter = 0;
-    // Store diagnostics
-    dspDiag.lmsWeightR.store(std::abs(w0)); 
-    dspDiag.lmsWeightI.store(std::abs(w1));
+  // 4. Update LMS weights (only if calibration is active)
+  if (calibrationActive.load()) {
+    float mu = lmsMu.load();
     
-    // In this historical mode, we can estimate errors by deviation from 0.5
-    dspDiag.gainErr0.store(20.0f * std::log10(std::max(0.1f, 2.0f * std::abs(w0))));
-    dspDiag.phaseErr0.store(std::arg(w0) * 180.0f / M_PI);
-    dspDiag.gainErr1.store(20.0f * std::log10(std::max(0.1f, 2.0f * std::abs(w1))));
-    dspDiag.phaseErr1.store(std::arg(w1) * 180.0f / M_PI);
+    // Update I/Q correctors (minimize E[S_corr^2])
+    constexpr float eps = 1e-6f;
+    Complex u0 = s0_c * s0_c; accIQ0_r += u0.real(); accIQ0_i += u0.imag(); pIQ0 += std::norm(s0);
+    Complex u1 = s1_c * s1_c; accIQ1_r += u1.real(); accIQ1_i += u1.imag(); pIQ1 += std::norm(s1);
+    Complex u2 = s2_c * s2_c; accIQ2_r += u2.real(); accIQ2_i += u2.imag(); pIQ2 += std::norm(s2);
+    
+    // Update Alignment correctors - simple gradient descent
+    Complex ua0 = err_vec * std::conj(s0_s); accA0_r += ua0.real(); accA0_i += ua0.imag();
+    Complex ua1 = err_vec * std::conj(s1_s); accA1_r += ua1.real(); accA1_i += ua1.imag();
+
+    if (++sampleBlockCounter >= 4093 * 4) { // Longer integration for calibration stability
+      auto updateW = [&](float& wr, float& wi, float ar, float ai, float p) {
+          if (p + eps > 1e-10f) { wr += mu * ar / (p + eps); wi += mu * ai / (p + eps); }
+      };
+      updateW(wIQ0_r, wIQ0_i, accIQ0_r, accIQ0_i, pIQ0);
+      updateW(wIQ1_r, wIQ1_i, accIQ1_r, accIQ1_i, pIQ1);
+      updateW(wIQ2_r, wIQ2_i, accIQ2_r, accIQ2_i, pIQ2);
+      
+      float muAlign = mu * 2.0f;
+      wA0_r += muAlign * accA0_r / (4093.0f * 4.0f); wA0_i += muAlign * accA0_i / (4093.0f * 4.0f);
+      wA1_r += muAlign * accA1_r / (4093.0f * 4.0f); wA1_i += muAlign * accA1_i / (4093.0f * 4.0f);
+      
+      // Clamp and Finalize
+      auto clampW = [](float& wr, float& wi) {
+          float mag = std::sqrt(wr*wr + wi*wi);
+          if (mag > 2.0f) { wr *= 2.0f/mag; wi *= 2.0f/mag; }
+      };
+      clampW(wIQ0_r, wIQ0_i); clampW(wIQ1_r, wIQ1_i); clampW(wIQ2_r, wIQ2_i);
+      clampW(wA0_r, wA0_i); clampW(wA1_r, wA1_i);
+
+      // Diagnostics / Results
+      auto toGain = [](float r) { return 20.0f * std::log10(std::max(0.1f, 1.0f - 2.0f * r)); };
+      auto toPhase = [](float i) { return -2.0f * i * 180.0f / M_PI; };
+      
+      float g0 = toGain(wIQ0_r), p0 = toPhase(wIQ0_i);
+      float g1 = toGain(wIQ1_r), p1 = toPhase(wIQ1_i);
+      float g2 = toGain(wIQ2_r), p2 = toPhase(wIQ2_i);
+      float a0 = std::arg(Complex(wA0_r, wA0_i)) * 180.0f / M_PI;
+      float a1 = std::arg(Complex(wA1_r, wA1_i)) * 180.0f / M_PI;
+
+      std::cout << "\n[DSP] Calibration Complete. Append to config/calibration.lua:" << std::endl;
+      printf("calibration.addResults({\n  { gain=%+.3f, phase=%+.2f }, -- QSD0\n  { gain=%+.3f, phase=%+.2f }, -- QSD1\n  { gain=%+.3f, phase=%+.2f }  -- QSD2\n})\n",
+             g0, p0, g1, p1, g2, p2);
+      std::cout << "[DSP] (Note: ALIGN phases were " << a0 << ", " << a1 << " deg)" << std::endl;
+
+      calibrationActive.store(false);
+      sampleBlockCounter = 0;
+      
+      // Update persistent diagnostics
+      dspDiag.gainErr0.store(g0); dspDiag.phaseErr0.store(p0);
+      dspDiag.gainErr1.store(g1); dspDiag.phaseErr1.store(p1);
+      dspDiag.gainErr2.store(g2); dspDiag.phaseErr2.store(p2);
+      dspDiag.alignPhase0.store(a0); dspDiag.alignPhase1.store(a1);
+    }
   }
 
-  // Output after image suppression
+  // Output after all suppression
   float iF = err.real();
   float qF = err.imag();
   

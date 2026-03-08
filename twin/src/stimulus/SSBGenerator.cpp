@@ -551,20 +551,15 @@ void SSBGenerator::getAudioIQ(double timeS, double& i, double& q) const {
         break;
       }
 
-      double sampleTime = timeS * audioSampleRate;
       size_t n = audioSamples.size();
-
-      if (samplesRepeat) {
-        sampleTime = std::fmod(sampleTime, static_cast<double>(n));
-        if (sampleTime < 0) {
-          sampleTime += n;
-        }
-      } else if (timeS >= n / audioSampleRate) {
+      uint64_t totalS = static_cast<uint64_t>(timeS * audioSampleRate + 0.5);
+      size_t idx = samplesRepeat ? (totalS % n) : totalS;
+      
+      if (!samplesRepeat && idx >= n) {
         i = q = 0.0;
         break;
       }
 
-      size_t idx = static_cast<size_t>(sampleTime) % n;
       i = audioSamples[idx];
       q = audioSamplesQ[idx];
       break;
@@ -697,7 +692,7 @@ void SSBGenerator::getRfIQ(double timeS, double& outI, double& outQ) const {
   double audioI, audioQ;
   getAudioIQ(timeS, audioI, audioQ);
 
-  double phase = 2.0 * M_PI * carrierHz * timeS;
+  double phase = 2.0 * M_PI * std::fmod(carrierHz * timeS, 1.0);
   double cosP = std::cos(phase);
   double sinP = std::sin(phase);
 

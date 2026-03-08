@@ -20,12 +20,16 @@ struct DspDiagnostics {
   std::atomic<float> signalRms{0.0f};
   std::atomic<float> maxRaw{0.0f};
   std::atomic<float> maxAudio{0.0f};
-  std::atomic<float> lmsWeightR{0.0f}; // Magnitude of w0
-  std::atomic<float> lmsWeightI{0.0f}; // Magnitude of w1
+  std::atomic<float> lmsWeightR{0.0f}; // Magnitude of wA0
+  std::atomic<float> lmsWeightI{0.0f}; // Magnitude of wA1
   std::atomic<float> gainErr0{0.0f};
   std::atomic<float> phaseErr0{0.0f};
   std::atomic<float> gainErr1{0.0f};
   std::atomic<float> phaseErr1{0.0f};
+  std::atomic<float> gainErr2{0.0f};
+  std::atomic<float> phaseErr2{0.0f};
+  std::atomic<float> alignPhase0{0.0f};
+  std::atomic<float> alignPhase1{0.0f};
 };
 
 class DspEngine {
@@ -43,6 +47,11 @@ public:
   void setRfGain(float db) { rfGainDB.store(db); }
   void setLmsMu(float mu) { lmsMu = mu; }
   
+  // Calibration
+  void setCalibration(int ch, float gainDB, float phaseDeg);
+  void startManualCalibration();
+  bool isCalibrating() const { return calibrationActive.load(); }
+
   // Data access
   std::vector<float> getSpectrumData();
   const DspDiagnostics& getDiagnostics() const { return dspDiag; }
@@ -63,18 +72,36 @@ private:
   double qsdOffsetKhz = 12.0;
   double lastVFOHz = 14.2e6;
   std::atomic<float> lmsMu{0.01f};
+  std::atomic<bool> calibrationActive{false};
   
-  // LMS weights and power accumulators for QSD0 and QSD1 I/Q correction
-  float w0_r = 0.0f, w0_i = 0.0f;
-  float w1_r = 0.0f, w1_i = 0.0f;
-  float acc0_r = 0.0f, acc0_i = 0.0f;
-  float acc1_r = 0.0f, acc1_i = 0.0f;
-  float pwr0 = 0.0f, pwr1 = 0.0f;
+  struct QsdCal {
+    float gainErrDB = 0.0f;
+    float phaseErrDeg = 0.0f;
+  };
+  QsdCal staticCal[3];
+  
+  // Independent I/Q correction weights for each QSD
+  float wIQ0_r = 0, wIQ0_i = 0;
+  float wIQ1_r = 0, wIQ1_i = 0;
+  float wIQ2_r = 0, wIQ2_i = 0;
+  
+  // Alignment weights (to match QSD0/1 to QSD2 reference)
+  float wA0_r = 0.5f, wA0_i = 0;
+  float wA1_r = 0.5f, wA1_i = 0;
+
+  // Accumulators
+  float accIQ0_r = 0, accIQ0_i = 0, pIQ0 = 0;
+  float accIQ1_r = 0, accIQ1_i = 0, pIQ1 = 0;
+  float accIQ2_r = 0, accIQ2_i = 0, pIQ2 = 0;
+  float accA0_r = 0, accA0_i = 0, pA0 = 0;
+  float accA1_r = 0, accA1_i = 0, pA1 = 0;
+
   uint64_t totalSamplesProcessed = 0;
   uint32_t sampleBlockCounter = 0;
 
   float dc0_i = 0.0f, dc0_q = 0.0f;
   float dc1_i = 0.0f, dc1_q = 0.0f;
+  float dc2_i = 0.0f, dc2_q = 0.0f;
 
   bool audioDecimateSkip = false;
 

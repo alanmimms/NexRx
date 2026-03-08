@@ -4,24 +4,33 @@
 
 namespace nexrx {
 
+/* Helper to convert 4-character strings to uint32_t at compile time */
+static constexpr uint32_t makeControlId(const char s[5]) {
+  return (static_cast<uint32_t>(s[0]) << 24) |
+         (static_cast<uint32_t>(s[1]) << 16) |
+         (static_cast<uint32_t>(s[2]) << 8)  |
+         (static_cast<uint32_t>(s[3]));
+}
+
 class Control {
 public:
-  /* Command IDs as uint32_t (4-byte ASCII) */
-  static constexpr uint32_t CMD_SET_VFO         = 0x5356464F; /* "SVFO" */
-  static constexpr uint32_t CMD_SET_ATTEN       = 0x53415454; /* "SATT" */
-  static constexpr uint32_t CMD_SET_PGA_GAIN    = 0x53504741; /* "SPGA" */
-  static constexpr uint32_t CMD_SET_AGC_MODE    = 0x53414743; /* "SAGC" */
-  static constexpr uint32_t CMD_SET_TR_MODE     = 0x5354524D; /* "STRM" */
-  static constexpr uint32_t CMD_START_STREAM    = 0x53544D5B; /* "STM[" */
-  static constexpr uint32_t CMD_STOP_STREAM     = 0x5D53544D; /* "]STM" */
-  static constexpr uint32_t CMD_GET_TIMESTAMP   = 0x4754494D; /* "GTIM" */
-  static constexpr uint32_t CMD_SET_ISG_FREQ    = 0x53494651; /* "SIFQ" */
-  static constexpr uint32_t CMD_SET_ISG_ENABLE  = 0x5349454E; /* "SIEN" */
-  static constexpr uint32_t CMD_SET_PRESEL_L    = 0x5350524C; /* "SPRL" */
-  static constexpr uint32_t CMD_SET_PRESEL_C    = 0x53505243; /* "SPRC" */
-  static constexpr uint32_t CMD_SET_PRESEL_EN   = 0x53505245; /* "SPRE" */
-  static constexpr uint32_t CMD_GET_STATE       = 0x47535441; /* "GSTA" */
-  static constexpr uint32_t CMD_GBYE            = 0x47425945; /* "GBYE" */
+  /* Command IDs */
+  static constexpr uint32_t CMD_SET_VFO         = makeControlId("SVFO");
+  static constexpr uint32_t CMD_SET_ATTEN       = makeControlId("SATT");
+  static constexpr uint32_t CMD_SET_PGA_GAIN    = makeControlId("SPGA");
+  static constexpr uint32_t CMD_SET_AGC_MODE    = makeControlId("SAGC");
+  static constexpr uint32_t CMD_SET_TR_MODE     = makeControlId("STRM");
+  static constexpr uint32_t CMD_START_STREAM    = makeControlId("STM[");
+  static constexpr uint32_t CMD_STOP_STREAM     = makeControlId("]STM");
+  static constexpr uint32_t CMD_GET_TIMESTAMP   = makeControlId("GTIM");
+  static constexpr uint32_t CMD_SET_ISG_FREQ    = makeControlId("SIFQ");
+  static constexpr uint32_t CMD_SET_ISG_ENABLE  = makeControlId("SIEN");
+  static constexpr uint32_t CMD_SET_PRESEL_L    = makeControlId("SPRL");
+  static constexpr uint32_t CMD_SET_PRESEL_C    = makeControlId("SPRC");
+  static constexpr uint32_t CMD_SET_PRESEL_EN   = makeControlId("SPRE");
+  static constexpr uint32_t CMD_GET_STATE       = makeControlId("GSTA");
+  static constexpr uint32_t CMD_CAL_STIM        = makeControlId("CAL!");
+  static constexpr uint32_t CMD_GBYE            = makeControlId("GBYE");
 };
 
 } // namespace nexrx

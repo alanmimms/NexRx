@@ -213,6 +213,16 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
     hwTable["setPreselectorEnabled"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorEnabled(en); }); } };
     hwTable["setRfGain"] = [this](double db) { dsp_.setRfGain((float)db); };
     hwTable["setQsdOffset"] = [this](double k) { dsp_.setQsdOffset(k); if (twinConnected.load()) { postCommand([this, k]() { twinHost.setVFO(lastVFOHz, k * 1000.0); }); } };
+    hwTable["calibrate"] = [this]() {
+      dsp_.startManualCalibration();
+      if (twinConnected.load()) {
+        postCommand([this]() {
+          // Send 14.201 MHz stimulus (1kHz above LO) for 2 seconds
+          twinHost.sendCalibrationStimulus(14201000.0, 2000);
+        });
+      }
+    };
+    hwTable["setCalibration"] = [this](int ch, float g, float p) { dsp_.setCalibration(ch, g, p); };
     lua["hw"] = hwTable;
 
     sol::table rxTable = lua.create_table();
@@ -242,12 +252,13 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
       t["maxAudio"] = d.maxAudio.load();
       t["w0_mag"] = d.lmsWeightR.load();
       t["w1_mag"] = d.lmsWeightI.load();
-      t["gain0"] = d.gainErr0.load();
-      t["phase0"] = d.phaseErr0.load();
-      t["gain1"] = d.gainErr1.load();
-      t["phase1"] = d.phaseErr1.load();
+      t["gain0"] = d.gainErr0.load(); t["phase0"] = d.phaseErr0.load();
+      t["gain1"] = d.gainErr1.load(); t["phase1"] = d.phaseErr1.load();
+      t["gain2"] = d.gainErr2.load(); t["phase2"] = d.phaseErr2.load();
+      t["align0"] = d.alignPhase0.load(); t["align1"] = d.alignPhase1.load();
       return t;
     };
+    rxTable["isCalibrating"] = [this]() { return dsp_.isCalibrating(); };
     lua["rx"] = rxTable;
 
     sol::table waterfallTable = lua.create_table();

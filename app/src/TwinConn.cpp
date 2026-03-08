@@ -251,6 +251,18 @@ bool TwinConn::setQsdOffsetKHz(double khz) {
   return true;
 }
 
+bool TwinConn::sendCalibrationStimulus(double freqHz, uint64_t durationMs) {
+  uint8_t buf[128];
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+  cbor_encoder_create_array(&enc, &arr, 3);
+  cbor_encode_uint(&arr, Control::CMD_CAL_STIM);
+  cbor_encode_double(&arr, freqHz);
+  cbor_encode_uint(&arr, durationMs);
+  cbor_encoder_close_container(&enc, &arr);
+  return !sendCBORRequest(Control::CMD_CAL_STIM, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+}
+
 bool TwinConn::startStream() {
   uint8_t buf[64];
   CborEncoder enc, arr;

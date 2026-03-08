@@ -351,6 +351,15 @@ namespace nexrx {
               double antI = 0, antQ = 0;
               if (stimulusManager) stimulusManager->getRfIQ(t, antI, antQ, current_lo, 100000.0);
               
+              // Calibration Stimulus (Clean sine wave)
+              if (controlHandler->isCalStimActive()) {
+                  double fStim = controlHandler->getCalStimFreq();
+                  double phaseStim = 2.0 * M_PI * fStim * t;
+                  // Add high-amplitude calibration tone (10mV)
+                  antI += 0.010 * std::cos(phaseStim);
+                  antQ += 0.010 * std::sin(phaseStim);
+              }
+
               // Add tiny noise floor to keep LMS stable
               static thread_local std::mt19937 noiseRng(54321);
               static thread_local std::normal_distribution<double> noiseDist(0, 1e-9);

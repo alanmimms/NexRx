@@ -18,6 +18,7 @@ local keys = require("Keycodes")
 local modeHelper = require("Modes")
 local smeter = require("SMeter")
 local AppState = require("AppState")
+_G.calibration = require("Calibration")
 local Edit = require("Edit")
 local layoutOverrides = require("LayoutOverrides")
 
@@ -134,8 +135,9 @@ _G.rxStats = { rms=0, gain0=0, phase0=0, gain1=0, phase1=0, w0_mag=0, w1_mag=0 }
 
 function init()
     AppState.init()
+    _G.calibration.init()
     
-    wfBins = math.floor(state.wfBins or 512)
+    wfBins = 1024 -- Match DspEngine::FFT_SIZE
     wfRows = math.floor(state.wfRows or 256)
     for i = 1, wfBins do spectrumData[i] = -100 end
     
@@ -168,6 +170,7 @@ function init()
     uiInstances.volumeSlider = Slider.new({ onAdjust = function(v) AppState.set("volumeDb", v) end })
     uiInstances.rfGainSlider = Slider.new({ onAdjust = function(v) AppState.set("rfGainDb", v) end })
     uiInstances.smeter = SMeter.new()
+    uiInstances.calBtn = Button.new({ getText = function() return "CALIBRATE" end })
     uiInstances.activeTagsViewer = ActiveTags.new()
     uiInstances.graticuleLegend = GraticuleLegend.new()
     uiInstances.rxToggle = Button.new({ onClick = function() AppState.set("rxActive", not state.rxActive) end })
@@ -340,9 +343,11 @@ function update(dt)
                 _G.rxStats.w0_mag = s.w0_mag
                 _G.rxStats.w1_mag = s.w1_mag
                 
-                if frameCount % 60 == 0 then
-                    print(string.format("[CAL] QSD0: %+.2f dB, %+.1f deg | QSD1: %+.2f dB, %+.1f deg | LMS: %.4f, %.4f | RMS: %.6f", 
-                        s.gain0, s.phase0, s.gain1, s.phase1, s.w0_mag, s.w1_mag, s.rms))
+                if rx.isCalibrating() and frameCount % 60 == 0 then
+                    print(string.format("[CAL] ERR0: %+.2f dB, %+.1f deg | ERR1: %+.2f dB, %+.1f deg | ERR2: %+.2f dB, %+.1f deg", 
+                        s.gain0, s.phase0, s.gain1, s.phase1, s.gain2, s.phase2))
+                    print(string.format("[CAL] ALIGN: %+.1f deg, %+.1f deg | RMS: %.6f", 
+                        s.align0, s.align1, s.rms))
                 end
             end
         end
@@ -477,6 +482,17 @@ function draw()
         cx, cy = layout.getCursor(); 
         uiInstances.smeter:draw("s-meter", cx, cy, rR.w - 24, 28, smeter.getReading(), lwc); 
         layout.newLine(48)
+
+        -- Calibration Trigger
+        local calActive = rx.getStats().frames > 0 and rx.getStats().rms ~= rx.getStats().rms -- (Pseudo-check for calibrating status?)
+        -- Better: let's assume we can't easily query isCalibrating from here yet without more glue, 
+        -- but we can just show the button.
+        local btnW = rR.w - 40
+        cx, cy = layout.getCursor()
+        if uiInstances.calBtn:draw("cal-btn", cx + 8, cy, btnW, 30, {}, lwc) then
+            hw.calibrate()
+        end
+        layout.newLine(40)
         
         cx, cy = layout.getCursor()
         local remH = (rR.y + rR.h) - cy - 12

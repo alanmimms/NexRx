@@ -72,6 +72,7 @@ public:
   bool stopStream();
   uint64_t getTimestamp();
   std::vector<uint8_t> getState();
+  bool sendCalibrationStimulus(double freqHz, uint64_t durationMs);
 
   std::vector<uint8_t> sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& argsCBOR);
 

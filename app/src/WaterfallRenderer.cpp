@@ -127,10 +127,10 @@ void WaterfallRenderer::render(float x, float y, float w, float h) {
   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
   glBegin(GL_QUADS);
-  glTexCoord2f(0.0f, 0.0f); glVertex2f(x, y);
-  glTexCoord2f(1.0f, 0.0f); glVertex2f(x + w, y);
-  glTexCoord2f(1.0f, 1.0f); glVertex2f(x + w, y + h);
-  glTexCoord2f(0.0f, 1.0f); glVertex2f(x, y + h);
+  glTexCoord2f(0.0f, 1.0f); glVertex2f(x, y);
+  glTexCoord2f(1.0f, 1.0f); glVertex2f(x + w, y);
+  glTexCoord2f(1.0f, 0.0f); glVertex2f(x + w, y + h);
+  glTexCoord2f(0.0f, 0.0f); glVertex2f(x, y + h);
   glEnd();
 
   glDisable(GL_TEXTURE_2D);
@@ -242,6 +242,7 @@ void WaterfallRenderer::initDefaultColormap() {
 void WaterfallRenderer::updateTexture() {
   if (!initialized) return;
   for (int row = 0; row < height; ++row) {
+    // topRow is the most recent. Map texture row 0 to topRow, row 1 to topRow-1, etc.
     int bufferRow = (topRow - row + height) % height;
     const auto& rowData = rows[bufferRow];
     for (int col = 0; col < width; ++col) textureData[row * width + col] = dbToColor(rowData[col]);
