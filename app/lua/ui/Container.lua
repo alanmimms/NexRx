@@ -120,45 +120,22 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
     }
     -- Ensure window size is available for expressions that use it
     local winW, winH = getWindowSize()
-    local window = { width = winW, height = winH }
+    local windowSize = { width = winW, height = winH }
+    
     local processedGroups = {}
-
-    -- Grouping logic
     local groups = {}
+
+    -- Pass 1: Identify groups and anchors
     for _, widget in ipairs(subWidgetOrder) do
-        if widget.anchor == "top" or widget.anchor == "bottom" or 
-           widget.anchor == "left" or widget.anchor == "right" then
-            -- Single widget logic
-            local cons = Constraints.query(widget.id, widget.tags, parentRegion.w, parentRegion.h)
-            local r = { x = remaining.x, y = remaining.y, w = remaining.w, h = remaining.h }
-            
-            local systemLwc = SetBox.newContext({"layout.System"})
-            if widget.anchor == "top" then
-                local h = getSize(widget.id, "height", cons, {parent=parentRegion, window=window}) or systemLwc:getNumber("fallbackHeight")
-                r.h = h; remaining.y = remaining.y + h; remaining.h = remaining.h - h
-            elseif widget.anchor == "bottom" then
-                local h = getSize(widget.id, "height", cons, {parent=parentRegion, window=window}) or systemLwc:getNumber("fallbackHeight")
-                r.y = remaining.y + remaining.h - h; r.h = h; remaining.h = remaining.h - h
-            elseif widget.anchor == "left" then
-                local w = getSize(widget.id, "width", cons, {parent=parentRegion, window=window}) or systemLwc:getNumber("fallbackWidth")
-                r.w = w; remaining.x = remaining.x + w; remaining.w = remaining.w - w
-            elseif widget.anchor == "right" then
-                local w = getSize(widget.id, "width", cons, {parent=parentRegion, window=window}) or systemLwc:getNumber("fallbackWidth")
-                r.x = remaining.x + remaining.w - w; r.w = w; remaining.w = remaining.w - w
-            end
-            regions[widget.id] = r
-        else
-            -- Proportional group logic
-            local g = widget.group
-            if not groups[g] then
-                groups[g] = { widgets = {}, anchor = widget.anchor }
-                table.insert(processedGroups, g)
-            end
-            table.insert(groups[g].widgets, widget)
+        local gName = widget.group or ("single-" .. widget.id)
+        if not groups[gName] then
+            groups[gName] = { widgets = {}, anchor = widget.anchor or "top", isSingle = (widget.group == nil) }
+            table.insert(processedGroups, gName)
         end
+        table.insert(groups[gName].widgets, widget)
     end
 
-    -- Process groups (spring distribution)
+    -- Pass 2: Process groups (including single widgets as groups of 1)
     for _, gName in ipairs(processedGroups) do
         local groupInfo = groups[gName]
         local group = groupInfo.widgets
@@ -169,11 +146,11 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
         
         local totalMinSize = 0
         local widgetData = {}
-        local ctx = {parent = parentRegion, window = window}
+        local ctx = { parent = { width = remaining.w, height = remaining.h }, window = windowSize }
 
-        -- Pass 1: Evaluate constraints
+        -- Pass 2.1: Evaluate constraints for all widgets in group
         for _, w in ipairs(group) do
-            local cons = Constraints.query(w.id, w.tags, parentRegion.w, parentRegion.h)
+            local cons = Constraints.query(w.id, w.tags)
             local spring = getSpring(w.id, isHorizontal and "x" or "y", cons, ctx)
             local override = LayoutOverrides.get(w.id, isHorizontal and "width" or "height")
             local systemLwc = SetBox.newContext({"layout.System"})
@@ -217,7 +194,7 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
             })
         end
 
-        -- Pass 2: Distribute space
+        -- Pass 2.2: Distribute space (spring solver)
         local remainingToDistribute = math.max(0, availableSpace - totalMinSize)
         while remainingToDistribute > 0.5 do
             local totalStrength = 0
@@ -241,9 +218,11 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
             if distributedThisPass < 0.1 then break end
         end
 
-        -- Pass 3: Position widgets and UPDATE REMAINING
+        -- Pass 2.3: Position widgets and UPDATE REMAINING
         local cursor = 0
-        local groupSize = 0
+        local groupMaxOtherDim = 0
+        local groupSumAnchorDim = 0
+        
         for _, wd in ipairs(widgetData) do
             local w = wd.widget
             local size = math.floor(wd.currentSize + 0.5)
@@ -260,27 +239,26 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
             end
             regions[w.id] = r
             cursor = cursor + size
-            groupSize = math.max(groupSize, cursor)
+            groupSumAnchorDim = groupSumAnchorDim + size
         end
 
         -- Update remaining space for next group
         if anchor == "top" then
-            remaining.y = remaining.y + groupSize; remaining.h = remaining.h - groupSize
+            remaining.y = remaining.y + groupSumAnchorDim; remaining.h = remaining.h - groupSumAnchorDim
         elseif anchor == "bottom" then
-            remaining.h = remaining.h - groupSize
+            remaining.h = remaining.h - groupSumAnchorDim
         elseif anchor == "left" then
-            remaining.x = remaining.x + groupSize; remaining.w = remaining.w - groupSize
+            remaining.x = remaining.x + groupSumAnchorDim; remaining.w = remaining.w - groupSumAnchorDim
         elseif anchor == "right" then
-            remaining.w = remaining.w - groupSize
+            remaining.w = remaining.w - groupSumAnchorDim
         end
     end
-
-    return regions
+return regions
 end
 
 -- Get the widget order (for external iteration)
 function container.getWidgetOrder()
-    return widgetOrder
+return widgetOrder
 end
 
 return container

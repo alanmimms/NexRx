@@ -59,12 +59,16 @@ end
 
 -- Query SetBox for constraint properties given widget tags
 -- Returns table of constraint values (some may be expression strings)
-function constraints.query(tags)
+function constraints.query(id, tags)
+    local SetBox = require("SetBox")
     -- Save current tags and set query tags
-    local prevTags = setbox.getActiveTags and setbox.getActiveTags() or {}
-    if setbox.setActiveTags then
-        setbox.setActiveTags(tags)
-    end
+    local prevTags = SetBox.getActiveTags()
+    
+    local queryTags = {}
+    if tags then for _, t in ipairs(tags) do table.insert(queryTags, t) end end
+    if id then table.insert(queryTags, "id." .. id) end
+    
+    SetBox.setActiveTags(queryTags)
 
     -- Properties we care about
     local props = {
@@ -77,27 +81,14 @@ function constraints.query(tags)
 
     local result = {}
     for _, prop in ipairs(props) do
-        if setbox.has(prop) then
-            local value = setbox.getString(prop)
-            if value then
-                -- Try to convert to number if it's a plain number
-                local num = tonumber(value)
-                result[prop] = num or value
-            else
-                -- Try getNumber for numeric properties
-                local numValue = setbox.getNumber(prop)
-                if numValue then
-                    result[prop] = numValue
-                end
-            end
+        if SetBox.has(prop) then
+            local value = SetBox.get(prop)
+            result[prop] = value
         end
     end
 
     -- Restore previous tags
-    if setbox.setActiveTags then
-        setbox.setActiveTags(prevTags)
-    end
-
+    SetBox.setActiveTags(prevTags)
     return result
 end
 
