@@ -48,7 +48,7 @@ public:
   void setLmsMu(float mu) { lmsMu = mu; }
   
   // Calibration
-  void setCalibration(int ch, float gainDB, float phaseDeg);
+  void setCalibration(int ch, float gainDB, float phaseDeg, float alignR = 0.5f, float alignI = 0.0f);
   void startManualCalibration();
   bool isCalibrating() const { return calibrationActive.load(); }
 
@@ -77,6 +77,8 @@ private:
   struct QsdCal {
     float gainErrDB = 0.0f;
     float phaseErrDeg = 0.0f;
+    float alignR = 0.5f;
+    float alignI = 0.0f;
   };
   QsdCal staticCal[3];
   

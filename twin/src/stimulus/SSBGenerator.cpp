@@ -134,10 +134,20 @@ static std::vector<float> upsampleBuffer(const std::vector<float>& input, double
 
   std::vector<double> re2(fftSize * 2, 0.0);
   std::vector<double> im2(fftSize * 2, 0.0);
-  for (size_t k = 0; k <= fftSize / 2; ++k) {
+  
+  // DC to just before Nyquist
+  for (size_t k = 0; k < fftSize / 2; ++k) {
     re2[k] = re[k];
     im2[k] = im[k];
   }
+  
+  // Split Nyquist energy correctly between +fs/2 and -fs/2
+  re2[fftSize / 2] = re[fftSize / 2] * 0.5;
+  im2[fftSize / 2] = im[fftSize / 2] * 0.5;
+  re2[fftSize * 2 - fftSize / 2] = re[fftSize / 2] * 0.5;
+  im2[fftSize * 2 - fftSize / 2] = im[fftSize / 2] * 0.5;
+
+  // Mirror negative frequencies
   for (size_t k = fftSize / 2 + 1; k < fftSize; ++k) {
     re2[fftSize * 2 - (fftSize - k)] = re[k];
     im2[fftSize * 2 - (fftSize - k)] = im[k];
@@ -154,7 +164,7 @@ static std::vector<float> upsampleBuffer(const std::vector<float>& input, double
   const int filterHalf = 12;
   const int taps = 2 * filterHalf + 1;
   const double kaiserBeta = 8.0;
-  const double cutoff = 0.9 / upsample;
+  const double cutoff = 0.8 / upsample; // Lower cutoff to suppress Nyquist artifacts
 
   std::vector<std::vector<double>> polyphase(upsample, std::vector<double>(taps));
   std::vector<double> phaseNorm(upsample);

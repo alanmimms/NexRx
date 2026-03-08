@@ -35,29 +35,34 @@ void DspEngine::setVfo(double freqHz) {
   totalSamplesProcessed = 0;
 }
 
-void DspEngine::setCalibration(int ch, float gainDB, float phaseDeg) {
+void DspEngine::setCalibration(int ch, float gainDB, float phaseDeg, float alignR, float alignI) {
   if (ch < 0 || ch > 2) return;
-  staticCal[ch] = {gainDB, phaseDeg};
+  staticCal[ch] = {gainDB, phaseDeg, alignR, alignI};
   
-  // Convert back to LMS weights immediately for live processing
-  // w approx (1-G)/2 - j(P/2) where G is linear gain and P is phase in rad
+  // Apply I/Q correction weights
   float g = std::pow(10.0f, -gainDB / 20.0f);
   float p = -phaseDeg * M_PI / 180.0f;
+  float wr = (1.0f - g)/2.0f;
+  float wi = p/2.0f;
   
-  if (ch == 0) { wIQ0_r = (1.0f - g)/2.0f; wIQ0_i = p/2.0f; }
-  else if (ch == 1) { wIQ1_r = (1.0f - g)/2.0f; wIQ1_i = p/2.0f; }
-  else if (ch == 2) { wIQ2_r = (1.0f - g)/2.0f; wIQ2_i = p/2.0f; }
+  if (ch == 0) { wIQ0_r = wr; wIQ0_i = wi; wA0_r = alignR; wA0_i = alignI; }
+  else if (ch == 1) { wIQ1_r = wr; wIQ1_i = wi; wA1_r = alignR; wA1_i = alignI; }
+  else if (ch == 2) { wIQ2_r = wr; wIQ2_i = wi; }
 }
 
 void DspEngine::startManualCalibration() {
-  std::cout << "[DSP] Starting manual calibration sequence..." << std::endl;
-  // Reset LMS to defaults before training
+  std::cout << "[DSP] Starting high-precision calibration sequence..." << std::endl;
+  // Reset weights to "raw" state for discovery
   wIQ0_r = wIQ0_i = wIQ1_r = wIQ1_i = wIQ2_r = wIQ2_i = 0;
   wA0_r = wA1_r = 0.5f; wA0_i = wA1_i = 0;
+  
+  // Clear accumulators
   accIQ0_r = accIQ0_i = pIQ0 = 0;
   accIQ1_r = accIQ1_i = pIQ1 = 0;
   accIQ2_r = accIQ2_i = pIQ2 = 0;
-  accA0_r = accA0_i = 0; accA1_r = accA1_i = 0;
+  accA0_r = accA0_i = pA0 = 0;
+  accA1_r = accA1_i = pA1 = 0;
+  
   sampleBlockCounter = 0;
   calibrationActive.store(true);
 }
@@ -122,63 +127,69 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   // Synthesizes 0.25*S0 + 0.50*S2 + 0.25*S1 when weights are 0.5
   Complex err = 0.5f * out_fund + 0.5f * s2_c;
 
-  // 4. Update LMS weights (only if calibration is active)
+  // 4. Update Calibration (only if active)
   if (calibrationActive.load()) {
-    float mu = lmsMu.load();
+    // Accumulate for I/Q Correctors (S_corr = S - w S*)
+    // Target w = 0.5 * E[s^2] / E[|s|^2]
+    auto accIQ = [](Complex s, float& ar, float& ai, float& p) {
+        Complex u = s * s; ar += u.real(); ai += u.imag(); p += std::norm(s);
+    };
+    accIQ(s0, accIQ0_r, accIQ0_i, pIQ0);
+    accIQ(s1, accIQ1_r, accIQ1_i, pIQ1);
+    accIQ(s2, accIQ2_r, accIQ2_i, pIQ2);
     
-    // Update I/Q correctors (minimize E[S_corr^2])
-    constexpr float eps = 1e-6f;
-    Complex u0 = s0_c * s0_c; accIQ0_r += u0.real(); accIQ0_i += u0.imag(); pIQ0 += std::norm(s0);
-    Complex u1 = s1_c * s1_c; accIQ1_r += u1.real(); accIQ1_i += u1.imag(); pIQ1 += std::norm(s1);
-    Complex u2 = s2_c * s2_c; accIQ2_r += u2.real(); accIQ2_i += u2.imag(); pIQ2 += std::norm(s2);
-    
-    // Update Alignment correctors - simple gradient descent
-    Complex ua0 = err_vec * std::conj(s0_s); accA0_r += ua0.real(); accA0_i += ua0.imag();
-    Complex ua1 = err_vec * std::conj(s1_s); accA1_r += ua1.real(); accA1_i += ua1.imag();
+    // Accumulate for Alignment (Match shifted fundamental to reference)
+    // Target wA = E[S2 * S_shifted^*] / E[|S_shifted|^2]
+    auto accA = [](Complex ref, Complex s_s, float& ar, float& ai, float& p) {
+        Complex u = ref * std::conj(s_s); ar += u.real(); ai += u.imag(); p += std::norm(s_s);
+    };
+    // Frequency shifts WITHOUT current weights for discovery
+    float cP = std::cos(phase), sP = std::sin(phase);
+    Complex s0_raw_s(s0.real() * cP + s0.imag() * sP, s0.imag() * cP - s0.real() * sP);
+    Complex s1_raw_s(s1.real() * cP - s1.imag() * sP, s1.imag() * cP + s1.real() * sP);
+    accA(s2, s0_raw_s, accA0_r, accA0_i, pA0);
+    accA(s2, s1_raw_s, accA1_r, accA1_i, pA1);
 
-    if (++sampleBlockCounter >= 4093 * 4) { // Longer integration for calibration stability
-      auto updateW = [&](float& wr, float& wi, float ar, float ai, float p) {
-          if (p + eps > 1e-10f) { wr += mu * ar / (p + eps); wi += mu * ai / (p + eps); }
+    if (++sampleBlockCounter >= 4093 * 8) { // 32,744 samples (~340ms)
+      auto solveW = [](float ar, float ai, float p, float& wr, float& wi) {
+          if (p > 1e-10f) { wr = 0.5f * ar / p; wi = 0.5f * ai / p; }
       };
-      updateW(wIQ0_r, wIQ0_i, accIQ0_r, accIQ0_i, pIQ0);
-      updateW(wIQ1_r, wIQ1_i, accIQ1_r, accIQ1_i, pIQ1);
-      updateW(wIQ2_r, wIQ2_i, accIQ2_r, accIQ2_i, pIQ2);
+      solveW(accIQ0_r, accIQ0_i, pIQ0, wIQ0_r, wIQ0_i);
+      solveW(accIQ1_r, accIQ1_i, pIQ1, wIQ1_r, wIQ1_i);
+      solveW(accIQ2_r, accIQ2_i, pIQ2, wIQ2_r, wIQ2_i);
       
-      float muAlign = mu * 2.0f;
-      wA0_r += muAlign * accA0_r / (4093.0f * 4.0f); wA0_i += muAlign * accA0_i / (4093.0f * 4.0f);
-      wA1_r += muAlign * accA1_r / (4093.0f * 4.0f); wA1_i += muAlign * accA1_i / (4093.0f * 4.0f);
-      
-      // Clamp and Finalize
-      auto clampW = [](float& wr, float& wi) {
-          float mag = std::sqrt(wr*wr + wi*wi);
-          if (mag > 2.0f) { wr *= 2.0f/mag; wi *= 2.0f/mag; }
+      auto solveWA = [](float ar, float ai, float p, float& wr, float& wi) {
+          if (p > 1e-10f) { wr = ar / p; wi = ai / p; }
       };
-      clampW(wIQ0_r, wIQ0_i); clampW(wIQ1_r, wIQ1_i); clampW(wIQ2_r, wIQ2_i);
-      clampW(wA0_r, wA0_i); clampW(wA1_r, wA1_i);
+      solveWA(accA0_r, accA0_i, pA0, wA0_r, wA0_i);
+      solveWA(accA1_r, accA1_i, pA1, wA1_r, wA1_i);
 
-      // Diagnostics / Results
+      // Final Diagnostics / Results
       auto toGain = [](float r) { return 20.0f * std::log10(std::max(0.1f, 1.0f - 2.0f * r)); };
       auto toPhase = [](float i) { return -2.0f * i * 180.0f / M_PI; };
       
       float g0 = toGain(wIQ0_r), p0 = toPhase(wIQ0_i);
       float g1 = toGain(wIQ1_r), p1 = toPhase(wIQ1_i);
       float g2 = toGain(wIQ2_r), p2 = toPhase(wIQ2_i);
-      float a0 = std::arg(Complex(wA0_r, wA0_i)) * 180.0f / M_PI;
-      float a1 = std::arg(Complex(wA1_r, wA1_i)) * 180.0f / M_PI;
 
       std::cout << "\n[DSP] Calibration Complete. Append to config/calibration.lua:" << std::endl;
-      printf("calibration.addResults({\n  { gain=%+.3f, phase=%+.2f }, -- QSD0\n  { gain=%+.3f, phase=%+.2f }, -- QSD1\n  { gain=%+.3f, phase=%+.2f }  -- QSD2\n})\n",
-             g0, p0, g1, p1, g2, p2);
-      std::cout << "[DSP] (Note: ALIGN phases were " << a0 << ", " << a1 << " deg)" << std::endl;
+      printf("calibration.addResults({\n"
+             "  { gain=%+.3f, phase=%+.2f, align_r=%.4f, align_i=%.4f }, -- QSD0\n"
+             "  { gain=%+.3f, phase=%+.2f, align_r=%.4f, align_i=%.4f }, -- QSD1\n"
+             "  { gain=%+.3f, phase=%+.2f }  -- QSD2\n"
+             "})\n",
+             g0, p0, wA0_r, wA0_i, 
+             g1, p1, wA1_r, wA1_i,
+             g2, p2);
 
       calibrationActive.store(false);
       sampleBlockCounter = 0;
       
-      // Update persistent diagnostics
       dspDiag.gainErr0.store(g0); dspDiag.phaseErr0.store(p0);
       dspDiag.gainErr1.store(g1); dspDiag.phaseErr1.store(p1);
       dspDiag.gainErr2.store(g2); dspDiag.phaseErr2.store(p2);
-      dspDiag.alignPhase0.store(a0); dspDiag.alignPhase1.store(a1);
+      dspDiag.alignPhase0.store(std::arg(Complex(wA0_r, wA0_i)) * 180.0f / M_PI);
+      dspDiag.alignPhase1.store(std::arg(Complex(wA1_r, wA1_i)) * 180.0f / M_PI);
     }
   }
 
@@ -257,6 +268,6 @@ void DspEngine::computeSpectrum() {
     lS[(k+FFT_SIZE/2)%FFT_SIZE] = (mag > 1e-10f) ? 20.0f*std::log10(mag) : -100.0f;
   }
   if (!avgI || avgS.size() != FFT_SIZE) { avgS = lS; avgI = true; } 
-  else { for (size_t k=0; k<FFT_SIZE; ++k) avgS[k] = 0.3f*lS[k] + 0.7f*avgS[k]; }
+  else { for (size_t k=0; k<FFT_SIZE; ++k) avgS[k] = 0.6f*lS[k] + 0.4f*avgS[k]; }
   { std::lock_guard<std::mutex> l(spectrumMutex); spectrumData = avgS; }
 }

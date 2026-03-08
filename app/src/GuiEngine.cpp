@@ -222,7 +222,7 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
         });
       }
     };
-    hwTable["setCalibration"] = [this](int ch, float g, float p) { dsp_.setCalibration(ch, g, p); };
+    hwTable["setCalibration"] = [this](int ch, float g, float p, float ar, float ai) { dsp_.setCalibration(ch, g, p, ar, ai); };
     lua["hw"] = hwTable;
 
     sol::table rxTable = lua.create_table();

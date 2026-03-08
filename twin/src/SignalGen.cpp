@@ -349,15 +349,16 @@ namespace nexrx {
           for (int i = 0; i < OVERSAMPLE_RATIO; ++i) {
               double t = (outputSample * OVERSAMPLE_RATIO + i) / 480000.0;
               double antI = 0, antQ = 0;
-              if (stimulusManager) stimulusManager->getRfIQ(t, antI, antQ, current_lo, 100000.0);
               
               // Calibration Stimulus (Clean sine wave)
               if (controlHandler->isCalStimActive()) {
                   double fStim = controlHandler->getCalStimFreq();
-                  double phaseStim = 2.0 * M_PI * fStim * t;
+                  double phaseStim = 2.0 * M_PI * std::fmod(fStim * t, 1.0);
                   // Add high-amplitude calibration tone (10mV)
-                  antI += 0.010 * std::cos(phaseStim);
-                  antQ += 0.010 * std::sin(phaseStim);
+                  antI = 0.010 * std::cos(phaseStim);
+                  antQ = 0.010 * std::sin(phaseStim);
+              } else {
+                  if (stimulusManager) stimulusManager->getRfIQ(t, antI, antQ, current_lo, 100000.0);
               }
 
               // Add tiny noise floor to keep LMS stable
