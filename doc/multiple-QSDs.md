@@ -86,15 +86,35 @@ significantly suppresses the response at $3f$ and $5f$, resulting in
 an exceptionally clean baseband signal even in the presence of strong
 out-of-band interference.
 
-### 4. Dynamic Calibration (LMS)
+## Digital Twin and Image Rejection Testing
 
-Because the physical components (transformers, switches, and
-capacitors) drift with temperature and frequency, the weights $w_n$
-are not static. The host DSP continuously runs a **Least Mean Squares
-(LMS)** algorithm to:
+To validate the robustness of the NexRx signal processing, the **Digital Twin** includes a deliberate simulation of hardware imperfections. This allows the host application's compensation algorithms to be tested under controlled, realistic conditions.
 
-* Track thermal drift in the pentafilar transformer.
+### 1. Simulated Hardware Mismatch (SignalGen)
 
-* Correct for phase shifts in the preselector.
+The Digital Twin's `SignalGen` simulates I/Q imbalance for each of the three QSD channels by applying gain and phase errors to the baseband signals before they are digitized and streamed to the host.
 
-* Maintain image rejection $>70\text{ dB}$ across all bands.
+*   **Gain Error ($G_e$):** Each channel is initialized with a stable random gain error between $0.95$ and $1.05$ (approximately $\pm 0.4\text{ dB}$).
+*   **Phase Error ($\phi_e$):** Each channel includes a stable random phase deviation of up to $\pm 0.05\text{ radians}$ (approximately $\pm 2.8^\circ$).
+
+The resulting baseband signal $B(t)$ for a given channel is generated as:
+$$I_{bb}(t) = I_{ideal}(t)$$
+$$Q_{bb}(t) = G_e \cdot [Q_{ideal}(t) \cdot \cos(\phi_e) - I_{ideal}(t) \cdot \sin(\phi_e)]$$
+
+This mismatch creates a "ghost" image in the spectrum. For example, a pure USB signal will appear to have a corresponding LSB component at a level determined by the severity of the mismatch (typically $-30$ to $-40\text{ dBc}$ for the simulated errors).
+
+### 2. Adaptive I/Q Correction (DspEngine)
+
+The host application's `DspEngine` employs an independent **Least Mean Squares (LMS)** adaptive filter for each QSD channel to identify and null these imbalances in real-time.
+
+*   **Error Minimization:** The LMS filter attempts to minimize the correlation between the signal and its own complex conjugate (which represents the image frequency).
+*   **Correction Logic:** For each channel $S = I + jQ$, the corrected signal $S_{corr}$ is calculated as:
+    $$S_{corr} = S - w \cdot S^*$$
+    where $w$ is a complex weight tracked by the LMS algorithm.
+*   **Update Rule:** The weight $w$ is updated over an integration window (typically $8192$ samples) using a power-normalized rule:
+    $$\Delta w = \mu \cdot \frac{\sum (S \cdot S)}{\sum |S|^2}$$
+    where $\mu$ is the learning rate.
+
+By applying this correction to $S_{low}$ ($f-k$) and $S_{high}$ ($f+k$) independently *before* they are rotated to DC and combined, the system achieves deep image rejection even when the physical mixers have significant manufacturing tolerances or thermal drift.
+
+---
