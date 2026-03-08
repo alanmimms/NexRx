@@ -41,10 +41,11 @@ In your responses I want no congratulation or attempts to show me I'm
 smart.
 
 Do _not_ do nuke-from-orbit rewrites of any non-trivial source module
-without discussing with me first. Do surgical edits unless we discuss
-sweeping changes. If some tool you use fails that's NOT a reason for you
-to completely rewrite a source file from your own context memory,
-because that leads to a mess we have to back out anyway.
+without discussing with me first. Just do incremental edits to the files
+unless we discuss making sweeping changes that require wholesale
+replacement and I agree to this. If some tool you use fails that's NOT a
+reason for you to completely rewrite a source file from your own context
+memory, because that leads to a mess we have to back out anyway.
 
 Never do a `git commit` unless I ask for it. Do not `git push` unless I
 ask for a `git commit` and for it to be pushed.
