@@ -38,6 +38,8 @@ include_directories(src ../twin/src extern)
 
 add_executable(nexrx-app
   src/main.cpp
+  src/DspEngine.cpp
+  src/GuiEngine.cpp
   src/TwinConn.cpp
   src/TCPControlClient.cpp
   src/UDPStreamClient.cpp
