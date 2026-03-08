@@ -23,8 +23,11 @@ void DspEngine::setVfo(double freqHz) {
   // Reset phasors and LMS on tuning to ensure stability
   shiftCos0 = 1.0f; shiftSin0 = 0.0f; 
   shiftCos1 = 1.0f; shiftSin1 = 0.0f;
-  lmsW0_r = 0.0f; lmsW0_i = 0.0f; 
-  lmsAcc_r = 0.0f; lmsAcc_i = 0.0f;
+  w0_r = 0.0f; w0_i = 0.0f; 
+  w1_r = 0.0f; w1_i = 0.0f;
+  acc0_r = 0.0f; acc0_i = 0.0f;
+  acc1_r = 0.0f; acc1_i = 0.0f;
+  pwr0 = 0.0f; pwr1 = 0.0f;
   sampleBlockCounter = 0;
 }
 
@@ -48,7 +51,7 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   frame.qsd[2].toFloat(i2, q2);
   
   // DC Offset Correction (running average subtraction)
-  constexpr float dcAlpha = 0.0001f;
+  constexpr float dcAlpha = 0.0005f;
   dc0_i = (1.0f - dcAlpha) * dc0_i + dcAlpha * i0;
   dc0_q = (1.0f - dcAlpha) * dc0_q + dcAlpha * q0;
   dc1_i = (1.0f - dcAlpha) * dc1_i + dcAlpha * i1;
@@ -79,10 +82,14 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   // Rotate mixers to DC
   // Mixer 0 (f-k) has signal at +k. Rotate by -k (p0)
   Complex s0(i0, q0);
+  Complex w0(w0_r, w0_i);
+  s0 = s0 - w0 * std::conj(s0);
   Complex s0_rot = s0 * p0;
 
   // Mixer 1 (f+k) has signal at -k. Rotate by +k (p1)
   Complex s1(i1, q1);
+  Complex w1(w1_r, w1_i);
+  s1 = s1 - w1 * std::conj(s1);
   Complex s1_rot = s1 * p1;
 
   // Periodically re-normalize phasors
@@ -92,25 +99,35 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
     shiftCos1 = p1.real(); shiftSin1 = p1.imag();
   }
 
-  // Signal combination (1-0-1)
-  Complex sig = 0.5f * (s0_rot + s1_rot);
-  Complex ref = 0.5f * (s0_rot - s1_rot);
+  // Combined output after individual image suppression
+  Complex err = 0.5f * (s0_rot + s1_rot);
 
-  // LMS Adaptive Filter to null image components
-  Complex w(lmsW0_r, lmsW0_i);
-  // Error = Signal - W * conj(Ref)  -- null the image of the reference
-  Complex err = sig - w * std::conj(ref);
-
-  // Update LMS (deltaW = mu * error * Ref)
-  Complex update = err * ref;
-  lmsAcc_r += update.real();
-  lmsAcc_i += update.imag();
+  // Update LMS (Standard blind I/Q correction: minimizes E[s^2])
+  Complex upd0 = s0 * s0; 
+  acc0_r += upd0.real(); acc0_i += upd0.imag();
+  pwr0 += (s0.real() * s0.real() + s0.imag() * s0.imag());
   
-  if (++sampleBlockCounter >= 32) {
-    w += lmsMu * Complex(lmsAcc_r, lmsAcc_i);
-    lmsW0_r = w.real(); lmsW0_i = w.imag();
-    lmsAcc_r = 0.0f; lmsAcc_i = 0.0f; sampleBlockCounter = 0;
-    dspDiag.lmsWeightR.store(lmsW0_r); dspDiag.lmsWeightI.store(lmsW0_i);
+  Complex upd1 = s1 * s1;
+  acc1_r += upd1.real(); acc1_i += upd1.imag();
+  pwr1 += (s1.real() * s1.real() + s1.imag() * s1.imag());
+  
+  if (++sampleBlockCounter >= 8192) {
+    // Self-normalizing update: w = w + mu * E[s^2] / E[|s|^2]
+    float n0 = std::max(1e-10f, pwr0);
+    float n1 = std::max(1e-10f, pwr1);
+    
+    w0 += lmsMu * (Complex(acc0_r, acc0_i) / n0);
+    w1 += lmsMu * (Complex(acc1_r, acc1_i) / n1);
+    
+    w0_r = w0.real(); w0_i = w0.imag();
+    w1_r = w1.real(); w1_i = w1.imag();
+    acc0_r = 0.0f; acc0_i = 0.0f; pwr0 = 0.0f;
+    acc1_r = 0.0f; acc1_i = 0.0f; pwr1 = 0.0f;
+    sampleBlockCounter = 0;
+    
+    // Store magnitudes of weights in diagnostics to verify convergence
+    dspDiag.lmsWeightR.store(std::abs(w0)); 
+    dspDiag.lmsWeightI.store(std::abs(w1)); 
   }
 
   // Output after image suppression

@@ -58,11 +58,14 @@ private:
   std::atomic<float> rfGainDB{20.0f};
   double qsdOffsetKhz = 12.0;
   double lastVFOHz = 14.2e6;
-  float lmsMu = 0.001f;
-  float lmsW0_r = 0.0f;
-  float lmsW0_i = 0.0f;
-  float lmsAcc_r = 0.0f;
-  float lmsAcc_i = 0.0f;
+  float lmsMu = 0.01f;
+  
+  // LMS weights and power accumulators for QSD0 and QSD1 I/Q correction
+  float w0_r = 0.0f, w0_i = 0.0f;
+  float w1_r = 0.0f, w1_i = 0.0f;
+  float acc0_r = 0.0f, acc0_i = 0.0f;
+  float acc1_r = 0.0f, acc1_i = 0.0f;
+  float pwr0 = 0.0f, pwr1 = 0.0f;
   uint32_t sampleBlockCounter = 0;
 
   float shiftCos0 = 1.0f, shiftSin0 = 0.0f;

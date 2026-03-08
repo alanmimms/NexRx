@@ -193,7 +193,8 @@ function init()
         local prop = p.property or "frequency"
         if delta ~= 0 and p and p.step then 
             local newVal = state[prop] + delta * p.step
-            setProperty(prop, newVal); return true 
+            setProperty(prop, newVal)
+            return true 
         end
         return false
     end)
@@ -213,12 +214,13 @@ function init()
         local step = p.step or (w and w.data and (w.data.max - w.data.min) * 0.01) or 0.01
         if e.delta then 
             local newVal = val + e.delta * step
-            setProperty(prop, newVal); return true 
+            setProperty(prop, newVal)
+            return true 
         end
         return false
     end)
     events.registerHandler("set_value", function(e, w, p)
-        if p and p.property and p.value ~= nil then setProperty(p.property, p.value); return true end
+        if p and p.property and p.value ~= nil then setProperty(p.property, p.value) return true end
         return false
     end)
 

@@ -76,8 +76,12 @@ local specs = {
         if rx and rx.setVfo then rx.setVfo(v) end
         Preselector.tune(v)
     end },
-    vfoA          = { defaultValue = 14.200e6, min = 0.1e6, max = 30.0e6 },
-    vfoB          = { defaultValue = 7.050e6, min = 0.1e6, max = 30.0e6 },
+    vfoA          = { defaultValue = 14.200e6, min = 0.1e6, max = 30.0e6, setter = function(v)
+        if AppState.get("activeVFO") == "A" then AppState.set("frequency", v) end
+    end },
+    vfoB          = { defaultValue = 7.050e6, min = 0.1e6, max = 30.0e6, setter = function(v)
+        if AppState.get("activeVFO") == "B" then AppState.set("frequency", v) end
+    end },
     activeVFO     = { defaultValue = "A" },
     selectedMode  = { defaultValue = "USB", setter = function(v) 
         local modeHelper = require("Modes")

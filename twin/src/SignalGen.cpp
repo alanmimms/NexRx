@@ -333,9 +333,12 @@ namespace nexrx {
 		double cosLO = std::cos(loPhases[ch]);
 		double sinLO = std::sin(loPhases[ch]);
             
-		// Standard QSD quadrature mixing: I = RF * cos, Q = -RF * sin
-		rfBBi = antI * cosLO;
-		rfBBq = -antI * sinLO;
+		// Complex mixing for analytic signal to avoid negative frequency aliases.
+		// For an analytic RF signal S = antI + j*antQ, 
+		// the baseband S_bb = S * exp(-j*LO) = (antI + j*antQ) * (cosLO - j*sinLO)
+		// = (antI * cosLO + antQ * sinLO) + j(-antI * sinLO + antQ * cosLO)
+		rfBBi = antI * cosLO + antQ * sinLO;
+		rfBBq = -antI * sinLO + antQ * cosLO;
 
 		// XFMR_IDEAL NRATIO=2 in netlist means 2x voltage step-up
 		rfBBi *= 2.0; 
