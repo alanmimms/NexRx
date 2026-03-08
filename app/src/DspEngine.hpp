@@ -70,6 +70,9 @@ private:
   float shiftCosD = 1.0f, shiftSinD = 0.0f;
   float lastShiftK = -1.0f;
 
+  float dc0_i = 0.0f, dc0_q = 0.0f;
+  float dc1_i = 0.0f, dc1_q = 0.0f;
+
   bool audioDecimateSkip = false;
 
   Demodulator demod;

@@ -47,6 +47,16 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   frame.qsd[1].toFloat(i1, q1); 
   frame.qsd[2].toFloat(i2, q2);
   
+  // DC Offset Correction (running average subtraction)
+  constexpr float dcAlpha = 0.0001f;
+  dc0_i = (1.0f - dcAlpha) * dc0_i + dcAlpha * i0;
+  dc0_q = (1.0f - dcAlpha) * dc0_q + dcAlpha * q0;
+  dc1_i = (1.0f - dcAlpha) * dc1_i + dcAlpha * i1;
+  dc1_q = (1.0f - dcAlpha) * dc1_q + dcAlpha * q1;
+  
+  i0 -= dc0_i; q0 -= dc0_q;
+  i1 -= dc1_i; q1 -= dc1_q;
+
   constexpr float sampleRate = 96000.0f;
   float k_hz = static_cast<float>(qsdOffsetKhz * 1000.0);
   if (k_hz != lastShiftK) {
