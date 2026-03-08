@@ -54,7 +54,7 @@ function ActiveTags:draw(id, x, y, w, h, tags, parentLWC)
     drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
     
     -- Draw Title
-    self.titleLabel:draw(id .. "-title", x + pad, y + pad, lwc)
+    self.titleLabel:draw("active-tags-title", x + pad, y + pad, lwc)
     
     local ty = y + 32
     for _, tag in ipairs(tags) do

@@ -27,7 +27,6 @@ setbox.rule {
         padding = 12,
         topMargin = 32,
         labelAuto = "Auto-tune",
-        labelL1 = "L1 (220nH)",
         gridRowHeight = 20,
         gridRowGap = 4,
         gridColWidth = 60,
@@ -39,23 +38,24 @@ setbox.rule {
 function Preselector.new(state)
     local self = setmetatable({}, Preselector)
     self.state = state
-    
+    local cbNames = {"L1", "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C8", "C9", "C10"}
+
     -- Initialize widget instances
     self.titleLabel = ui.Label.new()
     self.autoCheckbox = ui.Checkbox.new({
-        onToggle = function(val) AppState.set("preselectorAuto", val) end
+	  onToggle = function(val) AppState.set("preselAuto", val) end
     })
     
-    self.l1Checkbox = ui.Checkbox.new({
-        onToggle = function(val) AppState.set("preselL1", val) end
-    })
-    
-    self.cCheckboxes = {}
-    for i = 0, 10 do
-        local prop = "preselC" .. i
-        self.cCheckboxes[i] = ui.Checkbox.new({
-            onToggle = function(val) AppState.set(prop, val) end
-        })
+    self.checkboxes = {}
+
+    for k, name in ipairs(cbNames) do
+       local prop = "presel" .. name
+
+       self.checkboxes[k] = ui.Checkbox.new({
+	  getText = function() return name end,
+	  onToggle = function(val) AppState.set(prop, val) end,
+       })
+       self.checkboxes[k].propName = prop
     end
     
     return self
@@ -92,7 +92,7 @@ function Preselector:draw(id, x, y, w, h)
     local rowGap = lwc:getNumber("gridRowGap")
     cx, cy = layout.getCursor()
     self.autoCheckbox.getText = function() return lwc:getString("labelAuto") end
-    self.autoCheckbox:draw(id .. "-auto", cx, cy, state.preselectorAuto, lwc)
+    self.autoCheckbox:draw(id .. "-auto", cx, cy, state.preselAuto, lwc)
     layout.newLine(rowH + rowGap)
     
     -- Parameterized Component Grid
@@ -100,22 +100,25 @@ function Preselector:draw(id, x, y, w, h)
     local colGap = lwc:getNumber("gridColGap")
     local cols = lwc:getNumber("gridCols")
     
-    -- Define the set of grid items (1 L + 11 Cs)
-    local items = {
-        { id = "l1", label = lwc:getString("labelL1"), prop = "preselL1", widget = self.l1Checkbox }
-    }
-    for i = 0, 10 do
-        table.insert(items, { id = "c" .. i, label = "C" .. i, prop = "preselC" .. i, widget = self.cCheckboxes[i] })
+    -- Define the set of grid items
+    local items = {}
+    local cbNames = {"L1", "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C8", "C9", "C10"}
+
+    for i, cb in ipairs(self.checkboxes) do
+       table.insert(items, {
+		       id = "presel." .. cbNames[i],
+		       label = cbNames[i],
+		       widget = cb,
+               prop = cb.propName
+       })
     end
-    
+
     -- Draw items in a uniform grid
     for i, item in ipairs(items) do
         local gridIdx = (i - 1) % cols
         if gridIdx == 0 then layout.beginHorizontal(0) end
         
         local bx, by = layout.reserveSpace(colW, rowH)
-        -- Overload label for this specific item
-        item.widget.getText = function() return item.label end
         item.widget:draw(id .. "-" .. item.id, bx, by, state[item.prop], lwc)
         
         if gridIdx < cols - 1 and i < #items then 

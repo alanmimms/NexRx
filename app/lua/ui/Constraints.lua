@@ -38,12 +38,12 @@ function constraints.eval(expr, ctx)
     local fn = exprCache[expr]
     if not fn then
         local code = "return " .. expr
+        -- Use ctx as the environment for the compiled function
         local compiled, err = load(code, "constraint", "t", ctx)
         if not compiled then
             print("[Constraints] Expression error: " .. tostring(err))
             return nil
         end
-        -- Don't cache if it depends on ctx (always recompile)
         fn = compiled
     end
 
@@ -116,6 +116,7 @@ function constraints.solve(cons, parent, content, window)
         content = content,
         window = window,
         math = math,
+        print = print,
     }
 
     -- Helper to evaluate constraint expression

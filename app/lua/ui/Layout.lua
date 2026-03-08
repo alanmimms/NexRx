@@ -10,12 +10,33 @@ local regionStack = {}
 local currentRegion = nil
 local nextRegionId = 1
 
-layout.defaultPadding = 8
-layout.defaultSpacing = 4
+-- Defaults will be resolved from SetBox rules on first use
+layout.defaultPadding = nil
+layout.defaultSpacing = nil
+layout.defaultLineHeight = nil
+
+local function ensureDefaults()
+    if not layout.defaultPadding or not layout.defaultSpacing or not layout.defaultLineHeight then
+        local setbox = require("SetBox")
+        -- Note: using pcall in case rules aren't loaded yet during early startup
+        local ok, lwc = pcall(function() return setbox.newContext({"layout.System"}) end)
+        if ok and lwc then
+            layout.defaultPadding = lwc:getNumber("fallbackPadding")
+            layout.defaultSpacing = lwc:getNumber("fallbackSpacing")
+            layout.defaultLineHeight = lwc:getNumber("fallbackLineHeight")
+        else
+            -- Very basic fallbacks if SetBox is not ready
+            layout.defaultPadding = 8
+            layout.defaultSpacing = 4
+            layout.defaultLineHeight = 20
+        end
+    end
+end
 
 local eventsModule = nil
 
 local function createRegion(x, y, w, h, name)
+    ensureDefaults()
     local id = "region_" .. nextRegionId
     nextRegionId = nextRegionId + 1
     return {
@@ -145,9 +166,10 @@ end
 
 function layout.newLine(height)
     if not currentRegion then return end
+    ensureDefaults()
     local r = currentRegion
     height = height or r.maxH
-    if height == 0 then height = 20 end
+    if height == 0 then height = layout.defaultLineHeight end
     r.cursorX = r.x
     r.cursorY = r.cursorY + height + r.spacing
     r.maxH = 0

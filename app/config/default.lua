@@ -109,6 +109,9 @@ rule {
         springX = 0, springY = 0,
         order = 0,
         parent = "",
+        fallbackPadding = 8,
+        fallbackSpacing = 4,
+        fallbackLineHeight = 20,
 
         -- =================================================================
         -- Connection Defaults (hw abstraction layer)
@@ -384,10 +387,10 @@ rule {
 }
 
 -- Sidebar Widgets Ordering
-rule { id = "id-isg",   tags = {"id.isg"},   apply = { parent = "right-sidebar", order = 10, height = 160 } }
-rule { id = "id-presel",tags = {"id.presel"},apply = { parent = "right-sidebar", order = 20, height = 180 } }
-rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 80 } }
-rule { id = "id-audio", tags = {"id.audio"}, apply = { parent = "right-sidebar", order = 40, height = 140 } }
+rule { id = "id-isg",   tags = {"id.isg"},   apply = { parent = "right-sidebar", order = 10, height = 160, title = "SIGNAL GEN" } }
+rule { id = "id-presel",tags = {"id.presel"},apply = { parent = "right-sidebar", order = 20, height = 180, title = "PRESELECTOR" } }
+rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 80, title = "AGC" } }
+rule { id = "id-audio", tags = {"id.audio"}, apply = { parent = "right-sidebar", order = 40, height = 140, title = "AUDIO UTILS" } }
 
 -- Slider styles
 rule {
@@ -807,6 +810,15 @@ rule {
         parent = "active-tags",
         order = 10,
         title = "ACTIVE TAGS",
+    }
+}
+
+rule {
+    id = "id-active-tags-title",
+    tags = {"id.active-tags-title"},
+    apply = {
+        text = "ACTIVE TAGS",
+        foreground = "#80b3ff",
     }
 }
 

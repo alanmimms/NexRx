@@ -106,7 +106,9 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
         w = parentRegion.w,
         h = parentRegion.h
     }
-    local window = { width = parentRegion.w, height = parentRegion.h }
+    -- Ensure window size is available for expressions that use it
+    local winW, winH = getWindowSize()
+    local window = { width = winW, height = winH }
     local processedGroups = {}
 
     -- Grouping logic
@@ -188,6 +190,9 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
                     minVal, maxVal, spring = override, override, 0
                 end
 
+                -- Clamp minimum to specified bounds
+                if maxVal and minVal > maxVal then minVal = maxVal end
+
                 totalMinSize = totalMinSize + minVal
                 
                 table.insert(widgetData, {
@@ -238,7 +243,7 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
             local cursor = 0
             for _, wd in ipairs(widgetData) do
                 local w = wd.widget
-                local size = math.floor(wd.currentSize)
+                local size = math.floor(wd.currentSize + 0.5) -- Use rounded currentSize
                 local r = { x = remaining.x, y = remaining.y, w = remaining.w, h = remaining.h }
 
                 if widget.anchor == "right" then
@@ -283,7 +288,7 @@ function container.solveSublayout(parentRegion, subWidgetOrder)
                 local w = getSize(widget.id, "width", cons, ctx) or systemLwc:getNumber("fallbackWidth")
                 r.w = w; remaining.x = remaining.x + w; remaining.w = remaining.w - w
             elseif widget.anchor == "right" then
-                local w = getSize(widget.id, "width", cons, ctx) or 200
+                local w = getSize(widget.id, "width", cons, ctx) or systemLwc:getNumber("fallbackWidth")
                 r.x = remaining.x + remaining.w - w; r.w = w; remaining.w = remaining.w - w
             end
             regions[widget.id] = r

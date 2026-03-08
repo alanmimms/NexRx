@@ -72,23 +72,36 @@ end
 
 local function getAllActiveTags()
     local allTags = {}
-    local globalTags = setbox.getActiveTags() -- Use setbox internal tags
-    for _, tagName in ipairs(globalTags) do allTags[tagName] = true end
-
-    if activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"] then allTags["input.SHIFT"] = true end
-    if allTags["input.LCTRL"] or allTags["input.RCTRL"] then allTags["input.CTRL"] = true end
-    if allTags["input.LALT"] or allTags["input.RALT"] then allTags["input.ALT"] = true end
     
+    if activeTags["input.LSHIFT"] or activeTags["input.RSHIFT"] then allTags["input.SHIFT"] = true end
+    if activeTags["input.LCTRL"] or activeTags["input.RCTRL"] then allTags["input.CTRL"] = true end
+    if activeTags["input.LALT"] or activeTags["input.RALT"] then allTags["input.ALT"] = true end
+    
+    -- Copy all current input tags
+    for k, v in pairs(activeTags) do if v then allTags[k] = true end end
+
     if events and events.getModeTags then for _, t in ipairs(events.getModeTags()) do allTags[t] = true end end
     
     local mx, my = getMousePos()
     local hovered = events.getWidgetAt(mx, my)
     if hovered and hovered.id then
+        -- Add namespaced hover tag for specific rule targeting
         allTags["state.Hovered:" .. hovered.id] = true
-        if hovered.tags then for _, t in ipairs(hovered.tags) do allTags[t] = true end end
+        
+        -- Copy other tags from widget, but filter out generic state tags (state.Something)
+        -- because those should be resolved locally in the widget's LWC, not globally.
+        -- Namespaced state tags (state.Something:ID) are already added above.
+        if hovered.tags then 
+            for _, t in ipairs(hovered.tags) do 
+                if not t:find("^state%.[A-Z][a-zA-Z0-9]*$") then
+                    allTags[t] = true 
+                end
+            end 
+        end
     end
     
-    if allTags["input.MouseLEFT"] and hovered and hovered.id then
+    if activeTags["input.MouseLEFT"] and hovered and hovered.id then
+        -- Add namespaced pressed tag
         allTags["state.Pressed:" .. hovered.id] = true
     end
     
@@ -298,7 +311,6 @@ function update(dt)
     local mx, my = getMousePos()
     local tags = getAllActiveTags()
     uiState.beginFrame()
-    setbox.setActiveTags(tags)
     
     local wheel = getMouseWheel()
     if wheel ~= 0 then events.dispatch(events.createEvent(events.Type.MOUSE_WHEEL, {x=mx,y=my,delta=wheel,modifiers=tags})) end
@@ -366,7 +378,6 @@ function draw()
             local bx, by = layout.reserveSpace(40, 26)
             local active = state.selectedMode == m and {"state.Active"} or {}
             local btn = uiInstances.modeButtons[m]
-            -- btn.label will be resolved from rule matching id.mode-USB etc
             btn:draw("mode-"..m:lower(), bx, by, 40, 26, active, lwc)
             layout.space(4)
         end
@@ -435,7 +446,7 @@ function draw()
         uiInstances.rightPanel:draw("right-sidebar", rR.x, rR.y, rR.w, rR.h, lwc)
         layout.pad(12)
         
-        cx, cy = layout.getCursor()
+        local cx, cy = layout.getCursor()
         uiInstances.rxToggle:draw("rx-toggle", cx, cy, rR.w - 24, 40, state.rxActive and {"state.Active"} or {}, lwc)
         layout.newLine(52)
         
@@ -464,7 +475,7 @@ function draw()
     local rD = regions["active-tags"]
     if rD then
         layout.setRegion(rD.x, rD.y, rD.w, rD.h, "active-tags")
-        uiInstances.activeTagsViewer:draw("at-v", rD.x+8, rD.y+8, rD.w-16, rD.h-16, tags, nil)
+        uiInstances.activeTagsViewer:draw("active-tags", rD.x+8, rD.y+8, rD.w-16, rD.h-16, tags, nil)
         layout.endRegion()
     end
 

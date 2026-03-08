@@ -18,11 +18,13 @@
 
 print("[Stimulus] Loading default configuration (Boosted Levels)...")
 
--- Background noise (about S3 level)
+-- Background noise
 stimulus.addNoise("band-noise", {
-    rms = 10e-6,      -- 10µV RMS
+    rms = 1e-6,
     type = "thermal"
 })
+
+if false then
 
 -- CW beacon on 14.100 MHz (S7 level)
 stimulus.addMorse("VVV-DE-NIST", {
@@ -58,14 +60,6 @@ stimulus.addSsb("ssb-1tone", {
     tones = {1000}
 })
 
-stimulus.addSsb("voice-id", {
-    freq = 14.200e6,
-    amplitude = 15e-3, -- 15mV
-    mode = "usb",
-    audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
-    loop = true
-})
-
 -- AM two-tone beacon on 14.250 MHz (S9+10)
 stimulus.addAm("am-2tone", {
     freq = 14.250e6,
@@ -82,6 +76,18 @@ stimulus.addAm("wwv15", {
     audioFile = "test/wwv-ident.wav",
     loop = true
 })
+
+end
+
+stimulus.addSsb("voice-id", {
+    freq = 14.200e6,
+    amplitude = 15e-3, -- 15mV
+    mode = "usb",
+    audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
+    loop = true
+})
+
+
 
 print("[Stimulus] Loaded " .. stimulus.count() .. " stimuli")
 

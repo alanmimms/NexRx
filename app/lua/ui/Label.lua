@@ -37,9 +37,11 @@ function Label:draw(id, x, y, parentLWC)
     local text = ""
     if self.getText then
         text = self.getText()
-    else
-        -- Static text MUST come from a rule matching this context
+    elseif lwc:has("text") then
         text = lwc:getString("text")
+    else
+        -- Fallback to title property if no text property
+        text = lwc:has("title") and lwc:getString("title") or ""
     end
     
     -- All styling comes from rules
