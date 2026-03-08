@@ -21,14 +21,13 @@ DspEngine::DspEngine() {
 void DspEngine::setVfo(double freqHz) {
   lastVFOHz = freqHz;
   // Reset phasors and LMS on tuning to ensure stability
-  shiftCos0 = 1.0f; shiftSin0 = 0.0f; 
-  shiftCos1 = 1.0f; shiftSin1 = 0.0f;
   w0_r = 0.0f; w0_i = 0.0f; 
   w1_r = 0.0f; w1_i = 0.0f;
   acc0_r = 0.0f; acc0_i = 0.0f;
   acc1_r = 0.0f; acc1_i = 0.0f;
   pwr0 = 0.0f; pwr1 = 0.0f;
   sampleBlockCounter = 0;
+  totalSamplesProcessed = 0;
 }
 
 void DspEngine::setQsdOffset(double offsetKhz) {
@@ -60,74 +59,61 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   i0 -= dc0_i; q0 -= dc0_q;
   i1 -= dc1_i; q1 -= dc1_q;
 
-  constexpr float sampleRate = 96000.0f;
-  float k_hz = static_cast<float>(qsdOffsetKhz * 1000.0);
-  if (k_hz != lastShiftK) {
-    float phaseInc = 2.0f * M_PI * k_hz / sampleRate;
-    shiftCosD = std::cos(phaseInc); shiftSinD = std::sin(phaseInc);
-    lastShiftK = k_hz;
-  }
-
-  // Advance complex LO phasors
-  Complex d(shiftCosD, shiftSinD);
-  Complex p0(shiftCos0, shiftSin0);
-  Complex p1(shiftCos1, shiftSin1);
+  constexpr double sampleRate = 96000.0;
+  double k_hz = qsdOffsetKhz * 1000.0;
+  double phase = 2.0 * M_PI * k_hz * (static_cast<double>(totalSamplesProcessed) / sampleRate);
   
-  p0 *= std::conj(d); // e^{-jkt}
-  p1 *= d;           // e^{jkt}
-  
-  shiftCos0 = p0.real(); shiftSin0 = p0.imag();
-  shiftCos1 = p1.real(); shiftSin1 = p1.imag();
+  // High-precision phasors for rotation
+  // Shift QSD0 DOWN by k: (i0 + j*q0) * (cos - j*sin)
+  float i0_s = i0 * std::cos(phase) + q0 * std::sin(phase);
+  float q0_s = q0 * std::cos(phase) - i0 * std::sin(phase);
 
-  // Rotate mixers to DC
-  // Mixer 0 (f-k) has signal at +k. Rotate by -k (p0)
-  Complex s0(i0, q0);
+  // Shift QSD1 UP by k: (i1 + j*q1) * (cos + j*sin)
+  float i1_s = i1 * std::cos(phase) - q1 * std::sin(phase);
+  float q1_s = q1 * std::cos(phase) + i1 * std::sin(phase);
+
+  // Mixer 2 (6f) is the sextature mixer for harmonic rejection.
+  // It is already at the target fundamental's perspective (center).
+  Complex s2(i2, q2);
+
+  // Historical LMS Adaptive Image Rejection
+  // output = w0 * QSD0_shifted + w1 * QSD1_shifted ≈ QSD2
   Complex w0(w0_r, w0_i);
-  s0 = s0 - w0 * std::conj(s0);
-  Complex s0_rot = s0 * p0;
-
-  // Mixer 1 (f+k) has signal at -k. Rotate by +k (p1)
-  Complex s1(i1, q1);
   Complex w1(w1_r, w1_i);
-  s1 = s1 - w1 * std::conj(s1);
-  Complex s1_rot = s1 * p1;
+  Complex s0_s(i0_s, q0_s);
+  Complex s1_s(i1_s, q1_s);
 
-  // Periodically re-normalize phasors
-  if ((dspDiag.framesProcessed.load() & 0x3FFF) == 0) {
-    p0 /= std::abs(p0); p1 /= std::abs(p1);
-    shiftCos0 = p0.real(); shiftSin0 = p0.imag();
-    shiftCos1 = p1.real(); shiftSin1 = p1.imag();
-  }
+  Complex out = w0 * s0_s + w1 * s1_s;
+  Complex err_vec = s2 - out;
 
-  // Combined output after individual image suppression
-  Complex err = 0.5f * (s0_rot + s1_rot);
+  // LMS update: w = w + mu * error * conj(input)
+  float mu = lmsMu.load();
+  w0 += mu * err_vec * std::conj(s0_s);
+  w1 += mu * err_vec * std::conj(s1_s);
 
-  // Update LMS (Standard blind I/Q correction: minimizes E[s^2])
-  Complex upd0 = s0 * s0; 
-  acc0_r += upd0.real(); acc0_i += upd0.imag();
-  pwr0 += (s0.real() * s0.real() + s0.imag() * s0.imag());
-  
-  Complex upd1 = s1 * s1;
-  acc1_r += upd1.real(); acc1_i += upd1.imag();
-  pwr1 += (s1.real() * s1.real() + s1.imag() * s1.imag());
-  
-  if (++sampleBlockCounter >= 8192) {
-    // Self-normalizing update: w = w + mu * E[s^2] / E[|s|^2]
-    float n0 = std::max(1e-10f, pwr0);
-    float n1 = std::max(1e-10f, pwr1);
-    
-    w0 += lmsMu * (Complex(acc0_r, acc0_i) / n0);
-    w1 += lmsMu * (Complex(acc1_r, acc1_i) / n1);
-    
-    w0_r = w0.real(); w0_i = w0.imag();
-    w1_r = w1.real(); w1_i = w1.imag();
-    acc0_r = 0.0f; acc0_i = 0.0f; pwr0 = 0.0f;
-    acc1_r = 0.0f; acc1_i = 0.0f; pwr1 = 0.0f;
+  // Clamp weights to prevent runaway (converges to ~0.5 each in ideal)
+  auto clampW = [](Complex& w) {
+    float mag = std::abs(w);
+    if (mag > 2.0f) w *= (2.0f / mag);
+  };
+  clampW(w0); clampW(w1);
+  w0_r = w0.real(); w0_i = w0.imag();
+  w1_r = w1.real(); w1_i = w1.imag();
+
+  // The synthesized output is the filtered/nulled signal
+  Complex err = out;
+
+  if (++sampleBlockCounter >= 4093) {
     sampleBlockCounter = 0;
-    
-    // Store magnitudes of weights in diagnostics to verify convergence
+    // Store diagnostics
     dspDiag.lmsWeightR.store(std::abs(w0)); 
-    dspDiag.lmsWeightI.store(std::abs(w1)); 
+    dspDiag.lmsWeightI.store(std::abs(w1));
+    
+    // In this historical mode, we can estimate errors by deviation from 0.5
+    dspDiag.gainErr0.store(20.0f * std::log10(std::max(0.1f, 2.0f * std::abs(w0))));
+    dspDiag.phaseErr0.store(std::arg(w0) * 180.0f / M_PI);
+    dspDiag.gainErr1.store(20.0f * std::log10(std::max(0.1f, 2.0f * std::abs(w1))));
+    dspDiag.phaseErr1.store(std::arg(w1) * 180.0f / M_PI);
   }
 
   // Output after image suppression
@@ -152,6 +138,7 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   
   if (!audioDecimateSkip) audioBuffer.write(aOut);
   audioDecimateSkip = !audioDecimateSkip;
+  totalSamplesProcessed++;
   dspDiag.framesProcessed++;
 }
 

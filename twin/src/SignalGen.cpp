@@ -117,7 +117,7 @@ namespace nexrx {
       }
     }
 
-    if (opts.calFile.empty() || opts.noCal) {
+    if (opts.calFile.empty() && !opts.noCal) {
       std::mt19937 rng(1337); // Stable seed for simulation consistency
       std::uniform_real_distribution<double> gDist(0.95, 1.05);
       std::uniform_real_distribution<double> pDist(-0.05, 0.05);
@@ -139,6 +139,8 @@ namespace nexrx {
 	std::cout << std::setw(7) << i << " | " << std::fixed << std::setprecision(1) << std::setw(7) << rej << " dBc | " << std::setw(15) << std::setprecision(3) << 20.0*std::log10(g) << " dB | " << std::setw(15) << std::setprecision(2) << p * (180.0/M_PI) << " deg" << std::endl;
       }
       std::cout << std::endl;
+    } else if (opts.noCal) {
+      std::cout << "[Twin] Simulated Hardware: Using ideal components (--no-cal specified)" << std::endl;
     }
     return opts;
   }
@@ -257,164 +259,158 @@ namespace nexrx {
       bool streamLogged = false;
       std::cout << "[Twin] Starting session loop" << std::endl;
     
-      while (controlHandler->isConnected()) {
-	int targetRate;
-	std::vector<int> chMap;
-	controlHandler->getCodecConfig(targetRate, chMap);
-	if (std::abs(sampleRate - (double)targetRate) > 1.0) {
-	  sampleRate = (double)targetRate;
-	  samplePeriod = 1.0 / sampleRate;
-	  memset(isgNoiseZi, 0, sizeof(isgNoiseZi));
-	  memset(isgNoiseZq, 0, sizeof(isgNoiseZq));
-	  memset(loPhases, 0, sizeof(loPhases));
-	  memset(isgPhases, 0, sizeof(isgPhases));
-	  streamStartTime = std::chrono::steady_clock::now();
-	  outputSample = 0;
-	}
+    // =======================================================================
+    // AK5578 SHARP ROLL-OFF Digital Filter Emulation with OVERSAMPLING
+    // =======================================================================
+    struct BiquadCoeffs { double b0, b1, b2, a1, a2; };
+    static constexpr int NUM_LPF_STAGES = 3;
+    static constexpr int OVERSAMPLE_RATIO = 5;
+    static constexpr BiquadCoeffs ak5578_480k_stages[NUM_LPF_STAGES] = {
+        {0.0006628600, 0.0008272571, 0.0006628600, -1.5472148716, 0.6157336719},
+        {1.0000000000, -0.4832493140, 1.0000000000, -1.5609518734, 0.7359192796},
+        {1.0000000000, -0.9740021692, 1.0000000000, -1.6237519754, 0.9064567688},
+    };
+    double lpf_zi[3][NUM_LPF_STAGES][2] = {};
+    double lpf_zq[3][NUM_LPF_STAGES][2] = {};
 
-	if (!controlHandler->isStreaming()) {
-	  std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	  streamStartTime = std::chrono::steady_clock::now();
-	  outputSample = 0;
-	  streamLogged = false;
-	  if (stimulusManager) {
-	    stimulusManager->resetAll();
-	  }
-	  continue;
-	}
-      
-	if (!streamLogged) {
-	  double fr, q;
-	  getPreselParams(preselector, fr, q);
-	  std::cout << "[Twin] Data streaming ACTIVE. Presel resonant at " << (fr/1e6) << " MHz" << std::endl;
-	  streamLogged = true;
-	}
-      
-	auto now = std::chrono::steady_clock::now(); 
-	auto targetElapsed = static_cast<uint64_t>(outputSample * 1000000.0 / sampleRate);
-	auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - streamStartTime).count();
-	if (elapsed < static_cast<long long>(targetElapsed)) {
-	  if (targetElapsed - elapsed > 1000) {
-	    std::this_thread::sleep_for(std::chrono::microseconds(targetElapsed - elapsed));
-	  }
-	}
-      
-	int nSteps = static_cast<int>(sampleRate / 100.0);
-	if (nSteps < 1) nSteps = 1;
+    auto applyLpf = [&](double x, double z[NUM_LPF_STAGES][2]) -> double {
+        double y = x;
+        for (int s = 0; s < NUM_LPF_STAGES; ++s) {
+            const auto& c = ak5578_480k_stages[s];
+            double out = c.b0 * y + z[s][0];
+            z[s][0] = c.b1 * y - c.a1 * out + z[s][1];
+            z[s][1] = c.b2 * y - c.a2 * out;
+            y = out;
+        }
+        return y;
+    };
 
-	for (int step = 0; step < nSteps; ++step) {
-	  static std::mt19937 rng(12345);
-	  static std::normal_distribution<double> dist(0, 1e-7); 
-	  double t = outputSample * samplePeriod;
-	  double attenGain = attenuator.getVoltageGain();
-	  double pgaGainLinear = std::pow(10.0, pga.getGainDB() / 20.0);
-	  double fI[3] = {0}, fQ[3] = {0};
-        
-	  // Sample-coherent VFO and offset for all three QSD channels
-	  double baseVFO = controlHandler->getVFO();
-	  double qsdK = controlHandler->getQSDOffset();
+    auto computePhaseInc = [&](double freq_hz, double rate) -> std::pair<double, double> {
+        double delta = 2.0 * M_PI * freq_hz / rate;
+        return {std::cos(delta), std::sin(delta)};
+    };
 
-	  for (int ch = 0; ch < 3; ++ch) {
-	    double vfo = (ch == 0) ? (baseVFO - qsdK) : ((ch == 1) ? (baseVFO + qsdK) : (6.0 * baseVFO));
-	    if (std::abs(vfo - currentVFOs[ch]) > 0.1) {
-	      currentVFOs[ch] = vfo;
-	      memset(isgNoiseZi[ch], 0, sizeof(isgNoiseZi[ch]));
-	      memset(isgNoiseZq[ch], 0, sizeof(isgNoiseZq[ch]));
-	    }
-        
-	    { // DSP Scope
-	      double rfBBi = 0, rfBBq = 0;
-	      if (stimulusManager) {
-		double antI = 0, antQ = 0;
-		// Use 100kHz roofing filter to prevent aliasing from far-away signals
-		stimulusManager->getRfIQ(t, antI, antQ, vfo, 100000.0); 
+    double lo_cos[3] = {1,1,1}, lo_sin[3] = {0,0,0};
+    double lo_cos_d[3], lo_sin_d[3];
+    double current_lo = 0, current_k = 0;
 
-		loPhases[ch] = std::fmod(loPhases[ch] + 2.0 * M_PI * vfo * samplePeriod, 2.0 * M_PI);
-		double cosLO = std::cos(loPhases[ch]);
-		double sinLO = std::sin(loPhases[ch]);
-            
-		// Complex mixing for analytic signal to avoid negative frequency aliases.
-		// For an analytic RF signal S = antI + j*antQ, 
-		// the baseband S_bb = S * exp(-j*LO) = (antI + j*antQ) * (cosLO - j*sinLO)
-		// = (antI * cosLO + antQ * sinLO) + j(-antI * sinLO + antQ * cosLO)
-		rfBBi = antI * cosLO + antQ * sinLO;
-		rfBBq = -antI * sinLO + antQ * cosLO;
+    auto updateLOs = [&](double lo, double k) {
+        auto p0 = computePhaseInc(lo - k, 480000.0);
+        lo_cos_d[0] = p0.first; lo_sin_d[0] = p0.second;
+        auto p1 = computePhaseInc(lo + k, 480000.0);
+        lo_cos_d[1] = p1.first; lo_sin_d[1] = p1.second;
+        auto p2 = computePhaseInc(lo, 480000.0);
+        lo_cos_d[2] = p2.first; lo_sin_d[2] = p2.second;
+        for(int i=0; i<3; ++i) { lo_cos[i]=1.0; lo_sin[i]=0.0; }
+    };
 
-		// XFMR_IDEAL NRATIO=2 in netlist means 2x voltage step-up
-		rfBBi *= 2.0; 
-		rfBBq *= 2.0;
-
-		double pg = getPreselGain(vfo, preselector);
-		rfBBi *= pg;
-		rfBBq *= pg;
-	      }
-          
-	      double isgBBi = 0, isgBBq = 0;
-	      if (controlHandler->isISGEnabled()) {
-		double isgF = controlHandler->getISGFreq();
-		if (isgF > 1.0) {
-		  double off = isgF - vfo;
-		  // Simulate anti-alias filter: signals far outside baseband are zeroed
-		  if (std::abs(off) < sampleRate / 2.0) {
-		    isgPhases[ch] = std::fmod(isgPhases[ch] + 2.0 * M_PI * off * samplePeriod, 2.0 * M_PI);
-		    double presel = getPreselGain(isgF, preselector);
-		    isgBBi = 0.500 * presel * std::cos(isgPhases[ch]);
-		    isgBBq = 0.500 * presel * std::sin(isgPhases[ch]);
-		  }
-		} else if (isgF == 1.0) {
-		  static std::uniform_real_distribution<double> white(-1.0, 1.0);
-		  double fResISG, qISG;
-		  getPreselParams(preselector, fResISG, qISG);
-		  double fOffISG = std::clamp(fResISG - vfo, -sampleRate/2.0, sampleRate/2.0);
-		  double bwISG = fResISG / qISG;
-		  double r = std::exp(-M_PI * bwISG / sampleRate);
-		  double theta = 2.0 * M_PI * fOffISG / sampleRate;
-		  double re = r * std::cos(theta);
-		  double im = r * std::sin(theta);
-		  double xI = white(rng);
-		  double xQ = white(rng);
-		  double yPrevI = isgNoiseZi[ch][0];
-		  double yPrevQ = isgNoiseZq[ch][0];
-		  double yI = (1.0 - r) * xI + (re * yPrevI - im * yPrevQ);
-		  double yQ = (1.0 - r) * xQ + (re * yPrevQ + im * yPrevI);
-		  isgNoiseZi[ch][0] = yI;
-		  isgNoiseZq[ch][0] = yQ;
-		  isgBBi = 0.05 * (yI + xI * 0.0003);
-		  isgBBq = 0.05 * (yQ + xQ * 0.0003);
-		}
-	      }
-          
-	      double tBBi = (rfBBi * attenGain + isgBBi + dist(rng));
-	      double tBBq = (rfBBq * attenGain + isgBBq + dist(rng));
-          
-	      double gE = opts.gainErr[ch];
-	      double pE = opts.phaseErrRad[ch];
-          
-	      double bi = tBBi;
-	      double bq = (tBBq * std::cos(pE) - tBBi * std::sin(pE)) * gE;
-          
-	      fI[ch] = bi * pgaGainLinear;
-	      fQ[ch] = bq * pgaGainLinear;
-	    }
-	  }
-        
-	  IQFrame pk;
-	  pk.sequence = (uint32_t)outputSample;
-	  pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
-	  for (int ch = 0; ch < 3; ++ch) {
-	    constexpr double scale = 8388607.0; 
-	    pk.qsd[ch].i = static_cast<int32_t>(std::clamp(fI[ch] * scale, -8388608.0, 8388607.0));
-	    pk.qsd[ch].q = static_cast<int32_t>(std::clamp(fQ[ch] * scale, -8388608.0, 8388607.0));
-	  }
-	  batch.push_back(pk);
-	  if (batch.size() >= 32) {
-	    stream->writeBatch(batch);
-	    batch.clear();
-	  }
-	  outputSample++;
-	}
-	std::this_thread::sleep_for(std::chrono::microseconds(10)); // Be nice to host
+    while (controlHandler->isConnected()) {
+      if (!controlHandler->isStreaming()) {
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	streamStartTime = std::chrono::steady_clock::now();
+	outputSample = 0;
+	streamLogged = false;
+	if (stimulusManager) stimulusManager->resetAll();
+	continue;
       }
+      
+      if (!streamLogged) {
+	double fr, q;
+	getPreselParams(preselector, fr, q);
+	std::cout << "[Twin] Data streaming ACTIVE. Presel resonant at " << (fr/1e6) << " MHz" << std::endl;
+	streamLogged = true;
+      }
+
+      // --- High Precision Pacing ---
+      auto now = std::chrono::steady_clock::now();
+      double elapsedS = std::chrono::duration<double>(now - streamStartTime).count();
+      double targetS = static_cast<double>(outputSample) / 96000.0;
+      
+      if (targetS > elapsedS) {
+          auto waitTime = std::chrono::microseconds(static_cast<int64_t>((targetS - elapsedS) * 1e6));
+          if (waitTime.count() > 500) {
+              std::this_thread::sleep_for(waitTime);
+          }
+      } else if (elapsedS - targetS > 0.1) {
+          // If we fall behind by >100ms, reset start time to prevent burst catch-up
+          streamStartTime = now - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(targetS));
+      }
+
+      double baseVFO = controlHandler->getVFO();
+      double qsdK = controlHandler->getQSDOffset();
+      if (std::abs(baseVFO - current_lo) > 0.1 || std::abs(qsdK - current_k) > 0.1) {
+          updateLOs(baseVFO, qsdK);
+          current_lo = baseVFO; current_k = qsdK;
+      }
+
+      int nToProcess = 960; // 10ms chunk
+      for (int s = 0; s < nToProcess; ++s) {
+          double filt_i[3]={0}, filt_q[3]={0};
+          for (int i = 0; i < OVERSAMPLE_RATIO; ++i) {
+              double t = (outputSample * OVERSAMPLE_RATIO + i) / 480000.0;
+              double antI = 0, antQ = 0;
+              if (stimulusManager) stimulusManager->getRfIQ(t, antI, antQ, current_lo, 100000.0);
+              
+              // Add tiny noise floor to keep LMS stable
+              static thread_local std::mt19937 noiseRng(54321);
+              static thread_local std::normal_distribution<double> noiseDist(0, 1e-9);
+              antI += noiseDist(noiseRng); antQ += noiseDist(noiseRng);
+
+              double attenGain = attenuator.getVoltageGain();
+              antI *= attenGain; antQ *= attenGain;
+
+              for (int ch = 0; ch < 3; ++ch) {
+                  // Complex mixing: S_bb = S_rf * exp(-j*phi_LO)
+                  double bb_i = antI * lo_cos[ch] + antQ * lo_sin[ch];
+                  double bb_q = antQ * lo_cos[ch] - antI * lo_sin[ch];
+                  
+                  // Apply simulated hardware error
+                  double gE = opts.gainErr[ch];
+                  double pE = opts.phaseErrRad[ch];
+                  double err_i = bb_i;
+                  double err_q = (bb_q * std::cos(pE) - bb_i * std::sin(pE)) * gE;
+
+                  double fi = applyLpf(err_i, lpf_zi[ch]);
+                  double fq = applyLpf(err_q, lpf_zq[ch]);
+                  if (i == OVERSAMPLE_RATIO - 1) { filt_i[ch] = fi; filt_q[ch] = fq; }
+
+                  // Increment LO phase
+                  double c = lo_cos[ch] * lo_cos_d[ch] - lo_sin[ch] * lo_sin_d[ch];
+                  double s = lo_sin[ch] * lo_cos_d[ch] + lo_cos[ch] * lo_sin_d[ch];
+                  lo_cos[ch] = c; lo_sin[ch] = s;
+              }
+              
+              if (((outputSample * OVERSAMPLE_RATIO + i) & 0x7FFFF) == 0) {
+                  for(int ch=0; ch<3; ++ch) {
+                      double m = std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
+                      if (m > 0) { lo_cos[ch] /= m; lo_sin[ch] /= m; }
+                  }
+              }
+          }
+
+          IQFrame pk;
+          pk.sequence = (uint32_t)outputSample;
+          pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
+          
+          static thread_local std::mt19937 rng(12345);
+          static thread_local std::uniform_real_distribution<double> uniform(-0.5, 0.5);
+          constexpr double scale = 8388607.0 / 1.65;
+          double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
+
+          for (int ch = 0; ch < 3; ++ch) {
+              auto quantize = [&](double v) {
+                  double dither = uniform(rng) + uniform(rng);
+                  return static_cast<int_fast32_t>(std::clamp(std::round(v * pgaGain * scale + dither), -8388608.0, 8388607.0));
+              };
+              pk.qsd[ch].i = quantize(filt_i[ch]);
+              pk.qsd[ch].q = quantize(filt_q[ch]);
+          }
+          batch.push_back(pk);
+          if (batch.size() >= 32) { stream->writeBatch(batch); batch.clear(); }
+          outputSample++;
+      }
+      std::this_thread::sleep_for(std::chrono::microseconds(10));
+    }
     
       std::cout << "[Twin] Client disconnected, session ended" << std::endl;
       controlHandler->stop();

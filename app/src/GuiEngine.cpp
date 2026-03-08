@@ -233,6 +233,21 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
       if (twinConnected.load()) { postCommand([this, f]() { twinHost.setVFO(f, -1.0); }); }
     };
     rxTable["getSignalRms"] = [this]() { return dsp_.getDiagnostics().signalRms.load(); };
+    rxTable["getStats"] = [this]() {
+      auto& d = dsp_.getDiagnostics();
+      sol::table t = lua.create_table();
+      t["frames"] = d.framesProcessed.load();
+      t["rms"] = d.signalRms.load();
+      t["maxRaw"] = d.maxRaw.load();
+      t["maxAudio"] = d.maxAudio.load();
+      t["w0_mag"] = d.lmsWeightR.load();
+      t["w1_mag"] = d.lmsWeightI.load();
+      t["gain0"] = d.gainErr0.load();
+      t["phase0"] = d.phaseErr0.load();
+      t["gain1"] = d.gainErr1.load();
+      t["phase1"] = d.phaseErr1.load();
+      return t;
+    };
     lua["rx"] = rxTable;
 
     sol::table waterfallTable = lua.create_table();
@@ -308,6 +323,12 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
 
     if (!audio.init(48000, 2)) return false;
     
+    // Configure audio buffer for jitter absorption without artifact-prone adaptation
+    BufferConfig audioConfig;
+    audioConfig.capacity = 32768; // ~680ms jitter buffer
+    audioConfig.enableAdaptation = false; 
+    dsp_.getAudioBuffer().configure(audioConfig);
+
     audio.setCallback([this](float* out, uint32_t fC, uint32_t ch) {
       thread_local std::vector<float> tmp;
       tmp.resize(fC);

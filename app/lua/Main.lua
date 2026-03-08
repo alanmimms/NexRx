@@ -130,6 +130,7 @@ local freqEntryBlink = 0
 local wfBins = 512
 local wfRows = 256
 local spectrumData = {}
+_G.rxStats = { rms=0, gain0=0, phase0=0, gain1=0, phase1=0, w0_mag=0, w1_mag=0 }
 
 function init()
     AppState.init()
@@ -328,6 +329,23 @@ function update(dt)
     if hwConnected then
         local hwSpec = hw.getSpectrum()
         if hwSpec and #hwSpec > 0 then spectrumData = hwSpec; dispatch.updateWaterfall(spectrumData) end
+        if frameCount % 10 == 0 then
+            local s = rx.getStats()
+            if s then
+                _G.rxStats.rms = s.rms
+                _G.rxStats.gain0 = s.gain0
+                _G.rxStats.phase0 = s.phase0
+                _G.rxStats.gain1 = s.gain1
+                _G.rxStats.phase1 = s.phase1
+                _G.rxStats.w0_mag = s.w0_mag
+                _G.rxStats.w1_mag = s.w1_mag
+                
+                if frameCount % 60 == 0 then
+                    print(string.format("[CAL] QSD0: %+.2f dB, %+.1f deg | QSD1: %+.2f dB, %+.1f deg | LMS: %.4f, %.4f | RMS: %.6f", 
+                        s.gain0, s.phase0, s.gain1, s.phase1, s.w0_mag, s.w1_mag, s.rms))
+                end
+            end
+        end
     else
         dispatch.updateWaterfall(spectrumData)
     end

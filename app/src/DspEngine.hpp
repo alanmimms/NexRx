@@ -20,8 +20,12 @@ struct DspDiagnostics {
   std::atomic<float> signalRms{0.0f};
   std::atomic<float> maxRaw{0.0f};
   std::atomic<float> maxAudio{0.0f};
-  std::atomic<float> lmsWeightR{0.0f};
-  std::atomic<float> lmsWeightI{0.0f};
+  std::atomic<float> lmsWeightR{0.0f}; // Magnitude of w0
+  std::atomic<float> lmsWeightI{0.0f}; // Magnitude of w1
+  std::atomic<float> gainErr0{0.0f};
+  std::atomic<float> phaseErr0{0.0f};
+  std::atomic<float> gainErr1{0.0f};
+  std::atomic<float> phaseErr1{0.0f};
 };
 
 class DspEngine {
@@ -58,7 +62,7 @@ private:
   std::atomic<float> rfGainDB{20.0f};
   double qsdOffsetKhz = 12.0;
   double lastVFOHz = 14.2e6;
-  float lmsMu = 0.01f;
+  std::atomic<float> lmsMu{0.01f};
   
   // LMS weights and power accumulators for QSD0 and QSD1 I/Q correction
   float w0_r = 0.0f, w0_i = 0.0f;
@@ -66,12 +70,8 @@ private:
   float acc0_r = 0.0f, acc0_i = 0.0f;
   float acc1_r = 0.0f, acc1_i = 0.0f;
   float pwr0 = 0.0f, pwr1 = 0.0f;
+  uint64_t totalSamplesProcessed = 0;
   uint32_t sampleBlockCounter = 0;
-
-  float shiftCos0 = 1.0f, shiftSin0 = 0.0f;
-  float shiftCos1 = 1.0f, shiftSin1 = 0.0f;
-  float shiftCosD = 1.0f, shiftSinD = 0.0f;
-  float lastShiftK = -1.0f;
 
   float dc0_i = 0.0f, dc0_q = 0.0f;
   float dc1_i = 0.0f, dc1_q = 0.0f;
