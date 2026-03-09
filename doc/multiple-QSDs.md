@@ -63,39 +63,26 @@ high-precision digital phasors:
 *   $S_0'$ (QSD0) is shifted DOWN by $k$: $S_0 \cdot e^{-j 2 \pi k t}$
 *   $S_1'$ (QSD1) is shifted UP by $k$: $S_1 \cdot e^{+j 2 \pi k t}$
 
-### LMS Adaptive Synthesis
-Instead of simple averaging, the system trains two complex weights
-($w_0, w_1$) to reconstruct the reference signal $S_2$:
+### One-Time High-Precision Calibration
 
-    $$S_{out} = w_0 S_0' + w_1 S_1'$$
+While hardware components (transformers, switches, capacitors) are relatively stable once at operating temperature, their initial manufacturing tolerances and the group delay of the anti-alias filters require precise calibration to achieve maximum image rejection.
 
-The error vector is defined as the difference between the reconstructed
-signal and the sextature reference:
+#### 1. Why Calibration is Required
+Each QSD is a separate physical device. To mathematically synthesize a "perfect" virtual mixer, the system must compensate for:
+*   **Independent I/Q Mismatches:** Unique gain and phase errors internal to each of the three physical mixers.
+*   **Filter Group Delay:** The 6th-order elliptic filters introduce significant phase shifts (typically ~33°) that must be perfectly aligned to allow the $S_0/S_1$ pair to reconstruct the $S_2$ reference.
 
-    $$e = S_2 - S_{out}$$
+#### 2. The Calibration Workflow (The "CALIBRATE" Button)
+Calibration is performed on-demand rather than continuously to ensure maximum signal integrity and stability.
+1.  **Trigger:** Clicking the **CALIBRATE** button in the GUI sends a `CAL!` command to the twin (or eventually the hardware).
+2.  **Clean Stimulus:** The twin immediately pauses all regular RF stimulus (voice, noise, etc.) and generates a pure 10mV calibration tone at $VFO + 1\text{kHz}$ for a fixed 2-second window.
+3.  **Least Squares Solver:** The host DSP switches from normal processing to a high-precision vector accumulation mode. Over a window of 32,744 samples, it solves for the exact complex weights ($w_n$) that minimize the error $e = S_2 - (w_0 S_0' + w_1 S_1')$.
+4.  **Verification:** The derived hardware errors (Gain/Phase) and alignment phases are reported to the **application console log**.
 
-The weights are updated every sample to minimize the mean square error:
-$$\Delta w_n = \mu \cdot e \cdot S_n^*$$
-
-### Independent Calibration and Verification
-
-A critical requirement of the NexRx architecture is that **each QSD must
-be calibrated independently**. Because each mixer is a separate physical
-device with its own component tolerances, they will inherently exhibit
-different gain and phase errors.
-
-*   **Twin Requirements:** The Digital Twin must generate unique,
-    random amplitude and phase error values for *each* of the three
-    QSD channels to ensure the app's compensation logic is robustly
-    tested against realistic, non-uniform hardware.
-
-*   **App Requirements:** The host application must perform separate
-    calibration and compensation calculations for each channel.
-
-*   **Visibility:** To maintain a clean user interface while providing
-    high-resolution technical data, these calibration diagnostics
-    (estimated hardware errors and alignment phases) must be reported
-    only to the **application console log** and should not be
-    displayed in the primary GUI.
+#### 3. Persistence and Application
+Once the calibration window closes, the results are formatted as a Lua table and can be appended to `config/calibration.lua`.
+*   **Default:** If no calibration file exists, the app defaults to zero compensation.
+*   **Startup:** At launch, `Calibration.lua` loads the stored offsets and applies them to the `DspEngine` as static compensation parameters.
+*   **Performance:** By using an exact mathematical solver rather than iterative descent, the system achieves an extremely deep, stable null that is preserved across sessions.
 
 ---
