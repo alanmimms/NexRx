@@ -6,8 +6,8 @@
 
 local ui = require("ui.Widgets")
 local layout = require("ui.Layout")
-local AppState = require("AppState")
 local setbox = require("SetBox")
+local Model = require("Model")
 
 local AGC = {}
 AGC.__index = AGC
@@ -35,17 +35,17 @@ setbox.rule {
     }
 }
 
-function AGC.new(state)
+function AGC.new(props)
     local self = setmetatable({}, AGC)
-    self.state = state
+    self.AGC = props.AGC -- Model.rx.AGC
     
     -- Initialize widget instances
     self.titleLabel = ui.Label.new()
     self.modeButtons = {
-        off  = ui.Button.new({ onClick = function() AppState.set("agcMode", 0) end }),
-        slow = ui.Button.new({ onClick = function() AppState.set("agcMode", 3) end }),
-        med  = ui.Button.new({ onClick = function() AppState.set("agcMode", 2) end }),
-        fast = ui.Button.new({ onClick = function() AppState.set("agcMode", 1) end })
+        off  = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 0) end }),
+        slow = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 3) end }),
+        med  = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 2) end }),
+        fast = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 1) end })
     }
     return self
 end
@@ -73,7 +73,7 @@ function AGC:draw(id, x, y, w, h)
     local regionW = w - padding * 2
     layout.setRegion(x + padding, y + topMargin, regionW, h - topMargin - padding, id)
     
-    local state = self.state
+    local currentMode = self.AGC.mode:get()
     local bH = lwc:getNumber("buttonHeight")
     local bG = lwc:getNumber("buttonGap")
     
@@ -95,7 +95,7 @@ function AGC:draw(id, x, y, w, h)
         btn.getText = function() return m.label end
         
         -- Add active state tag if matches current mode
-        local activeTags = (state.agcMode == m.val) and {"state.Active"} or {}
+        local activeTags = (currentMode == m.val) and {"state.Active"} or {}
         
         btn:draw(id .. "-mode-" .. m.id, bx, by, buttonW, bH, activeTags, lwc)
         

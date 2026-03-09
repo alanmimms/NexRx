@@ -25,7 +25,6 @@ setbox.rule {
         padding = 8,
         width = 100,
         height = 32,
-        label = "Button",
     }
 }
 
@@ -81,8 +80,10 @@ function Button:draw(id, x, y, w, h, extraTags, parentLWC)
     local label = ""
     if self.getText then
         label = self.getText()
-    else
+    elseif lwc:has("label") then
         label = lwc:getString("label")
+    else
+        label = id
     end
     
     local labelW = measureText(label)

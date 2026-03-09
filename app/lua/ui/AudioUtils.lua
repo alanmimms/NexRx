@@ -6,8 +6,8 @@
 
 local ui = require("ui.Widgets")
 local layout = require("ui.Layout")
-local AppState = require("AppState")
 local setbox = require("SetBox")
+local Model = require("Model")
 
 local AudioUtils = {}
 AudioUtils.__index = AudioUtils
@@ -32,20 +32,20 @@ setbox.rule {
     }
 }
 
-function AudioUtils.new(state)
+function AudioUtils.new(props)
     local self = setmetatable({}, AudioUtils)
-    self.state = state
+    self.rx = props.rx -- Model.rx
     
     -- Initialize widget instances
     self.titleLabel = ui.Label.new()
     self.muteCheckbox = ui.Checkbox.new({
-        onToggle = function(val) AppState.set("muteEnabled", val) end
+        onToggle = function(val) Model.set("rx.volume.muted", val) end
     })
     self.filterCheckbox = ui.Checkbox.new({
-        onToggle = function(val) AppState.set("demodFilterEnabled", val) end
+        onToggle = function(val) Model.set("rx.demodFilterEnabled", val) end
     })
     self.toneCheckbox = ui.Checkbox.new({
-        onToggle = function(val) AppState.set("testToneEnabled", val) end
+        onToggle = function(val) Model.set("rx.testToneEnabled", val) end
     })
     
     return self
@@ -72,21 +72,19 @@ function AudioUtils:draw(id, x, y, w, h)
     local topMargin = lwc:getNumber("topMargin")
     layout.setRegion(x + padding, y + topMargin, w - padding * 2, h - topMargin - padding, id)
     
-    local state = self.state
-    
     local cx, cy = layout.getCursor()
     self.muteCheckbox.getText = function() return lwc:getString("labelMute") end
-    self.muteCheckbox:draw(id .. "-mute", cx, cy, state.muteEnabled, lwc)
+    self.muteCheckbox:draw(id .. "-mute", cx, cy, self.rx.volume.muted:get(), lwc)
     layout.newLine(28)
     
     cx, cy = layout.getCursor()
     self.filterCheckbox.getText = function() return lwc:getString("labelFilters") end
-    self.filterCheckbox:draw(id .. "-filters", cx, cy, state.demodFilterEnabled, lwc)
+    self.filterCheckbox:draw(id .. "-filters", cx, cy, self.rx.demodFilterEnabled:get(), lwc)
     layout.newLine(28)
     
     cx, cy = layout.getCursor()
     self.toneCheckbox.getText = function() return lwc:getString("labelTone") end
-    self.toneCheckbox:draw(id .. "-tone", cx, cy, state.testToneEnabled, lwc)
+    self.toneCheckbox:draw(id .. "-tone", cx, cy, self.rx.testToneEnabled:get(), lwc)
     layout.newLine(28)
     
     layout.endRegion()

@@ -6,8 +6,8 @@
 
 local ui = require("ui.Widgets")
 local layout = require("ui.Layout")
-local AppState = require("AppState")
 local setbox = require("SetBox")
+local Model = require("Model")
 
 local ISG = {}
 ISG.__index = ISG
@@ -32,18 +32,20 @@ setbox.rule {
     }
 }
 
-function ISG.new(state)
+function ISG.new(props)
     local self = setmetatable({}, ISG)
-    self.state = state
+    self.ISG = props.ISG -- Model.ISG
     
     -- Initialize widget instances
     self.titleLabel = ui.Label.new()
-    self.freqDisplay = ui.FrequencyDisplay.new()
+    self.freqDisplay = ui.FrequencyDisplay.new({
+        valueObs = self.ISG.frequencyHz
+    })
     self.enableCheckbox = ui.Checkbox.new({
-        onToggle = function(val) AppState.set("isgEnabled", val) end
+        onToggle = function(val) Model.set("isgEnabled", val) end
     })
     self.freqSlider = ui.Slider.new({
-        onAdjust = function(val) AppState.set("isgFrequency", val) end
+        valueObs = self.ISG.frequencyHz
     })
     
     return self
@@ -71,25 +73,25 @@ function ISG:draw(id, x, y, w, h)
     local topMargin = lwc:getNumber("topMargin")
     layout.setRegion(x + padding, y + topMargin, w - padding * 2, h - topMargin - padding, id)
     
-    local state = self.state
+    local freq = self.ISG.frequencyHz:get()
     
     -- Frequency Display
     local cx, cy = layout.getCursor()
-    self.freqDisplay:draw(id .. "-freq-disp", cx, cy, w - padding * 2, 36, state.isgFrequency, _G.isgFreqEntryText or "", {"IsgControl"}, lwc)
+    self.freqDisplay:draw(id .. "-freq-disp", cx, cy, w - padding * 2, 36, _G.isgFreqEntryText or "", {"IsgControl"}, lwc)
     layout.newLine(44)
 
     -- Enabled Toggle
     cx, cy = layout.getCursor()
     -- Set checkbox label from rule
     self.enableCheckbox.getText = function() return lwc:getString("labelEnabled") end
-    self.enableCheckbox:draw(id .. "-en", cx, cy, state.isgEnabled, lwc)
+    self.enableCheckbox:draw(id .. "-en", cx, cy, self.ISG.enabled:get(), lwc)
     layout.newLine(28)
 
     -- Frequency Slider
     cx, cy = layout.getCursor()
     local sMin = lwc:getNumber("sliderMin")
     local sMax = lwc:getNumber("sliderMax")
-    self.freqSlider:draw(id .. "-fr-slider", cx, cy, w - padding * 2, sMin, sMax, state.isgFrequency, lwc)
+    self.freqSlider:draw(id .. "-fr-slider", cx, cy, w - padding * 2, sMin, sMax, freq, lwc)
     layout.newLine(24)
     
     layout.endRegion()

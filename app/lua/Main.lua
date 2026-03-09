@@ -11,13 +11,14 @@ local layout = require("ui.Layout")
 local container = require("ui.Container")
 _G.bands = require("Bands")
 local bands = _G.bands
-local dispatch = require("Dispatch")
+local Hardware = require("Hardware")
+local Model = require("Model")
+local AppController = require("AppController")
 local events = require("Events")
 local animate = require("Animate")
 local keys = require("Keycodes")
 local modeHelper = require("Modes")
 local smeter = require("SMeter")
-local AppState = require("AppState")
 _G.calibration = require("Calibration")
 local Edit = require("Edit")
 local layoutOverrides = require("LayoutOverrides")
@@ -47,17 +48,12 @@ _G.isgFreqEntryText = ""
 local keyStates = {}
 local activeTags = {}
 
-local state = setmetatable({}, {
-    __index = function(_, k) return AppState.get(k) end,
-    __newindex = function(_, k, v) AppState.set(k, v) end
-})
-
 -- Sidebar modular widgets
 local widgets = {
-    presel = Preselector.new(state),
-    isg = ISG.new(state),
-    agc = AGC.new(state),
-    audio = AudioUtils.new(state)
+    presel = Preselector.new({ preselector = Model.preselector }),
+    isg = ISG.new({ ISG = Model.ISG }),
+    agc = AGC.new({ AGC = Model.rx.AGC }),
+    audio = AudioUtils.new({ rx = Model.rx })
 }
 
 -- Persistent widget instances for main UI
@@ -66,9 +62,8 @@ local uiInstances = {}
 local function setProperty(name, v)
     local prevTags = setbox.getActiveTags()
     setbox.addTag("prop." .. name)
-    local isAnimated = setbox.getBool("animated")
     setbox.setActiveTags(prevTags)
-    if isAnimated then AppState.animateTo(name, v) else AppState.set(name, v) end
+    Model.set(name, v)
 end
 
 local function getAllActiveTags()
@@ -134,21 +129,21 @@ local spectrumData = {}
 _G.rxStats = { rms=0, gain0=0, phase0=0, gain1=0, phase1=0, w0_mag=0, w1_mag=0 }
 
 function init()
-    AppState.init()
+    AppController.init()
     _G.calibration.init()
     
     wfBins = 1024 -- Match DspEngine::FFT_SIZE
-    wfRows = math.floor(state.wfRows or 256)
+    wfRows = 256 
     for i = 1, wfBins do spectrumData[i] = -100 end
     
     setClearColor(0.1, 0.1, 0.15)
     if audio.isInitialized() then audio.start() end
     if waterfall.init(wfBins, wfRows) then
-        waterfall.setRange(state.wfMinDb, state.wfMaxDb)
-        if _G.colormaps and _G.colormaps[state.wfColormap] then 
-            waterfall.setColormapData(_G.colormaps[state.wfColormap]) 
+        waterfall.setRange(Model.waterfall.minDB:get(), Model.waterfall.maxDB:get())
+        if _G.colormaps and _G.colormaps[Model.waterfall.colormap:get()] then 
+            waterfall.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
         end
-        dispatch.enableWaterfall()
+        Hardware.enableWaterfall()
     end
     bands.init()
     events.init()
@@ -157,23 +152,35 @@ function init()
     ui.setLayoutModule(layout)
     
     if hw.connect("127.0.0.1", 5000, 5001) then
-        hwConnected = true
-        dispatch.enableHardware()
+        Hardware.enableHardware()
     end
 
-    -- Create UI Instances
+    -- Create UI Instances with Dependency Injection
     uiInstances.leftPanel = Panel.new()
     uiInstances.rightPanel = Panel.new()
     uiInstances.centerPanel = Panel.new()
-    uiInstances.freqDisplay = FrequencyDisplay.new()
-    uiInstances.freqSlider = Slider.new({ onAdjust = function(v) AppState.set("frequency", v) end })
-    uiInstances.volumeSlider = Slider.new({ onAdjust = function(v) AppState.set("volumeDb", v) end })
-    uiInstances.rfGainSlider = Slider.new({ onAdjust = function(v) AppState.set("rfGainDb", v) end })
+    
+    uiInstances.freqDisplay = FrequencyDisplay.new({
+        valueObs = require("Reactive").computed(function()
+            local active = Model.rx.VFO.active:get()
+            return (active == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
+        end)
+    })
+    
+    uiInstances.freqSlider = Slider.new({ 
+        valueObs = (Model.rx.VFO.active:peek() == "A") and Model.rx.VFO.A or Model.rx.VFO.B 
+    })
+    
+    uiInstances.volumeSlider = Slider.new({ valueObs = Model.rx.volume.DB })
+    uiInstances.rfGainSlider = Slider.new({ valueObs = Model.rx.RF.gainDB })
     uiInstances.smeter = SMeter.new()
     uiInstances.calBtn = Button.new({ getText = function() return "CALIBRATE" end })
     uiInstances.activeTagsViewer = ActiveTags.new()
     uiInstances.graticuleLegend = GraticuleLegend.new()
-    uiInstances.rxToggle = Button.new({ onClick = function() AppState.set("rxActive", not state.rxActive) end })
+    uiInstances.rxToggle = Button.new({ 
+        getText = function() return Model.rx.active:get() and "RX ON" or "RX OFF" end,
+        onClick = function() Model.set("rx.active", not Model.rx.active:get()) end 
+    })
     
     uiInstances.modeLabels = Label.new()
     uiInstances.bandLabels = Label.new()
@@ -183,20 +190,28 @@ function init()
 
     uiInstances.modeButtons = {}
     for _, m in ipairs(modeHelper.names) do
-        uiInstances.modeButtons[m] = Button.new({ onClick = function() AppState.set("selectedMode", m) end })
+        uiInstances.modeButtons[m] = Button.new({ 
+            getText = function() return m == "BYPASS" and "RAW" or m end,
+            onClick = function() Model.set("rx.selectedMode", m) end 
+        })
     end
 
     uiInstances.bandButtons = {}
     local bandList = {"160m","80m","40m","20m","15m","10m"}
     for _, b in ipairs(bandList) do
-        uiInstances.bandButtons[b] = Button.new({ onClick = function() AppState.set("selectedBand", b) end })
+        uiInstances.bandButtons[b] = Button.new({ 
+            getText = function() return b end,
+            onClick = function() Model.set("rx.selectedBand", b) end 
+        })
     end
 
     events.registerHandler("vfo_control", function(e, w, p)
         local delta = e.delta or (e.key == "RIGHT" and 1 or (e.key == "LEFT" and -1 or 0))
-        local prop = p.property or "frequency"
+        local active = Model.rx.VFO.active:peek()
+        local prop = (active == "A") and "rx.VFO.A" or "rx.VFO.B"
         if delta ~= 0 and p and p.step then 
-            local newVal = state[prop] + delta * p.step
+            local current = (active == "A") and Model.rx.VFO.A:peek() or Model.rx.VFO.B:peek()
+            local newVal = current + delta * p.step
             setProperty(prop, newVal)
             return true 
         end
@@ -204,7 +219,10 @@ function init()
     end)
     events.registerHandler("toggle_property", function(e, w, p)
         local prop = p.property or (w and w.data and w.data.property)
-        if prop then setProperty(prop, not state[prop]); return true end
+        if prop then 
+            Model.set(prop, not setbox.getBool(prop))
+            return true 
+        end
         return false
     end)
     events.registerHandler("slider_activate", function(e, w, p)
@@ -214,7 +232,7 @@ function init()
     events.registerHandler("slider_adjust", function(e, w, p)
         local prop = p.property or (w and w.data and w.data.property)
         if not prop then return false end
-        local val = state[prop]
+        local val = setbox.getNumber(prop)
         local step = p.step or (w and w.data and (w.data.max - w.data.min) * 0.01) or 0.01
         if e.delta then 
             local newVal = val + e.delta * step
@@ -277,9 +295,9 @@ function init()
         elseif events.hasModeTag("FreqEntryMode") then
             local newFreq = tonumber(freqEntryText)
             if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
-                setProperty("frequency", newFreq * 1e6)
-                if state.activeVFO == "A" then AppState.set("vfoA", newFreq * 1e6) else AppState.set("vfoB", newFreq * 1e6) end
-                bands.setFrequency(newFreq * 1e6)
+                local active = Model.rx.VFO.active:peek()
+                Model.set("rx.VFO." .. active, newFreq * 1e6)
+                bands.setCurrent(newFreq * 1e6)
             end
             events.removeModeTag("FreqEntryMode"); freqEntryText = ""
         end
@@ -329,9 +347,12 @@ function update(dt)
         lastMouseX, lastMouseY = mx, my
     end
     
-    if hwConnected then
-        local hwSpec = hw.getSpectrum()
-        if hwSpec and #hwSpec > 0 then spectrumData = hwSpec; dispatch.updateWaterfall(spectrumData) end
+    -- Hardware Synchronization Round
+    AppController.sync()
+
+    if Hardware.isHardwareEnabled() then
+        local hwSpec = Hardware.getSpectrum()
+        if hwSpec and #hwSpec > 0 then spectrumData = hwSpec; Hardware.updateWaterfall(spectrumData) end
         if frameCount % 10 == 0 then
             local s = rx.getStats()
             if s then
@@ -342,17 +363,10 @@ function update(dt)
                 _G.rxStats.phase1 = s.phase1
                 _G.rxStats.w0_mag = s.w0_mag
                 _G.rxStats.w1_mag = s.w1_mag
-                
-                if rx.isCalibrating() and frameCount % 60 == 0 then
-                    print(string.format("[CAL] ERR0: %+.2f dB, %+.1f deg | ERR1: %+.2f dB, %+.1f deg | ERR2: %+.2f dB, %+.1f deg", 
-                        s.gain0, s.phase0, s.gain1, s.phase1, s.gain2, s.phase2))
-                    print(string.format("[CAL] ALIGN: %+.1f deg, %+.1f deg | RMS: %.6f", 
-                        s.align0, s.align1, s.rms))
-                end
             end
         end
     else
-        dispatch.updateWaterfall(spectrumData)
+        Hardware.updateWaterfall(spectrumData)
     end
 end
 
@@ -374,7 +388,7 @@ function draw()
         layout.setRegion(rT.x, rT.y, rT.w, rT.h, "top-bar")
         events.registerWidget("top-bar", rT, {"widget.StatusBar"})
         drawRect(rT.x, rT.y, rT.w, rT.h, 0.08, 0.08, 0.12, 1.0)
-        local fC = hwConnected and hw.getFramesReceived and hw.getFramesReceived() or 0
+        local fC = Hardware.isHardwareEnabled() and hw.getFramesReceived and hw.getFramesReceived() or 0
         drawText(rT.x + 10, rT.y + 8, string.format("NexRx | %.0f FPS | Frames: %d", fps, fC), 0.6, 0.7, 0.9, 1.0)
         layout.endRegion()
     end
@@ -387,11 +401,12 @@ function draw()
         uiInstances.leftPanel:draw("left-sidebar", rL.x, rL.y, rL.w, rL.h, lwc)
         layout.pad(12)
         local cx, cy = layout.getCursor()
-        uiInstances.freqDisplay:draw("freq-disp", cx, cy, rL.w - 24, 36, state.frequency, freqEntryText, {"VFOControl"}, lwc)
+        uiInstances.freqDisplay:draw("freq-disp", cx, cy, rL.w - 24, 36, freqEntryText, {"VFOControl"}, lwc)
         layout.newLine(44)
         
         cx, cy = layout.getCursor()
-        uiInstances.freqSlider:draw("freq-slider", cx, cy, rL.w - 24, 0.1e6, 30.0e6, state.frequency, lwc)
+        local freq = (Model.rx.VFO.active:get() == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
+        uiInstances.freqSlider:draw("freq-slider", cx, cy, rL.w - 24, 0.1e6, 30.0e6, freq, lwc)
         layout.newLine(32)
 
         cx, cy = layout.getCursor(); 
@@ -401,7 +416,7 @@ function draw()
         layout.beginHorizontal(0)
         for _, m in ipairs(modeHelper.names) do
             local bx, by = layout.reserveSpace(40, 26)
-            local active = state.selectedMode == m and {"state.Active"} or {}
+            local active = Model.rx.selectedMode:get() == m and {"state.Active"} or {}
             local btn = uiInstances.modeButtons[m]
             btn:draw("mode-"..m:lower(), bx, by, 40, 26, active, lwc)
             layout.space(4)
@@ -416,7 +431,7 @@ function draw()
         local bandList = {"160m","80m","40m","20m","15m","10m"}
         for i, b in ipairs(bandList) do
             local bx, by = layout.reserveSpace(40, 26)
-            local active = state.selectedBand == b and {"state.Active"} or {}
+            local active = Model.rx.selectedBand:get() == b and {"state.Active"} or {}
             uiInstances.bandButtons[b]:draw("band-"..b, bx, by, 40, 26, active, lwc)
             if i < #bandList then layout.space(4) end
         end
@@ -426,14 +441,14 @@ function draw()
         uiInstances.volLabel:draw("vol-label", cx, cy, lwc); 
         layout.newLine(24)
         cx, cy = layout.getCursor()
-        uiInstances.volumeSlider:draw("volume-slider", cx, cy, rL.w - 24, -60, 0, state.volumeDb, lwc)
+        uiInstances.volumeSlider:draw("volume-slider", cx, cy, rL.w - 24, -60, 0, Model.rx.volume.DB:get(), lwc)
         layout.newLine(32)
 
         cx, cy = layout.getCursor(); 
         uiInstances.rfGainLabel:draw("rfg-label", cx, cy, lwc); 
         layout.newLine(24)
         cx, cy = layout.getCursor()
-        uiInstances.rfGainSlider:draw("rfg-slider", cx, cy, rL.w - 24, -20, 60, state.rfGainDb, lwc)
+        uiInstances.rfGainSlider:draw("rfg-slider", cx, cy, rL.w - 24, -20, 60, Model.rx.RF.gainDB:get(), lwc)
         layout.newLine(24)
         layout.endRegion()
     end
@@ -449,7 +464,7 @@ function draw()
         if sub["spec"] then
             local rs = sub["spec"]
             layout.setRegion(rs.x, rs.y, rs.w, rs.h, "spec")
-            dispatch.renderSpectrum(spectrumData, rs.x, rs.y, rs.w, rs.h)
+            Hardware.renderSpectrum(spectrumData, rs.x, rs.y, rs.w, rs.h)
             uiInstances.graticuleLegend:draw("spec-legend", rs.x + 10, rs.y + 10, 100, 45, "9.6 kHz/div", "20 dB/div")
             events.registerWidget("spec", rs, {"widget.Spectrum", "widget.VFOControl"})
             layout.endRegion()
@@ -457,7 +472,7 @@ function draw()
         if sub["wf"] then
             local rw = sub["wf"]
             layout.setRegion(rw.x, rw.y, rw.w, rw.h, "wf")
-            dispatch.renderWaterfall(rw.x, rw.y, rw.w, rw.h)
+            Hardware.renderWaterfall(rw.x, rw.y, rw.w, rw.h)
             events.registerWidget("wf", rw, {"widget.Waterfall", "widget.VFOControl"})
             layout.endRegion()
         end
@@ -472,7 +487,7 @@ function draw()
         layout.pad(12)
         
         local cx, cy = layout.getCursor()
-        uiInstances.rxToggle:draw("rx-toggle", cx, cy, rR.w - 24, 40, state.rxActive and {"state.Active"} or {}, lwc)
+        uiInstances.rxToggle:draw("rx-toggle", cx, cy, rR.w - 24, 40, Model.rx.active:get() and {"state.Active"} or {}, lwc)
         layout.newLine(52)
         
         cx, cy = layout.getCursor(); 
@@ -484,9 +499,6 @@ function draw()
         layout.newLine(48)
 
         -- Calibration Trigger
-        local calActive = rx.getStats().frames > 0 and rx.getStats().rms ~= rx.getStats().rms -- (Pseudo-check for calibrating status?)
-        -- Better: let's assume we can't easily query isCalibrating from here yet without more glue, 
-        -- but we can just show the button.
         local btnW = rR.w - 40
         cx, cy = layout.getCursor()
         if uiInstances.calBtn:draw("cal-btn", cx + 8, cy, btnW, 30, {}, lwc) then

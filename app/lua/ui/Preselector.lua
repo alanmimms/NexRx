@@ -6,8 +6,8 @@
 
 local ui = require("ui.Widgets")
 local layout = require("ui.Layout")
-local AppState = require("AppState")
 local setbox = require("SetBox")
+local Model = require("Model")
 
 local Preselector = {}
 Preselector.__index = Preselector
@@ -35,27 +35,43 @@ setbox.rule {
     }
 }
 
-function Preselector.new(state)
+function Preselector.new(props)
     local self = setmetatable({}, Preselector)
-    self.state = state
-    local cbNames = {"L1", "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C8", "C9", "C10"}
+    self.preselector = props.preselector -- Model.preselector
+    
+    local cbNames = {"L", "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10"}
 
     -- Initialize widget instances
     self.titleLabel = ui.Label.new()
     self.autoCheckbox = ui.Checkbox.new({
-	  onToggle = function(val) AppState.set("preselectorAuto", val) end
+        onToggle = function(val) Model.set("preselector.auto", val) end
     })
     
     self.checkboxes = {}
 
     for k, name in ipairs(cbNames) do
-       local prop = "presel" .. name
-
-       self.checkboxes[k] = ui.Checkbox.new({
-	  getText = function() return name end,
-	  onToggle = function(val) AppState.set(prop, val) end,
-       })
-       self.checkboxes[k].propName = prop
+        if name == "L" then
+            self.checkboxes[k] = ui.Checkbox.new({
+                getText = function() return "L1" end,
+                onToggle = function(val) 
+                    Model.set("preselector.auto", false)
+                    Model.set("preselector.L", val) 
+                end,
+            })
+        else
+            local bitIndex = tonumber(name:match("C(%d+)"))
+            self.checkboxes[k] = ui.Checkbox.new({
+                getText = function() return name end,
+                onToggle = function(val)
+                    Model.set("preselector.auto", false)
+                    local currentMask = self.preselector.capMask:peek()
+                    local bit = 2 ^ bitIndex
+                    local newMask = val and (currentMask | bit) or (currentMask & ~bit)
+                    Model.set("preselector.capMask", newMask)
+                end,
+            })
+        end
+        self.checkboxes[k].name = name
     end
     
     return self
@@ -84,7 +100,6 @@ function Preselector:draw(id, x, y, w, h)
     local topMargin = lwc:getNumber("topMargin")
     layout.setRegion(x + padding, y + topMargin, w - padding * 2, h - topMargin - padding, id)
     
-    local state = self.state
     local cx, cy
     
     -- Row 1: Auto-tune
@@ -92,7 +107,7 @@ function Preselector:draw(id, x, y, w, h)
     local rowGap = lwc:getNumber("gridRowGap")
     cx, cy = layout.getCursor()
     self.autoCheckbox.getText = function() return lwc:getString("labelAuto") end
-    self.autoCheckbox:draw(id .. "-auto", cx, cy, state.preselectorAuto, lwc)
+    self.autoCheckbox:draw(id .. "-auto", cx, cy, self.preselector.auto:get(), lwc)
     layout.newLine(rowH + rowGap)
     
     -- Parameterized Component Grid
@@ -100,32 +115,30 @@ function Preselector:draw(id, x, y, w, h)
     local colGap = lwc:getNumber("gridColGap")
     local cols = lwc:getNumber("gridCols")
     
-    -- Define the set of grid items
-    local items = {}
-    local cbNames = {"L1", "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C8", "C9", "C10"}
+    -- Draw items in a uniform grid
+    local mask = self.preselector.capMask:get()
+    local L = self.preselector.L:get()
 
     for i, cb in ipairs(self.checkboxes) do
-       table.insert(items, {
-		       id = "presel." .. cbNames[i],
-		       label = cbNames[i],
-		       widget = cb,
-               prop = cb.propName
-       })
-    end
-
-    -- Draw items in a uniform grid
-    for i, item in ipairs(items) do
         local gridIdx = (i - 1) % cols
         if gridIdx == 0 then layout.beginHorizontal(0) end
         
         local bx, by = layout.reserveSpace(colW, rowH)
-        item.widget:draw(id .. "-" .. item.id, bx, by, state[item.prop], lwc)
+        local checked = false
+        if cb.name == "L" then
+            checked = L
+        else
+            local bitIndex = tonumber(cb.name:match("C(%d+)"))
+            checked = (mask & (2 ^ bitIndex)) ~= 0
+        end
+
+        cb:draw(id .. "-" .. cb.name, bx, by, checked, lwc)
         
-        if gridIdx < cols - 1 and i < #items then 
+        if gridIdx < cols - 1 and i < #self.checkboxes then 
             layout.space(colGap) 
         end
         
-        if gridIdx == cols - 1 or i == #items then 
+        if gridIdx == cols - 1 or i == #self.checkboxes then 
             layout.endHorizontal() 
             layout.newLine(rowH + rowGap)
         end

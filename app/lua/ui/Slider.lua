@@ -6,6 +6,7 @@
 
 local setbox = require("SetBox")
 local state = require("ui.State")
+local Model = require("Model")
 
 local Slider = {}
 Slider.__index = Slider
@@ -28,7 +29,7 @@ setbox.rule {
 
 function Slider.new(options)
     local self = setmetatable({}, Slider)
-    self.onAdjust = options and options.onAdjust
+    self.valueObs = options and options.valueObs
     return self
 end
 
@@ -64,7 +65,11 @@ function Slider:draw(id, x, y, w, minVal, maxVal, value, parentLWC)
     local bWidth = lwc:getNumber("borderWidth")
     local alpha = lwc:getNumber("opacity")
     
-    local t = clamp((value - minVal) / (maxVal - minVal), 0, 1)
+    -- Use provided value or current value from observable
+    local currentValue = value
+    if self.valueObs then currentValue = self.valueObs:get() end
+    
+    local t = clamp((currentValue - minVal) / (maxVal - minVal), 0, 1)
     
     -- Draw track
     drawRoundedRect(x, y, w, h, h/2, bgR, bgG, bgB, alpha)
@@ -83,11 +88,21 @@ function Slider:draw(id, x, y, w, minVal, maxVal, value, parentLWC)
     if state.isActive(id) and state.mouseDown then
         local nt = clamp((state.mouseX - x) / w, 0, 1)
         local newValue = minVal + nt * (maxVal - minVal)
-        if newValue ~= value and self.onAdjust then self.onAdjust(newValue) end
+        if newValue ~= currentValue then
+            if self.valueObs then
+                -- Try to find the property name for Model.set if possible
+                -- but for vertical slice we assume the observable is tracked by Model.set
+                -- or we can expose a way to set by observable reference.
+                -- For now, we'll use a hack or just use Model.set if we have the name.
+                -- Better: if we have an observable, we need to know what property it maps to for Model.set
+                -- Let's just update the observable directly for now, which triggers Controller.
+                self.valueObs:set(newValue)
+            end
+        end
         return newValue
     end
     
-    return value
+    return currentValue
 end
 
 return Slider

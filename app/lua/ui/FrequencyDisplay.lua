@@ -25,12 +25,16 @@ setbox.rule {
     }
 }
 
-function FrequencyDisplay.new()
+function FrequencyDisplay.new(props)
     local self = setmetatable({}, FrequencyDisplay)
+    -- props can be nil for legacy callers, but should contain valueObs
+    if props then
+        self.valueObs = props.valueObs
+    end
     return self
 end
 
-function FrequencyDisplay:draw(id, x, y, w, h, frequency, freqEntryText, tags, parentLWC)
+function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, tags, parentLWC)
     local widgetTags = {"widget.FrequencyDisplay", "id." .. id}
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
@@ -42,9 +46,10 @@ function FrequencyDisplay:draw(id, x, y, w, h, frequency, freqEntryText, tags, p
     w = w or lwc:getNumber("width")
     h = h or lwc:getNumber("height")
     
-    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
+    local ui = require("ui.Widgets")
+    local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = ui.hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
@@ -54,7 +59,12 @@ function FrequencyDisplay:draw(id, x, y, w, h, frequency, freqEntryText, tags, p
         drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
     end
 
-    local text = freqEntryText ~= "" and freqEntryText or string.format("%.3f MHz", frequency / 1e6)
+    local frequency = 0
+    if self.valueObs then
+        frequency = self.valueObs:get()
+    end
+    
+    local text = (freqEntryText and freqEntryText ~= "") and freqEntryText or string.format("%.3f MHz", frequency / 1e6)
     local tw = measureText(text)
     drawText(x + (w - tw) / 2, y + (h - getLineHeight()) / 2, text, fgR, fgG, fgB, alpha)
 end

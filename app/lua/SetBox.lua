@@ -6,13 +6,15 @@
   defaults to UI styling and localization.
 ]]
 
+local R = require("Reactive")
 local SetBox = {}
 _G.setbox = SetBox
 _G.rule = function(def) return SetBox.rule(def) end
 
 -- Internal state
 local rules = {}
-local activeTags = {} -- Global tags
+-- activeTags is now a map of name -> observable(boolean)
+local activeTags = {} 
 local globalContext = {} -- Global context values
 local nextRuleOrder = 1
 local changeCallbacks = {}
@@ -24,6 +26,14 @@ local cacheValid = false
 -- =============================================================================
 -- Internal Helpers
 -- =============================================================================
+
+--- Get or create an observable for a tag
+local function getTagObservable(name)
+    if not activeTags[name] then
+        activeTags[name] = R.observable(false)
+    end
+    return activeTags[name]
+end
 
 --- Parse a tag string like "tag@10" into name and priority
 local function parseTag(tagStr)
@@ -56,15 +66,17 @@ end
 function Context:hasTag(tag)
     if self.localTags[tag] then return true end
     if self.parent then return self.parent:hasTag(tag) end
-    -- Use the upvalue activeTags directly from the module scope
-    return activeTags[tag] == true
+    -- Reactive tracking: Reading the tag's state registers it as a dependency
+    return getTagObservable(tag):get() == true
 end
 
 --- Get all tags contributing to this context (for error reporting)
 function Context:getHierarchyTags()
     local tags = {}
-    -- Global tags first
-    for t in pairs(activeTags) do tags[t] = true end
+    -- Global tags first (untracked for diagnostic purposes)
+    for name, obs in pairs(activeTags) do 
+        if obs:peek() then tags[name] = true end 
+    end
     -- Parent tags
     if self.parent then
         local pTags = self.parent:getHierarchyTags()
@@ -194,38 +206,57 @@ end
 
 function SetBox.addTag(tag)
     local name, _ = parseTag(tag)
-    if not activeTags[name] then
-        activeTags[name] = true
+    local obs = getTagObservable(name)
+    if not obs:peek() then
+        obs:set(true)
         _invalidateCache()
     end
 end
 
 function SetBox.removeTag(tag)
     local name, _ = parseTag(tag)
-    if activeTags[name] then
-        activeTags[name] = nil
+    local obs = getTagObservable(name)
+    if obs:peek() then
+        obs:set(false)
         _invalidateCache()
     end
 end
 
 function SetBox.setActiveTags(tags)
-    local newTags = {}
-    for _, tag in ipairs(tags) do
-        local name, _ = parseTag(tag)
-        newTags[name] = true
-    end
-    activeTags = newTags
-    _invalidateCache()
+    R.batch(function()
+        local newTagsSet = {}
+        for _, tag in ipairs(tags) do
+            local name, _ = parseTag(tag)
+            newTagsSet[name] = true
+        end
+        
+        -- Update existing and add new
+        for name, isActive in pairs(newTagsSet) do
+            getTagObservable(name):set(true)
+        end
+        
+        -- Clear old tags not in new set
+        for name, obs in pairs(activeTags) do
+            if not newTagsSet[name] then
+                obs:set(false)
+            end
+        end
+        _invalidateCache()
+    end)
 end
 
 function SetBox.getActiveTags()
     local result = {}
-    for tag in pairs(activeTags) do table.insert(result, tag) end
+    for name, obs in pairs(activeTags) do 
+        if obs:peek() then table.insert(result, name) end 
+    end
     return result
 end
 
 function SetBox.hasTag(tag)
-    return activeTags[tag] == true
+    -- This is often called outside of reactive context (e.g., in UI logic)
+    -- but we still want it to return correctly.
+    return getTagObservable(tag):peek() == true
 end
 
 function SetBox.toggleTag(tag)

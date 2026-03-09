@@ -23,56 +23,51 @@ rule {
         -- =================================================================
         -- Radio Defaults
         -- =================================================================
-        frequency = 14.200e6,           -- Hz (Current operating freq)
-        selectedMode = "USB",           -- Current mode
-        selectedBand = "20m",           -- Current band
-        defaultFrequency = 14.200e6,    -- Hz (20m band)
-        defaultMode = "USB",
-        defaultBand = "20m",
-        rxActive = true,
-        vfoA = 14.200e6,                -- Hz
-        vfoB = 7.050e6,                 -- Hz
-        activeVFO = "A",
+        ["rx.VFO.active"] = "A",
+        ["rx.VFO.A"] = 14.200e6,         -- Hz
+        ["rx.VFO.B"] = 7.050e6,          -- Hz
+        ["rx.selectedMode"] = "USB",     -- Current mode
+        ["rx.selectedBand"] = "20m",     -- Current band
+        ["rx.active"] = true,
 
         -- =================================================================
         -- DSP Defaults
         -- =================================================================
-        squelch = 0.3,
-        agcEnabled = false,
-        agcMode = 0,
-        nrEnabled = false,
-        nbEnabled = false,
-        lmsMu = 0.5,                    -- LMS adaptive filter learning rate
-        bfoOffset = 700,                -- Hz (CW sidetone)
-        volumeDb = -20,                 -- dB
-        muteEnabled = false,
-        testToneEnabled = false,
-        demodFilterEnabled = true,
+        ["rx.squelch"] = 0.3,
+        ["rx.AGC.enabled"] = false,
+        ["rx.AGC.mode"] = 0,
+        ["rx.NR.enabled"] = false,
+        ["rx.NB.enabled"] = false,
+        ["rx.lmsMu"] = 0.5,
+        ["rx.BFO.offset"] = 700,
+        ["rx.volume.DB"] = -20,
+        ["rx.volume.muted"] = false,
+        ["rx.testToneEnabled"] = false,
+        ["rx.demodFilterEnabled"] = true,
         
         -- Animation
         animated = false,
         
         -- Filter Defaults
-        bandpassEnabled = false,
-        bandpassCenter = 700,
-        bandpassWidth = 500,
-        notchEnabled = false,
-        notchCenter = 0,
-        notchWidth = 100,
+        ["rx.bandpass.enabled"] = false,
+        ["rx.bandpass.center"] = 700,
+        ["rx.bandpass.width"] = 500,
+        ["rx.notch.enabled"] = false,
+        ["rx.notch.center"] = 0,
+        ["rx.notch.width"] = 100,
 
         -- =================================================================
         -- Hardware Defaults
         -- =================================================================
-        qsdOffsetK = 12.0,              -- kHz
-        rfAttenDb = 0,                  -- dB (0-45 in 3 dB steps)
-        rfGainDb = 20.0,                -- dB (Digital gain)
+        ["rx.QSD.offsetK"] = 12.0,      -- kHz
+        ["rx.RF.attenuationDB"] = 0,    -- DB (0-45 in 3 DB steps)
+        ["rx.RF.gainDB"] = 20.0,        -- DB (Digital gain)
 
         -- Preselector
-        preselL1 = false,
-        preselC0 = false, preselC1 = false, preselC2 = false, preselC3 = false, preselC4 = false,
-        preselC5 = false, preselC6 = false, preselC7 = false, preselC8 = false, preselC9 = false,
-        preselC10 = false,
-        preselectorAuto = true,
+        ["preselector.L"] = false,
+        ["preselector.capMask"] = 0,
+        ["preselector.auto"] = true,
+        ["preselector.enabled"] = true,
 
         -- Internal Signal Generator
         isgEnabled = false,
@@ -84,8 +79,8 @@ rule {
         wfBins = 512,
         wfRows = 256,
         wfColormap = "viridis",
-        wfMinDb = -140,
-        wfMaxDb = 0,
+        wfMinDB = -140,
+        wfMaxDB = 0,
         spectrumEmaAlpha = 0.3,         -- Spectrum smoothing
 
         -- =================================================================

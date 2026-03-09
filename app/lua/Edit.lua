@@ -15,7 +15,7 @@
 
     Usage:
         local Edit = require("Edit")
-        Edit.init(events, AppState)
+        Edit.init(events)
 
         -- In draw(), after widgets but before endFrame:
         Edit.drawHandles(mouseX, mouseY, hoveredWidget, isEditModifierHeld)
