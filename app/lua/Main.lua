@@ -308,6 +308,8 @@ function init()
     layoutOverrides.load()
 end
 
+local currentFrameTags = {}
+
 function update(dt)
     frameCount = frameCount + 1
     fpsAccum = fpsAccum + dt; fpsFrames = fpsFrames + 1
@@ -333,17 +335,18 @@ function update(dt)
     activeTags["input.MouseRIGHT"] = isMouseDown(2) or nil
 
     local mx, my = getMousePos()
-    local tags = getAllActiveTags()
+    currentFrameTags = getAllActiveTags()
+    setbox.setActiveTags(currentFrameTags)
     uiState.beginFrame()
     
     local wheel = getMouseWheel()
-    if wheel ~= 0 then events.dispatch(events.createEvent(events.Type.MOUSE_WHEEL, {x=mx,y=my,delta=wheel,modifiers=tags})) end
+    if wheel ~= 0 then events.dispatch(events.createEvent(events.Type.MOUSE_WHEEL, {x=mx,y=my,delta=wheel,modifiers=currentFrameTags})) end
     for b = 0, 2 do
-        if isMouseClicked(b) then events.dispatch(events.createEvent(events.Type.MOUSE_DOWN, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=tags}))
-        elseif isMouseReleased(b) then events.dispatch(events.createEvent(events.Type.MOUSE_UP, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=tags})) end
+        if isMouseClicked(b) then events.dispatch(events.createEvent(events.Type.MOUSE_DOWN, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=currentFrameTags}))
+        elseif isMouseReleased(b) then events.dispatch(events.createEvent(events.Type.MOUSE_UP, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=currentFrameTags})) end
     end
     if mx ~= lastMouseX or my ~= lastMouseY then
-        events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, {x=mx,y=my,dx=mx-lastMouseX,dy=my-lastMouseY,modifiers=tags}))
+        events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, {x=mx,y=my,dx=mx-lastMouseX,dy=my-lastMouseY,modifiers=currentFrameTags}))
         lastMouseX, lastMouseY = mx, my
     end
     
@@ -373,7 +376,7 @@ end
 function draw()
     local winW, winH = getWindowSize()
     local mx, my = getMousePos()
-    local tags = getAllActiveTags()
+    local tags = currentFrameTags
     events.clearWidgets()
     ui.beginFrame()
     setbox.setActiveTags(tags)

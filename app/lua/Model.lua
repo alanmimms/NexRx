@@ -9,6 +9,8 @@
 local R = require("Reactive")
 local setbox = require("SetBox")
 
+local Model = {}
+
 -- =============================================================================
 -- Type Objects (Polymorphic Interface)
 -- =============================================================================
@@ -21,12 +23,15 @@ local Types = {
 
 -- Polymorphic projection factory
 local function projection(name, typeObj)
-    return R.computed(function()
+    local obs = R.computed(function()
         return typeObj:get(name)
     end)
+    -- Add set method to allow widgets to mutate the model via this reference
+    function obs:set(value)
+        Model.set(name, value)
+    end
+    return obs
 end
-
-local Model = {}
 
 -- =============================================================================
 -- Model Structure (Hierarchical)

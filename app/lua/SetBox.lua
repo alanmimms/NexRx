@@ -13,19 +13,34 @@ _G.rule = function(def) return SetBox.rule(def) end
 
 -- Internal state
 local rules = {}
+local rulesByKey = {} -- Map of property name -> table of rules providing it
 -- activeTags is now a map of name -> observable(boolean)
 local activeTags = {} 
 local globalContext = {} -- Global context values
 local nextRuleOrder = 1
 local changeCallbacks = {}
 
--- Cache for resolved properties
+-- Optimization: Track which tags are actually in use by rules to skip irrelevant updates
+local knownTags = {}
+
+-- Optimization: Reactive versioning for rules
+local globalRulesVersion = R.observable(0)
+local propertyVersions = {} -- Map of property name -> observable(version)
+
+-- Cache for resolved properties (Global context only)
 local cachedProperties = {}
 local cacheValid = false
 
 -- =============================================================================
 -- Internal Helpers
 -- =============================================================================
+
+local function getPropertyVersion(name)
+    if not propertyVersions[name] then
+        propertyVersions[name] = R.observable(0)
+    end
+    return propertyVersions[name]
+end
 
 --- Get or create an observable for a tag
 local function getTagObservable(name)
@@ -66,23 +81,28 @@ end
 function Context:hasTag(tag)
     if self.localTags[tag] then return true end
     if self.parent then return self.parent:hasTag(tag) end
+    
     -- Reactive tracking: Reading the tag's state registers it as a dependency
-    return getTagObservable(tag):get() == true
+    -- We only care about tags that actually exist in rules
+    if knownTags[tag] then
+        return getTagObservable(tag):get() == true
+    end
+    
+    -- For non-rule tags, just peek to avoid creating useless observables
+    local obs = activeTags[tag]
+    return obs and obs:peek() == true
 end
 
 --- Get all tags contributing to this context (for error reporting)
 function Context:getHierarchyTags()
     local tags = {}
-    -- Global tags first (untracked for diagnostic purposes)
     for name, obs in pairs(activeTags) do 
         if obs:peek() then tags[name] = true end 
     end
-    -- Parent tags
     if self.parent then
         local pTags = self.parent:getHierarchyTags()
         for _, t in ipairs(pTags) do tags[t] = true end
     end
-    -- Local tags last (overrides)
     for t in pairs(self.localTags) do tags[t] = true end
     
     local list = {}
@@ -90,9 +110,21 @@ function Context:getHierarchyTags()
     return list
 end
 
-function Context:getMatchingRules()
+function Context:getMatchingRules(propertyName)
+    -- REACTIVE DEPENDENCY: 
+    -- If we're looking for a specific property, depend only on THAT property's rules.
+    -- Otherwise, depend on the global rule set version.
+    if propertyName then
+        getPropertyVersion(propertyName):get()
+    else
+        globalRulesVersion:get()
+    end
+
     local matching = {}
-    for _, rule in ipairs(rules) do
+    local source = propertyName and rulesByKey[propertyName] or rules
+    if not source then return matching end
+
+    for _, rule in ipairs(source) do
         if rule.enabled then
             local matches = true
             local prioritySum = rule.priority
@@ -148,18 +180,17 @@ function Context:resolve()
 end
 
 function Context:get(name)
-    local props = self:resolve()
-    local val = props[name]
-    if val == nil then
+    local matching = self:getMatchingRules(name)
+    if #matching == 0 then
         local tagList = table.concat(self:getHierarchyTags(), ", ")
         error(string.format("[SetBox] Property '%s' not found in any matching rule.\nContext Tags: [%s]", name, tagList), 2)
     end
-    return val
+    return matching[1].rule.properties[name]
 end
 
 function Context:has(name)
-    local props = self:resolve()
-    return props[name] ~= nil
+    local matching = self:getMatchingRules(name)
+    return #matching > 0
 end
 
 function Context:getNumber(name)
@@ -185,14 +216,23 @@ end
 
 local globalCtx = setmetatable({localTags = {}}, Context)
 
-local function _invalidateCache()
+local function _invalidateCache(propertyName)
     cacheValid = false
-    if not globalCtx then return end
+    
+    -- Increment version counter
+    if propertyName then
+        local obs = getPropertyVersion(propertyName)
+        obs:set(obs:peek() + 1)
+    else
+        globalRulesVersion:set(globalRulesVersion:peek() + 1)
+    end
+
+    if #changeCallbacks == 0 then return end
     
     cachedProperties = globalCtx:resolve()
     cacheValid = true
 
-    -- Notify callbacks of all properties
+    -- Notify callbacks
     for _, cb in ipairs(changeCallbacks) do
         for name, value in pairs(cachedProperties) do
             pcall(cb, name, value)
@@ -222,16 +262,34 @@ function SetBox.removeTag(tag)
     end
 end
 
+-- Optimization: Fast tag set comparison
+local lastTagsSet = {}
+
 function SetBox.setActiveTags(tags)
+    local changed = false
+    local newTagsSet = {}
+    local newCount = 0
+    
+    for _, tag in ipairs(tags) do
+        local name, _ = parseTag(tag)
+        newTagsSet[name] = true
+        newCount = newCount + 1
+        if not lastTagsSet[name] then changed = true end
+    end
+    
+    if not changed then
+        -- Also check if any tags were removed
+        local oldCount = 0
+        for _ in pairs(lastTagsSet) do oldCount = oldCount + 1 end
+        if newCount ~= oldCount then changed = true end
+    end
+    
+    if not changed then return end
+    lastTagsSet = newTagsSet
+
     R.batch(function()
-        local newTagsSet = {}
-        for _, tag in ipairs(tags) do
-            local name, _ = parseTag(tag)
-            newTagsSet[name] = true
-        end
-        
         -- Update existing and add new
-        for name, isActive in pairs(newTagsSet) do
+        for name, _ in pairs(newTagsSet) do
             getTagObservable(name):set(true)
         end
         
@@ -254,9 +312,8 @@ function SetBox.getActiveTags()
 end
 
 function SetBox.hasTag(tag)
-    -- This is often called outside of reactive context (e.g., in UI logic)
-    -- but we still want it to return correctly.
-    return getTagObservable(tag):peek() == true
+    local obs = activeTags[tag]
+    return obs and obs:peek() == true
 end
 
 function SetBox.toggleTag(tag)
@@ -283,12 +340,17 @@ end
 
 function SetBox._clear()
     rules = {}
+    rulesByKey = {}
     activeTags = {}
+    lastTagsSet = {}
     globalContext = {}
     nextRuleOrder = 1
     changeCallbacks = {}
     cachedProperties = {}
     cacheValid = false
+    globalRulesVersion:set(0)
+    propertyVersions = {}
+    knownTags = {}
 end
 
 -- =============================================================================
@@ -311,31 +373,42 @@ function SetBox.rule(def)
         for _, tagStr in ipairs(def.tags) do
             local name, pri = parseTag(tagStr)
             rule.tags[name] = pri
+            knownTags[name] = true
         end
     end
     if def.tag then
         local name, pri = parseTag(def.tag)
         rule.tags[name] = pri
+        knownTags[name] = true
+    end
+
+    local function addProp(name, value)
+        rule.properties[name] = value
+        if not rulesByKey[name] then rulesByKey[name] = {} end
+        table.insert(rulesByKey[name], rule)
     end
 
     if def.apply then
-        for name, value in pairs(def.apply) do rule.properties[name] = value end
+        for name, value in pairs(def.apply) do addProp(name, value) end
     end
 
     -- Direct properties shorthand
     local reserved = {id=1, tags=1, tag=1, priority=1, enabled=1, apply=1, ["when"]=1}
     for k, v in pairs(def) do
-        if not reserved[k] then rule.properties[k] = v end
+        if not reserved[k] then addProp(k, v) end
     end
 
     table.insert(rules, rule)
-    _invalidateCache()
+    
+    -- Invalidate each property provided by this rule specifically
+    for name, _ in pairs(rule.properties) do
+        _invalidateCache(name)
+    end
+    
     return rule
 end
 
-function SetBox.getRules()
-    return rules
-end
+function SetBox.getRules() return rules end
 
 -- =============================================================================
 -- Public API - Resolution (Global / Legacy)
@@ -348,29 +421,12 @@ function SetBox.resolve()
     return cachedProperties
 end
 
-function SetBox.getMatchingRules()
-    return globalCtx:getMatchingRules()
-end
-
-function SetBox.has(name)
-    return globalCtx:has(name)
-end
-
-function SetBox.get(name)
-    return globalCtx:get(name)
-end
-
-function SetBox.getNumber(name)
-    return globalCtx:getNumber(name)
-end
-
-function SetBox.getString(name)
-    return globalCtx:getString(name)
-end
-
-function SetBox.getBool(name)
-    return globalCtx:getBool(name)
-end
+function SetBox.getMatchingRules() return globalCtx:getMatchingRules() end
+function SetBox.has(name) return globalCtx:has(name) end
+function SetBox.get(name) return globalCtx:get(name) end
+function SetBox.getNumber(name) return globalCtx:getNumber(name) end
+function SetBox.getString(name) return globalCtx:getString(name) end
+function SetBox.getBool(name) return globalCtx:getBool(name) end
 
 -- =============================================================================
 -- Script Loading
@@ -390,9 +446,6 @@ function SetBox.loadFile(path)
     return true
 end
 
--- Factory for LWC
-function SetBox.newContext(tags, parent)
-    return Context.new(tags, parent)
-end
+function SetBox.newContext(tags, parent) return Context.new(tags, parent) end
 
 return SetBox

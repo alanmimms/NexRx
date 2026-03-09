@@ -58,7 +58,11 @@ function AppController.init()
     -- Watch VFO and update Preselector / Bands
     R.watch(function()
         local active = Model.rx.VFO.active:get()
-        local freq = (active == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
+        local vfoA = Model.rx.VFO.A:get()
+        local vfoB = Model.rx.VFO.B:get()
+        
+        local freq = (active == "A") and vfoA or vfoB
+        if not freq then return end -- Early exit if Model is in transient state
         
         -- Update Bands system
         if bands and bands.setCurrent then

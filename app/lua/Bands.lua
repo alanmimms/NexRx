@@ -85,6 +85,7 @@ end
 --- Set the current frequency and update band tag if changed
 -- @param freqHz frequency in Hz
 function Bands.setCurrent(freqHz)
+    if not freqHz then return end
     Bands.frequencyHz = freqHz
     local newBand = Bands._getBandForFreq(freqHz)
 

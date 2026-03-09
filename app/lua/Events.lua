@@ -482,20 +482,20 @@ function Events._querySetBoxProperties(tags)
     if setbox.has("value") then props.value = setbox.get("value") end
     
     -- Linear step properties
-    if setbox.has("step") then props.step = setbox.getNumber("step") end
-    if setbox.has("step_ctrl") then props.step_ctrl = setbox.getNumber("step_ctrl") end
-    if setbox.has("step_shift") then props.step_shift = setbox.getNumber("step_shift") end
-    if setbox.has("step_ctrl_shift") then props.step_ctrl_shift = setbox.getNumber("step_ctrl_shift") end
+    if setbox.has("step") then props.step = setbox.get("step") end
+    if setbox.has("step_ctrl") then props.step_ctrl = setbox.get("step_ctrl") end
+    if setbox.has("step_shift") then props.step_shift = setbox.get("step_shift") end
+    if setbox.has("step_ctrl_shift") then props.step_ctrl_shift = setbox.get("step_ctrl_shift") end
     
     -- Logarithmic factor properties
-    if setbox.has("factor") then props.factor = setbox.getNumber("factor") end
-    if setbox.has("factor_ctrl") then props.factor_ctrl = setbox.getNumber("factor_ctrl") end
-    if setbox.has("factor_shift") then props.factor_shift = setbox.getNumber("factor_shift") end
-    if setbox.has("factor_ctrl_shift") then props.factor_ctrl_shift = setbox.getNumber("factor_ctrl_shift") end
+    if setbox.has("factor") then props.factor = setbox.get("factor") end
+    if setbox.has("factor_ctrl") then props.factor_ctrl = setbox.get("factor_ctrl") end
+    if setbox.has("factor_shift") then props.factor_shift = setbox.get("factor_shift") end
+    if setbox.has("factor_ctrl_shift") then props.factor_ctrl_shift = setbox.get("factor_ctrl_shift") end
     
     -- Range limits
-    if setbox.has("min") then props.min = setbox.getNumber("min") end
-    if setbox.has("max") then props.max = setbox.getNumber("max") end
+    if setbox.has("min") then props.min = setbox.get("min") end
+    if setbox.has("max") then props.max = setbox.get("max") end
 
 
     if setbox.setActiveTags then
