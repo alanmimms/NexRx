@@ -27,21 +27,24 @@ local Preselector = {
 function Preselector.onManualCapChange()
     if Preselector.internalUpdate > 0 then return end
     AppState.set("preselectorAuto", false)
-    if hw and hw.setPreselectorCap then hw.setPreselectorCap(Preselector.getCurrentCapMask()) end
+    if hw and hw.setPreselectorCap then 
+        local mask = math.floor(Preselector.getCurrentCapMask())
+        hw.setPreselectorCap(mask) 
+    end
 end
 
 function Preselector.getCurrentCapMask()
     local mask = 0
     for i = 0, 10 do
         if AppState.get("preselC" .. i) then
-            mask = mask + (2 ^ i)
+            mask = mask + math.floor(2 ^ i)
         end
     end
     return mask
 end
 
 function Preselector.tune(freqHz)
-    if not Preselector.auto then return end
+    if not AppState.get("preselectorAuto") then return end
     -- Find closest entry in calibration table
     local best = Preselector.calTable[1]
     for _, entry in ipairs(Preselector.calTable) do
@@ -53,8 +56,9 @@ function Preselector.tune(freqHz)
     -- Update AppState properties (which triggers hardware sync)
     Preselector.internalUpdate = Preselector.internalUpdate + 1
     AppState.set("preselL1", best.L)
+    local cVal = math.floor(best.C)
     for i = 0, 10 do
-        local bit = math.floor(best.C / (2 ^ i)) % 2
+        local bit = math.floor(cVal / (2 ^ i)) % 2
         AppState.set("preselC" .. i, bit == 1)
     end
     Preselector.internalUpdate = Preselector.internalUpdate - 1
@@ -62,7 +66,7 @@ function Preselector.tune(freqHz)
     -- Send atomic hardware commands
     if hw then
         if hw.setPreselectorInd then hw.setPreselectorInd(best.L and 1 or 0) end
-        if hw.setPreselectorCap then hw.setPreselectorCap(best.C) end
+        if hw.setPreselectorCap then hw.setPreselectorCap(cVal) end
     end
 end
 

@@ -158,7 +158,7 @@ namespace nexrx {
     }
     double totalL = model.isL1Shorted() ? 220e-9 : (1.5e-6 + 220e-9);
     fRes = 1.0 / (2.0 * M_PI * std::sqrt(totalL * totalC));
-    qFactor = 5.0; // Widened for simulation stability
+    qFactor = 30.0; // Sharp resonance for visible detuning
   }
 
   double getPreselGain(double freqHz, const PreselectorModel& model) {
@@ -168,7 +168,7 @@ namespace nexrx {
     double fRes, qFactor;
     getPreselParams(model, fRes, qFactor);
   
-    if (std::abs(freqHz) < 1.0) return 0.001;
+    if (std::abs(freqHz) < 1.0) return 0.00001;
 
     // Standard 2nd order LC bandpass magnitude:
     // |H(jw)| = 1 / sqrt(1 + Q^2 * (f/f0 - f0/f)^2)
@@ -177,7 +177,7 @@ namespace nexrx {
     double gain = 1.0 / std::sqrt(1.0 + std::pow(qFactor * (x - y), 2.0));
   
     // High-frequency leakage floor
-    double leak = 0.001; // -60dB floor
+    double leak = 0.00001; // -100dB floor
     return std::max(gain, leak);
   }
 
@@ -365,6 +365,10 @@ namespace nexrx {
               static thread_local std::mt19937 noiseRng(54321);
               static thread_local std::normal_distribution<double> noiseDist(0, 1e-9);
               antI += noiseDist(noiseRng); antQ += noiseDist(noiseRng);
+
+              // Apply preselector attenuation
+              double pg = getPreselGain(current_lo, preselector);
+              antI *= pg; antQ *= pg;
 
               double attenGain = attenuator.getVoltageGain();
               antI *= attenGain; antQ *= attenGain;

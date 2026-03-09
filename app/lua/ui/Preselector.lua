@@ -43,7 +43,7 @@ function Preselector.new(state)
     -- Initialize widget instances
     self.titleLabel = ui.Label.new()
     self.autoCheckbox = ui.Checkbox.new({
-	  onToggle = function(val) AppState.set("preselAuto", val) end
+	  onToggle = function(val) AppState.set("preselectorAuto", val) end
     })
     
     self.checkboxes = {}
@@ -92,7 +92,7 @@ function Preselector:draw(id, x, y, w, h)
     local rowGap = lwc:getNumber("gridRowGap")
     cx, cy = layout.getCursor()
     self.autoCheckbox.getText = function() return lwc:getString("labelAuto") end
-    self.autoCheckbox:draw(id .. "-auto", cx, cy, state.preselAuto, lwc)
+    self.autoCheckbox:draw(id .. "-auto", cx, cy, state.preselectorAuto, lwc)
     layout.newLine(rowH + rowGap)
     
     -- Parameterized Component Grid
