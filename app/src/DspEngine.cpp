@@ -16,23 +16,16 @@ DspEngine::DspEngine() {
   spectrumData.assign(FFT_SIZE, -100.0f);
   audioBuffer.configure(nexrx::BufferConfig{32768});
   demod.setSampleRate(96000.0f);
+  
+  // Default alignment for Triple-QSD (1-2-1 matrix)
+  staticCal[0].alignR = 0.5f; staticCal[0].alignI = 0.0f;
+  staticCal[1].alignR = 0.5f; staticCal[1].alignI = 0.0f;
+  staticCal[2].alignR = 1.0f; staticCal[2].alignI = 0.0f;
 }
 
 void DspEngine::setVfo(double freqHz) {
   lastVFOHz = freqHz;
-  // Reset phasors and LMS on tuning to ensure stability
-  wIQ0_r = 0; wIQ0_i = 0;
-  wIQ1_r = 0; wIQ1_i = 0;
-  wIQ2_r = 0; wIQ2_i = 0;
-  wA0_r = 0.5f; wA0_i = 0;
-  wA1_r = 0.5f; wA1_i = 0;
-  accIQ0_r = 0; accIQ0_i = 0; pIQ0 = 0;
-  accIQ1_r = 0; accIQ1_i = 0; pIQ1 = 0;
-  accIQ2_r = 0; accIQ2_i = 0; pIQ2 = 0;
-  accA0_r = 0; accA0_i = 0; pA0 = 0;
-  accA1_r = 0; accA1_i = 0; pA1 = 0;
-  sampleBlockCounter = 0;
-  totalSamplesProcessed = 0;
+  basebandFilter.recompute();
 }
 
 void DspEngine::setCalibration(int ch, float gainDB, float phaseDeg, float alignR, float alignI) {
@@ -69,6 +62,7 @@ void DspEngine::startManualCalibration() {
 
 void DspEngine::setQsdOffset(double offsetKhz) {
   qsdOffsetKhz = offsetKhz;
+  basebandFilter.recompute();
 }
 
 std::vector<float> DspEngine::getSpectrumData() {
@@ -86,7 +80,7 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   frame.qsd[1].toFloat(i1, q1); 
   frame.qsd[2].toFloat(i2, q2);
   
-  // DC Offset Correction
+  // DC Offset Correction (Always run during normal operation too)
   constexpr float dcAlpha = 0.0005f;
   dc0_i = (1.0f - dcAlpha) * dc0_i + dcAlpha * i0;
   dc0_q = (1.0f - dcAlpha) * dc0_q + dcAlpha * q0;
@@ -109,23 +103,35 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   Complex s2_c = s2 - wIQ2 * std::conj(s2);
 
   // 2. High-Precision Frequency Alignment
+  // Use incremental rotation (phasors) to avoid trig calls per sample
   constexpr double sampleRate = 96000.0;
   double k_hz = qsdOffsetKhz * 1000.0;
-  double phase = 2.0 * M_PI * std::fmod(k_hz * (static_cast<double>(totalSamplesProcessed) / sampleRate), 1.0);
   
-  // Shift QSD0 DOWN by k, QSD1 UP by k
-  float cosP = std::cos(phase), sinP = std::sin(phase);
-  Complex s0_s(s0_c.real() * cosP + s0_c.imag() * sinP, s0_c.imag() * cosP - s0_c.real() * sinP);
-  Complex s1_s(s1_c.real() * cosP - s1_c.imag() * sinP, s1_c.imag() * cosP + s1_c.real() * sinP);
+  if (std::abs(k_hz - lastK_hz) > 0.1) {
+    double phaseInc = 2.0 * M_PI * k_hz / sampleRate;
+    shiftCos_d = std::cos(phaseInc);
+    shiftSin_d = std::sin(phaseInc);
+    lastK_hz = k_hz;
+  }
+
+  // Shift QSD0 DOWN by k: (i + j*q) * (cos - j*sin)
+  Complex s0_s(s0_c.real() * shiftCos + s0_c.imag() * shiftSin, s0_c.imag() * shiftCos - s0_c.real() * shiftSin);
+  // Shift QSD1 UP by k: (i + j*q) * (cos + j*sin)
+  Complex s1_s(s1_c.real() * shiftCos - s1_c.imag() * shiftSin, s1_c.imag() * shiftCos + s1_c.real() * shiftSin);
 
   // 3. Channel Alignment (Match S0/S1 to S2 reference)
   Complex wA0(wA0_r, wA0_i), wA1(wA1_r, wA1_i);
   Complex out_fund = wA0 * s0_s + wA1 * s1_s;
   Complex err_vec = s2_c - out_fund;
 
-  // Final combined signal (1-2-1 Triple-QSD Matrix)
-  // Synthesizes 0.25*S0 + 0.50*S2 + 0.25*S1 when weights are 0.5
-  Complex err = 0.5f * out_fund + 0.5f * s2_c;
+  // Final combined signal
+  // gemini-app-start method: Use synthesized fundamental signal.
+  // This has better image rejection because S0/S1 are offset.
+  Complex err = matrixBypass.load() ? s2_c : out_fund;
+
+  // Update diagnostics for UI
+  dspDiag.lmsWeightR.store(std::abs(Complex(wA0_r, wA0_i)));
+  dspDiag.lmsWeightI.store(std::abs(Complex(wA1_r, wA1_i)));
 
   // 4. Update Calibration (only if active)
   if (calibrationActive.load()) {
@@ -144,9 +150,9 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
         Complex u = ref * std::conj(s_s); ar += u.real(); ai += u.imag(); p += std::norm(s_s);
     };
     // Frequency shifts WITHOUT current weights for discovery
-    float cP = std::cos(phase), sP = std::sin(phase);
-    Complex s0_raw_s(s0.real() * cP + s0.imag() * sP, s0.imag() * cP - s0.real() * sP);
-    Complex s1_raw_s(s1.real() * cP - s1.imag() * sP, s1.imag() * cP + s1.real() * sP);
+    // Use the same phasors as the main DSP path
+    Complex s0_raw_s(s0.real() * shiftCos + s0.imag() * shiftSin, s0.imag() * shiftCos - s0.real() * shiftSin);
+    Complex s1_raw_s(s1.real() * shiftCos - s1.imag() * shiftSin, s1.imag() * shiftCos + s1.real() * shiftSin);
     accA(s2, s0_raw_s, accA0_r, accA0_i, pA0);
     accA(s2, s1_raw_s, accA1_r, accA1_i, pA1);
 
@@ -193,7 +199,12 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
     }
   }
 
-  // Output after all suppression
+  // 1. Write to spectrum buffer BEFORE gain/filtering (Raw combined signal)
+  size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 
+  iqBuffer[pos*2] = err.real(); iqBuffer[pos*2+1] = err.imag();
+  iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
+
+  // 2. Apply digital gain and filtering for audio/diagnostics
   float iF = err.real();
   float qF = err.imag();
   
@@ -202,12 +213,19 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   float maxR = std::max(std::abs(iF), std::abs(qF));
   if (maxR > dspDiag.maxRaw.load()) dspDiag.maxRaw.store(maxR);
 
-  basebandFilter.recompute(); 
+  // basebandFilter.recompute();  <-- REMOVED FROM HOT PATH
   basebandFilter.process(iF, qF);
   
-  size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 
-  iqBuffer[pos*2] = iF; iqBuffer[pos*2+1] = qF;
-  iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
+  // Advance phasor for next sample: (c + j*s) * (cd + j*sd)
+  double nextCos = shiftCos * shiftCos_d - shiftSin * shiftSin_d;
+  double nextSin = shiftSin * shiftCos_d + shiftCos * shiftSin_d;
+  shiftCos = nextCos; shiftSin = nextSin;
+
+  // Periodically renormalize phasor to prevent floating-point drift
+  if ((totalSamplesProcessed & 0x3FFF) == 0) {
+    double mag = std::sqrt(shiftCos * shiftCos + shiftSin * shiftSin);
+    shiftCos /= mag; shiftSin /= mag;
+  }
   
   float aOut = demod.process(iF, qF);
   dspDiag.signalRms.store(demod.getSignalLevelRMS());

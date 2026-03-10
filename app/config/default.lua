@@ -60,6 +60,8 @@ rule {
         -- Hardware Defaults
         -- =================================================================
         ["rx.QSD.offsetK"] = 12.0,      -- kHz
+        ["rx.DSP.lmsEnabled"] = true,
+        ["rx.DSP.matrixBypass"] = false,
         ["rx.RF.attenuationDB"] = 0,    -- DB (0-45 in 3 DB steps)
         ["rx.RF.gainDB"] = 20.0,        -- DB (Digital gain)
 
@@ -91,7 +93,7 @@ rule {
         fontSize = 16,
 
         -- Fallback font (bundled with app)
-        fontPaths = { "fonts/DejaVuSans.ttf" },
+        fontPaths = { "fonts/DejaVuSans.ttf", "app/fonts/DejaVuSans.ttf", "/home/alan/ham/NexRx/app/fonts/DejaVuSans.ttf" },
 
         -- =================================================================
         -- Layout Defaults (Core System)
@@ -384,7 +386,7 @@ rule {
 -- Sidebar Widgets Ordering
 rule { id = "id-isg",   tags = {"id.isg"},   apply = { parent = "right-sidebar", order = 10, height = 160, title = "SIGNAL GEN" } }
 rule { id = "id-presel",tags = {"id.presel"},apply = { parent = "right-sidebar", order = 20, height = 180, title = "PRESELECTOR" } }
-rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 80, title = "AGC" } }
+rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 120, title = "AGC" } }
 rule { id = "id-audio", tags = {"id.audio"}, apply = { parent = "right-sidebar", order = 40, height = 140, title = "AUDIO UTILS" } }
 
 -- Slider styles
@@ -690,8 +692,8 @@ rule {
         wfColormap = "viridis",
         speed = 50,
         gain = 0,
-        minDb = -120,
-        maxDb = -40,
+        wfMinDB = -120,
+        wfMaxDB = -40,
     }
 }
 

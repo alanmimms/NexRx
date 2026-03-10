@@ -131,7 +131,7 @@ private:
   bool initialized = false;
 
   std::atomic<bool> playing{false};
-  std::atomic<float> volume{0.8f};
+  std::atomic<float> volume{0.1f};
   std::atomic<bool> muted{false};
 
   // Test tone state

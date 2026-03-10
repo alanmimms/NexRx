@@ -358,8 +358,19 @@ end
 -- =============================================================================
 
 function SetBox.rule(def)
+    local id = def.id or ("rule_" .. tostring(nextRuleOrder))
+    
+    -- Check for existing rule with this ID to replace it
+    local existingIndex = nil
+    for i, r in ipairs(rules) do
+        if r.id == id then
+            existingIndex = i
+            break
+        end
+    end
+
     local rule = {
-        id = def.id or ("rule_" .. tostring(nextRuleOrder)),
+        id = id,
         tags = {},
         condition = def["when"],
         priority = def.priority or 0,
@@ -385,6 +396,9 @@ function SetBox.rule(def)
     local function addProp(name, value)
         rule.properties[name] = value
         if not rulesByKey[name] then rulesByKey[name] = {} end
+        
+        -- If replacing, remove old reference if still there (should be gone from clean-up)
+        -- Then add new to the end so it has highest precedence among equal priority/specificity
         table.insert(rulesByKey[name], rule)
     end
 
@@ -398,7 +412,33 @@ function SetBox.rule(def)
         if not reserved[k] then addProp(k, v) end
     end
 
-    table.insert(rules, rule)
+    if existingIndex then
+        -- Clean up old rule from rulesByKey before replacing
+        local oldRule = rules[existingIndex]
+        for name, _ in pairs(oldRule.properties) do
+            local keyTable = rulesByKey[name]
+            if keyTable then
+                for i = #keyTable, 1, -1 do
+                    if keyTable[i] == oldRule then
+                        table.remove(keyTable, i)
+                    end
+                end
+            end
+        end
+        rules[existingIndex] = rule
+        
+        -- Since we replaced a rule, we must re-add properties to rulesByKey 
+        -- to ensure they are at the end (highest declaration order)
+        for name, value in pairs(rule.properties) do
+            if not rulesByKey[name] then rulesByKey[name] = {} end
+            -- Check if already added by shorthand loop above
+            local alreadyAdded = false
+            for _, r in ipairs(rulesByKey[name]) do if r == rule then alreadyAdded = true break end end
+            if not alreadyAdded then table.insert(rulesByKey[name], rule) end
+        end
+    else
+        table.insert(rules, rule)
+    end
     
     -- Invalidate each property provided by this rule specifically
     for name, _ in pairs(rule.properties) do

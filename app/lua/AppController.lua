@@ -21,7 +21,8 @@ local dirty = {
     preselector = false,
     AGC = false,
     RF = false,
-    QSD = false
+    QSD = false,
+    volume = false
 }
 
 -- =============================================================================
@@ -123,6 +124,32 @@ function AppController.init()
         Model.rx.QSD.offsetK:get()
         dirty.QSD = true
     end)
+
+    -- Watch volume changes
+    R.watch(function()
+        Model.rx.volume.DB:get()
+        Model.rx.volume.muted:get()
+        dirty.volume = true
+    end)
+
+    -- Watch test tone
+    R.watch(function()
+        local enabled = Model.rx.testToneEnabled:get()
+        print("[AppController] Test Tone -> " .. tostring(enabled))
+        if audio and audio.setTestTone then
+            audio.setTestTone(enabled, 440.0)
+        end
+    end)
+
+    -- Watch DSP Debug flags
+    R.watch(function()
+        local lms = Model.rx.DSP.lmsEnabled:get()
+        local bypass = Model.rx.DSP.matrixBypass:get()
+        if rx then
+            if rx.setLmsEnabled then rx.setLmsEnabled(lms) end
+            if rx.setMatrixBypass then rx.setMatrixBypass(bypass) end
+        end
+    end)
 end
 
 -- =============================================================================
@@ -137,7 +164,8 @@ function AppController.sync()
 
     if dirty.VFO then
         local active = Model.rx.VFO.active:peek()
-        commands.VFO = (active == "A") and Model.rx.VFO.A:peek() or Model.rx.VFO.B:peek()
+        commands.VFO = (active == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
+        print("[AppController] VFO Dirty -> " .. tostring(commands.VFO))
         dirty.VFO = false
         anyDirty = true
     end
@@ -174,6 +202,15 @@ function AppController.sync()
             offsetK = Model.rx.QSD.offsetK:peek()
         }
         dirty.QSD = false
+        anyDirty = true
+    end
+
+    if dirty.volume then
+        commands.volume = {
+            DB = Model.rx.volume.DB:peek(),
+            muted = Model.rx.volume.muted:peek()
+        }
+        dirty.volume = false
         anyDirty = true
     end
 

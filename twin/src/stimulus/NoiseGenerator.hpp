@@ -47,7 +47,7 @@ public:
         return rms_v_ * dist_(gen_);
     }
 
-    // RF I/Q for noise: independent Gaussian samples on I and Q
+    // Noise is broadband - equal contribution to I and Q
     // Noise is broadband - no carrier, mixing doesn't change its character
     void getRfIQ(double timeS, double& out_i, double& out_q) const override {
         (void)timeS;
@@ -57,6 +57,8 @@ public:
         out_i = scale * dist_(gen_);
         out_q = scale * dist_(gen_);
     }
+
+    [[nodiscard]] bool isBroadband() const override { return true; }
 
     [[nodiscard]] std::string description() const override {
         std::ostringstream oss;

@@ -41,7 +41,7 @@ bool AudioEngine::init(uint32_t sampleRateIn, uint32_t channelsIn) {
 
   ma_result result = ma_device_init(nullptr, &config, device);
   if (result != MA_SUCCESS) {
-    std::cerr << "Failed to initialize audio device: " << result << std::endl;
+    std::cerr << "[AudioEngine] Failed to initialize audio device: " << result << std::endl;
     delete device;
     device = nullptr;
     return false;
@@ -72,13 +72,15 @@ void AudioEngine::shutdown() {
 }
 
 bool AudioEngine::start() {
-  if (!initialized || playing.load()) {
-    return playing.load();
+  if (!initialized) {
+    std::cerr << "[AudioEngine] Cannot start: not initialized" << std::endl;
+    return false;
   }
+  if (playing.load()) return true;
 
   ma_result result = ma_device_start(device);
   if (result != MA_SUCCESS) {
-    std::cerr << "Failed to start audio device: " << result << std::endl;
+    std::cerr << "[AudioEngine] Failed to start audio device: " << result << std::endl;
     return false;
   }
 
@@ -116,42 +118,34 @@ void AudioEngine::processAudio(float* output, uint32_t frameCount) {
   const uint32_t chs = channels;
   const uint32_t totalSamples = frameCount * chs;
 
-  // 1. Start with silence or test tone
-  if (testToneEnabled.load()) {
-    const float frequency = testToneFrequency.load();
-    const float phaseIncrement = 2.0f * 3.14159265359f * frequency / sampleRate;
-
-    for (uint32_t frame = 0; frame < frameCount; ++frame) {
-      float s = std::sin(testTonePhase) * 0.2f;
-      testTonePhase = std::fmod(testTonePhase + phaseIncrement, 2.0f * 3.14159265359f);
-      for (uint32_t ch = 0; ch < chs; ++ch) {
-        output[frame * chs + ch] = s;
-      }
-    }
-  } else {
-    for (uint32_t i = 0; i < totalSamples; ++i) {
-      output[i] = 0.0f;
-    }
-  }
-
-  // 2. Mix in callback audio (demodulator output)
+  // 1. Get DSP audio if available
+  std::fill(callbackBuffer.begin(), callbackBuffer.begin() + totalSamples, 0.0f);
   if (callback) {
-    if (callbackBuffer.size() >= totalSamples) {
-      std::fill(callbackBuffer.begin(), callbackBuffer.begin() + totalSamples, 0.0f);
-      callback(callbackBuffer.data(), frameCount, chs);
-      for (uint32_t i = 0; i < totalSamples; ++i) {
-        output[i] += callbackBuffer[i];
-      }
-    }
+    callback(callbackBuffer.data(), frameCount, chs);
   }
 
-  // 3. Apply volume and mute
-  const float vol = muted.load() ? 0.0f : volume.load();
-  for (uint32_t i = 0; i < totalSamples; ++i) {
-    output[i] *= vol;
-    
-    // Final safety clamp
-    if (output[i] > 1.0f) output[i] = 1.0f;
-    if (output[i] < -1.0f) output[i] = -1.0f;
+  // 2. Mix and apply Volume/Mute/Tone
+  float vol = muted.load() ? 0.0f : volume.load();
+  bool tone = testToneEnabled.load();
+  float freq = testToneFrequency.load();
+  float phaseInc = 2.0f * M_PI * freq / sampleRate;
+
+  for (uint32_t frame = 0; frame < frameCount; ++frame) {
+    float toneSample = 0.0f;
+    if (testToneEnabled.load()) {
+      toneSample = 0.2f * std::sin(testTonePhase);
+      testTonePhase += phaseInc;
+      if (testTonePhase > 2.0f * M_PI) testTonePhase -= 2.0f * M_PI;
+    }
+
+    float v = muted.load() ? 0.0f : volume.load();
+    for (uint32_t ch = 0; ch < chs; ++ch) {
+      float sample = callbackBuffer[frame * chs + ch] * v + toneSample;
+      
+      // Final safety clamp
+      if (sample > 1.0f) sample = 1.0f;
+      if (sample < -1.0f) sample = -1.0f;
+      output[frame * chs + ch] = sample;
+    }
   }
 }

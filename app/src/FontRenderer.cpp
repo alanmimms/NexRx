@@ -24,25 +24,35 @@ FontRenderer::~FontRenderer() {
 }
 
 bool FontRenderer::loadFont(const std::string& path, float pixelHeightIn) {
-  // Read font file
-  std::ifstream file(path, std::ios::binary | std::ios::ate);
-  if (!file.is_open()) {
-    std::cerr << "Failed to open font file: " << path << std::endl;
+  std::cout << "[FontRenderer] Loading font: " << path << std::endl;
+  FILE* f = fopen(path.c_str(), "rb");
+  if (!f) {
+    std::cerr << "[FontRenderer] Failed to open font file: " << path << " (errno=" << errno << ")" << std::endl;
     return false;
   }
 
-  size_t fileSize = file.tellg();
-  file.seekg(0, std::ios::beg);
+  fseek(f, 0, SEEK_END);
+  size_t size = ftell(f);
+  fseek(f, 0, SEEK_SET);
 
-  fontBuffer.resize(fileSize);
-  if (!file.read(reinterpret_cast<char*>(fontBuffer.data()), static_cast<std::streamsize>(fileSize))) {
-    std::cerr << "Failed to read font file: " << path << std::endl;
+  fontBuffer.resize(size);
+  size_t read = fread(fontBuffer.data(), 1, size, f);
+  fclose(f);
+
+  if (read != size) {
+    std::cerr << "[FontRenderer] Failed to read entire font file: " << path << std::endl;
     return false;
   }
-  file.close();
 
+  std::cout << "[FontRenderer] Read " << size << " bytes, initializing font..." << std::endl;
   pixelHeight = pixelHeightIn;
   createFontTexture(fontBuffer.data(), pixelHeight);
+
+  if (textureID == 0) {
+      std::cerr << "[FontRenderer] Failed to create font texture" << std::endl;
+  } else {
+      std::cout << "[FontRenderer] Font loaded successfully, textureID=" << textureID << std::endl;
+  }
 
   return textureID != 0;
 }

@@ -114,7 +114,11 @@ end
 
 -- Check if widget was just clicked (hot + mouse released on it)
 function state.wasClicked(id)
-    return state.hot == id and state.mouseReleased and state.active == id
+    local clicked = state.hot == id and state.mouseReleased and state.active == id
+    if clicked then
+        state.active = nil
+    end
+    return clicked
 end
 
 -- Get persistent widget data

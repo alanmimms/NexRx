@@ -18,10 +18,11 @@ public:
   enum class Mode { USB = 0, LSB = 1, AM = 2, CW = 3, BYPASS = 4 };
 
   Demodulator() {
-    computeFilterCoeffs();
-    computeHilbertCoeffs();
     hilbertHistoryI.resize(hilbertTaps, 0.0f);
     hilbertHistoryQ.resize(hilbertTaps, 0.0f);
+    hilbertCoeffs.resize(hilbertTaps, 0.0f);
+    computeFilterCoeffs();
+    computeHilbertCoeffs();
   }
 
   void setMode(Mode m) { mode = m; }
@@ -125,10 +126,11 @@ private:
   static constexpr int hilbertTaps = 31;
   std::vector<float> hilbertHistoryI;
   std::vector<float> hilbertHistoryQ;
-  std::array<float, hilbertTaps> hilbertCoeffs;
+  std::vector<float> hilbertCoeffs;
   int hilbertIndex = 0;
 
   void computeHilbertCoeffs() {
+    hilbertCoeffs.assign(hilbertTaps, 0.0f);
     int M = (hilbertTaps - 1) / 2;
     constexpr float PI = 3.14159265f;
     for (int n = 0; n < hilbertTaps; n++) {

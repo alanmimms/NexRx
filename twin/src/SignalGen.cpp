@@ -301,7 +301,6 @@ namespace nexrx {
         lo_cos_d[1] = p1.first; lo_sin_d[1] = p1.second;
         auto p2 = computePhaseInc(lo, 480000.0);
         lo_cos_d[2] = p2.first; lo_sin_d[2] = p2.second;
-        for(int i=0; i<3; ++i) { lo_cos[i]=1.0; lo_sin[i]=0.0; }
     };
 
     while (controlHandler->isConnected()) {
@@ -361,11 +360,6 @@ namespace nexrx {
                   if (stimulusManager) stimulusManager->getRfIQ(t, antI, antQ, current_lo, 100000.0);
               }
 
-              // Add tiny noise floor to keep LMS stable
-              static thread_local std::mt19937 noiseRng(54321);
-              static thread_local std::normal_distribution<double> noiseDist(0, 1e-9);
-              antI += noiseDist(noiseRng); antQ += noiseDist(noiseRng);
-
               // Apply preselector attenuation
               double pg = getPreselGain(current_lo, preselector);
               antI *= pg; antQ *= pg;
@@ -378,6 +372,13 @@ namespace nexrx {
                   double bb_i = antI * lo_cos[ch] + antQ * lo_sin[ch];
                   double bb_q = antQ * lo_cos[ch] - antI * lo_sin[ch];
                   
+                  // Add tiny independent channel noise (Johnson-Nyquist simulation)
+                  static thread_local std::mt19937 noiseRng0(54321), noiseRng1(54322), noiseRng2(54323);
+                  static thread_local std::normal_distribution<double> noiseDist(0, 1e-10);
+                  std::mt19937& rng = (ch == 0) ? noiseRng0 : (ch == 1 ? noiseRng1 : noiseRng2);
+                  bb_i += noiseDist(rng);
+                  bb_q += noiseDist(rng);
+
                   // Apply simulated hardware error
                   double gE = opts.gainErr[ch];
                   double pE = opts.phaseErrRad[ch];
@@ -386,19 +387,26 @@ namespace nexrx {
 
                   double fi = applyLpf(err_i, lpf_zi[ch]);
                   double fq = applyLpf(err_q, lpf_zq[ch]);
-                  if (i == OVERSAMPLE_RATIO - 1) { filt_i[ch] = fi; filt_q[ch] = fq; }
+                  
+                  // Proper decimation: The LPF handles anti-aliasing by running at 480kHz.
+                  // We take the filtered sample at the decimation point (every 5th sample).
+                  if (i == OVERSAMPLE_RATIO - 1) {
+                      filt_i[ch] = fi;
+                      filt_q[ch] = fq;
+                  }
 
                   // Increment LO phase
                   double c = lo_cos[ch] * lo_cos_d[ch] - lo_sin[ch] * lo_sin_d[ch];
                   double s = lo_sin[ch] * lo_cos_d[ch] + lo_cos[ch] * lo_sin_d[ch];
                   lo_cos[ch] = c; lo_sin[ch] = s;
               }
-              
-              if (((outputSample * OVERSAMPLE_RATIO + i) & 0x7FFFF) == 0) {
-                  for(int ch=0; ch<3; ++ch) {
-                      double m = std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
-                      if (m > 0) { lo_cos[ch] /= m; lo_sin[ch] /= m; }
-                  }
+          }
+
+          // Periodically renormalize LO phases to prevent drift (every 960 samples = 10ms)
+          if ((outputSample & 0x3FF) == 0) {
+              for (int ch = 0; ch < 3; ++ch) {
+                  double m = 1.0 / std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
+                  lo_cos[ch] *= m; lo_sin[ch] *= m;
               }
           }
 
@@ -406,7 +414,7 @@ namespace nexrx {
           pk.sequence = (uint32_t)outputSample;
           pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
           
-          static thread_local std::mt19937 rng(12345);
+          static thread_local std::mt19937 rng(12345 + (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id()));
           static thread_local std::uniform_real_distribution<double> uniform(-0.5, 0.5);
           constexpr double scale = 8388607.0 / 1.65;
           double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);

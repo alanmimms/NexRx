@@ -38,6 +38,9 @@ function Checkbox.new(options)
 end
 
 function Checkbox:draw(id, x, y, checked, parentLWC)
+    if state.isHot(id) and state.mouseDown then
+        -- print("[Checkbox] Draw: " .. id .. " checked=" .. tostring(checked))
+    end
     local tags = {"widget.Checkbox", "id." .. id}
     if checked then table.insert(tags, "state.Checked") end
     
@@ -94,7 +97,10 @@ function Checkbox:draw(id, x, y, checked, parentLWC)
     drawText(x + boxSize + spacing, y + (boxSize - getLineHeight()) / 2, label, fgR, fgG, fgB, alpha)
     
     local clicked = state.wasClicked(id)
-    if clicked and self.onToggle then self.onToggle(not checked) end
+    if clicked then
+        print("[Checkbox] Clicked: " .. id .. " new_val=" .. tostring(not checked))
+        if self.onToggle then self.onToggle(not checked) end
+    end
     return clicked
 end
 

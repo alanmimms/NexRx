@@ -44,8 +44,11 @@ public:
   // Property controls
   void setVfo(double freqHz);
   void setQsdOffset(double offsetKhz);
+  double getQsdOffset() const { return qsdOffsetKhz; }
   void setRfGain(float db) { rfGainDB.store(db); }
   void setLmsMu(float mu) { lmsMu = mu; }
+  void setLmsEnabled(bool en) { lmsEnabled.store(en); }
+  void setMatrixBypass(bool en) { matrixBypass.store(en); }
   
   // Calibration
   void setCalibration(int ch, float gainDB, float phaseDeg, float alignR = 0.5f, float alignI = 0.0f);
@@ -70,8 +73,13 @@ private:
 
   std::atomic<float> rfGainDB{20.0f};
   double qsdOffsetKhz = 12.0;
+  double lastK_hz = -1.0;
+  double shiftCos = 1.0, shiftSin = 0.0;
+  double shiftCos_d = 1.0, shiftSin_d = 0.0;
   double lastVFOHz = 14.2e6;
   std::atomic<float> lmsMu{0.01f};
+  std::atomic<bool> lmsEnabled{true};
+  std::atomic<bool> matrixBypass{false};
   std::atomic<bool> calibrationActive{false};
   
   struct QsdCal {

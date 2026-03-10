@@ -23,7 +23,7 @@
         tags = {"CW"},
         priority = 50,
         apply = {
-            wfMinDb = -130,     -- Lower floor for CW
+            wfMinDB = -130,     -- Lower floor for CW
         }
     }
 
@@ -52,8 +52,8 @@
     waterfallBins       -- FFT bins (256, 512, 1024, 2048)
     waterfallRows       -- Waterfall history rows
     colormap            -- Colormap: "viridis", "plasma", "inferno", "green", "blue"
-    wfMinDb             -- Waterfall floor in dB
-    wfMaxDb             -- Waterfall ceiling in dB
+    wfMinDB             -- Waterfall floor in dB
+    wfMaxDB             -- Waterfall ceiling in dB
     spectrumEmaAlpha    -- Spectrum smoothing (0.0-1.0)
 
   Window:
@@ -91,8 +91,8 @@ rule {
 
         -- Display settings
         -- colormap = "plasma",
-        -- wfMinDb = -110,
-        -- wfMaxDb = -30,
+        -- wfMinDB = -110,
+        -- wfMaxDB = -30,
 
         -- Window settings
         -- windowWidth = 1440,

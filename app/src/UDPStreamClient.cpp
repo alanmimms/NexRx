@@ -18,6 +18,7 @@ UDPStreamClient::~UDPStreamClient() {
 bool UDPStreamClient::connect() {
   socket = ::socket(AF_INET, SOCK_DGRAM, 0);
   if (socket == SOCKET_INVALID) {
+    std::cerr << "[UDPClient] Failed to create socket" << std::endl;
     return false;
   }
   
@@ -27,11 +28,13 @@ bool UDPStreamClient::connect() {
   addr.sin_addr.s_addr = INADDR_ANY;
   
   if (::bind(socket, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+    std::cerr << "[UDPClient] Failed to bind to port " << config.port << " errno=" << errno << std::endl;
     socket_close(socket);
     socket = SOCKET_INVALID;
     return false;
   }
 
+  std::cout << "[UDPClient] Bound to port " << config.port << ", starting receive thread" << std::endl;
   running = true;
   receiveThread = std::thread(&UDPStreamClient::receiveLoop, this);
   return true;
@@ -111,11 +114,13 @@ void UDPStreamClient::receiveLoop() {
 
 Result<IQFrame> UDPStreamClient::read(std::chrono::milliseconds timeout) {
   (void)timeout;
-  if (readPos.load() == writePos.load()) {
+  size_t r = readPos.load();
+  size_t w = writePos.load();
+  if (r == w) {
     return {{}, TransportError::Timeout};
   }
-  IQFrame frame = receiveBuffer[readPos.load()];
-  readPos.store((readPos.load() + 1) % config.receiveBufferSize);
+  IQFrame frame = receiveBuffer[r];
+  readPos.store((r + 1) % config.receiveBufferSize);
   return {frame, TransportError::None};
 }
 

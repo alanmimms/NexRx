@@ -211,10 +211,14 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
     hwTable["setPreselectorInd"] = [this](uint32_t mask) { if (twinConnected.load()) { postCommand([this, mask]() { twinHost.setPreselectorL(mask); }); } };
     hwTable["setPreselectorCap"] = [this](uint32_t mask) { if (twinConnected.load()) { postCommand([this, mask]() { twinHost.setPreselectorCap(mask); }); } };
     hwTable["setPreselectorEnabled"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorEnabled(en); }); } };
-    hwTable["setRfGain"] = [this](double db) { dsp_.setRfGain((float)db); };
-    hwTable["setQsdOffset"] = [this](double k) { dsp_.setQsdOffset(k); if (twinConnected.load()) { postCommand([this, k]() { twinHost.setVFO(lastVFOHz, k * 1000.0); }); } };
-    hwTable["calibrate"] = [this]() {
-      dsp_.startManualCalibration();
+    hwTable["setRFGain"] = [this](double db) {
+      dsp_.setRfGain((float)db);
+      if (twinConnected.load()) {
+        postCommand([this, db]() { twinHost.setPGAGain((int)(db / 6.0)); }); // PGA gain is in ~6dB steps
+      }
+    };
+    hwTable["setQSDOffset"] = [this](double k) { dsp_.setQsdOffset(k); if (twinConnected.load()) { postCommand([this, k]() { twinHost.setVFO(lastVFOHz, k * 1000.0); }); } };
+    hwTable["calibrate"] = [this]() {      dsp_.startManualCalibration();
       if (twinConnected.load()) {
         postCommand([this]() {
           // Send 14.201 MHz stimulus (1kHz above LO) for 2 seconds
@@ -237,10 +241,12 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
     rxTable["setMute"] = [this](bool en) { audio.setMuted(en); };
     rxTable["setDemodFilterEnabled"] = [this](bool en) { dsp_.getDemod().setFilterEnabled(en); };
     rxTable["setLmsMu"] = [this](float mu) { dsp_.setLmsMu(mu); };
-    rxTable["setVfo"] = [this](double f) {
+    rxTable["setLmsEnabled"] = [this](bool en) { dsp_.setLmsEnabled(en); };
+    rxTable["setMatrixBypass"] = [this](bool en) { dsp_.setMatrixBypass(en); };
+    rxTable["setVFO"] = [this](double f) {
       lastVFOHz = f;
       dsp_.setVfo(f);
-      if (twinConnected.load()) { postCommand([this, f]() { twinHost.setVFO(f, -1.0); }); }
+      if (twinConnected.load()) { postCommand([this, f]() { twinHost.setVFO(f, dsp_.getQsdOffset() * 1000.0); }); }
     };
     rxTable["getSignalRms"] = [this]() { return dsp_.getDiagnostics().signalRms.load(); };
     rxTable["getStats"] = [this]() {
@@ -346,8 +352,9 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
       size_t read = dsp_.getAudioBuffer().read(std::span<float>(tmp.data(), fC));
       for (uint32_t i = 0; i < fC; ++i) {
         float s = (i < read) ? tmp[i] : 0.0f;
-        out[i*ch] = s;
-        if (ch > 1) out[i*ch+1] = s;
+        for (uint32_t c = 0; c < ch; ++c) {
+          out[i*ch + c] = s;
+        }
       }
     });
 

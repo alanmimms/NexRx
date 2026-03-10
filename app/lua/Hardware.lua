@@ -29,8 +29,11 @@ function Hardware.sync(commands)
 
     -- VFO Synchronization
     if commands.VFO then
+        print("[Hardware] Syncing VFO: " .. tostring(commands.VFO) .. " (rx=" .. tostring(rx) .. ")")
         if rx and rx.setVFO then
             rx.setVFO(commands.VFO)
+        else
+            print("[Hardware] ERROR: rx.setVFO not found!")
         end
     end
 
@@ -69,6 +72,17 @@ function Hardware.sync(commands)
     if commands.QSD then
         if hw and hw.setQSDOffset then
             hw.setQSDOffset(commands.QSD.offsetK)
+        end
+    end
+
+    -- Volume Control
+    if commands.volume then
+        local v = commands.volume
+        if audio and audio.setVolume then
+            audio.setVolume(v.DB)
+        end
+        if audio and audio.setMuted then
+            audio.setMuted(v.muted)
         end
     end
 end

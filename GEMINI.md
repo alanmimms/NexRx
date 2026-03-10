@@ -49,3 +49,11 @@ memory, because that leads to a mess we have to back out anyway.
 
 Never do a `git commit` unless I ask for it. Do not `git push` unless I
 ask for a `git commit` and for it to be pushed.
+
+Read doc/*.md for project background.
+
+Whenever there is a conflict between the code's functionality and the
+doc/*.md documents, the code should be considered the source of truth.
+If the code is working in some wrong way and the doc shows what
+appears to be a better way, discuss this with me and we can decide
+what to do.

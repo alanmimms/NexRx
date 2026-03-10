@@ -36,7 +36,7 @@ function Label:draw(id, x, y, parentLWC)
     
     local text = ""
     if self.getText then
-        text = self.getText()
+        text = self.getText(lwc)
     elseif lwc:has("text") then
         text = lwc:getString("text")
     else

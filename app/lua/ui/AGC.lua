@@ -19,6 +19,7 @@ setbox.rule {
     priority = -1000,
     apply = {
         title = "AGC",
+        text = "AGC",
         background = "#242d42",
         border = "#3b82f6",
         borderRadius = 8,
@@ -40,13 +41,25 @@ function AGC.new(props)
     self.AGC = props.AGC -- Model.rx.AGC
     
     -- Initialize widget instances
-    self.titleLabel = ui.Label.new()
+    self.titleLabel = ui.Label.new({ 
+        getText = function(lwc) 
+            return lwc and lwc:getString("title") or "AGC" 
+        end 
+    })
     self.modeButtons = {
         off  = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 0) end }),
         slow = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 3) end }),
         med  = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 2) end }),
         fast = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 1) end })
     }
+    self.bypassCheck = ui.Checkbox.new({
+        getText = function() return "Bypass Matrix" end,
+        onToggle = function(v) Model.set("rx.DSP.matrixBypass", v) end
+    })
+    self.lmsCheck = ui.Checkbox.new({
+        getText = function() return "LMS Alignment" end,
+        onToggle = function(v) Model.set("rx.DSP.lmsEnabled", v) end
+    })
     return self
 end
 
@@ -66,6 +79,7 @@ function AGC:draw(id, x, y, w, h)
     end
     
     -- Title
+    self.titleLabel.getText = function() return lwc:getString("title") or "AGC" end
     self.titleLabel:draw(id .. "-title", x + 12, y + 8, lwc)
     
     local padding = lwc:getNumber("padding")
@@ -103,6 +117,13 @@ function AGC:draw(id, x, y, w, h)
     end
     layout.endHorizontal()
     
+    layout.newLine(24)
+    local cx, cy = layout.getCursor()
+    self.bypassCheck:draw(id .. "-matrix-bypass", cx, cy, Model.rx.DSP.matrixBypass:get(), lwc)
+    layout.newLine(24)
+    cx, cy = layout.getCursor()
+    self.lmsCheck:draw(id .. "-lms-enable", cx, cy, Model.rx.DSP.lmsEnabled:get(), lwc)
+
     layout.endRegion()
 end
 

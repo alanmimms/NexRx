@@ -101,7 +101,7 @@ void StimulusManager::getRfIQ(double timeS, double& outI, double& outQ,
 
   if (frozen.load()) {
     for (const auto& stim : frozenStimuli) {
-      if (bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+      if (stim->isBroadband() || bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
         double i, q;
         stim->getRfIQ(timeS, i, q);
         outI += i;
@@ -118,7 +118,7 @@ void StimulusManager::getRfIQ(double timeS, double& outI, double& outQ,
   for (const auto& pair : stimuli) {
     if (pair.second.enabled) {
       auto stim = pair.second.stimulus;
-      if (bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+      if (stim->isBroadband() || bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
         double i, q;
         stim->getRfIQ(timeS, i, q);
         outI += i;
@@ -151,7 +151,7 @@ void StimulusManager::getRfIQFast(double timeS, double& outI, double& outQ,
   outI = 0.0;
   outQ = 0.0;
   for (const auto& stim : frozenStimuli) {
-    if (bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+    if (stim->isBroadband() || bandwidthHz == 0 || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
       double i, q;
       stim->getRfIQ(timeS, i, q);
       outI += i;
@@ -232,7 +232,7 @@ void StimulusManager::resetAll() {
 bool StimulusManager::isAnyWithin(double centerHz, double bandwidthHz) const {
   if (frozen.load()) {
     for (const auto& stim : frozenStimuli) {
-      if (std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+      if (stim->isBroadband() || std::abs(stim->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
         return true;
       }
     }
@@ -242,7 +242,7 @@ bool StimulusManager::isAnyWithin(double centerHz, double bandwidthHz) const {
   std::lock_guard<std::mutex> lock(stimulusMutex);
   for (const auto& pair : stimuli) {
     if (pair.second.enabled) {
-      if (std::abs(pair.second.stimulus->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
+      if (pair.second.stimulus->isBroadband() || std::abs(pair.second.stimulus->carrierFrequency() - centerHz) <= bandwidthHz / 2.0) {
         return true;
       }
     }

@@ -53,6 +53,9 @@ public:
     // Get carrier frequency (0 if no carrier, e.g., noise)
     [[nodiscard]] virtual double carrierFrequency() const { return 0.0; }
 
+    // Check if stimulus is broadband (e.g., white noise) and should ignore tuning checks
+    [[nodiscard]] virtual bool isBroadband() const { return false; }
+
     // Get current envelope/amplitude (for keyed signals like CW)
     [[nodiscard]] virtual double getEnvelope(double timeS) const {
         (void)timeS;

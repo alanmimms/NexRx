@@ -7,6 +7,7 @@
 local ui = require("ui.Widgets")
 local layout = require("ui.Layout")
 local setbox = require("SetBox")
+local state = require("ui.State")
 local Model = require("Model")
 
 local AudioUtils = {}
@@ -84,7 +85,11 @@ function AudioUtils:draw(id, x, y, w, h)
     
     cx, cy = layout.getCursor()
     self.toneCheckbox.getText = function() return lwc:getString("labelTone") end
-    self.toneCheckbox:draw(id .. "-tone", cx, cy, self.rx.testToneEnabled:get(), lwc)
+    local toneVal = self.rx.testToneEnabled:get()
+    if state.isHot(id .. "-tone") then
+        -- print("[AudioUtils] toneVal=" .. tostring(toneVal))
+    end
+    self.toneCheckbox:draw(id .. "-tone", cx, cy, toneVal, lwc)
     layout.newLine(28)
     
     layout.endRegion()

@@ -83,17 +83,6 @@ local function getAllActiveTags()
     if hovered and hovered.id then
         -- Add namespaced hover tag for specific rule targeting
         allTags["state.Hovered:" .. hovered.id] = true
-        
-        -- Copy other tags from widget, but filter out generic state tags (state.Something)
-        -- because those should be resolved locally in the widget's LWC, not globally.
-        -- Namespaced state tags (state.Something:ID) are already added above.
-        if hovered.tags then 
-            for _, t in ipairs(hovered.tags) do 
-                if not t:find("^state%.[A-Z][a-zA-Z0-9]*$") then
-                    allTags[t] = true 
-                end
-            end 
-        end
     end
     
     if activeTags["input.MouseLEFT"] and hovered and hovered.id then
@@ -171,8 +160,8 @@ function init()
         valueObs = (Model.rx.VFO.active:peek() == "A") and Model.rx.VFO.A or Model.rx.VFO.B 
     })
     
-    uiInstances.volumeSlider = Slider.new({ valueObs = Model.rx.volume.DB })
-    uiInstances.rfGainSlider = Slider.new({ valueObs = Model.rx.RF.gainDB })
+    uiInstances.volumeSlider = Slider.new({ valueObs = Model.rx.volume.DB, propertyName = "rx.volume.DB" })
+    uiInstances.rfGainSlider = Slider.new({ valueObs = Model.rx.RF.gainDB, propertyName = "rx.RF.gainDB" })
     uiInstances.smeter = SMeter.new()
     uiInstances.calBtn = Button.new({ getText = function() return "CALIBRATE" end })
     uiInstances.activeTagsViewer = ActiveTags.new()

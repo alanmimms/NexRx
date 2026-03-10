@@ -30,6 +30,7 @@ setbox.rule {
 function Slider.new(options)
     local self = setmetatable({}, Slider)
     self.valueObs = options and options.valueObs
+    self.propertyName = options and options.propertyName
     return self
 end
 
@@ -89,13 +90,9 @@ function Slider:draw(id, x, y, w, minVal, maxVal, value, parentLWC)
         local nt = clamp((state.mouseX - x) / w, 0, 1)
         local newValue = minVal + nt * (maxVal - minVal)
         if newValue ~= currentValue then
-            if self.valueObs then
-                -- Try to find the property name for Model.set if possible
-                -- but for vertical slice we assume the observable is tracked by Model.set
-                -- or we can expose a way to set by observable reference.
-                -- For now, we'll use a hack or just use Model.set if we have the name.
-                -- Better: if we have an observable, we need to know what property it maps to for Model.set
-                -- Let's just update the observable directly for now, which triggers Controller.
+            if self.propertyName then
+                Model.set(self.propertyName, newValue)
+            elseif self.valueObs and self.valueObs.set then
                 self.valueObs:set(newValue)
             end
         end
