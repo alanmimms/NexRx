@@ -84,6 +84,46 @@ rule {
 -- Frequency is in Hz.
 -- =============================================================================
 
+-- Digit keys while hovering VFO start entry
+for i=0,9 do
+rule {
+    id = "event-vfo-digit-" .. i,
+    tags = {"event.KeyDown-" .. i, "widget.VFOControl"},
+    priority = 50,
+    apply = { handler = "freq_entry_start" }
+}
+end
+
+-- VFO Highlight when hovered anywhere within VFO control area (VFO, Spectrum, WF)
+rule {
+    id = "vfo-highlight-vfo",
+    tags = {"widget.FrequencyDisplay", "VFOControl"},
+    priority = 10,
+    apply = { highlighted = true }
+}
+
+rule {
+    id = "vfo-highlight-spectrum",
+    tags = {"widget.FrequencyDisplay", "widget.Spectrum"},
+    priority = 10,
+    apply = { highlighted = true }
+}
+
+rule {
+    id = "vfo-highlight-waterfall",
+    tags = {"widget.FrequencyDisplay", "widget.Waterfall"},
+    priority = 10,
+    apply = { highlighted = true }
+}
+
+-- VFO Highlight when in entry mode
+rule {
+    id = "vfo-highlight-entry",
+    tags = {"widget.FrequencyDisplay", "state.VFOEditing"},
+    priority = 20,
+    apply = { highlighted = true }
+}
+
 -- VFO Wheel: 100 Hz steps (no modifiers)
 rule {
     id = "event-vfo-wheel",
@@ -135,6 +175,31 @@ rule {
 -- =============================================================================
 -- ISG Control (Internal Signal Gen)
 -- =============================================================================
+
+-- Digit keys while hovering ISG start entry
+for i=0,9 do
+rule {
+    id = "event-isg-digit-" .. i,
+    tags = {"event.KeyDown-" .. i, "widget.IsgControl"},
+    priority = 150,
+    apply = { handler = "freq_entry_start" }
+}
+end
+
+-- ISG Highlight
+rule {
+    id = "isg-highlight-hover",
+    tags = {"widget.FrequencyDisplay", "widget.IsgControl"},
+    priority = 10,
+    apply = { highlighted = true }
+}
+
+rule {
+    id = "isg-highlight-entry",
+    tags = {"widget.FrequencyDisplay", "state.ISGEditing"},
+    priority = 20,
+    apply = { highlighted = true }
+}
 
 rule {
     id = "event-isg-wheel",
@@ -202,6 +267,20 @@ rule {
 -- =============================================================================
 -- Frequency Entry Mode
 -- =============================================================================
+
+rule {
+    id = "event-freq-entry-move-left",
+    tags = {"event.KeyDown-LEFT", "state.FreqEntryMode"},
+    priority = 100,
+    apply = { handler = "freq_entry_move" }
+}
+
+rule {
+    id = "event-freq-entry-move-right",
+    tags = {"event.KeyDown-RIGHT", "state.FreqEntryMode"},
+    priority = 100,
+    apply = { handler = "freq_entry_move" }
+}
 
 rule {
     id = "event-freq-entry-start-f",

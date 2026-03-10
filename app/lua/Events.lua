@@ -273,10 +273,15 @@ function Events.dispatch(event)
         return false
     end
 
-    -- Find widget under mouse (for mouse events)
+    -- Find widget under mouse (for mouse events or keyboard events without position)
     local targetWidget = nil
-    if event.x and event.y then
-        targetWidget = Events.getWidgetAt(event.x, event.y)
+    local tx, ty = event.x, event.y
+    if not tx or not ty then
+        tx, ty = getMousePos()
+    end
+    
+    if tx and ty then
+        targetWidget = Events.getWidgetAt(tx, ty)
     end
 
     -- Bubble through widget hierarchy
@@ -409,6 +414,7 @@ function Events._buildEventTags(event, widget)
 
     -- Add widget tags (already namespaced from widgets.lua)
     if widget and widget.tags then
+        table.insert(tags, "state.Hovered") -- Generic hover tag
         for _, tag in ipairs(widget.tags) do
             table.insert(tags, tag)
         end
@@ -539,8 +545,11 @@ end
 -- @param data additional event data
 -- @return event table
 function Events.createEvent(eventType, data)
+    local mx, my = getMousePos()
     local event = {
         type = eventType,
+        x = data and data.x or mx,
+        y = data and data.y or my,
         timestamp = os.clock(),
         handled = false,
     }

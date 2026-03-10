@@ -115,4 +115,11 @@ function Model.set(name, value)
     })
 end
 
+--- Round frequency to nearest step
+function Model.roundFrequency(name, stepHz)
+    local current = setbox.getNumber(name)
+    local rounded = math.floor(current / stepHz + 0.5) * stepHz
+    Model.set(name, rounded)
+end
+
 return Model

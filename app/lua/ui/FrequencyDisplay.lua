@@ -5,6 +5,8 @@
 ]]
 
 local setbox = require("SetBox")
+local state = require("ui.State")
+local events = require("Events")
 
 local FrequencyDisplay = {}
 FrequencyDisplay.__index = FrequencyDisplay
@@ -18,6 +20,8 @@ setbox.rule {
         background = "#1e293b",
         foreground = "#ffffff",
         border = "#3b82f6",
+        highlight = "#facc15", -- Yellow highlight for editing/focus
+        highlighted = false,
         borderWidth = 1,
         borderRadius = 4,
         opacity = 1.0,
@@ -41,22 +45,44 @@ function formatFreq(f)
 end
 
 
-function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, tags, parentLWC)
+function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, cursorIdx, tags, parentLWC)
     local widgetTags = {"widget.FrequencyDisplay", "id." .. id}
+    
+    local isEditing = (freqEntryText and freqEntryText ~= "")
+    local hasModeTag = events.hasModeTag("state.FreqEntryMode")
+    
+    if isEditing or hasModeTag then
+        table.insert(widgetTags, "state.FreqEntryMode")
+    end
+
     if tags then
         for _, t in ipairs(tags) do table.insert(widgetTags, t) end
     end
-    
+
+    if state.isHot(id) then table.insert(widgetTags, "state.Hovered") end
+    if state.isActive(id) then table.insert(widgetTags, "state.Active") end
+
     local lwc = setbox.newContext(widgetTags, parentLWC)
     
     -- Properties from rules
     w = w or lwc:getNumber("width")
     h = h or lwc:getNumber("height")
     
+    state.registerWidget(id, {x=x, y=y, w=w, h=h}, widgetTags)
+    if state.pointInRect(state.mouseX, state.mouseY, x, y, w, h) then
+        state.setHot(id)
+        if state.mouseClicked then state.setActive(id) end
+    end
+
     local ui = require("ui.Widgets")
     local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
     local fgR, fgG, fgB = ui.hexToRgb(lwc:getString("foreground"))
     local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
+    
+    if lwc:getBool("highlighted") then
+        bR, bG, bB = ui.hexToRgb(lwc:getString("highlight"))
+    end
+
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
@@ -71,9 +97,28 @@ function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, tags, parentLWC)
         frequency = self.valueObs:get()
     end
     
-    local text = (freqEntryText and freqEntryText ~= "") and freqEntryText or formatFreq(frequency / 1e6)
+    local text = ""
+    local isEditing = (freqEntryText and freqEntryText ~= "")
+    if isEditing then
+        text = freqEntryText
+    else
+        text = formatFreq(frequency / 1e6)
+    end
+
     local tw = measureText(text)
-    drawText(x + (w - tw) / 2, y + (h - getLineHeight()) / 2, text, fgR, fgG, fgB, alpha)
+    local tx = x + (w - tw) / 2
+    local ty = y + (h - getLineHeight()) / 2
+    drawText(tx, ty, text, fgR, fgG, fgB, alpha)
+
+    -- Draw Cursor if editing
+    if isEditing and cursorIdx then
+        local blink = (_G.freqEntryBlink or 0) < 0.5
+        if blink then
+            local cursorOffset = measureText(text:sub(1, cursorIdx))
+            local cursorX = tx + cursorOffset
+            drawRect(cursorX, ty, 2, getLineHeight(), fgR, fgG, fgB, alpha)
+        end
+    end
 end
 
 return FrequencyDisplay

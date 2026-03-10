@@ -47,6 +47,18 @@ function ISG.new(props)
     self.freqSlider = ui.Slider.new({
         valueObs = self.ISG.frequencyHz
     })
+    self.round1k = ui.Button.new({
+        getText = function() return "<0k>" end,
+        onClick = function()
+            Model.roundFrequency("isgFrequency", 1000)
+        end
+    })
+    self.round100 = ui.Button.new({
+        getText = function() return "<00>" end,
+        onClick = function()
+            Model.roundFrequency("isgFrequency", 100)
+        end
+    })
     
     return self
 end
@@ -77,8 +89,16 @@ function ISG:draw(id, x, y, w, h)
     
     -- Frequency Display
     local cx, cy = layout.getCursor()
-    self.freqDisplay:draw(id .. "-freq-disp", cx, cy, w - padding * 2, 36, _G.isgFreqEntryText or "", {"IsgControl"}, lwc)
+    self.freqDisplay:draw(id .. "-freq-disp", cx, cy, w - padding * 2, 36, _G.isgFreqEntryText or "", _G.isgFreqEntryCursor, {"IsgControl"}, lwc)
     layout.newLine(44)
+
+    -- Rounding buttons
+    layout.beginHorizontal(0)
+    local rbw = (w - padding * 2 - 4) / 2
+    self.round1k:draw(id .. "-round-1k", cx, layout.getCursorY(), rbw, 24, {}, lwc)
+    layout.space(4)
+    self.round100:draw(id .. "-round-100", cx + rbw + 4, layout.getCursorY(), rbw, 24, {}, lwc)
+    layout.endHorizontal(); layout.newLine(32)
 
     -- Enabled Toggle
     cx, cy = layout.getCursor()

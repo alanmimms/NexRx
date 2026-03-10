@@ -83,8 +83,17 @@ local function getAllActiveTags()
     local mx, my = getMousePos()
     local hovered = events.getWidgetAt(mx, my)
     if hovered and hovered.id then
-        -- Add namespaced hover tag for specific rule targeting
+        -- Add namespaced hover tag
         allTags["state.Hovered:" .. hovered.id] = true
+        
+        -- Propagate all tags of the hovered widget to global state
+        -- This allows other widgets to react to this hover state 
+        -- (e.g. VFO display highlighting when Spectrum is hovered)
+        if hovered.tags then
+            for _, tag in ipairs(hovered.tags) do
+                allTags[tag] = true
+            end
+        end
     end
     
     if activeTags["input.MouseLEFT"] and hovered and hovered.id then
@@ -113,11 +122,14 @@ for _, file in ipairs(configFiles) do setbox.loadFile(file) end
 
 local hwConnected = false
 local freqEntryText = ""
+local freqEntryCursor = 0
 local freqEntryBlink = 0
 local wfBins = 512
 local wfRows = 256
 local spectrumData = {}
 _G.rxStats = { rms=0, gain0=0, phase0=0, gain1=0, phase1=0, w0_mag=0, w1_mag=0 }
+_G.isgFreqEntryText = ""
+_G.isgFreqEntryCursor = 0
 
 function init()
     AppController.init()
@@ -179,6 +191,118 @@ function init()
     uiInstances.rfGainLabel = Label.new()
     uiInstances.smeterLabel = Label.new()
 
+    uiInstances.round1k = Button.new({
+        getText = function() return "<0k>" end,
+        onClick = function()
+            local active = Model.rx.VFO.active:peek()
+            Model.roundFrequency("rx.VFO." .. active, 1000)
+        end
+    })
+    uiInstances.round100 = Button.new({
+        getText = function() return "<00>" end,
+        onClick = function()
+            local active = Model.rx.VFO.active:peek()
+            Model.roundFrequency("rx.VFO." .. active, 100)
+        end
+    })
+
+    uiInstances.modeButtons = {}
+    for _, m in ipairs(modeHelper.names) do
+        uiInstances.modeButtons[m] = Button.new({ 
+            getText = function() return m == "BYPASS" and "RAW" or m end,
+            onClick = function() Model.set("rx.selectedMode", m) end 
+        })
+    end
+
+    uiInstances.bandButtons = {}
+    local bandList = {"160m","80m","40m","20m","15m","10m"}
+    for _, b in ipairs(bandList) do
+        uiInstances.bandButtons[b] = Button.new({ 
+            getText = function() return b end,
+            onClick = function() Model.set("rx.selectedBand", b) end 
+        })
+    end
+end
+
+local function clamp(v, min, max)
+    return math.max(min, math.min(max, v))
+end
+
+function init()
+    AppController.init()
+    _G.calibration.init()
+    
+    wfBins = 1024 -- Match DspEngine::FFT_SIZE
+    wfRows = 256 
+    for i = 1, wfBins do spectrumData[i] = -100 end
+    
+    setClearColor(0.1, 0.1, 0.15)
+    if audio.isInitialized() then audio.start() end
+    if waterfall.init(wfBins, wfRows) then
+        waterfall.setRange(Model.waterfall.minDB:get(), Model.waterfall.maxDB:get())
+        if _G.colormaps and _G.colormaps[Model.waterfall.colormap:get()] then 
+            waterfall.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
+        end
+        Hardware.enableWaterfall()
+    end
+    bands.init()
+    events.init()
+    layout.setEventsModule(events)
+    ui.setEventsModule(events)
+    ui.setLayoutModule(layout)
+    
+    if hw.connect("127.0.0.1", 5000, 5001) then
+        Hardware.enableHardware()
+    end
+
+    -- Create UI Instances with Dependency Injection
+    uiInstances.leftPanel = Panel.new()
+    uiInstances.rightPanel = Panel.new()
+    uiInstances.centerPanel = Panel.new()
+    
+    uiInstances.freqDisplay = FrequencyDisplay.new({
+        valueObs = require("Reactive").computed(function()
+            local active = Model.rx.VFO.active:get()
+            return (active == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
+        end)
+    })
+    
+    uiInstances.freqSlider = Slider.new({ 
+        valueObs = (Model.rx.VFO.active:peek() == "A") and Model.rx.VFO.A or Model.rx.VFO.B 
+    })
+    
+    uiInstances.volumeSlider = Slider.new({ valueObs = Model.rx.volume.DB, propertyName = "rx.volume.DB" })
+    uiInstances.rfGainSlider = Slider.new({ valueObs = Model.rx.RF.gainDB, propertyName = "rx.RF.gainDB" })
+    uiInstances.smeter = SMeter.new()
+    uiInstances.calBtn = Button.new({ getText = function() return "CALIBRATE" end })
+    uiInstances.activeTagsViewer = ActiveTags.new()
+    uiInstances.graticuleLegend = GraticuleLegend.new()
+    uiInstances.rxToggle = Button.new({ 
+        getText = function() return Model.rx.active:get() and "RX ON" or "RX OFF" end,
+        onClick = function() Model.set("rx.active", not Model.rx.active:get()) end 
+    })
+    
+    uiInstances.modeLabels = Label.new()
+    uiInstances.bandLabels = Label.new()
+    uiInstances.volLabel = Label.new()
+    uiInstances.rfGainLabel = Label.new()
+    uiInstances.smeterLabel = Label.new()
+
+    uiInstances.round1k = Button.new({
+        getText = function() return "<0k>" end,
+        onClick = function()
+            local active = Model.rx.VFO.active:peek()
+            Model.roundFrequency("rx.VFO." .. active, 1000)
+        end
+    })
+    uiInstances.round100 = Button.new({
+        getText = function() return "<00>" end,
+        onClick = function()
+            local active = Model.rx.VFO.active:peek()
+            Model.roundFrequency("rx.VFO." .. active, 100)
+        end
+    })
+
     uiInstances.modeButtons = {}
     for _, m in ipairs(modeHelper.names) do
         uiInstances.modeButtons[m] = Button.new({ 
@@ -199,15 +323,19 @@ function init()
     events.registerHandler("vfo_control", function(e, w, p)
         local delta = e.delta or (e.key == "RIGHT" and 1 or (e.key == "LEFT" and -1 or 0))
         local active = Model.rx.VFO.active:peek()
-        local prop = (active == "A") and "rx.VFO.A" or "rx.VFO.B"
+        local isISG = p and p.property == "isgFrequency"
+        local prop = isISG and "isgFrequency" or ((active == "A") and "rx.VFO.A" or "rx.VFO.B")
+        
         if delta ~= 0 and p and p.step then 
-            local current = (active == "A") and Model.rx.VFO.A:peek() or Model.rx.VFO.B:peek()
-            local newVal = current + delta * p.step
+            local current = isISG and Model.ISG.frequencyHz:peek() or ((active == "A") and Model.rx.VFO.A:peek() or Model.rx.VFO.B:peek())
+            local newVal = clamp(current + delta * p.step, 0.1e6, 30.0e6)
             setProperty(prop, newVal)
+            if not isISG then bands.setCurrent(newVal) end
             return true 
         end
         return false
     end)
+
     events.registerHandler("toggle_property", function(e, w, p)
         local prop = p.property or (w and w.data and w.data.property)
         if prop then 
@@ -239,26 +367,47 @@ function init()
 
     -- Frequency Entry Handlers
     events.registerHandler("freq_entry_start", function(event, widget)
+        -- If already in frequency entry mode, gobble the event but don't restart
+        if events.hasModeTag("state.FreqEntryMode") then
+            return true
+        end
+
         if widget and widget.tags and table.concat(widget.tags, ","):find("IsgControl") then
-            isgFreqEntryText = ""
-            events.addModeTag("IsgFreqEntryMode"); events.addModeTag("FreqEntryMode")
+            _G.isgFreqEntryText = ""
+            _G.isgFreqEntryCursor = 0
+            events.addModeTag("state.IsgFreqEntryMode")
+            events.addModeTag("state.FreqEntryMode")
+            events.addModeTag("state.ISGEditing")
         else
             freqEntryText = ""
-            events.addModeTag("FreqEntryMode")
+            freqEntryCursor = 0
+            events.addModeTag("state.FreqEntryMode")
+            events.addModeTag("state.VFOEditing")
         end
         return true
     end)
 
     events.registerHandler("freq_entry_cancel", function(event, widget)
-        events.removeModeTag("FreqEntryMode"); events.removeModeTag("IsgFreqEntryMode")
-        freqEntryText = ""; isgFreqEntryText = ""; return true
+        events.removeModeTag("state.FreqEntryMode")
+        events.removeModeTag("state.IsgFreqEntryMode")
+        events.removeModeTag("state.VFOEditing")
+        events.removeModeTag("state.ISGEditing")
+        freqEntryText = ""; _G.isgFreqEntryText = ""
+        freqEntryCursor = 0; _G.isgFreqEntryCursor = 0
+        return true
     end)
 
     events.registerHandler("freq_entry_backspace", function(event, widget)
-        if events.hasModeTag("IsgFreqEntryMode") then
-            if #isgFreqEntryText > 0 then isgFreqEntryText = isgFreqEntryText:sub(1, -2) end
-        elseif events.hasModeTag("FreqEntryMode") then
-            if #freqEntryText > 0 then freqEntryText = freqEntryText:sub(1, -2) end
+        if events.hasModeTag("state.IsgFreqEntryMode") then
+            if _G.isgFreqEntryCursor > 0 then
+                _G.isgFreqEntryText = _G.isgFreqEntryText:sub(1, _G.isgFreqEntryCursor - 1) .. _G.isgFreqEntryText:sub(_G.isgFreqEntryCursor + 1)
+                _G.isgFreqEntryCursor = _G.isgFreqEntryCursor - 1
+            end
+        elseif events.hasModeTag("state.FreqEntryMode") then
+            if freqEntryCursor > 0 then
+                freqEntryText = freqEntryText:sub(1, freqEntryCursor - 1) .. freqEntryText:sub(freqEntryCursor + 1)
+                freqEntryCursor = freqEntryCursor - 1
+            end
         end
         return true
     end)
@@ -267,11 +416,18 @@ function init()
         local text = event.text or ""
         for i = 1, #text do
             local ch = text:sub(i, i)
+            if ch == "," then ch = "." end
             if ch:match("[0-9]") or (ch == ".") then
-                if events.hasModeTag("IsgFreqEntryMode") then
-                    if ch ~= "." or not isgFreqEntryText:find("%.") then isgFreqEntryText = isgFreqEntryText .. ch end
-                elseif events.hasModeTag("FreqEntryMode") then
-                    if ch ~= "." or not freqEntryText:find("%.") then freqEntryText = freqEntryText .. ch end
+                if events.hasModeTag("state.IsgFreqEntryMode") then
+                    if ch ~= "." or not _G.isgFreqEntryText:find("%.") then
+                        _G.isgFreqEntryText = _G.isgFreqEntryText:sub(1, _G.isgFreqEntryCursor) .. ch .. _G.isgFreqEntryText:sub(_G.isgFreqEntryCursor + 1)
+                        _G.isgFreqEntryCursor = _G.isgFreqEntryCursor + 1
+                    end
+                elseif events.hasModeTag("state.FreqEntryMode") then
+                    if ch ~= "." or not freqEntryText:find("%.") then
+                        freqEntryText = freqEntryText:sub(1, freqEntryCursor) .. ch .. freqEntryText:sub(freqEntryCursor + 1)
+                        freqEntryCursor = freqEntryCursor + 1
+                    end
                 end
             end
         end
@@ -279,18 +435,37 @@ function init()
     end)
 
     events.registerHandler("freq_entry_confirm", function(event, widget)
-        if events.hasModeTag("IsgFreqEntryMode") then
-            local newFreq = tonumber(isgFreqEntryText)
-            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then setProperty("isgFrequency", newFreq * 1e6) end
-            events.removeModeTag("IsgFreqEntryMode"); events.removeModeTag("FreqEntryMode"); isgFreqEntryText = ""
-        elseif events.hasModeTag("FreqEntryMode") then
-            local newFreq = tonumber(freqEntryText)
-            if newFreq and newFreq >= 0.1 and newFreq <= 30.0 then
-                local active = Model.rx.VFO.active:peek()
-                Model.set("rx.VFO." .. active, newFreq * 1e6)
-                bands.setCurrent(newFreq * 1e6)
+        if events.hasModeTag("state.IsgFreqEntryMode") then
+            local newFreq = tonumber(_G.isgFreqEntryText)
+            if newFreq then 
+                local val = clamp(newFreq * 1e6, 0.1e6, 30.0e6)
+                setProperty("isgFrequency", val) 
             end
-            events.removeModeTag("FreqEntryMode"); freqEntryText = ""
+            events.removeModeTag("state.IsgFreqEntryMode")
+            events.removeModeTag("state.FreqEntryMode")
+            events.removeModeTag("state.ISGEditing")
+            _G.isgFreqEntryText = ""; _G.isgFreqEntryCursor = 0
+        elseif events.hasModeTag("state.FreqEntryMode") then
+            local newFreq = tonumber(freqEntryText)
+            if newFreq then
+                local val = clamp(newFreq * 1e6, 0.1e6, 30.0e6)
+                local active = Model.rx.VFO.active:peek()
+                Model.set("rx.VFO." .. active, val)
+                bands.setCurrent(val)
+            end
+            events.removeModeTag("state.FreqEntryMode")
+            events.removeModeTag("state.VFOEditing")
+            freqEntryText = ""; freqEntryCursor = 0
+        end
+        return true
+    end)
+
+    events.registerHandler("freq_entry_move", function(event, widget)
+        local delta = (event.key == "RIGHT") and 1 or -1
+        if events.hasModeTag("state.IsgFreqEntryMode") then
+            _G.isgFreqEntryCursor = math.max(0, math.min(#_G.isgFreqEntryText, _G.isgFreqEntryCursor + delta))
+        elseif events.hasModeTag("state.FreqEntryMode") then
+            freqEntryCursor = math.max(0, math.min(#freqEntryText, freqEntryCursor + delta))
         end
         return true
     end)
@@ -312,9 +487,27 @@ function update(dt)
     
     local scancodes = keys.getAllScancodes()
     for _, sc in ipairs(scancodes) do
+        local isDown = isKeyDown(sc)
         local n = keys.getName(sc)
         if n then
-            activeTags["input."..n] = isKeyDown(sc) or nil
+            local prevDown = activeTags["input."..n]
+            activeTags["input."..n] = isDown or nil
+            
+            if isDown and not prevDown then
+                -- Key Pressed
+                events.dispatch(events.createEvent(events.Type.KEY_DOWN, {key=n, scancode=sc, modifiers=currentFrameTags}))
+                
+                -- Also handle text input for printable keys
+                if keys.isPrintable(sc) then
+                    local char = isShiftDown() and keys.getShiftedChar(sc) or keys.getChar(sc)
+                    if char then
+                        events.dispatch(events.createEvent(events.Type.TEXT_INPUT, {text=char, modifiers=currentFrameTags}))
+                    end
+                end
+            elseif not isDown and prevDown then
+                -- Key Released
+                events.dispatch(events.createEvent(events.Type.KEY_UP, {key=n, scancode=sc, modifiers=currentFrameTags}))
+            end
         end
     end
     
@@ -399,9 +592,17 @@ function draw()
         uiInstances.leftPanel:draw("left-sidebar", rL.x, rL.y, rL.w, rL.h, lwc)
         layout.pad(12)
         local cx, cy = layout.getCursor()
-        uiInstances.freqDisplay:draw("freq-disp", cx, cy, rL.w - 24, 36, freqEntryText, {"VFOControl"}, lwc)
-        layout.newLine(44)
+        uiInstances.freqDisplay:draw("freq-disp", cx, cy, rL.w - 24, 36, freqEntryText, freqEntryCursor, {"VFOControl"}, lwc)
+        layout.newLine(40)
         
+        -- Rounding buttons
+        layout.beginHorizontal(0)
+        local rbw = (rL.w - 24 - 4) / 2
+        uiInstances.round1k:draw("round-1k", cx, layout.getCursorY(), rbw, 24, {}, lwc)
+        layout.space(4)
+        uiInstances.round100:draw("round-100", cx + rbw + 4, layout.getCursorY(), rbw, 24, {}, lwc)
+        layout.endHorizontal(); layout.newLine(32)
+
         cx, cy = layout.getCursor()
         local freq = (Model.rx.VFO.active:get() == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
         uiInstances.freqSlider:draw("freq-slider", cx, cy, rL.w - 24, 0.1e6, 30.0e6, freq, lwc)

@@ -74,6 +74,8 @@ end
 
 function layout.getRect() if not currentRegion then return 0,0,0,0 end return currentRegion.x, currentRegion.y, currentRegion.w, currentRegion.h end
 function layout.getCursor() if not currentRegion then return 0,0 end return currentRegion.cursorX, currentRegion.cursorY end
+function layout.getCursorX() if not currentRegion then return 0 end return currentRegion.cursorX end
+function layout.getCursorY() if not currentRegion then return 0 end return currentRegion.cursorY end
 
 function layout.getRemainingSize()
     if not currentRegion then return 0, 0 end
