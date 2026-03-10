@@ -75,6 +75,9 @@ Model.rx = {
             center = projection("rx.notch.center", Types.Number)
         }
     },
+    CW = {
+        pitch = projection("rx.CW.pitch", Types.Number)
+    },
     testToneEnabled = projection("rx.testToneEnabled", Types.Bool)
 }
 
@@ -104,7 +107,6 @@ local mutationRules = {}
 
 --- Set a model value by creating a high-priority SetBox override rule
 function Model.set(name, value)
-    print("[Model] Set: " .. name .. " = " .. tostring(value))
     -- Create or update a high-priority rule (1000) for this property.
     mutationRules[name] = setbox.rule({
         id = "override." .. name,

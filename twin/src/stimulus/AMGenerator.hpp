@@ -83,6 +83,8 @@ private:
 
   mutable double carrierPhase = 0.0;
   mutable double lastTime = -1.0;
+  mutable double modFiltState1 = 0.0;
+  mutable double modFiltState2 = 0.0;
 };
 
 } // namespace nexrx

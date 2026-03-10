@@ -126,6 +126,14 @@ function AppController.init()
         dirty.volume = true
     end)
 
+    -- Watch CW Pitch
+    R.watch(function()
+        local pitch = Model.rx.CW.pitch:get()
+        if rx and rx.setBfoOffset then
+            rx.setBfoOffset(pitch)
+        end
+    end)
+
     -- Watch test tone
     R.watch(function()
         local enabled = Model.rx.testToneEnabled:get()
@@ -148,27 +156,16 @@ function AppController.pollState()
     local state = Hardware.getState()
     if not state then return end
 
-    -- Periodic dump for debugging
-    if _G.frameCount and _G.frameCount % 100 == 0 then
-        local dump = ""
-        for k, v in pairs(state) do dump = dump .. k .. "=" .. tostring(v) .. " " end
-        print("[AppController] HW State: " .. dump)
-    end
-
     -- Update Preselector L/C from hardware IF auto-tune is ON
     if Model.preselector.auto:peek() then
         if state.psL ~= nil then
             local hwL = (state.psL == 1)
-            local currentL = Model.preselector.L:peek()
-            if hwL ~= currentL then
-                print("[AppController] Feedback: psL change detected! " .. tostring(currentL) .. " -> " .. tostring(hwL))
+            if hwL ~= Model.preselector.L:peek() then
                 Model.set("preselector.L", hwL)
             end
         end
         if state.psC ~= nil then
-            local currentC = Model.preselector.capMask:peek()
-            if state.psC ~= currentC then
-                print("[AppController] Feedback: psC change detected! " .. tostring(currentC) .. " -> " .. tostring(state.psC))
+            if state.psC ~= Model.preselector.capMask:peek() then
                 Model.set("preselector.capMask", state.psC)
             end
         end

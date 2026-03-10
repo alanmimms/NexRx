@@ -256,6 +256,7 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
 
     sol::table rxTable = lua.create_table();
     rxTable["setModeId"] = [this](int id) { if (id >= 0 && id <= 3) dsp_.getDemod().setMode((Demodulator::Mode)id); };
+    rxTable["setBfoOffset"] = [this](float hz) { dsp_.getDemod().setBfoOffset(hz); };
     rxTable["setBandpassEnabled"] = [this](bool en) { dsp_.getFilter().setBandpassEnabled(en); };
     rxTable["setBandpassCenter"] = [this](float hz) { dsp_.getFilter().setBandpassCenter(hz); };
     rxTable["setBandpassWidth"] = [this](float hz) { dsp_.getFilter().setBandpassWidth(hz); };

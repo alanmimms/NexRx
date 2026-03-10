@@ -71,12 +71,14 @@ public:
         // DC blocker
         audio -= amDcOffset;
         amDcOffset = amDcOffset * 0.99f + audio * 0.01f;
+        audio *= 16.0f;
         break;
       }
       case Mode::CW: {
         float bfoPhaseInc = 2.0f * 3.14159265f * bfoOffset / sampleRate;
         audio = i * std::cos(bfoPhase) + q * std::sin(bfoPhase);
         bfoPhase = std::fmod(bfoPhase + bfoPhaseInc, 2.0f * 3.14159265f);
+        audio *= 16.0f;
         break;
       }
       case Mode::USB:

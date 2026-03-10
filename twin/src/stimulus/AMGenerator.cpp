@@ -60,18 +60,31 @@ double AMGenerator::getModulation(double timeS) const {
 
       if (samplesRepeat) {
         sampleIdxF = std::fmod(sampleIdxF, static_cast<double>(totalSamples));
-        if (sampleIdxF < 0) {
-          sampleIdxF += totalSamples;
-        }
+        if (sampleIdxF < 0) sampleIdxF += totalSamples;
       } else if (sampleIdxF >= totalSamples || sampleIdxF < 0) {
         return 0.0;
       }
 
-      size_t idx0 = static_cast<size_t>(sampleIdxF);
-      size_t idx1 = (idx0 + 1) % totalSamples;
-      double frac = sampleIdxF - idx0;
+      // 4-tap cubic Hermite interpolation
+      size_t i1 = static_cast<size_t>(sampleIdxF);
+      size_t i0 = (i1 > 0) ? i1 - 1 : (samplesRepeat ? totalSamples - 1 : 0);
+      size_t i2 = (i1 + 1) % totalSamples;
+      size_t i3 = (i2 + 1) % totalSamples;
+      double f = sampleIdxF - i1;
 
-      return audioSamples[idx0] * (1.0 - frac) + audioSamples[idx1] * frac;
+      double y0 = audioSamples[i0], y1 = audioSamples[i1], y2 = audioSamples[i2], y3 = audioSamples[i3];
+      double a = -0.5*y0 + 1.5*y1 - 1.5*y2 + 0.5*y3;
+      double b = y0 - 2.5*y1 + 2.0*y2 - 0.5*y3;
+      double c = -0.5*y0 + 0.5*y2;
+      double d = y1;
+      double rawMod = ((a * f + b) * f + c) * f + d;
+      
+      // 2nd-order IIR LPF (two cascaded poles)
+      // Cutoff ~4kHz at 480kHz -> alpha ~= 0.05
+      constexpr double alpha = 0.05;
+      modFiltState1 = (1.0 - alpha) * modFiltState1 + alpha * rawMod;
+      modFiltState2 = (1.0 - alpha) * modFiltState2 + alpha * modFiltState1;
+      return modFiltState2;
     }
 
     default:
@@ -86,20 +99,12 @@ double AMGenerator::getSample(double timeS) const {
 }
 
 void AMGenerator::getRfIQ(double timeS, double& outI, double& outQ) const {
-  // Detect backward time jump or first call
-  if (timeS < lastTime || lastTime < 0) {
-    carrierPhase = std::fmod(2.0 * M_PI * carrierHz * timeS, 2.0 * M_PI);
-  } else {
-    double dt = timeS - lastTime;
-    carrierPhase = std::fmod(carrierPhase + 2.0 * M_PI * carrierHz * dt, 2.0 * M_PI);
-  }
-  lastTime = timeS;
-
+  double phase = 2.0 * M_PI * std::fmod(carrierHz * timeS, 1.0);
   double mod = getModulation(timeS);
   double env = amplitudeV * (1.0 + modIndex * mod);
 
-  outI = env * std::cos(carrierPhase);
-  outQ = env * std::sin(carrierPhase);
+  outI = env * std::cos(phase);
+  outQ = env * std::sin(phase);
 }
 
 std::string AMGenerator::description() const {
@@ -123,6 +128,8 @@ std::string AMGenerator::description() const {
 void AMGenerator::reset() {
   lastTime = -1.0;
   carrierPhase = 0.0;
+  modFiltState1 = 0.0;
+  modFiltState2 = 0.0;
 }
 
 } // namespace nexrx

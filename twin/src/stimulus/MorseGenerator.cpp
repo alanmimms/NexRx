@@ -322,16 +322,7 @@ double MorseGenerator::getEnvelope(double timeS) const {
 }
 
 void MorseGenerator::getRfIQ(double timeS, double& out_i, double& out_q) const {
-    // Detect backward time jump or first call
-    if (timeS < lastTime_ || lastTime_ < 0) {
-        currentPhase_ = std::fmod(2.0 * M_PI * freq_hz_ * timeS, 2.0 * M_PI);
-        lastEventIdx_ = 0;
-    } else {
-        double dt = timeS - lastTime_;
-        currentPhase_ = std::fmod(currentPhase_ + 2.0 * M_PI * freq_hz_ * dt, 2.0 * M_PI);
-    }
-    lastTime_ = timeS;
-
+    double phase = 2.0 * M_PI * std::fmod(freq_hz_ * timeS, 1.0);
     double env = getEnvelope(timeS) * amplitude_v_;
 
     if (env < 1e-12) {
@@ -339,8 +330,8 @@ void MorseGenerator::getRfIQ(double timeS, double& out_i, double& out_q) const {
         return;
     }
 
-    out_i = env * std::cos(currentPhase_);
-    out_q = env * std::sin(currentPhase_);
+    out_i = env * std::cos(phase);
+    out_q = env * std::sin(phase);
 }
 
 } // namespace nexrx

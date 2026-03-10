@@ -561,20 +561,47 @@ void SSBGenerator::getAudioIQ(double timeS, double& i, double& q) const {
         break;
       }
 
-      size_t n = audioSamples.size();
-      uint64_t totalS = static_cast<uint64_t>(timeS * audioSampleRate + 0.5);
-      size_t idx = samplesRepeat ? (totalS % n) : totalS;
-      
-      if (!samplesRepeat && idx >= n) {
+      double sampleIdxF = timeS * audioSampleRate;
+      size_t totalSamples = audioSamples.size();
+
+      if (samplesRepeat) {
+        sampleIdxF = std::fmod(sampleIdxF, static_cast<double>(totalSamples));
+        if (sampleIdxF < 0) sampleIdxF += totalSamples;
+      } else if (sampleIdxF >= totalSamples || sampleIdxF < 0) {
         i = q = 0.0;
-        break;
+        return;
       }
 
-      i = audioSamples[idx];
-      q = audioSamplesQ[idx];
+      size_t i1 = static_cast<size_t>(sampleIdxF);
+      size_t i0 = (i1 > 0) ? i1 - 1 : (samplesRepeat ? totalSamples - 1 : 0);
+      size_t i2 = (i1 + 1) % totalSamples;
+      size_t i3 = (i2 + 1) % totalSamples;
+      double f = sampleIdxF - i1;
+
+      auto interp = [&](const std::vector<float>& s) {
+          double y0 = s[i0], y1 = s[i1], y2 = s[i2], y3 = s[i3];
+          double a = -0.5*y0 + 1.5*y1 - 1.5*y2 + 0.5*y3;
+          double b = y0 - 2.5*y1 + 2.0*y2 - 0.5*y3;
+          double c = -0.5*y0 + 0.5*y2;
+          double d = y1;
+          return ((a * f + b) * f + c) * f + d;
+      };
+
+      double rawI = interp(audioSamples);
+      double rawQ = interp(audioSamplesQ);
+
+      constexpr double alpha = 0.05;
+      // Filter I channel
+      modFiltState1 = (1.0 - alpha) * modFiltState1 + alpha * rawI;
+      modFiltState2 = (1.0 - alpha) * modFiltState2 + alpha * modFiltState1;
+      // Filter Q channel IDENTICALLY to preserve phasing
+      qFiltState1 = (1.0 - alpha) * qFiltState1 + alpha * rawQ;
+      qFiltState2 = (1.0 - alpha) * qFiltState2 + alpha * qFiltState1;
+
+      i = modFiltState2;
+      q = qFiltState2; 
       break;
     }
-
     case AudioSource::None:
     default:
       i = q = 0.0;
@@ -687,6 +714,10 @@ void SSBGenerator::reset() {
   lastSampleTime = -1.0;
   lastTime = -1.0;
   carrierPhase = 0.0;
+  modFiltState1 = 0.0;
+  modFiltState2 = 0.0;
+  qFiltState1 = 0.0;
+  qFiltState2 = 0.0;
 
   if (tts) {
     tts->reset();

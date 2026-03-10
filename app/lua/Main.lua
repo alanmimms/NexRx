@@ -28,6 +28,7 @@ local Preselector = require("ui.Preselector")
 local ISG = require("ui.ISG")
 local AGC = require("ui.AGC")
 local AudioUtils = require("ui.AudioUtils")
+local CWUtils = require("ui.CWUtils")
 local Label = require("ui.Label")
 local Button = require("ui.Button")
 local Checkbox = require("ui.Checkbox")
@@ -53,6 +54,7 @@ local widgets = {
     presel = Preselector.new({ preselector = Model.preselector }),
     isg = ISG.new({ ISG = Model.ISG }),
     agc = AGC.new({ AGC = Model.rx.AGC }),
+    cw = CWUtils.new({ rx = Model.rx }),
     audio = AudioUtils.new({ rx = Model.rx })
 }
 
@@ -507,9 +509,15 @@ function draw()
         local currentR = { x = rR.x + 12, y = cy, w = rR.w - 24, h = (remH > 100 and remH or 600) }
         local subRegions = container.solveDynamicSublayout(currentR, "right-sidebar")
         
+        local currentMode = Model.rx.selectedMode:get()
         for id, reg in pairs(subRegions) do
             if widgets[id] then 
-                widgets[id]:draw(id, reg.x, reg.y, reg.w, reg.h, lwc) 
+                local shouldDraw = true
+                if id == "cw" and currentMode ~= "CW" then shouldDraw = false end
+                
+                if shouldDraw then
+                    widgets[id]:draw(id, reg.x, reg.y, reg.w, reg.h, lwc) 
+                end
             end
         end
         layout.endRegion()

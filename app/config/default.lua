@@ -40,6 +40,7 @@ rule {
         ["rx.NB.enabled"] = false,
         ["rx.lmsMu"] = 0.5,
         ["rx.BFO.offset"] = 700,
+        ["rx.CW.pitch"] = 700,
         ["rx.volume.DB"] = -20,
         ["rx.volume.muted"] = false,
         ["rx.testToneEnabled"] = false,
@@ -383,6 +384,7 @@ rule {
 -- Sidebar Widgets Ordering
 rule { id = "id-isg",   tags = {"id.isg"},   apply = { parent = "right-sidebar", order = 10, height = 160, title = "SIGNAL GEN" } }
 rule { id = "id-presel",tags = {"id.presel"},apply = { parent = "right-sidebar", order = 20, height = 180, title = "PRESELECTOR" } }
+rule { id = "id-cw",    tags = {"id.cw"},    apply = { parent = "right-sidebar", order = 25, height = 100, title = "CW SETTINGS" } }
 rule { id = "id-agc",   tags = {"id.agc"},   apply = { parent = "right-sidebar", order = 30, height = 120, title = "AGC" } }
 rule { id = "id-audio", tags = {"id.audio"}, apply = { parent = "right-sidebar", order = 40, height = 140, title = "AUDIO UTILS" } }
 
