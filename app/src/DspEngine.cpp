@@ -208,20 +208,28 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   float iF = err.real();
   float qF = err.imag();
   
+  // 2. Apply digital VFO shift (Phasor rotation)
+  // This must happen BEFORE filtering so the filter selects the tuned signal.
+  double curCos = shiftCos;
+  double curSin = shiftSin;
+  float iRot = (float)(iF * curCos + qF * curSin);
+  float qRot = (float)(qF * curCos - iF * curSin);
+  
+  iF = iRot; qF = qRot;
+
+  // 3. Apply digital gain and filtering
   float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
   iF *= rfGain; qF *= rfGain;
   float maxR = std::max(std::abs(iF), std::abs(qF));
   if (maxR > dspDiag.maxRaw.load()) dspDiag.maxRaw.store(maxR);
 
-  // basebandFilter.recompute();  <-- REMOVED FROM HOT PATH
   basebandFilter.process(iF, qF);
   
-  // Advance phasor for next sample: (c + j*s) * (cd + j*sd)
+  // Advance phasor for next sample
   double nextCos = shiftCos * shiftCos_d - shiftSin * shiftSin_d;
   double nextSin = shiftSin * shiftCos_d + shiftCos * shiftSin_d;
   shiftCos = nextCos; shiftSin = nextSin;
 
-  // Periodically renormalize phasor to prevent floating-point drift
   if ((totalSamplesProcessed & 0x3FFF) == 0) {
     double mag = std::sqrt(shiftCos * shiftCos + shiftSin * shiftSin);
     shiftCos /= mag; shiftSin /= mag;
