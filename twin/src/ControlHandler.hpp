@@ -14,6 +14,8 @@
 
 namespace nexrx {
 
+class AGCManager;
+
 class PreselectorModel {
 public:
   PreselectorModel() {
@@ -133,7 +135,8 @@ public:
   ControlHandler(double f0, double f1, double f2, 
                  AttenuatorModel* atten = nullptr, 
                  PreselectorModel* presel = nullptr, 
-                 PGAModel* pga = nullptr);
+                 PGAModel* pga = nullptr,
+                 AGCManager* agc = nullptr);
   ~ControlHandler();
 
   void start(TCPControlTransport* control, bool verbose);
@@ -173,6 +176,7 @@ private:
   AttenuatorModel* attenuator = nullptr;
   PreselectorModel* presel = nullptr;
   PGAModel* pga = nullptr;
+  AGCManager* agc = nullptr;
   std::atomic<bool> isgEnabled;
   std::atomic<double> isgFreqHz;
   std::atomic<bool> autoTuneEnabled{true};

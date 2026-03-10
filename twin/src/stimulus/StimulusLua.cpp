@@ -15,6 +15,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "RFCapturePlayer.hpp"
+
 namespace nexrx {
 
 StimulusLua::StimulusLua()
@@ -278,6 +280,33 @@ void StimulusLua::registerBindings(sol::state& lua) {
         std::cout << "[Stimulus] Added AM '" << name << "': "
                   << freq / 1e6 << " MHz, default tone, "
                   << (int)(modIndex * 100) << "% mod" << std::endl;
+    };
+
+    // stimulus.addRFCapture(name, config)
+    stimulus["addRFCapture"] = [this](const std::string& name, sol::table config) {
+        std::string path = config.get<std::string>("path");
+        double freq = config.get_or("freq", 0.0);
+        double amplitude = config.get_or("amplitude", 1.0);
+        bool loop = config.get_or("loop", true);
+        bool swapIQ = config.get_or("swapIQ", false);
+
+        auto player = std::make_shared<RFCapturePlayer>();
+        
+        // Try to load as WAV
+        if (player->loadWav(path)) {
+            player->setCenterFrequency(freq);
+            player->setAmplitude(amplitude);
+            player->setLooping(loop);
+            player->setSwapIQ(swapIQ);
+            
+            manager_->addStimulus(name, player, "rf-capture", freq, amplitude);
+            
+            std::cout << "[Stimulus] Added RFCapture '" << name << "': "
+                      << path << " (" << player->getSampleCount() << " samples @ "
+                      << player->getSampleRate() / 1e3 << " kHz)" << std::endl;
+        } else {
+            std::cerr << "[Stimulus] FAILED to load RFCapture file: " << path << std::endl;
+        }
     };
 
     // stimulus.addTone(name, config)

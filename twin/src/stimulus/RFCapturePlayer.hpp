@@ -45,6 +45,104 @@ class RFCapturePlayer : public AntennaStimulus {
 public:
   RFCapturePlayer() = default;
 
+  // Load I/Q data from WAV file
+  bool loadWav(const std::string& pathIn) {
+    std::string tryPaths[] = { pathIn, "twin/" + pathIn, "../" + pathIn, "../../" + pathIn };
+    std::ifstream file;
+    std::string p;
+
+    for (const auto& tp : tryPaths) {
+      file.open(tp, std::ios::binary);
+      if (file.is_open()) {
+        p = tp;
+        break;
+      }
+    }
+
+    if (!file.is_open()) {
+      return false;
+    }
+
+    char header[44];
+    file.read(header, 44);
+    if (file.gcount() < 44) return false;
+
+    if (std::strncmp(header, "RIFF", 4) != 0 || std::strncmp(header + 8, "WAVE", 4) != 0) {
+      return false;
+    }
+
+    // Basic WAV parsing
+    uint16_t audioFormat = *reinterpret_cast<uint16_t*>(header + 20);
+    uint16_t numChannels = *reinterpret_cast<uint16_t*>(header + 22);
+    uint32_t sampleRate = *reinterpret_cast<uint32_t*>(header + 24);
+    uint16_t bitsPerSample = *reinterpret_cast<uint16_t*>(header + 34);
+
+    sampleRateHz = static_cast<double>(sampleRate);
+    samplePeriodS = 1.0 / sampleRateHz;
+
+    // Skip to data chunk
+    file.seekg(12);
+    bool foundData = false;
+    while (file.good()) {
+      char chunkId[4];
+      uint32_t chunkSize;
+      file.read(chunkId, 4);
+      file.read(reinterpret_cast<char*>(&chunkSize), 4);
+      if (std::strncmp(chunkId, "data", 4) == 0) {
+        size_t bytesPerSample = bitsPerSample / 8;
+        size_t numSamples = chunkSize / (bytesPerSample * numChannels);
+        samplesI.resize(numSamples);
+        samplesQ.resize(numSamples);
+
+        for (int i = 0; i < (int)numSamples; ++i) {
+          double valI = 0, valQ = 0;
+          
+          auto readSample = [&](double& out) {
+            if (audioFormat == 3 && bitsPerSample == 32) {
+              // IEEE Float
+              float s; file.read(reinterpret_cast<char*>(&s), 4);
+              out = s;
+            } else if (audioFormat == 1) {
+              // PCM Integer
+              if (bitsPerSample == 16) {
+                int16_t s; file.read(reinterpret_cast<char*>(&s), 2);
+                out = s / 32768.0;
+              } else if (bitsPerSample == 8) {
+                uint8_t s; file.read(reinterpret_cast<char*>(&s), 1);
+                out = (s - 128) / 128.0;
+              } else if (bitsPerSample == 24) {
+                uint8_t b[3]; file.read(reinterpret_cast<char*>(b), 3);
+                int32_t s = (b[2] << 24) | (b[1] << 16) | (b[0] << 8);
+                out = s / 2147483648.0;
+              } else if (bitsPerSample == 32) {
+                int32_t s; file.read(reinterpret_cast<char*>(&s), 4);
+                out = s / 2147483648.0;
+              }
+            }
+          };
+
+          readSample(valI);
+          if (numChannels > 1) {
+            readSample(valQ);
+            // Skip remaining channels if any
+            if (numChannels > 2) {
+              file.seekg(bytesPerSample * (numChannels - 2), std::ios::cur);
+            }
+          }
+          
+          samplesI[i] = valI;
+          samplesQ[i] = valQ;
+        }
+        foundData = true;
+        break;
+      }
+      file.seekg(chunkSize, std::ios::cur);
+    }
+
+    path = p;
+    return foundData && !samplesI.empty();
+  }
+
   // Load I/Q data from file
   bool loadFile(const std::string& p, IQFormat format, double sampleRateHzIn) {
     sampleRateHz = sampleRateHzIn;
@@ -112,6 +210,11 @@ public:
     loop = l;
   }
 
+  // Swap I and Q channels
+  void setSwapIQ(bool s) {
+    swapIQ = s;
+  }
+
   [[nodiscard]] double getSample(double timeS) const override {
     if (samplesI.empty()) {
       return 0.0;
@@ -137,6 +240,10 @@ public:
 
     double iVal = samplesI[idx0] * (1.0 - frac) + samplesI[idx1] * frac;
     double qVal = samplesQ[idx0] * (1.0 - frac) + samplesQ[idx1] * frac;
+
+    if (swapIQ) {
+      std::swap(iVal, qVal);
+    }
 
     // Upconvert to RF if center frequency is set
     double output;
@@ -203,6 +310,10 @@ public:
     double iVal = samplesI[idx0] * (1.0 - frac) + samplesI[idx1] * frac;
     double qVal = samplesQ[idx0] * (1.0 - frac) + samplesQ[idx1] * frac;
 
+    if (swapIQ) {
+      std::swap(iVal, qVal);
+    }
+
     if (centerFreqHz > 0) {
       double phase = 2.0 * M_PI * centerFreqHz * timeS;
       double cp = std::cos(phase);
@@ -230,6 +341,10 @@ public:
     return sampleRateHz;
   }
 
+  // AntennaStimulus Overrides
+  [[nodiscard]] double carrierFrequency() const override { return centerFreqHz; }
+  [[nodiscard]] bool isBroadband() const override { return true; }
+
 private:
   std::vector<double> samplesI;
   std::vector<double> samplesQ;
@@ -238,6 +353,7 @@ private:
   double centerFreqHz = 0;
   double amplitudeV = 1.0;
   bool loop = false;
+  bool swapIQ = false;
   std::string path;
 
   void loadFloat32IQ(std::ifstream& file, size_t fileSize) {

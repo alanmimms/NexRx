@@ -14,7 +14,9 @@
 #include "transport/UDPStreamTransport.hpp"
 #include "stimulus/ToneGenerator.hpp"
 #include "stimulus/StimulusLua.hpp"
+#include "stimulus/RFCapturePlayer.hpp"
 #include "AttenuatorModel.hpp"
+#include "AGCManager.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -42,6 +44,8 @@ namespace nexrx {
     bool help = false;
     bool verbose = true;
     bool stream = true;
+    bool headless = false;
+    bool swapIQ = false;
     bool noStimulus = false;
     bool noCal = false;
     std::string calFile = "";
@@ -51,6 +55,8 @@ namespace nexrx {
     double rfAmplitudeMV = 1.0;
     double qsdOffsetKHz = 12.0;
     std::string stimulus = "";
+    std::string wavIQ = "";
+    double wavFreqMHz = 0.0;
     std::string bindAddr = "0.0.0.0";
     uint16_t controlPort = 5000;
     uint16_t streamPort = 5001;
@@ -72,6 +78,10 @@ namespace nexrx {
 	      << "  --amplitude MV   Set RF signal amplitude in mV (default: 1.0)\n"
 	      << "  --qsd-offset KHZ Set QSD offset k in kHz (default: 12.0)\n"
 	      << "  --stimulus FILE  Load Lua stimulus script (overrides --rf)\n"
+	      << "  --wav-iq FILE    Load WAV I/Q file as antenna stimulus\n"
+	      << "  --wav-freq MHZ   Center frequency for WAV I/Q stimulus (default: from filename)\n"
+	      << "  --swap-iq        Swap I and Q channels for WAV stimulus\n"
+	      << "  --headless       Run simulation immediately without waiting for a client\n"
 	      << "  --duration MS    Run for specific duration in ms (default: forever)\n"
 	      << "  --port PORT      Set TCP control port (default: 5000)\n"
 	      << std::endl;
@@ -106,6 +116,14 @@ namespace nexrx {
 	opts.qsdOffsetKHz = std::stod(argv[++i]);
       } else if (arg == "--stimulus" && i + 1 < argc) {
 	opts.stimulus = argv[++i];
+      } else if (arg == "--wav-iq" && i + 1 < argc) {
+	opts.wavIQ = argv[++i];
+      } else if (arg == "--wav-freq" && i + 1 < argc) {
+	opts.wavFreqMHz = std::stod(argv[++i]);
+      } else if (arg == "--swap-iq") {
+	opts.swapIQ = true;
+      } else if (arg == "--headless") {
+	opts.headless = true;
       } else if (arg == "--duration" && i + 1 < argc) {
 	opts.durationMS = std::stod(argv[++i]);
       } else if (arg == "--port" && i + 1 < argc) {
@@ -201,27 +219,64 @@ namespace nexrx {
 	}
       }
     }
+
+    if (!opts.wavIQ.empty()) {
+      if (!stimulusManager) {
+        stimulusManager = std::make_shared<StimulusManager>();
+      }
+      auto player = std::make_shared<RFCapturePlayer>();
+      if (player->loadWav(opts.wavIQ)) {
+        double freq = opts.wavFreqMHz * 1e6;
+        if (freq == 0) {
+          // Attempt to extract frequency from filename (SDRuno style: _7150kHz.wav)
+          size_t pos = opts.wavIQ.find_last_of("_");
+          if (pos != std::string::npos) {
+            try {
+              // Extract numeric part before "kHz"
+              std::string sub = opts.wavIQ.substr(pos + 1);
+              size_t kPos = sub.find("kHz");
+              if (kPos != std::string::npos) {
+                  freq = std::stod(sub.substr(0, kPos)) * 1000.0;
+              }
+            } catch (...) {}
+          }
+        }
+        player->setCenterFrequency(freq);
+        player->setLooping(true);
+        player->setSwapIQ(opts.swapIQ);
+        stimulusManager->addStimulus("wav-iq", player, "rf-capture", freq, 1.0);
+        stimulusManager->freeze();
+        std::cout << "[Twin] Loaded WAV I/Q stimulus: " << opts.wavIQ << " at " << freq/1e6 << " MHz" << std::endl;
+      } else {
+        std::cerr << "[Twin] FAILED to load WAV I/Q: " << opts.wavIQ << std::endl;
+      }
+    }
   
     TCPControlConfig ctlConfig; 
     ctlConfig.host = opts.bindAddr; 
     ctlConfig.port = opts.controlPort; 
     ctlConfig.server = true;
     auto control = std::make_unique<TCPControlTransport>(ctlConfig);
-    if (!control->connect()) {
-      std::cerr << "[Twin] Failed to bind to control port " << opts.controlPort << std::endl;
-      return 1; 
+    if (!opts.headless) {
+      if (!control->connect()) {
+        std::cerr << "[Twin] Failed to bind to control port " << opts.controlPort << std::endl;
+        return 1; 
+      }
     }
   
     while (true) {
-      std::cout << "[Twin] Waiting for control connection on port " << opts.controlPort << "..." << std::endl;
-      while (!control->acceptClient(std::chrono::milliseconds(100))) {
-	// Idle wait
+      if (!opts.headless) {
+        std::cout << "[Twin] Waiting for control connection on port " << opts.controlPort << "..." << std::endl;
+        while (!control->acceptClient(std::chrono::milliseconds(100))) {
+          // Idle wait
+        }
+        std::cout << "[Twin] Control client connected from " << control->peerIP() << std::endl;
       }
-      std::cout << "[Twin] Control client connected from " << control->peerIP() << std::endl;
     
       AttenuatorModel attenuator;
       PreselectorModel preselector;
       PGAModel pga;
+      AGCManager agc(&attenuator, &pga);
     
       // Default PGA to healthy 20dB gain for testing
       pga.setGainCode(5); 
@@ -241,8 +296,10 @@ namespace nexrx {
     
       double lo = opts.loFreqMHz * 1e6;
       double k = opts.qsdOffsetKHz * 1000.0;
-      auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &preselector, &pga);
-      controlHandler->start(control.get(), opts.verbose);
+      auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &preselector, &pga, &agc);
+      if (!opts.headless) {
+        controlHandler->start(control.get(), opts.verbose);
+      }
     
       double sampleRate = 96000.0;
       double samplePeriod = 1.0 / sampleRate;
@@ -258,6 +315,7 @@ namespace nexrx {
     
       bool streamLogged = false;
       std::cout << "[Twin] Starting session loop" << std::endl;
+      bool headlessStreaming = opts.headless;
     
     // =======================================================================
     // AK5578 SHARP ROLL-OFF Digital Filter Emulation with OVERSAMPLING
@@ -317,8 +375,13 @@ namespace nexrx {
     }
     #endif
 
-    while (controlHandler->isConnected()) {
-      if (!controlHandler->isStreaming()) {
+    while (opts.headless || (controlHandler && controlHandler->isConnected())) {
+      if (opts.durationMS > 0 && (outputSample * 1000.0 / 96000.0) >= opts.durationMS) {
+          std::cout << "[Twin] Requested duration (" << opts.durationMS << " ms) reached, closing session." << std::endl;
+          break;
+      }
+
+      if (!headlessStreaming && !controlHandler->isStreaming()) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	streamStartTime = std::chrono::steady_clock::now();
 	outputSample = 0;
@@ -419,6 +482,7 @@ namespace nexrx {
           static thread_local std::uniform_real_distribution<double> uniform(-0.5, 0.5);
           constexpr double scale = 8388607.0 / 1.65;
 
+          int32_t maxPeak = 0;
           for (int ch = 0; ch < 3; ++ch) {
               auto quantize = [&](double v) {
                   double dither = uniform(rng) + uniform(rng);
@@ -426,7 +490,12 @@ namespace nexrx {
               };
               pk.qsd[ch].i = quantize(filt_i[ch]);
               pk.qsd[ch].q = quantize(filt_q[ch]);
+              maxPeak = std::max({maxPeak, std::abs(pk.qsd[ch].i), std::abs(pk.qsd[ch].q)});
           }
+          
+          // Update AGC with peak from this sample
+          agc.processReflex(maxPeak);
+
           batch.push_back(pk);
           outputSample++;
 
@@ -446,16 +515,24 @@ namespace nexrx {
                   streamStartTime = nowP - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(targetP));
               }
 
-              stream->writeBatch(batch);
+              if (!opts.headless) {
+                  stream->writeBatch(batch);
+              }
               batch.clear();
           }
       }
     }
     
-      std::cout << "[Twin] Client disconnected, session ended" << std::endl;
-      controlHandler->stop();
-      stream->disconnect();
-      control->closeConnection();
+      std::cout << "[Twin] Session ended" << std::endl;
+      if (!opts.headless) {
+        controlHandler->stop();
+        stream->disconnect();
+        control->closeConnection();
+      }
+
+      if (opts.durationMS > 0) {
+          break;
+      }
     }
     return 0;
   }

@@ -25,6 +25,14 @@ public:
   void setAtten12dB(bool en) { atten12dB.store(en); }
   void setAtten24dB(bool en) { atten24dB.store(en); }
 
+  void setTotalAttenuation(int db) {
+    int rem = db;
+    atten24dB.store(rem >= 24); if (rem >= 24) rem -= 24;
+    atten12dB.store(rem >= 12); if (rem >= 12) rem -= 12;
+    atten6dB.store(rem >= 6);   if (rem >= 6) rem -= 6;
+    atten3dB.store(rem >= 3);
+  }
+
   double getTotalAttenDB() const {
     double total = 0;
     if (atten3dB.load()) total += 3.0;

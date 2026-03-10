@@ -1,4 +1,5 @@
 #include "ControlHandler.hpp"
+#include "AGCManager.hpp"
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -9,10 +10,12 @@ namespace nexrx {
 ControlHandler::ControlHandler(double f0, double f1, double f2, 
                                AttenuatorModel* atten, 
                                PreselectorModel* presel, 
-                               PGAModel* pga)
+                               PGAModel* pga,
+                               AGCManager* agc)
   : attenuator(atten)
   , presel(presel)
   , pga(pga)
+  , agc(agc)
   , streaming(false)
   , running(false)
   , connected(false)
@@ -164,6 +167,9 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       uint64_t mode;
       cbor_value_get_uint64(&arrayIt, &mode);
       agcMode.store((int)mode);
+      if (agc) {
+        agc->setModeInt((int)mode);
+      }
       return encodeResponse(0, "OK");
     }
     case Control::CMD_SET_TR_MODE: {
