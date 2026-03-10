@@ -79,6 +79,7 @@ private:
   std::atomic<size_t> writePos{0};
   std::atomic<size_t> readPos{0};
 
+  std::vector<uint8_t> preallocatedPacket; // Hot path buffer
   std::atomic<uint32_t> lastSequence{0};
   std::atomic<bool> firstFrame{true};
 

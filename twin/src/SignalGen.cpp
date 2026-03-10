@@ -303,6 +303,17 @@ namespace nexrx {
         lo_cos_d[2] = p2.first; lo_sin_d[2] = p2.second;
     };
 
+    // --- Set Real-Time Priority ---
+    #ifndef _WIN32
+    struct sched_param param;
+    param.sched_priority = sched_get_priority_max(SCHED_RR);
+    if (pthread_setschedparam(pthread_self(), SCHED_RR, &param) != 0) {
+        std::cerr << "[Twin] WARNING: Failed to set real-time priority. Run with sudo for better performance." << std::endl;
+    } else {
+        std::cout << "[Twin] Real-time priority (SCHED_RR) enabled." << std::endl;
+    }
+    #endif
+
     while (controlHandler->isConnected()) {
       if (!controlHandler->isStreaming()) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -320,27 +331,17 @@ namespace nexrx {
 	streamLogged = true;
       }
 
-      // --- High Precision Pacing ---
-      auto now = std::chrono::steady_clock::now();
-      double elapsedS = std::chrono::duration<double>(now - streamStartTime).count();
-      double targetS = static_cast<double>(outputSample) / 96000.0;
-      
-      if (targetS > elapsedS) {
-          auto waitTime = std::chrono::microseconds(static_cast<int64_t>((targetS - elapsedS) * 1e6));
-          if (waitTime.count() > 500) {
-              std::this_thread::sleep_for(waitTime);
-          }
-      } else if (elapsedS - targetS > 0.1) {
-          // If we fall behind by >100ms, reset start time to prevent burst catch-up
-          streamStartTime = now - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(targetS));
-      }
-
       double baseVFO = controlHandler->getVFO();
       double qsdK = controlHandler->getQSDOffset();
       if (std::abs(baseVFO - current_lo) > 0.1 || std::abs(qsdK - current_k) > 0.1) {
           updateLOs(baseVFO, qsdK);
           current_lo = baseVFO; current_k = qsdK;
       }
+
+      // Pre-calculate chunk-wide gains
+      double pg = getPreselGain(current_lo, preselector);
+      double attenGain = attenuator.getVoltageGain();
+      double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
 
       int nToProcess = 960; // 10ms chunk
       for (int s = 0; s < nToProcess; ++s) {
@@ -360,12 +361,9 @@ namespace nexrx {
                   if (stimulusManager) stimulusManager->getRfIQ(t, antI, antQ, current_lo, 100000.0);
               }
 
-              // Apply preselector attenuation
-              double pg = getPreselGain(current_lo, preselector);
-              antI *= pg; antQ *= pg;
-
-              double attenGain = attenuator.getVoltageGain();
-              antI *= attenGain; antQ *= attenGain;
+              // Apply preselector and attenuator gains
+              antI *= (pg * attenGain); 
+              antQ *= (pg * attenGain);
 
               for (int ch = 0; ch < 3; ++ch) {
                   // Complex mixing: S_bb = S_rf * exp(-j*phi_LO)
@@ -417,7 +415,6 @@ namespace nexrx {
           static thread_local std::mt19937 rng(12345 + (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id()));
           static thread_local std::uniform_real_distribution<double> uniform(-0.5, 0.5);
           constexpr double scale = 8388607.0 / 1.65;
-          double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
 
           for (int ch = 0; ch < 3; ++ch) {
               auto quantize = [&](double v) {
@@ -428,10 +425,28 @@ namespace nexrx {
               pk.qsd[ch].q = quantize(filt_q[ch]);
           }
           batch.push_back(pk);
-          if (batch.size() >= 32) { stream->writeBatch(batch); batch.clear(); }
           outputSample++;
+
+          if (batch.size() >= 32) {
+              // --- Smoother Pacing at Packet Level ---
+              auto nowP = std::chrono::steady_clock::now();
+              double elapsedP = std::chrono::duration<double>(nowP - streamStartTime).count();
+              double targetP = static_cast<double>(outputSample) / 96000.0;
+              
+              if (targetP > elapsedP) {
+                  auto waitTime = std::chrono::microseconds(static_cast<int64_t>((targetP - elapsedP) * 1e6));
+                  if (waitTime.count() > 100) {
+                      std::this_thread::sleep_for(waitTime);
+                  }
+              } else if (elapsedP - targetP > 0.1) {
+                  // Catch-up protection
+                  streamStartTime = nowP - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(targetP));
+              }
+
+              stream->writeBatch(batch);
+              batch.clear();
+          }
       }
-      std::this_thread::sleep_for(std::chrono::microseconds(10));
     }
     
       std::cout << "[Twin] Client disconnected, session ended" << std::endl;

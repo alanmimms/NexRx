@@ -12,6 +12,9 @@ UDPStreamTransport::UDPStreamTransport(const UDPStreamConfig& cfg)
   : config(cfg) {
   if (!config.server) {
     receiveBuffer.resize(config.receiveBufferSize);
+  } else {
+    // Pre-allocate for the largest possible batch
+    preallocatedPacket.resize(sizeof(IQPacketHeader) + 128 * 6 * 4);
   }
 }
 
@@ -68,8 +71,13 @@ TransportError UDPStreamTransport::writeBatch(std::span<const IQFrame> frames) {
     return TransportError::Closed;
   }
 
-  std::vector<uint8_t> packet(sizeof(IQPacketHeader) + frames.size() * 6 * 4);
-  IQPacketHeader* header = reinterpret_cast<IQPacketHeader*>(packet.data());
+  const size_t packetSize = sizeof(IQPacketHeader) + frames.size() * 6 * 4;
+  if (packetSize > preallocatedPacket.size()) {
+      preallocatedPacket.resize(packetSize);
+  }
+
+  uint8_t* data = preallocatedPacket.data();
+  IQPacketHeader* header = reinterpret_cast<IQPacketHeader*>(data);
   
   header->magic = IQPacketHeader::MAGIC;
   header->version = 2;
@@ -78,7 +86,7 @@ TransportError UDPStreamTransport::writeBatch(std::span<const IQFrame> frames) {
   header->frameCount = static_cast<uint32_t>(frames.size());
   header->overrunCount = 0;
 
-  int32_t* samples = reinterpret_cast<int32_t*>(packet.data() + sizeof(IQPacketHeader));
+  int32_t* samples = reinterpret_cast<int32_t*>(data + sizeof(IQPacketHeader));
   for (size_t i = 0; i < frames.size(); i++) {
     samples[i*6 + 0] = frames[i].qsd[0].i;
     samples[i*6 + 1] = frames[i].qsd[0].q;
@@ -89,7 +97,7 @@ TransportError UDPStreamTransport::writeBatch(std::span<const IQFrame> frames) {
   }
 
   std::lock_guard<std::mutex> lock(destMutex);
-  if (sendto(socketFD, packet.data(), packet.size(), 0, 
+  if (sendto(socketFD, data, packetSize, 0, 
              (struct sockaddr*)&destAddr, sizeof(destAddr)) < 0) {
     return TransportError::Other;
   }

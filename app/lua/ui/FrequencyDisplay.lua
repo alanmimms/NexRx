@@ -34,6 +34,13 @@ function FrequencyDisplay.new(props)
     return self
 end
 
+
+function formatFreq(f)
+   local s = string.format("%.6fMHz", f)
+   return s:sub(1, -7) .. "," .. s:sub(-6)
+end
+
+
 function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, tags, parentLWC)
     local widgetTags = {"widget.FrequencyDisplay", "id." .. id}
     if tags then
@@ -64,7 +71,7 @@ function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, tags, parentLWC)
         frequency = self.valueObs:get()
     end
     
-    local text = (freqEntryText and freqEntryText ~= "") and freqEntryText or string.format("%.3f MHz", frequency / 1e6)
+    local text = (freqEntryText and freqEntryText ~= "") and freqEntryText or formatFreq(frequency / 1e6)
     local tw = measureText(text)
     drawText(x + (w - tw) / 2, y + (h - getLineHeight()) / 2, text, fgR, fgG, fgB, alpha)
 end
