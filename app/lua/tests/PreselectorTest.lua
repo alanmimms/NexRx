@@ -104,17 +104,18 @@ function Tests.test_lwc_nesting()
     print("test_lwc_nesting")
     setupTestConfig()
     
-    -- Mock app state
-    local appState = {
-        preselectorAuto = true,
-        preselL1 = false,
-    }
-    for i = 0, 10 do appState["preselC"..i] = false end
+    local R = require("Reactive")
+    local Model = require("Model")
+    Model.set = function() end -- Mock mutation
 
-    -- We want to verify that when Preselector:draw is called, 
-    -- it creates an LWC and passes it to sub-widgets.
-    
-    local p = Preselector.new(appState)
+    -- Mock app state matching Model.preselector structure
+    local mockPreselector = {
+        auto = R.observable(true),
+        capMask = R.observable(0),
+        L = R.observable(false)
+    }
+
+    local p = Preselector.new({ preselector = mockPreselector })
     layout.begin(0, 0, 800, 600)
     
     -- We need to intercept setbox.newContext to verify nesting

@@ -24,6 +24,18 @@ else
     package.path = "lua/?.lua;lua/?/init.lua;?.lua;?/init.lua;" .. package.path
 end
 
+-- Setup mock environment for host-provided C functions
+_G.getMousePos = function() return 0, 0 end
+_G.measureText = function(t) return #t * 8 end
+_G.getLineHeight = function() return 16 end
+_G.isShiftDown = function() return false end
+_G.isCtrlDown = function() return false end
+_G.isAltDown = function() return false end
+_G.isMouseDown = function() return false end
+_G.isMouseClicked = function() return false end
+_G.isMouseReleased = function() return false end
+_G.getMouseWheel = function() return 0 end
+
 print("========================================")
 print("  NexRx Lua Module Test Suite")
 print("========================================")

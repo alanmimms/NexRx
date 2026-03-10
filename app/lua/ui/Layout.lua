@@ -10,6 +10,19 @@ local regionStack = {}
 local currentRegion = nil
 local nextRegionId = 1
 
+-- Default rules for layout system (very low priority)
+local setbox = require("SetBox")
+setbox.rule {
+    id = "layout-system-defaults",
+    tags = {"layout.System"},
+    priority = -1000,
+    apply = {
+        fallbackPadding = 8,
+        fallbackSpacing = 4,
+        fallbackLineHeight = 20,
+    }
+}
+
 -- Defaults will be resolved from SetBox rules on first use
 layout.defaultPadding = nil
 layout.defaultSpacing = nil
@@ -220,14 +233,14 @@ function layout.splitH(ratio)
     if not currentRegion then return end
     local r = currentRegion
     local leftW = r.w * ratio
-    layout.setRegion(r.x, r.y, leftW, r.h, "split_left")
+    layout.setRegion(r.x, r.y, leftW, r.h, "splitLeft")
 end
 
 function layout.splitV(ratio)
     if not currentRegion then return end
     local r = currentRegion
     local topH = r.h * ratio
-    layout.setRegion(r.x, r.y, r.w, topH, "split_top")
+    layout.setRegion(r.x, r.y, r.w, topH, "splitTop")
 end
 
 function layout.nextSplit()
@@ -235,10 +248,10 @@ function layout.nextSplit()
     layout.endRegion()
     if not currentRegion then return end
     local r = currentRegion
-    if oldRegion.name == "split_left" then
-        layout.setRegion(r.x + oldRegion.w, r.y, r.w - oldRegion.w, r.h, "split_right")
-    elseif oldRegion.name == "split_top" then
-        layout.setRegion(r.x, r.y + oldRegion.h, r.w, r.h - oldRegion.h, "split_bottom")
+    if oldRegion.name == "splitLeft" then
+        layout.setRegion(r.x + oldRegion.w, r.y, r.w - oldRegion.w, r.h, "splitRight")
+    elseif oldRegion.name == "splitTop" then
+        layout.setRegion(r.x, r.y + oldRegion.h, r.w, r.h - oldRegion.h, "splitBottom")
     end
 end
 
