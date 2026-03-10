@@ -97,8 +97,7 @@ public:
         int delayedIdx = (hilbertIndex + hilbertTaps - center) % hilbertTaps;
         float iDelayed = hilbertHistoryI[delayedIdx];
         
-        // SDRplay / SDRuno convention usually requires USB = I + H(Q)
-        audio = (mode == Mode::USB) ? (iDelayed + hQ) : (iDelayed - hQ);
+        audio = (mode == Mode::USB) ? (iDelayed - hQ) : (iDelayed + hQ);
         audio *= 16.0f; // High-fidelity boost for simulated RF chain
         break;
       }

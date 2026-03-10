@@ -119,6 +119,7 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   // Shift QSD1 UP by k: (i + j*q) * (cos + j*sin)
   Complex s1_s(s1_c.real() * shiftCos - s1_c.imag() * shiftSin, s1_c.imag() * shiftCos + s1_c.real() * shiftSin);
 
+
   // 3. Channel Alignment (Match S0/S1 to S2 reference)
   Complex wA0(wA0_r, wA0_i), wA1(wA1_r, wA1_i);
   Complex out_fund = wA0 * s0_s + wA1 * s1_s;
@@ -204,19 +205,10 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   iqBuffer[pos*2] = err.real(); iqBuffer[pos*2+1] = err.imag();
   iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
 
-  // 2. Apply digital gain and filtering for audio/diagnostics
+  // 2. Apply digital gain and filtering
   float iF = err.real();
   float qF = err.imag();
   
-  // 2. Apply digital VFO shift (Phasor rotation)
-  // This must happen BEFORE filtering so the filter selects the tuned signal.
-  double curCos = shiftCos;
-  double curSin = shiftSin;
-  float iRot = (float)(iF * curCos + qF * curSin);
-  float qRot = (float)(qF * curCos - iF * curSin);
-  
-  iF = iRot; qF = qRot;
-
   // 3. Apply digital gain and filtering
   float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
   iF *= rfGain; qF *= rfGain;

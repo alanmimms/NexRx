@@ -8,7 +8,7 @@ stimulus.addRFCapture("40m-band", {
     freq = 7.150e6,
     amplitude = 1.0, -- 1V peak at virtual antenna
     loop = true,
-    swapIQ = true
+    swapIQ = false
 })
 
 print("[Stimulus] Ready. Band center: 7.150 MHz")
