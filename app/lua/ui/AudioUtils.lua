@@ -42,9 +42,6 @@ function AudioUtils.new(props)
     self.muteCheckbox = ui.Checkbox.new({
         onToggle = function(val) Model.set("rx.volume.muted", val) end
     })
-    self.filterCheckbox = ui.Checkbox.new({
-        onToggle = function(val) Model.set("rx.demodFilterEnabled", val) end
-    })
     self.toneCheckbox = ui.Checkbox.new({
         onToggle = function(val) Model.set("rx.testToneEnabled", val) end
     })
@@ -76,11 +73,6 @@ function AudioUtils:draw(id, x, y, w, h)
     local cx, cy = layout.getCursor()
     self.muteCheckbox.getText = function() return lwc:getString("labelMute") end
     self.muteCheckbox:draw(id .. "-mute", cx, cy, self.rx.volume.muted:get(), lwc)
-    layout.newLine(28)
-    
-    cx, cy = layout.getCursor()
-    self.filterCheckbox.getText = function() return lwc:getString("labelFilters") end
-    self.filterCheckbox:draw(id .. "-filters", cx, cy, self.rx.demodFilterEnabled:get(), lwc)
     layout.newLine(28)
     
     cx, cy = layout.getCursor()

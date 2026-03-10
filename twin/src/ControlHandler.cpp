@@ -83,7 +83,7 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
   }
   cbor_value_advance(&arrayIt);
 
-  if (verbose_) {
+  if (verbose_ && (uint32_t)cmdID != Control::CMD_GET_STATE) {
     char cmdChars[5] = {
       (char)((cmdID >> 24) & 0xFF),
       (char)((cmdID >> 16) & 0xFF),
@@ -91,7 +91,36 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       (char)(cmdID & 0xFF),
       0
     };
-    std::printf("[Control] Received command: %s\n", cmdChars);
+    std::printf("[Control] Received command: %s", cmdChars);
+    
+    // Log parameters without consuming them from the main iterator
+    CborValue argIt = arrayIt;
+    while (!cbor_value_at_end(&argIt)) {
+        CborType type = cbor_value_get_type(&argIt);
+        if (type == CborIntegerType) {
+            int64_t val;
+            cbor_value_get_int64(&argIt, &val);
+            std::printf(" %lld", (long long)val);
+        } else if (type == CborDoubleType) {
+            double val;
+            cbor_value_get_double(&argIt, &val);
+            std::printf(" %.6g", val);
+        } else if (type == CborBooleanType) {
+            bool val;
+            cbor_value_get_boolean(&argIt, &val);
+            std::printf(" %s", val ? "true" : "false");
+        } else if (type == CborTextStringType) {
+            size_t len;
+            cbor_value_get_string_length(&argIt, &len);
+            std::vector<char> buf(len + 1);
+            cbor_value_copy_text_string(&argIt, buf.data(), &len, nullptr);
+            std::printf(" \"%s\"", buf.data());
+        } else {
+            std::printf(" <type %d>", type);
+        }
+        cbor_value_advance(&argIt);
+    }
+    std::printf("\n");
   }
 
   switch ((uint32_t)cmdID) {
@@ -107,7 +136,7 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       qsdFreqHz[0].store(f - k);
       qsdFreqHz[1].store(f + k);
       qsdFreqHz[2].store(f);
-      if (presel) {
+      if (presel && autoTuneEnabled.load()) {
         presel->autoTune(f);
       }
       return encodeResponse(0, "OK");
@@ -189,11 +218,22 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       }
       return encodeResponse(0, "OK");
       }
+    case Control::CMD_SET_PRESEL_AUTO: {
+      bool en;
+      cbor_value_get_boolean(&arrayIt, &en);
+      autoTuneEnabled.store(en);
+      if (en && presel) {
+          presel->autoTune(vfoHz.load());
+      }
+      return encodeResponse(0, "OK");
+    }
     case Control::CMD_GET_STATE: {
       uint8_t buf[1024];
-      CborEncoder enc, map;
+      CborEncoder enc, array, map;
       cbor_encoder_init(&enc, buf, sizeof(buf), 0);
-      cbor_encoder_create_map(&enc, &map, 10);
+      cbor_encoder_create_array(&enc, &array, 2);
+      cbor_encode_int(&array, 0); // Status OK
+      cbor_encoder_create_map(&array, &map, 11);
 
       cbor_encode_text_stringz(&map, "vfo");
       cbor_encode_double(&map, vfoHz.load());
@@ -222,10 +262,14 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       cbor_encode_text_stringz(&map, "psEn");
       cbor_encode_boolean(&map, presel ? presel->isEnabled() : true);
 
+      cbor_encode_text_stringz(&map, "psAuto");
+      cbor_encode_boolean(&map, autoTuneEnabled.load());
+
       cbor_encode_text_stringz(&map, "tr");
       cbor_encode_int(&map, trMode.load());
 
-      cbor_encoder_close_container(&enc, &map);
+      cbor_encoder_close_container(&array, &map);
+      cbor_encoder_close_container(&enc, &array);
       return {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)};
     }
     case Control::CMD_CAL_STIM: {

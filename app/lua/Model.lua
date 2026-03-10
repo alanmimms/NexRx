@@ -64,8 +64,6 @@ Model.rx = {
     DSP = {
         NR = { enabled = projection("rx.NR.enabled", Types.Bool) },
         NB = { enabled = projection("rx.NB.enabled", Types.Bool) },
-        lmsEnabled = projection("rx.DSP.lmsEnabled", Types.Bool),
-        matrixBypass = projection("rx.DSP.matrixBypass", Types.Bool),
         bandpass = {
             enabled = projection("rx.bandpass.enabled", Types.Bool),
             width = projection("rx.bandpass.width", Types.Number),
@@ -77,7 +75,6 @@ Model.rx = {
             center = projection("rx.notch.center", Types.Number)
         }
     },
-    demodFilterEnabled = projection("rx.demodFilterEnabled", Types.Bool),
     testToneEnabled = projection("rx.testToneEnabled", Types.Bool)
 }
 
@@ -107,8 +104,8 @@ local mutationRules = {}
 
 --- Set a model value by creating a high-priority SetBox override rule
 function Model.set(name, value)
+    print("[Model] Set: " .. name .. " = " .. tostring(value))
     -- Create or update a high-priority rule (1000) for this property.
-    -- SetBox.rule handles registration and reactive invalidation.
     mutationRules[name] = setbox.rule({
         id = "override." .. name,
         priority = 1000,

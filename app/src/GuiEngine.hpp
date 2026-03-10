@@ -72,6 +72,7 @@ private:
   int windowWidth, windowHeight;
   bool running = false;
   double lastVFOHz = 14.2e6;
+  std::chrono::steady_clock::time_point lastStatePollTime;
   std::atomic<bool> twinConnected{false};
 
   std::queue<std::function<void()>> commandQueue;

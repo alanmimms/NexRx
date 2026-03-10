@@ -108,6 +108,21 @@ void TwinConn::receiveLoop() {
   }
 }
 
+void TwinConn::pollStateAsync() {
+  uint8_t buf[64];
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+  cbor_encoder_create_array(&enc, &arr, 1);
+  cbor_encode_uint(&arr, Control::CMD_GET_STATE);
+  cbor_encoder_close_container(&enc, &arr);
+  
+  auto resp = sendCBORRequest(Control::CMD_GET_STATE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)});
+  if (!resp.empty()) {
+      std::lock_guard<std::mutex> lock(stateMutex);
+      cachedStateCBOR = resp;
+  }
+}
+
 std::vector<uint8_t> TwinConn::processResponse(const std::vector<uint8_t>& data, uint32_t cmdId) {
   (void)cmdId;
   if (data.empty()) {
@@ -128,6 +143,7 @@ std::vector<uint8_t> TwinConn::processResponse(const std::vector<uint8_t>& data,
 }
 
 std::vector<uint8_t> TwinConn::sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& request) {
+  std::lock_guard<std::mutex> lock(controlMutex);
   auto res = control->sendRequest(request, std::chrono::milliseconds(500));
   if (!res.ok()) {
     return {};
@@ -224,6 +240,17 @@ bool TwinConn::setPreselectorCap(uint32_t mask) {
   return !sendCBORRequest(Control::CMD_SET_PRESEL_C, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
+bool TwinConn::setPreselectorAuto(bool enabled) {
+  uint8_t buf[128];
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+  cbor_encoder_create_array(&enc, &arr, 2);
+  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_AUTO);
+  cbor_encode_boolean(&arr, enabled);
+  cbor_encoder_close_container(&enc, &arr);
+  return !sendCBORRequest(Control::CMD_SET_PRESEL_AUTO, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+}
+
 bool TwinConn::setPreselectorEnabled(bool enabled) {
   uint8_t buf[128];
   CborEncoder enc, arr;
@@ -298,22 +325,8 @@ uint64_t TwinConn::getTimestamp() {
 }
 
 std::vector<uint8_t> TwinConn::getState() {
-  uint8_t buf[64];
-  CborEncoder enc, arr;
-  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
-  cbor_encoder_create_array(&enc, &arr, 1);
-  cbor_encode_uint(&arr, Control::CMD_GET_STATE);
-  cbor_encoder_close_container(&enc, &arr);
-  auto resp = sendCBORRequest(Control::CMD_GET_STATE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)});
-  if (resp.empty()) return {};
-  
-  // The response is [status, payload]
-  // We want the payload (which is the CBOR map)
-  // For now we just return the whole thing minus status if it's there
-  if (resp.size() > 1) {
-    return {resp.begin() + 1, resp.end()};
-  }
-  return {};
+  std::lock_guard<std::mutex> lock(stateMutex);
+  return cachedStateCBOR;
 }
 
 } // namespace nexrx

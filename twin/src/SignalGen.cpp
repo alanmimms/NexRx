@@ -292,7 +292,6 @@ namespace nexrx {
 
     double lo_cos[3] = {1,1,1}, lo_sin[3] = {0,0,0};
     double lo_cos_d[3], lo_sin_d[3];
-    double current_lo = 0, current_k = 0;
 
     auto updateLOs = [&](double lo, double k) {
         auto p0 = computePhaseInc(lo - k, 480000.0);
@@ -302,6 +301,10 @@ namespace nexrx {
         auto p2 = computePhaseInc(lo, 480000.0);
         lo_cos_d[2] = p2.first; lo_sin_d[2] = p2.second;
     };
+
+    double current_lo = opts.loFreqMHz * 1e6;
+    double current_k = opts.qsdOffsetKHz * 1000.0;
+    updateLOs(current_lo, current_k);
 
     // --- Set Real-Time Priority ---
     #ifndef _WIN32

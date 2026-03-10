@@ -47,6 +47,12 @@ function Hardware.sync(commands)
             if p.capMask ~= nil and hw.setPreselectorCap then
                 hw.setPreselectorCap(p.capMask)
             end
+            if p.enabled ~= nil and hw.setPreselectorEnabled then
+                hw.setPreselectorEnabled(p.enabled)
+            end
+            if p.autoTune ~= nil and hw.setPreselectorAuto then
+                hw.setPreselectorAuto(p.autoTune)
+            end
         end
     end
 
@@ -95,6 +101,16 @@ function Hardware.getSpectrum()
     if not hwEnabled or not hw or not hw.isConnected() then return nil end
     local spectrum = hw.getSpectrum()
     if spectrum and #spectrum > 0 then return spectrum end
+    return nil
+end
+
+function Hardware.getState()
+    if not hwEnabled or not hw or not hw.isConnected() then return nil end
+    if hw.getState then
+        local s = hw.getState()
+        -- if s then print("[Hardware] Got state map, keys=" .. #s) end
+        return s
+    end
     return nil
 end
 

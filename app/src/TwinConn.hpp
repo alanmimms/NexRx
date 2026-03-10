@@ -65,6 +65,7 @@ public:
   bool setISGEnable(bool enabled);
   bool setPreselectorL(uint32_t mask);
   bool setPreselectorCap(uint32_t mask);
+  bool setPreselectorAuto(bool enabled);
   bool setPreselectorEnabled(bool enabled);
   bool setTrMode(int mode);
   bool setQsdOffsetKHz(double khz);
@@ -72,6 +73,7 @@ public:
   bool stopStream();
   uint64_t getTimestamp();
   std::vector<uint8_t> getState();
+  void pollStateAsync(); // Called by background thread
   bool sendCalibrationStimulus(double freqHz, uint64_t durationMs);
 
   std::vector<uint8_t> sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& argsCBOR);
@@ -85,12 +87,17 @@ private:
 
   TwinConfig config;
   std::unique_ptr<TCPControlClient> control;
+  std::mutex controlMutex; // Protect TCP control connection
+
   std::unique_ptr<UDPStreamClient> stream;
   bool connected = false;
 
   mutable std::mutex callbackMutex;
   FrameCallback frameCallback;
   BatchCallback batchCallback;
+
+  std::vector<uint8_t> cachedStateCBOR;
+  std::mutex stateMutex; // Protect state cache
 
   std::thread receiveThread;
   std::atomic<bool> receiving{false};

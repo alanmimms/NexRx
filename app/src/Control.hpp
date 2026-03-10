@@ -28,6 +28,7 @@ public:
   static constexpr uint32_t CMD_SET_PRESEL_L    = makeControlId("SPRL");
   static constexpr uint32_t CMD_SET_PRESEL_C    = makeControlId("SPRC");
   static constexpr uint32_t CMD_SET_PRESEL_EN   = makeControlId("SPRE");
+  static constexpr uint32_t CMD_SET_PRESEL_AUTO = makeControlId("SPSA");
   static constexpr uint32_t CMD_GET_STATE       = makeControlId("GSTA");
   static constexpr uint32_t CMD_CAL_STIM        = makeControlId("CAL!");
   static constexpr uint32_t CMD_GBYE            = makeControlId("GBYE");

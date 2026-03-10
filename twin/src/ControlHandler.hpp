@@ -175,6 +175,7 @@ private:
   PGAModel* pga = nullptr;
   std::atomic<bool> isgEnabled;
   std::atomic<double> isgFreqHz;
+  std::atomic<bool> autoTuneEnabled{true};
   std::atomic<int> agcMode;
   std::atomic<int> trMode{0}; // 0=RX, 1=TX
   std::atomic<bool> calStimEnabled{false};

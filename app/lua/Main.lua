@@ -343,6 +343,10 @@ function update(dt)
     AppController.sync()
 
     if Hardware.isHardwareEnabled() then
+        if frameCount % 10 == 0 then
+            AppController.pollState()
+        end
+        
         local hwSpec = Hardware.getSpectrum()
         if hwSpec and #hwSpec > 0 then spectrumData = hwSpec; Hardware.updateWaterfall(spectrumData) end
         if frameCount % 10 == 0 then

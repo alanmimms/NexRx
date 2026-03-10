@@ -52,14 +52,6 @@ function AGC.new(props)
         med  = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 2) end }),
         fast = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 1) end })
     }
-    self.bypassCheck = ui.Checkbox.new({
-        getText = function() return "Bypass Matrix" end,
-        onToggle = function(v) Model.set("rx.DSP.matrixBypass", v) end
-    })
-    self.lmsCheck = ui.Checkbox.new({
-        getText = function() return "LMS Alignment" end,
-        onToggle = function(v) Model.set("rx.DSP.lmsEnabled", v) end
-    })
     return self
 end
 
@@ -116,13 +108,6 @@ function AGC:draw(id, x, y, w, h)
         if i < #modes then layout.space(bG) end
     end
     layout.endHorizontal()
-    
-    layout.newLine(24)
-    local cx, cy = layout.getCursor()
-    self.bypassCheck:draw(id .. "-matrix-bypass", cx, cy, Model.rx.DSP.matrixBypass:get(), lwc)
-    layout.newLine(24)
-    cx, cy = layout.getCursor()
-    self.lmsCheck:draw(id .. "-lms-enable", cx, cy, Model.rx.DSP.lmsEnabled:get(), lwc)
 
     layout.endRegion()
 end

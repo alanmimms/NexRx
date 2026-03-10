@@ -70,14 +70,6 @@ function AppController.init()
             bands.setCurrent(freq)
         end
         
-        -- Auto-tune Preselector
-        if Model.preselector.auto:get() then
-            local L, C = PreselCal.calculate(freq)
-            -- Use Model.set to override the projection (creates high-prio rule)
-            Model.set("preselector.L", L)
-            Model.set("preselector.capMask", C)
-        end
-        
         dirty.VFO = true
     end)
 
@@ -85,6 +77,8 @@ function AppController.init()
     R.watch(function()
         Model.preselector.L:get()
         Model.preselector.capMask:get()
+        Model.preselector.auto:get()
+        Model.preselector.enabled:get()
         dirty.preselector = true
     end)
 
@@ -140,16 +134,6 @@ function AppController.init()
             audio.setTestTone(enabled, 440.0)
         end
     end)
-
-    -- Watch DSP Debug flags
-    R.watch(function()
-        local lms = Model.rx.DSP.lmsEnabled:get()
-        local bypass = Model.rx.DSP.matrixBypass:get()
-        if rx then
-            if rx.setLmsEnabled then rx.setLmsEnabled(lms) end
-            if rx.setMatrixBypass then rx.setMatrixBypass(bypass) end
-        end
-    end)
 end
 
 -- =============================================================================
@@ -158,6 +142,39 @@ end
 
 --- Flush all dirty state to Hardware
 -- Call this once per frame at the end of the update loop
+function AppController.pollState()
+    if not Hardware.isHardwareEnabled() then return end
+    
+    local state = Hardware.getState()
+    if not state then return end
+
+    -- Periodic dump for debugging
+    if _G.frameCount and _G.frameCount % 100 == 0 then
+        local dump = ""
+        for k, v in pairs(state) do dump = dump .. k .. "=" .. tostring(v) .. " " end
+        print("[AppController] HW State: " .. dump)
+    end
+
+    -- Update Preselector L/C from hardware IF auto-tune is ON
+    if Model.preselector.auto:peek() then
+        if state.psL ~= nil then
+            local hwL = (state.psL == 1)
+            local currentL = Model.preselector.L:peek()
+            if hwL ~= currentL then
+                print("[AppController] Feedback: psL change detected! " .. tostring(currentL) .. " -> " .. tostring(hwL))
+                Model.set("preselector.L", hwL)
+            end
+        end
+        if state.psC ~= nil then
+            local currentC = Model.preselector.capMask:peek()
+            if state.psC ~= currentC then
+                print("[AppController] Feedback: psC change detected! " .. tostring(currentC) .. " -> " .. tostring(state.psC))
+                Model.set("preselector.capMask", state.psC)
+            end
+        end
+    end
+end
+
 function AppController.sync()
     local commands = {}
     local anyDirty = false
@@ -171,10 +188,16 @@ function AppController.sync()
     end
 
     if dirty.preselector then
+        local p = Model.preselector
+        local autoEn = p.auto:get()
         commands.preselector = {
-            L = Model.preselector.L:peek(),
-            capMask = Model.preselector.capMask:peek()
+            enabled = p.enabled:get(),
+            autoTune = autoEn
         }
+        if not autoEn then
+            commands.preselector.L = p.L:get()
+            commands.preselector.capMask = p.capMask:get()
+        end
         dirty.preselector = false
         anyDirty = true
     end

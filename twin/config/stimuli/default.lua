@@ -24,7 +24,7 @@ stimulus.addNoise("band-noise", {
     type = "thermal"
 })
 
-if false then
+if true then
 
 -- CW beacon on 14.100 MHz (S7 level)
 stimulus.addMorse("VVV-DE-NIST", {

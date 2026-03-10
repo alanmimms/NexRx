@@ -182,12 +182,35 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
     };
     hwTable["getState"] = [this](sol::this_state s) -> sol::object {
       if (!twinConnected.load()) return sol::make_object(s, sol::nil);
+      
+      // Trigger background poll if enough time has passed (100ms)
+      auto now = std::chrono::steady_clock::now();
+      if (now - lastStatePollTime > std::chrono::milliseconds(100)) {
+          lastStatePollTime = now;
+          postCommand([this](){ twinHost.pollStateAsync(); });
+      }
+
       auto stateCBOR = twinHost.getState();
       if (stateCBOR.empty()) return sol::make_object(s, sol::nil);
+      
       CborParser parser; CborValue it;
       if (cbor_parser_init(stateCBOR.data(), stateCBOR.size(), 0, &parser, &it) != CborNoError) return sol::make_object(s, sol::nil);
+      
       sol::state_view lView(s); sol::table res = lView.create_table();
-      CborValue mapIt; cbor_value_enter_container(&it, &mapIt);
+      CborValue mapIt;
+      
+      // Navigate to the map payload: array[0]=status, array[1]=map
+      if (cbor_value_is_array(&it)) {
+          CborValue arrayIt;
+          cbor_value_enter_container(&it, &arrayIt);
+          cbor_value_advance(&arrayIt); // Skip status
+          if (cbor_value_is_map(&arrayIt)) {
+              cbor_value_enter_container(&arrayIt, &mapIt);
+          } else { return sol::make_object(s, sol::nil); }
+      } else if (cbor_value_is_map(&it)) {
+          cbor_value_enter_container(&it, &mapIt);
+      } else { return sol::make_object(s, sol::nil); }
+
       while (!cbor_value_at_end(&mapIt)) {
         char key[64]; size_t len = sizeof(key) - 1;
         if (cbor_value_get_type(&mapIt) == CborTextStringType) {
@@ -209,8 +232,10 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
     hwTable["setIsgFreq"] = [this](double f) { if (twinConnected.load()) { postCommand([this, f]() { twinHost.setISGFreq(f); }); } };
     hwTable["setIsgEnable"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setISGEnable(en); }); } };
     hwTable["setPreselectorInd"] = [this](uint32_t mask) { if (twinConnected.load()) { postCommand([this, mask]() { twinHost.setPreselectorL(mask); }); } };
-    hwTable["setPreselectorCap"] = [this](uint32_t mask) { if (twinConnected.load()) { postCommand([this, mask]() { twinHost.setPreselectorCap(mask); }); } };
+    hwTable["setPreselectorCap"] = [this](uint32_t m) { if (twinConnected.load()) { postCommand([this, m]() { twinHost.setPreselectorCap(m); }); } };
+    hwTable["setPreselectorAuto"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorAuto(en); }); } };
     hwTable["setPreselectorEnabled"] = [this](bool en) { if (twinConnected.load()) { postCommand([this, en]() { twinHost.setPreselectorEnabled(en); }); } };
+
     hwTable["setRFGain"] = [this](double db) {
       dsp_.setRfGain((float)db);
       if (twinConnected.load()) {
@@ -400,7 +425,6 @@ void GuiEngine::run() {
 }
 
 void GuiEngine::update(float dt) {
-    processCommands();
     sol::protected_function updateFn = lua["update"];
     if (updateFn.valid()) { 
         auto res = updateFn(dt); 

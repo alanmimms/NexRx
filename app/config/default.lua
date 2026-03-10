@@ -43,7 +43,6 @@ rule {
         ["rx.volume.DB"] = -20,
         ["rx.volume.muted"] = false,
         ["rx.testToneEnabled"] = false,
-        ["rx.demodFilterEnabled"] = true,
         
         -- Animation
         animated = false,
@@ -60,8 +59,6 @@ rule {
         -- Hardware Defaults
         -- =================================================================
         ["rx.QSD.offsetK"] = 12.0,      -- kHz
-        ["rx.DSP.lmsEnabled"] = true,
-        ["rx.DSP.matrixBypass"] = false,
         ["rx.RF.attenuationDB"] = 0,    -- DB (0-45 in 3 DB steps)
         ["rx.RF.gainDB"] = 20.0,        -- DB (Digital gain)
 
