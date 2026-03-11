@@ -1,9 +1,9 @@
 /**
- * @file GuiEngine.cpp
+ * @file GUIEngine.cpp
  * @brief Implementation of SDL/OpenGL/Lua GUI
  */
 
-#include "GuiEngine.hpp"
+#include "GUIEngine.hpp"
 #include <iostream>
 #include <tuple>
 #include <cbor.h>
@@ -12,13 +12,13 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-GuiEngine::GuiEngine(DspEngine& dsp) : dsp_(dsp) {}
+GUIEngine::GUIEngine(DSPEngine& dsp) : dsp_(dsp) {}
 
-GuiEngine::~GuiEngine() {
+GUIEngine::~GUIEngine() {
   shutdown();
 }
 
-bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
+bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
     // 1. Initial Lua setup
     lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math, sol::lib::os, sol::lib::debug, sol::lib::coroutine, sol::lib::io);
     
@@ -384,7 +384,7 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
       }
     });
 
-    if (!waterfall.init(DspEngine::FFT_SIZE, 256)) return false;
+    if (!waterfall.init(DSPEngine::FFT_SIZE, 256)) return false;
 
     // 7. Lua init()
     sol::protected_function initFn = lua["init"];
@@ -398,7 +398,7 @@ bool GuiEngine::init(const std::string& title, bool vsyncEnabled) {
     return true;
 }
 
-void GuiEngine::run() {
+void GUIEngine::run() {
     uint32_t lastTime = SDL_GetTicks();
     while (running) {
       uint32_t currentTime = SDL_GetTicks();
@@ -425,7 +425,7 @@ void GuiEngine::run() {
     }
 }
 
-void GuiEngine::update(float dt) {
+void GUIEngine::update(float dt) {
     sol::protected_function updateFn = lua["update"];
     if (updateFn.valid()) { 
         auto res = updateFn(dt); 
@@ -433,7 +433,7 @@ void GuiEngine::update(float dt) {
     }
 }
 
-void GuiEngine::render() {
+void GUIEngine::render() {
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION); glLoadIdentity(); glOrtho(0, windowWidth, windowHeight, 0, -1, 1);
     glMatrixMode(GL_MODELVIEW); glLoadIdentity();
@@ -448,7 +448,7 @@ void GuiEngine::render() {
     input.beginFrame();
 }
 
-void GuiEngine::shutdown() {
+void GUIEngine::shutdown() {
     running = false; 
     stopCommandThread();
     twinHost.shutdown();
@@ -457,7 +457,7 @@ void GuiEngine::shutdown() {
     SDL_Quit();
 }
 
-void GuiEngine::startCommandThread() {
+void GUIEngine::startCommandThread() {
     commandThreadRunning = true;
     commandThread = std::thread([this]() {
       while (commandThreadRunning) {
@@ -468,6 +468,6 @@ void GuiEngine::startCommandThread() {
     });
 }
 
-void GuiEngine::stopCommandThread() { commandThreadRunning = false; if (commandThread.joinable()) commandThread.join(); }
-void GuiEngine::postCommand(std::function<void()> cmd) { std::lock_guard<std::mutex> l(cmdMutex); commandQueue.push(cmd); }
-void GuiEngine::processCommands() { std::lock_guard<std::mutex> l(cmdMutex); while (!commandQueue.empty()) { commandQueue.front()(); commandQueue.pop(); } }
+void GUIEngine::stopCommandThread() { commandThreadRunning = false; if (commandThread.joinable()) commandThread.join(); }
+void GUIEngine::postCommand(std::function<void()> cmd) { std::lock_guard<std::mutex> l(cmdMutex); commandQueue.push(cmd); }
+void GUIEngine::processCommands() { std::lock_guard<std::mutex> l(cmdMutex); while (!commandQueue.empty()) { commandQueue.front()(); commandQueue.pop(); } }

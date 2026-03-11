@@ -1,5 +1,5 @@
 /**
- * @file GuiEngine.hpp
+ * @file GUIEngine.hpp
  * @brief SDL/OpenGL/Lua GUI Management
  */
 
@@ -20,7 +20,7 @@
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
 #include "TwinConn.hpp"
-#include "DspEngine.hpp"
+#include "DSPEngine.hpp"
 
 struct InputState {
   int mouseX = 0, mouseY = 0, mouseWheel = 0;
@@ -39,10 +39,10 @@ struct InputState {
   }
 };
 
-class GuiEngine {
+class GUIEngine {
 public:
-  GuiEngine(DspEngine& dsp);
-  ~GuiEngine();
+  GUIEngine(DSPEngine& dsp);
+  ~GUIEngine();
 
   bool init(const std::string& title, bool vsyncEnabled = true);
   void run();
@@ -57,7 +57,7 @@ private:
   void postCommand(std::function<void()> cmd);
   void processCommands();
 
-  DspEngine& dsp_;
+  DSPEngine& dsp_;
   
   SDL_Window* window = nullptr;
   SDL_GLContext glContext = nullptr;

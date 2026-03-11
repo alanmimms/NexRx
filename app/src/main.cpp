@@ -3,13 +3,13 @@
  * @brief NexRx Application Entry Point
  */
 
-#include "DspEngine.hpp"
-#include "GuiEngine.hpp"
+#include "DSPEngine.hpp"
+#include "GUIEngine.hpp"
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-  DspEngine dsp;
-  GuiEngine gui(dsp);
+  DSPEngine dsp;
+  GUIEngine gui(dsp);
 
   if (!gui.init("NexRx SDR")) {
     std::cerr << "Failed to initialize GUI engine" << std::endl;

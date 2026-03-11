@@ -1,9 +1,9 @@
 /**
- * @file DspEngine.cpp
+ * @file DSPEngine.cpp
  * @brief Implementation of IQ Signal Processing
  */
 
-#include "DspEngine.hpp"
+#include "DSPEngine.hpp"
 #include <cmath>
 #include <algorithm>
 
@@ -11,7 +11,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-DspEngine::DspEngine() {
+DSPEngine::DSPEngine() {
   iqBuffer.assign(FFT_SIZE * 2, 0.0f);
   spectrumData.assign(FFT_SIZE, -100.0f);
   audioBuffer.configure(nexrx::BufferConfig{32768});
@@ -23,12 +23,12 @@ DspEngine::DspEngine() {
   staticCal[2].alignR = 1.0f; staticCal[2].alignI = 0.0f;
 }
 
-void DspEngine::setVfo(double freqHz) {
+void DSPEngine::setVfo(double freqHz) {
   lastVFOHz = freqHz;
   basebandFilter.recompute();
 }
 
-void DspEngine::setCalibration(int ch, float gainDB, float phaseDeg, float alignR, float alignI) {
+void DSPEngine::setCalibration(int ch, float gainDB, float phaseDeg, float alignR, float alignI) {
   if (ch < 0 || ch > 2) return;
   staticCal[ch] = {gainDB, phaseDeg, alignR, alignI};
   
@@ -43,7 +43,7 @@ void DspEngine::setCalibration(int ch, float gainDB, float phaseDeg, float align
   else if (ch == 2) { wIQ2_r = wr; wIQ2_i = wi; }
 }
 
-void DspEngine::startManualCalibration() {
+void DSPEngine::startManualCalibration() {
   std::cout << "[DSP] Starting high-precision calibration sequence..." << std::endl;
   // Reset weights to "raw" state for discovery
   wIQ0_r = wIQ0_i = wIQ1_r = wIQ1_i = wIQ2_r = wIQ2_i = 0;
@@ -60,12 +60,12 @@ void DspEngine::startManualCalibration() {
   calibrationActive.store(true);
 }
 
-void DspEngine::setQsdOffset(double offsetKhz) {
+void DSPEngine::setQsdOffset(double offsetKhz) {
   qsdOffsetKhz = offsetKhz;
   basebandFilter.recompute();
 }
 
-std::vector<float> DspEngine::getSpectrumData() {
+std::vector<float> DSPEngine::getSpectrumData() {
   std::lock_guard<std::mutex> l(spectrumMutex);
   return spectrumData;
 }
@@ -74,7 +74,7 @@ std::vector<float> DspEngine::getSpectrumData() {
 
 using Complex = std::complex<float>;
 
-void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
+void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   float i0, q0, i1, q1, i2, q2;
   frame.qsd[0].toFloat(i0, q0); 
   frame.qsd[1].toFloat(i1, q1); 
@@ -237,7 +237,7 @@ void DspEngine::processIQFrame(const nexrx::IQFrame& frame) {
   dspDiag.framesProcessed++;
 }
 
-void DspEngine::fftInPlace(float* re, float* im, size_t n) {
+void DSPEngine::fftInPlace(float* re, float* im, size_t n) {
   for (size_t i=1, j=0; i<n; ++i) {
     size_t bit=n>>1;
     for (; j&bit; bit>>=1) j^=bit;
@@ -261,7 +261,7 @@ void DspEngine::fftInPlace(float* re, float* im, size_t n) {
   }
 }
 
-void DspEngine::computeSpectrum() {
+void DSPEngine::computeSpectrum() {
   static std::vector<float> win;
   if (win.size() != FFT_SIZE) {
     win.resize(FFT_SIZE);

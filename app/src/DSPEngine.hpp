@@ -1,5 +1,5 @@
 /**
- * @file DspEngine.hpp
+ * @file DSPEngine.hpp
  * @brief IQ Signal Processing and Image Rejection
  */
 
@@ -15,7 +15,7 @@
 
 using namespace nexrx;
 
-struct DspDiagnostics {
+struct DSPDiagnostics {
   std::atomic<uint64_t> framesProcessed{0};
   std::atomic<float> signalRms{0.0f};
   std::atomic<float> maxRaw{0.0f};
@@ -32,11 +32,11 @@ struct DspDiagnostics {
   std::atomic<float> alignPhase1{0.0f};
 };
 
-class DspEngine {
+class DSPEngine {
 public:
   static constexpr int FFT_SIZE = 1024;
 
-  DspEngine();
+  DSPEngine();
 
   void processIQFrame(const nexrx::IQFrame& frame);
   void computeSpectrum();
@@ -57,7 +57,7 @@ public:
 
   // Data access
   std::vector<float> getSpectrumData();
-  const DspDiagnostics& getDiagnostics() const { return dspDiag; }
+  const DSPDiagnostics& getDiagnostics() const { return dspDiag; }
   RateAdaptiveBuffer<float>& getAudioBuffer() { return audioBuffer; }
   Demodulator& getDemod() { return demod; }
   BasebandFilter& getFilter() { return basebandFilter; }
@@ -117,6 +117,6 @@ private:
 
   Demodulator demod;
   BasebandFilter basebandFilter{96000};
-  DspDiagnostics dspDiag;
+  DSPDiagnostics dspDiag;
   RateAdaptiveBuffer<float> audioBuffer;
 };
