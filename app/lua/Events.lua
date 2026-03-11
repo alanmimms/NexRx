@@ -16,7 +16,7 @@
         events.init()
 
         -- Register a handler
-        events.registerHandler("freq_tune", function(event, widget)
+        events.registerHandler("freqTune", function(event, widget)
             frequency = frequency + event.delta * 0.001
             return true  -- handled
         end)
