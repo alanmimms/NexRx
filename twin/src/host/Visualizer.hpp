@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "DspPipeline.hpp"
+#include "DSPPipeline.hpp"
 #include "transport/IQFrame.hpp"
 
 #include <array>

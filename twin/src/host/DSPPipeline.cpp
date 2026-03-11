@@ -2,7 +2,7 @@
 //
 // Copyright 2026 NexRx Project - MIT License
 
-#include "DspPipeline.hpp"
+#include "DSPPipeline.hpp"
 
 #include <algorithm>
 #include <numeric>
@@ -10,15 +10,15 @@
 namespace nexrx {
 
 //======================================================================
-// DspPipeline Implementation
+// DSPPipeline Implementation
 //======================================================================
 
-void DspPipeline::configure(const DspConfig& config) {
+void DSPPipeline::configure(const DSPConfig& config) {
     config_ = config;
     reset();
 }
 
-void DspPipeline::reset() {
+void DSPPipeline::reset() {
     dcHistory_.clear();
     dcSum_ = Complex{0, 0};
     agcGain_ = 1.0;
@@ -28,7 +28,7 @@ void DspPipeline::reset() {
     stats_.reset();
 }
 
-Complex DspPipeline::process(const IQFrame& frame) {
+Complex DSPPipeline::process(const IQFrame& frame) {
     // Combine QSD outputs
     Complex combined = combineQsd(frame);
 
@@ -49,7 +49,7 @@ Complex DspPipeline::process(const IQFrame& frame) {
     return output;
 }
 
-std::vector<Complex> DspPipeline::processBatch(const std::vector<IQFrame>& frames) {
+std::vector<Complex> DSPPipeline::processBatch(const std::vector<IQFrame>& frames) {
     std::vector<Complex> output;
     output.reserve(frames.size());
 
@@ -60,7 +60,7 @@ std::vector<Complex> DspPipeline::processBatch(const std::vector<IQFrame>& frame
     return output;
 }
 
-Complex DspPipeline::combineQsd(const IQFrame& frame) {
+Complex DSPPipeline::combineQsd(const IQFrame& frame) {
     // Convert each QSD output to complex
     Complex q0 = sampleToComplex(frame.qsd[0]);
     Complex q1 = sampleToComplex(frame.qsd[1]);
@@ -91,7 +91,7 @@ Complex DspPipeline::combineQsd(const IQFrame& frame) {
     return combined;
 }
 
-Complex DspPipeline::removeDc(const Complex& sample) {
+Complex DSPPipeline::removeDc(const Complex& sample) {
     // Moving average DC estimation
     dcHistory_.push_back(sample);
     dcSum_ += sample;
@@ -114,7 +114,7 @@ Complex DspPipeline::removeDc(const Complex& sample) {
     return sample - dcEstimate;
 }
 
-Complex DspPipeline::applyAgc(const Complex& sample) {
+Complex DSPPipeline::applyAgc(const Complex& sample) {
     double mag = std::abs(sample);
 
     // Update gain based on level
@@ -132,7 +132,7 @@ Complex DspPipeline::applyAgc(const Complex& sample) {
     return sample * agcGain_;
 }
 
-void DspPipeline::updateStats(const Complex& sample) {
+void DSPPipeline::updateStats(const Complex& sample) {
     double mag = std::abs(sample);
 
     sumMagSq_ += mag * mag;

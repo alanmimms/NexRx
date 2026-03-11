@@ -26,7 +26,7 @@ using Complex = std::complex<double>;
 //======================================================================
 // DSP Pipeline Configuration
 //======================================================================
-struct DspConfig {
+struct DSPConfig {
     // QSD weighting for combining (default: equal weight)
     std::array<double, 3> qsdWeights = {1.0, 1.0, 1.0};
 
@@ -69,14 +69,14 @@ struct SignalStats {
 // 3. Optionally applies AGC
 // 4. Computes signal statistics
 //======================================================================
-class DspPipeline {
+class DSPPipeline {
 public:
     using OutputCallback = std::function<void(const Complex&, uint64_t timestamp)>;
 
-    DspPipeline() = default;
+    DSPPipeline() = default;
 
     // Configure the pipeline
-    void configure(const DspConfig& config);
+    void configure(const DSPConfig& config);
 
     // Process a single I/Q frame
     // Returns combined complex output sample
@@ -137,7 +137,7 @@ private:
     // Update statistics
     void updateStats(const Complex& sample);
 
-    DspConfig config_;
+    DSPConfig config_;
     OutputCallback outputCallback_;
     SignalStats stats_;
 

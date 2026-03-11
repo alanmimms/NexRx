@@ -11,7 +11,7 @@
 // Copyright 2026 NexRx Project - MIT License
 
 #include "host/HostApp.hpp"
-#include "host/DspPipeline.hpp"
+#include "host/DSPPipeline.hpp"
 #include "host/Visualizer.hpp"
 #include "stimulus/ToneGenerator.hpp"
 #include "transport/IQFrame.hpp"
@@ -80,8 +80,8 @@ void runSyntheticTest() {
     ToneGenerator lo(14.000e6, 1.0);    // LO at unity
 
     // Create DSP pipeline
-    DspPipeline dsp;
-    DspConfig dspConfig;
+    DSPPipeline dsp;
+    DSPConfig dspConfig;
     dspConfig.enableAgc = false;
     dsp.configure(dspConfig);
 
@@ -155,8 +155,8 @@ void runNetworkTest(const std::string& host, uint16_t controlPort, uint16_t stre
     }
 
     // Create DSP pipeline and visualizer
-    DspPipeline dsp;
-    DspConfig dspConfig;
+    DSPPipeline dsp;
+    DSPConfig dspConfig;
     dsp.configure(dspConfig);
 
     Visualizer viz;

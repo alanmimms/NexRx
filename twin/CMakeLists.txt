@@ -111,8 +111,8 @@ find_library(FFTW3_LIBRARY fftw3 HINTS /usr/lib/x86_64-linux-gnu)
 find_library(AMD_LIBRARY amd HINTS /usr/lib/x86_64-linux-gnu)
 find_package(LAPACK REQUIRED)
 find_package(BLAS REQUIRED)
-find_library(GFORTRAN_LIBRARY gfortran HINTS /usr/lib/x86_64-linux-gnu)
-find_library(QUADMATH_LIBRARY quadmath HINTS /usr/lib/x86_64-linux-gnu)
+find_library(GFORTRAN_LIBRARY gfortran HINTS /usr/lib/x86_64-linux-gnu /usr/lib/gcc/x86_64-linux-gnu/13 /usr/lib/gcc/x86_64-linux-gnu/14 /usr/lib/gcc/x86_64-linux-gnu/12)
+find_library(QUADMATH_LIBRARY quadmath HINTS /usr/lib/x86_64-linux-gnu /usr/lib/gcc/x86_64-linux-gnu/13 /usr/lib/gcc/x86_64-linux-gnu/14 /usr/lib/gcc/x86_64-linux-gnu/12)
 
 # Common sources for both executables
 set(COMMON_SOURCES
