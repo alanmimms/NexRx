@@ -315,9 +315,37 @@ public:
     }
 
     if (centerFreqHz > 0) {
-      double phase = 2.0 * M_PI * centerFreqHz * timeS;
-      double cp = std::cos(phase);
-      double sp = std::sin(phase);
+      // Use stateful phasor to avoid expensive sin/cos in inner loops
+      // if we are being called sequentially.
+      double cp, sp;
+      if (std::abs(timeS - lastTimeS - lastDeltaS) < 1e-11 && lastTimeS >= 0) {
+        // Sequential call: Rotate previous phasor
+        cp = lastCos * cosD - lastSin * sinD;
+        sp = lastSin * cosD + lastCos * sinD;
+      } else {
+        // Non-sequential: Full sin/cos and reset phasor
+        double phase = 2.0 * M_PI * centerFreqHz * timeS;
+        cp = std::cos(phase);
+        sp = std::sin(phase);
+        
+        // Update rotation delta for future sequential calls
+        // Note: we can't know the delta until the second call, so we'll 
+        // just compute it based on a guess or wait for the next call.
+        // Actually, let's just use the current timeS to reset.
+        lastDeltaS = 0; // Will be set on next call
+      }
+      
+      if (lastDeltaS == 0 && lastTimeS >= 0 && timeS > lastTimeS) {
+          lastDeltaS = timeS - lastTimeS;
+          double dPhi = 2.0 * M_PI * centerFreqHz * lastDeltaS;
+          cosD = std::cos(dPhi);
+          sinD = std::sin(dPhi);
+      }
+
+      lastTimeS = timeS;
+      lastCos = cp;
+      lastSin = sp;
+
       outI = (iVal * cp - qVal * sp) * amplitudeV;
       outQ = (iVal * sp + qVal * cp) * amplitudeV;
     } else {
@@ -343,7 +371,7 @@ public:
 
   // AntennaStimulus Overrides
   [[nodiscard]] double carrierFrequency() const override { return centerFreqHz; }
-  [[nodiscard]] bool isBroadband() const override { return true; }
+  [[nodiscard]] bool isBroadband() const override { return false; }
 
 private:
   std::vector<double> samplesI;
@@ -355,6 +383,14 @@ private:
   bool loop = false;
   bool swapIQ = false;
   std::string path;
+
+  // Phasor state for upconversion performance
+  mutable double lastTimeS = -1.0;
+  mutable double lastDeltaS = 0.0;
+  mutable double lastCos = 1.0;
+  mutable double lastSin = 0.0;
+  mutable double cosD = 1.0;
+  mutable double sinD = 0.0;
 
   void loadFloat32IQ(std::ifstream& file, size_t fileSize) {
     size_t numSamples = fileSize / (2 * sizeof(float));

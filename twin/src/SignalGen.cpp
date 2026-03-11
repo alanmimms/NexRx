@@ -179,24 +179,24 @@ namespace nexrx {
     qFactor = 30.0; // Sharp resonance for visible detuning
   }
 
-  double getPreselGain(double freqHz, const PreselectorModel& model) {
-    if (!model.isEnabled()) {
-      return 1.0;
-    }
-    double fRes, qFactor;
-    getPreselParams(model, fRes, qFactor);
-  
+  // Pre-calculate gain using already computed fRes and qFactor
+  double getPreselGainFast(double freqHz, double fRes, double qFactor, bool enabled) {
+    if (!enabled) return 1.0;
     if (std::abs(freqHz) < 1.0) return 0.00001;
 
-    // Standard 2nd order LC bandpass magnitude:
-    // |H(jw)| = 1 / sqrt(1 + Q^2 * (f/f0 - f0/f)^2)
     double x = freqHz / fRes;
     double y = fRes / freqHz;
-    double gain = 1.0 / std::sqrt(1.0 + std::pow(qFactor * (x - y), 2.0));
+    double diff = qFactor * (x - y);
+    double gain = 1.0 / std::sqrt(1.0 + diff * diff); // Avoid std::pow
   
-    // High-frequency leakage floor
-    double leak = 0.00001; // -100dB floor
-    return std::max(gain, leak);
+    return std::max(gain, 0.00001);
+  }
+
+  double getPreselGain(double freqHz, const PreselectorModel& model) {
+    if (!model.isEnabled()) return 1.0;
+    double fr, q;
+    getPreselParams(model, fr, q);
+    return getPreselGainFast(freqHz, fr, q, true);
   }
 
   int runFunctionalMode(const Options& opts) {
@@ -303,11 +303,6 @@ namespace nexrx {
     
       double sampleRate = 96000.0;
       double samplePeriod = 1.0 / sampleRate;
-      double isgNoiseZi[3][2] = {};
-      double isgNoiseZq[3][2] = {};
-      double currentVFOs[3] = {0};
-      double loPhases[3] = {0, 0, 0};
-      double isgPhases[3] = {0, 0, 0};
       auto streamStartTime = std::chrono::steady_clock::now();
       size_t outputSample = 0;
       std::vector<IQFrame> batch;
@@ -330,6 +325,19 @@ namespace nexrx {
     };
     double lpf_zi[3][NUM_LPF_STAGES][2] = {};
     double lpf_zq[3][NUM_LPF_STAGES][2] = {};
+
+    // Fast PRNG for noise generation (Xorwow)
+    struct FastNoise {
+        uint32_t x=123456789, y=362436069, z=521288629, w=88675123, v=5783321, d=6615241;
+        void seed(uint32_t s) { x = s; y = s*2; z = s*3; w = s*4; v = s*5; d = s*6; }
+        double next() {
+            uint32_t t = (x ^ (x >> 2));
+            x = y; y = z; z = w; w = v;
+            v = (v ^ (v << 4)) ^ (t ^ (t << 1));
+            return (static_cast<double>((v + (d += 362437)) & 0xFFFFFF) / 16777216.0) - 0.5;
+        }
+    } noiseGens[3];
+    for (int i=0; i<3; ++i) noiseGens[i].seed(1337 + i);
 
     auto applyLpf = [&](double x, double z[NUM_LPF_STAGES][2]) -> double {
         double y = x;
@@ -363,6 +371,8 @@ namespace nexrx {
     double current_lo = opts.loFreqMHz * 1e6;
     double current_k = opts.qsdOffsetKHz * 1000.0;
     updateLOs(current_lo, current_k);
+
+    std::vector<double> antBufferIQ(960 * OVERSAMPLE_RATIO * 2);
 
     // --- Set Real-Time Priority ---
     #ifndef _WIN32
@@ -404,44 +414,71 @@ namespace nexrx {
           current_lo = baseVFO; current_k = qsdK;
       }
 
-      // Pre-calculate chunk-wide gains
-      double pg = getPreselGain(current_lo, preselector);
+      // Pre-calculate chunk-wide parameters and gains
+      double fRes, qFactor;
+      getPreselParams(preselector, fRes, qFactor);
       double attenGain = attenuator.getVoltageGain();
       double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
 
       int nToProcess = 960; // 10ms chunk
+      double chunkStartTime = (outputSample * OVERSAMPLE_RATIO) / 480000.0;
+      double oversamplePeriod = 1.0 / 480000.0;
+      
+      // 1. Generate RF Stimulus in one batch (minimizes virtual calls)
+      // Apply frequency-dependent preselector gain per stimulus inside the manager.
+      if (stimulusManager) {
+          auto gainFunc = [&](double f) {
+              return getPreselGainFast(f, fRes, qFactor, preselector.isEnabled());
+          };
+          stimulusManager->generateBatch(chunkStartTime, oversamplePeriod, nToProcess * OVERSAMPLE_RATIO, 
+                                        antBufferIQ.data(), current_lo, 480000.0, gainFunc);
+      } else {
+          std::fill(antBufferIQ.begin(), antBufferIQ.end(), 0.0);
+      }
+
       for (int s = 0; s < nToProcess; ++s) {
           double filt_i[3]={0}, filt_q[3]={0};
           for (int i = 0; i < OVERSAMPLE_RATIO; ++i) {
-              double t = (outputSample * OVERSAMPLE_RATIO + i) / 480000.0;
-              double antI = 0, antQ = 0;
+              int bufIdx = (s * OVERSAMPLE_RATIO + i) * 2;
+              double antI = antBufferIQ[bufIdx];
+              double antQ = antBufferIQ[bufIdx + 1];
+              double t = chunkStartTime + (s * OVERSAMPLE_RATIO + i) * oversamplePeriod;
               
-              // Calibration Stimulus (Clean sine wave)
+              // Calibration Stimulus (Clean sine wave) - Overwrites buffer if active
               if (controlHandler->isCalStimActive()) {
                   double fStim = controlHandler->getCalStimFreq();
+                  double pgStim = getPreselGainFast(fStim, fRes, qFactor, preselector.isEnabled());
                   double phaseStim = 2.0 * M_PI * std::fmod(fStim * t, 1.0);
-                  // Add high-amplitude calibration tone (10mV)
-                  antI = 0.010 * std::cos(phaseStim);
-                  antQ = 0.010 * std::sin(phaseStim);
-              } else {
-                  if (stimulusManager) stimulusManager->getRfIQ(t, antI, antQ, current_lo, 100000.0);
+                  antI = 0.010 * std::cos(phaseStim) * pgStim;
+                  antQ = 0.010 * std::sin(phaseStim) * pgStim;
               }
 
-              // Apply preselector and attenuator gains
-              antI *= (pg * attenGain); 
-              antQ *= (pg * attenGain);
+              // Apply attenuator gain (broadband)
+              antI *= attenGain; 
+              antQ *= attenGain;
 
               for (int ch = 0; ch < 3; ++ch) {
-                  // Complex mixing: S_bb = S_rf * exp(-j*phi_LO)
+                  // Mixing
                   double bb_i = antI * lo_cos[ch] + antQ * lo_sin[ch];
                   double bb_q = antQ * lo_cos[ch] - antI * lo_sin[ch];
                   
-                  // Add tiny independent channel noise (Johnson-Nyquist simulation)
-                  static thread_local std::mt19937 noiseRng0(54321), noiseRng1(54322), noiseRng2(54323);
-                  static thread_local std::normal_distribution<double> noiseDist(0, 1e-10);
-                  std::mt19937& rng = (ch == 0) ? noiseRng0 : (ch == 1 ? noiseRng1 : noiseRng2);
-                  bb_i += noiseDist(rng);
-                  bb_q += noiseDist(rng);
+                  // Harmonic responses for QSD0/QSD1
+                  if (ch < 2) {
+                      // 2nd harmonic (very small - asymmetry)
+                      double cos2 = lo_cos[ch]*lo_cos[ch] - lo_sin[ch]*lo_sin[ch];
+                      double sin2 = 2.0*lo_cos[ch]*lo_sin[ch];
+                      bb_i += 0.001 * (antI * cos2 + antQ * sin2); 
+
+                      // 3rd harmonic (approx -9.5dB)
+                      double cos3 = lo_cos[ch]*cos2 - lo_sin[ch]*sin2;
+                      double sin3 = lo_sin[ch]*cos2 + lo_cos[ch]*sin2;
+                      bb_i += 0.33 * (antI * cos3 - antQ * sin3);
+                      bb_q += 0.33 * (antQ * cos3 + antI * sin3);
+                  }
+                  
+                  // Faster noise generation
+                  bb_i += noiseGens[ch].next() * 2e-11; 
+                  bb_q += noiseGens[ch].next() * 2e-11;
 
                   // Apply simulated hardware error
                   double gE = opts.gainErr[ch];
@@ -452,8 +489,6 @@ namespace nexrx {
                   double fi = applyLpf(err_i, lpf_zi[ch]);
                   double fq = applyLpf(err_q, lpf_zq[ch]);
                   
-                  // Proper decimation: The LPF handles anti-aliasing by running at 480kHz.
-                  // We take the filtered sample at the decimation point (every 5th sample).
                   if (i == OVERSAMPLE_RATIO - 1) {
                       filt_i[ch] = fi;
                       filt_q[ch] = fq;
@@ -466,8 +501,8 @@ namespace nexrx {
               }
           }
 
-          // Periodically renormalize LO phases to prevent drift (every 960 samples = 10ms)
-          if ((outputSample & 0x3FF) == 0) {
+          // Periodically renormalize LO phases (every 960 samples)
+          if ((outputSample % 960) == 0) {
               for (int ch = 0; ch < 3; ++ch) {
                   double m = 1.0 / std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
                   lo_cos[ch] *= m; lo_sin[ch] *= m;
@@ -478,14 +513,13 @@ namespace nexrx {
           pk.sequence = (uint32_t)outputSample;
           pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
           
-          static thread_local std::mt19937 rng(12345 + (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id()));
-          static thread_local std::uniform_real_distribution<double> uniform(-0.5, 0.5);
+          // Use FastNoise for dithering too
           constexpr double scale = 8388607.0 / 1.65;
 
           int32_t maxPeak = 0;
           for (int ch = 0; ch < 3; ++ch) {
               auto quantize = [&](double v) {
-                  double dither = uniform(rng) + uniform(rng);
+                  double dither = noiseGens[ch].next() * 2.0; // Approx TPDF-like
                   return static_cast<int_fast32_t>(std::clamp(std::round(v * pgaGain * scale + dither), -8388608.0, 8388607.0));
               };
               pk.qsd[ch].i = quantize(filt_i[ch]);

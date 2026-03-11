@@ -113,8 +113,12 @@ public:
   // Batch generate RF I/Q samples (most efficient for streaming)
   // Generates 'count' samples starting at 'startTime' with given period.
   // Writes interleaved I/Q pairs to output buffer (must be 2*count doubles).
+  // centerHz and bandwidthHz are used to filter out-of-band signals to avoid aliasing.
+  // gainFunc is an optional callback to apply frequency-dependent gain (e.g. preselector).
   void generateBatch(double startTime, double samplePeriod,
-                     size_t count, double* outIQ) const;
+                     size_t count, double* outIQ,
+                     double centerHz = 0, double bandwidthHz = 0,
+                     std::function<double(double)> gainFunc = nullptr) const;
 
   //------------------------------------------------------------------
   // Control

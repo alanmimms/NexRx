@@ -164,40 +164,47 @@ void StimulusManager::getRfIQFast(double timeS, double& outI, double& outQ,
 }
 
 void StimulusManager::generateBatch(double startTime, double samplePeriod,
-                                   size_t count, double* outIQ) const {
+                                   size_t count, double* outIQ,
+                                   double centerHz, double bandwidthHz,
+                                   std::function<double(double)> gainFunc) const {
   std::fill(outIQ, outIQ + 2 * count, 0.0);
   
-  const auto& activeStims = frozen.load() ? frozenStimuli : std::vector<StimulusPtr>();
-  
-  if (frozen.load()) {
-    for (const auto& stim : activeStims) {
+  double g = globalGain.load();
+  auto applyStim = [&](const StimulusPtr& stim) {
+      // Nyquist window check for digital twin simulation
+      if (!stim->isBroadband() && bandwidthHz > 0) {
+          double stimFreq = stim->carrierFrequency();
+          if (std::abs(stimFreq - centerHz) > bandwidthHz / 2.0) {
+              return; // Skip out-of-band stimulus to avoid aliasing
+          }
+      }
+
+      // Frequency-dependent gain (e.g. Preselector)
+      double stimGain = g;
+      if (gainFunc) {
+          stimGain *= gainFunc(stim->carrierFrequency());
+      }
+
       for (size_t i = 0; i < count; ++i) {
         double t = startTime + i * samplePeriod;
         double sI, sQ;
         stim->getRfIQ(t, sI, sQ);
-        outIQ[i * 2] += sI;
-        outIQ[i * 2 + 1] += sQ;
+        outIQ[i * 2] += sI * stimGain;
+        outIQ[i * 2 + 1] += sQ * stimGain;
       }
+  };
+
+  if (frozen.load()) {
+    for (const auto& stim : frozenStimuli) {
+      applyStim(stim);
     }
   } else {
     std::lock_guard<std::mutex> lock(stimulusMutex);
     for (const auto& pair : stimuli) {
       if (pair.second.enabled) {
-        auto stim = pair.second.stimulus;
-        for (size_t i = 0; i < count; ++i) {
-          double t = startTime + i * samplePeriod;
-          double sI, sQ;
-          stim->getRfIQ(t, sI, sQ);
-          outIQ[i * 2] += sI;
-          outIQ[i * 2 + 1] += sQ;
-        }
+        applyStim(pair.second.stimulus);
       }
     }
-  }
-
-  double g = globalGain.load();
-  for (size_t i = 0; i < count * 2; ++i) {
-    outIQ[i] *= g;
   }
 }
 
