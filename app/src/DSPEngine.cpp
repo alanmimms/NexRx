@@ -28,6 +28,27 @@ void DSPEngine::setVfo(double freqHz) {
   basebandFilter.recompute();
 }
 
+void DSPEngine::setModeId(int id) {
+  Demodulator::Mode mode = static_cast<Demodulator::Mode>(id);
+  demod.setMode(mode);
+  
+  // Configure baseband filter for sideband selection
+  if (mode == Demodulator::Mode::LSB) {
+    basebandFilter.setBandpassCenter(-1500.0f);
+    basebandFilter.setBandpassWidth(2400.0f);
+  } else if (mode == Demodulator::Mode::USB) {
+    basebandFilter.setBandpassCenter(1500.0f);
+    basebandFilter.setBandpassWidth(2400.0f);
+  } else if (mode == Demodulator::Mode::CW) {
+    basebandFilter.setBandpassCenter(700.0f);
+    basebandFilter.setBandpassWidth(500.0f);
+  } else if (mode == Demodulator::Mode::AM) {
+    basebandFilter.setBandpassCenter(0.0f);
+    basebandFilter.setBandpassWidth(6000.0f);
+  }
+  basebandFilter.recompute();
+}
+
 void DSPEngine::setCalibration(int ch, float gainDB, float phaseDeg, float alignR, float alignI) {
   if (ch < 0 || ch > 2) return;
   staticCal[ch] = {gainDB, phaseDeg, alignR, alignI};
@@ -120,15 +141,32 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   Complex s1_s(s1_c.real() * shiftCos - s1_c.imag() * shiftSin, s1_c.imag() * shiftCos + s1_c.real() * shiftSin);
 
 
-  // 3. Channel Alignment (Match S0/S1 to S2 reference)
+  // 3. Triple-QSD Image Rejection (Mathematical Nulling)
+  // S0' and S1' both contain the fundamental signal at frequency delta.
+  // However, their images land at different baseband frequencies:
+  //   Image in S0' is at -delta - 2k
+  //   Image in S1' is at -delta + 2k
+  // QSD2 (s2_c) is our reference centered at VFO, with image at -delta.
+  
   Complex wA0(wA0_r, wA0_i), wA1(wA1_r, wA1_i);
-  Complex out_fund = wA0 * s0_s + wA1 * s1_s;
-  Complex err_vec = s2_c - out_fund;
+  
+  // The weighted difference isolates the phase-shifted image components
+  // while the fundamental signal cancels out perfectly.
+  Complex weighted_diff = wA0 * s0_s - wA1 * s1_s;
 
-  // Final combined signal
-  // gemini-app-start method: Use synthesized fundamental signal.
-  // This has better image rejection because S0/S1 are offset.
-  Complex err = matrixBypass.load() ? s2_c : out_fund;
+  // Use the known phase offset k to derive the cancellation term.
+  // Image(S2) = weighted_diff / (-2j * sin(2*phi_k))
+  double phi_k = 2.0 * M_PI * (qsdOffsetKhz * 1000.0) / 96000.0;
+  float sin2k = std::sin(2.0 * phi_k);
+  
+  Complex image_component(0, 0);
+  if (std::abs(sin2k) > 1e-3f) {
+      // Rotate and scale the difference to match the image in S2 reference
+      image_component = weighted_diff * Complex(0.0f, 0.5f / sin2k);
+  }
+  
+  // Final combined signal with primary image nulled
+  Complex err = matrixBypass.load() ? s2_c : (s2_c - image_component);
 
   // Update diagnostics for UI
   dspDiag.lmsWeightR.store(std::abs(Complex(wA0_r, wA0_i)));

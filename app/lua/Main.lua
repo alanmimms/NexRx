@@ -86,12 +86,14 @@ local function getAllActiveTags()
         -- Add namespaced hover tag
         allTags["state.Hovered:" .. hovered.id] = true
         
-        -- Propagate all tags of the hovered widget to global state
-        -- This allows other widgets to react to this hover state 
-        -- (e.g. VFO display highlighting when Spectrum is hovered)
+        -- Do NOT propagate all tags of the hovered widget to global state.
+        -- This was causing global properties (like 'height') to be overridden 
+        -- by the hovered widget's rules for ALL widgets.
+        -- Instead, only propagate specifically allowed tags if needed.
         if hovered.tags then
             for _, tag in ipairs(hovered.tags) do
-                allTags[tag] = true
+                -- Allow certain tags to be global even when hovered
+                -- (Currently none strictly required to be global from hover)
             end
         end
     end

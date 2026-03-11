@@ -249,7 +249,9 @@ public:
     double output;
     if (centerFreqHz > 0) {
       double phase = 2.0 * M_PI * centerFreqHz * timeS;
-      output = iVal * std::cos(phase) - qVal * std::sin(phase);
+      double cp = std::cos(phase);
+      double sp = std::sin(phase);
+      output = iVal * cp - qVal * sp;
     } else {
       // Baseband: just return I component (or could return magnitude)
       output = iVal;
@@ -346,6 +348,8 @@ public:
       lastCos = cp;
       lastSin = sp;
 
+      // Correct complex upconversion: (I + jQ) * exp(j*phi)
+      // Real: I*cos - Q*sin, Imag: I*sin + Q*cos
       outI = (iVal * cp - qVal * sp) * amplitudeV;
       outQ = (iVal * sp + qVal * cp) * amplitudeV;
     } else {

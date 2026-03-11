@@ -468,12 +468,13 @@ namespace nexrx {
                       double cos2 = lo_cos[ch]*lo_cos[ch] - lo_sin[ch]*lo_sin[ch];
                       double sin2 = 2.0*lo_cos[ch]*lo_sin[ch];
                       bb_i += 0.001 * (antI * cos2 + antQ * sin2); 
+                      bb_q += 0.001 * (antQ * cos2 - antI * sin2);
 
                       // 3rd harmonic (approx -9.5dB)
                       double cos3 = lo_cos[ch]*cos2 - lo_sin[ch]*sin2;
                       double sin3 = lo_sin[ch]*cos2 + lo_cos[ch]*sin2;
-                      bb_i += 0.33 * (antI * cos3 - antQ * sin3);
-                      bb_q += 0.33 * (antQ * cos3 + antI * sin3);
+                      bb_i += 0.33 * (antI * cos3 + antQ * sin3);
+                      bb_q += 0.33 * (antQ * cos3 - antI * sin3);
                   }
                   
                   // Faster noise generation

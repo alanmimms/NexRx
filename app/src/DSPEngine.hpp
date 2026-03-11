@@ -49,6 +49,8 @@ public:
   void setLmsMu(float mu) { lmsMu = mu; }
   void setLmsEnabled(bool en) { lmsEnabled.store(en); }
   void setMatrixBypass(bool en) { matrixBypass.store(en); }
+  void setModeId(int id);
+  int getModeId() const { return static_cast<int>(demod.getMode()); }
   
   // Calibration
   void setCalibration(int ch, float gainDB, float phaseDeg, float alignR = 0.5f, float alignI = 0.0f);
