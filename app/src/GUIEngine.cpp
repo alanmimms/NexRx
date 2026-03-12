@@ -274,6 +274,7 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
       dsp_.setVfo(f);
       if (twinConnected.load()) { postCommand([this, f]() { twinHost.setVFO(f, dsp_.getQsdOffset() * 1000.0); }); }
     };
+    rxTable["setTuningOffset"] = [this](double hz) { dsp_.setTuningOffset(hz); };
     rxTable["getSignalRms"] = [this]() { return dsp_.getDiagnostics().signalRms.load(); };
     rxTable["getStats"] = [this]() {
       auto& d = dsp_.getDiagnostics();

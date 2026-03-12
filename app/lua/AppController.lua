@@ -56,18 +56,38 @@ end
 -- =============================================================================
 
 function AppController.init()
-    -- Watch VFO and update Preselector / Bands
+    -- Watch selected signal box frequency and sync to hardware
     R.watch(function()
-        local active = Model.rx.VFO.active:get()
-        local vfoA = Model.rx.VFO.A:get()
-        local vfoB = Model.rx.VFO.B:get()
+        local box = Model.getSelectedSignalBox()
+        if not box then return end
         
-        local freq = (active == "A") and vfoA or vfoB
-        if not freq then return end -- Early exit if Model is in transient state
+        local freq = box.frequency
+        local mode = box.mode
         
         -- Update Bands system
         if bands and bands.setCurrent then
             bands.setCurrent(freq)
+        end
+        
+        -- Auto-centering logic for spectrum
+        local span = 96000 -- Total span is 96kHz (10 divisions * 9.6kHz)
+        local center = Model.spectrumCenterFreq:peek()
+        local halfSpan = span / 2
+        
+        -- Bandwidth calculation for visibility check
+        local bw = box.bandwidth or 4000
+        local fLow, fHigh = freq, freq
+        if mode == "USB" then fHigh = freq + bw
+        elseif mode == "LSB" then fLow = freq - bw
+        elseif mode == "AM" then fLow, fHigh = freq - bw, freq + bw
+        elseif mode == "CW" then
+            local pitch = Model.rx.CW.pitch:peek() or 600
+            fLow, fHigh = freq + pitch - 500, freq + pitch + 500
+        end
+
+        -- Check if signal box is fully visible in current spectrum
+        if fLow < (center - halfSpan) or fHigh > (center + halfSpan) then
+            Model.spectrumCenterFreq:set(freq)
         end
         
         dirty.VFO = true
@@ -108,9 +128,14 @@ function AppController.init()
         local b = Model.rx.selectedBand:get()
         local freq = bands.getDefaultFreq(b)
         if freq then
-            local active = Model.rx.VFO.active:peek()
-            Model.set("rx.VFO." .. active, freq)
+            Model.set("rx.VFO.activeValue", freq)
         end
+    end)
+
+    -- Watch spectrum center changes
+    R.watch(function()
+        Model.spectrumCenterFreq:get()
+        dirty.VFO = true
     end)
     
     -- Watch QSD changes
@@ -177,9 +202,19 @@ function AppController.sync()
     local anyDirty = false
 
     if dirty.VFO then
-        local active = Model.rx.VFO.active:peek()
-        commands.VFO = (active == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
-        print("[AppController] VFO Dirty -> " .. tostring(commands.VFO))
+        local box = Model.getSelectedSignalBox()
+        if box then
+            local loFreq = Model.spectrumCenterFreq:peek()
+            local sigFreq = box.frequency
+            local tuneHz = sigFreq - loFreq
+            
+            -- Sync hardware VFO (LO) and DSP digital tuning offset
+            Hardware.sync({
+                VFO = loFreq,
+                tuningOffset = tuneHz
+            })
+            print(string.format("[AppController] VFO Sync: LO=%.3f MHz, Tune=%.3f kHz", loFreq/1e6, tuneHz/1000.0))
+        end
         dirty.VFO = false
         anyDirty = true
     end
@@ -217,13 +252,7 @@ function AppController.sync()
         anyDirty = true
     end
     
-    if dirty.QSD then
-        commands.QSD = {
-            offsetK = Model.rx.QSD.offsetK:peek()
-        }
-        dirty.QSD = false
-        anyDirty = true
-    end
+    dirty.QSD = false -- Managed by VFO block now
 
     if dirty.volume then
         commands.volume = {

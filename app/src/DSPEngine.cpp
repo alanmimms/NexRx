@@ -253,16 +253,33 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   float maxR = std::max(std::abs(iF), std::abs(qF));
   if (maxR > dspDiag.maxRaw.load()) dspDiag.maxRaw.store(maxR);
 
+  // 4. Digital Tuning Shift (to bring selected signalbox to DC for demod)
+  if (std::abs(tuningOffsetHz - lastTune_hz) > 0.1) {
+    double phaseInc = -2.0 * M_PI * tuningOffsetHz / 96000.0;
+    tuneCos_d = std::cos(phaseInc);
+    tuneSin_d = std::sin(phaseInc);
+    lastTune_hz = tuningOffsetHz;
+  }
+  float iT = iF * (float)tuneCos - qF * (float)tuneSin;
+  float qT = qF * (float)tuneCos + iF * (float)tuneSin;
+  iF = iT; qF = qT;
+
   basebandFilter.process(iF, qF);
-  
-  // Advance phasor for next sample
+
+  // Advance phasors for next sample
   double nextCos = shiftCos * shiftCos_d - shiftSin * shiftSin_d;
   double nextSin = shiftSin * shiftCos_d + shiftCos * shiftSin_d;
   shiftCos = nextCos; shiftSin = nextSin;
+  
+  double nextTuneCos = tuneCos * tuneCos_d - tuneSin * tuneSin_d;
+  double nextTuneSin = tuneSin * tuneCos_d + tuneCos * tuneSin_d;
+  tuneCos = nextTuneCos; tuneSin = nextTuneSin;
 
   if ((totalSamplesProcessed & 0x3FFF) == 0) {
     double mag = std::sqrt(shiftCos * shiftCos + shiftSin * shiftSin);
     shiftCos /= mag; shiftSin /= mag;
+    double tMag = std::sqrt(tuneCos * tuneCos + tuneSin * tuneSin);
+    tuneCos /= tMag; tuneSin /= tMag;
   }
   
   float aOut = demod.process(iF, qF);

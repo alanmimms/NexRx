@@ -18,6 +18,7 @@ ui.SMeter = require("ui.SMeter")
 ui.ActiveTags = require("ui.ActiveTags")
 ui.GraticuleLegend = require("ui.GraticuleLegend")
 ui.FrequencyDisplay = require("ui.FrequencyDisplay")
+ui.SignalBox = require("ui.SignalBox")
 
 -- Forward state/event functions for convenience
 ui.beginFrame = state.beginFrame

@@ -356,6 +356,13 @@ end
 -- Public API - Hit Testing
 -- ============================================================================
 
+--- Get a widget by ID
+-- @param widgetId widget ID
+-- @return widget table or nil
+function Events.getWidget(widgetId)
+    return Events.widgets[widgetId]
+end
+
 --- Get the deepest widget at a point
 -- @param x x coordinate
 -- @param y y coordinate

@@ -38,12 +38,16 @@ local SMeter = require("ui.SMeter")
 local ActiveTags = require("ui.ActiveTags")
 local GraticuleLegend = require("ui.GraticuleLegend")
 local FrequencyDisplay = require("ui.FrequencyDisplay")
+local SignalBox = require("ui.SignalBox")
 
 local frameCount = 0
 local fps = 0
 local fpsAccum = 0
 local fpsFrames = 0
 local lastMouseX, lastMouseY = 0, 0
+local selectedSignalBoxGhostIdx = nil
+local draggedSignalBoxIdx = nil
+local isDraggingSpectrum = false
 local BUTTON_NAMES = {"LEFT", "MIDDLE", "RIGHT"}
 _G.isgFreqEntryText = ""
 local keyStates = {}
@@ -133,99 +137,6 @@ _G.rxStats = { rms=0, gain0=0, phase0=0, gain1=0, phase1=0, w0_mag=0, w1_mag=0 }
 _G.isgFreqEntryText = ""
 _G.isgFreqEntryCursor = 0
 
-function init()
-    AppController.init()
-    _G.calibration.init()
-    
-    wfBins = 1024 -- Match DspEngine::FFT_SIZE
-    wfRows = 256 
-    for i = 1, wfBins do spectrumData[i] = -100 end
-    
-    setClearColor(0.1, 0.1, 0.15)
-    if audio.isInitialized() then audio.start() end
-    if waterfall.init(wfBins, wfRows) then
-        waterfall.setRange(Model.waterfall.minDB:get(), Model.waterfall.maxDB:get())
-        if _G.colormaps and _G.colormaps[Model.waterfall.colormap:get()] then 
-            waterfall.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
-        end
-        Hardware.enableWaterfall()
-    end
-    bands.init()
-    events.init()
-    layout.setEventsModule(events)
-    ui.setEventsModule(events)
-    ui.setLayoutModule(layout)
-    
-    if hw.connect("127.0.0.1", 5000, 5001) then
-        Hardware.enableHardware()
-    end
-
-    -- Create UI Instances with Dependency Injection
-    uiInstances.leftPanel = Panel.new()
-    uiInstances.rightPanel = Panel.new()
-    uiInstances.centerPanel = Panel.new()
-    
-    uiInstances.freqDisplay = FrequencyDisplay.new({
-        valueObs = require("Reactive").computed(function()
-            local active = Model.rx.VFO.active:get()
-            return (active == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
-        end)
-    })
-    
-    uiInstances.freqSlider = Slider.new({ 
-        valueObs = (Model.rx.VFO.active:peek() == "A") and Model.rx.VFO.A or Model.rx.VFO.B 
-    })
-    
-    uiInstances.volumeSlider = Slider.new({ valueObs = Model.rx.volume.DB, propertyName = "rx.volume.DB" })
-    uiInstances.rfGainSlider = Slider.new({ valueObs = Model.rx.RF.gainDB, propertyName = "rx.RF.gainDB" })
-    uiInstances.smeter = SMeter.new()
-    uiInstances.calBtn = Button.new({ getText = function() return "CALIBRATE" end })
-    uiInstances.activeTagsViewer = ActiveTags.new()
-    uiInstances.graticuleLegend = GraticuleLegend.new()
-    uiInstances.rxToggle = Button.new({ 
-        getText = function() return Model.rx.active:get() and "RX ON" or "RX OFF" end,
-        onClick = function() Model.set("rx.active", not Model.rx.active:get()) end 
-    })
-    
-    uiInstances.modeLabels = Label.new()
-    uiInstances.bandLabels = Label.new()
-    uiInstances.volLabel = Label.new()
-    uiInstances.rfGainLabel = Label.new()
-    uiInstances.smeterLabel = Label.new()
-
-    uiInstances.round1k = Button.new({
-        getText = function() return "<0k>" end,
-        onClick = function()
-            local active = Model.rx.VFO.active:peek()
-            Model.roundFrequency("rx.VFO." .. active, 1000)
-        end
-    })
-    uiInstances.round100 = Button.new({
-        getText = function() return "<00>" end,
-        onClick = function()
-            local active = Model.rx.VFO.active:peek()
-            Model.roundFrequency("rx.VFO." .. active, 100)
-        end
-    })
-
-    uiInstances.modeButtons = {}
-    for _, m in ipairs(modeHelper.names) do
-        uiInstances.modeButtons[m] = Button.new({ 
-            getText = function() return m == "BYPASS" and "RAW" or m end,
-            onClick = function() Model.set("rx.selectedMode", m) end 
-        })
-    end
-
-    uiInstances.bandButtons = {}
-    local bandList = {"160m","80m","40m","20m","15m","10m"}
-    for _, b in ipairs(bandList) do
-        uiInstances.bandButtons[b] = Button.new({ 
-            getText = function() return b end,
-            onClick = function() Model.set("rx.selectedBand", b) end 
-        })
-    end
-end
-
 local function clamp(v, min, max)
     return math.max(min, math.min(max, v))
 end
@@ -263,14 +174,11 @@ function init()
     uiInstances.centerPanel = Panel.new()
     
     uiInstances.freqDisplay = FrequencyDisplay.new({
-        valueObs = require("Reactive").computed(function()
-            local active = Model.rx.VFO.active:get()
-            return (active == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
-        end)
+        valueObs = Model.rx.VFO.activeValue
     })
     
     uiInstances.freqSlider = Slider.new({ 
-        valueObs = (Model.rx.VFO.active:peek() == "A") and Model.rx.VFO.A or Model.rx.VFO.B 
+        valueObs = Model.rx.VFO.activeValue
     })
     
     uiInstances.volumeSlider = Slider.new({ valueObs = Model.rx.volume.DB, propertyName = "rx.volume.DB" })
@@ -279,6 +187,7 @@ function init()
     uiInstances.calBtn = Button.new({ getText = function() return "CALIBRATE" end })
     uiInstances.activeTagsViewer = ActiveTags.new()
     uiInstances.graticuleLegend = GraticuleLegend.new()
+    uiInstances.signalBox = SignalBox.new()
     uiInstances.rxToggle = Button.new({ 
         getText = function() return Model.rx.active:get() and "RX ON" or "RX OFF" end,
         onClick = function() Model.set("rx.active", not Model.rx.active:get()) end 
@@ -293,15 +202,13 @@ function init()
     uiInstances.round1k = Button.new({
         getText = function() return "<0k>" end,
         onClick = function()
-            local active = Model.rx.VFO.active:peek()
-            Model.roundFrequency("rx.VFO." .. active, 1000)
+            Model.roundFrequency("rx.VFO.activeValue", 1000)
         end
     })
     uiInstances.round100 = Button.new({
         getText = function() return "<00>" end,
         onClick = function()
-            local active = Model.rx.VFO.active:peek()
-            Model.roundFrequency("rx.VFO." .. active, 100)
+            Model.roundFrequency("rx.VFO.activeValue", 100)
         end
     })
 
@@ -324,12 +231,11 @@ function init()
 
     events.registerHandler("vfo_control", function(e, w, p)
         local delta = e.delta or (e.key == "RIGHT" and 1 or (e.key == "LEFT" and -1 or 0))
-        local active = Model.rx.VFO.active:peek()
         local isISG = p and p.property == "isgFrequency"
-        local prop = isISG and "isgFrequency" or ((active == "A") and "rx.VFO.A" or "rx.VFO.B")
+        local prop = isISG and "isgFrequency" or "rx.VFO.activeValue"
         
         if delta ~= 0 and p and p.step then 
-            local current = isISG and Model.ISG.frequencyHz:peek() or ((active == "A") and Model.rx.VFO.A:peek() or Model.rx.VFO.B:peek())
+            local current = isISG and Model.ISG.frequencyHz:peek() or Model.rx.VFO.activeValue:peek()
             local newVal = clamp(current + delta * p.step, 0.1e6, 30.0e6)
             setProperty(prop, newVal)
             if not isISG then bands.setCurrent(newVal) end
@@ -451,8 +357,7 @@ function init()
             local newFreq = tonumber(freqEntryText)
             if newFreq then
                 local val = clamp(newFreq * 1e6, 0.1e6, 30.0e6)
-                local active = Model.rx.VFO.active:peek()
-                Model.set("rx.VFO." .. active, val)
+                Model.set("rx.VFO.activeValue", val)
                 bands.setCurrent(val)
             end
             events.removeModeTag("state.FreqEntryMode")
@@ -498,7 +403,36 @@ function update(dt)
             if isDown and not prevDown then
                 -- Key Pressed
                 events.dispatch(events.createEvent(events.Type.KEY_DOWN, {key=n, scancode=sc, modifiers=currentFrameTags}))
-                
+
+                if n == "SLASH" then
+                    -- Start ghosting: create a new SignalBox and select it
+                    local currentMode = Model.rx.selectedMode:peek()
+                    local bw = 4000
+                    if currentMode == "CW" then bw = 1000 end
+
+                    -- Calculate freq from mouse position if over spectrum
+                    local mx, my = getMousePos()
+                    local hovered = events.getWidgetAt(mx, my)
+                    local freq = Model.spectrumCenterFreq:peek()
+                    if hovered and hovered.id == "spec" then
+                        local span = 96000
+                        local xRel = (mx - hovered.bounds.x) / hovered.bounds.w
+                        freq = (Model.spectrumCenterFreq:peek() - span/2) + xRel * span
+                    end
+
+                    selectedSignalBoxGhostIdx = Model.addSignalBox(freq, currentMode, bw, true)
+                    Model.selectedSignalBoxIndex:set(selectedSignalBoxGhostIdx)
+                elseif n == "TAB" then
+                    -- Cycle signal boxes
+                    local boxes = Model.signalBoxes:peek()
+                    local current = Model.selectedSignalBoxIndex:peek()
+                    local nextIdx = (current % #boxes) + 1
+                    Model.selectedSignalBoxIndex:set(nextIdx)
+                elseif n == "DELETE" then
+                    -- Remove current signal box
+                    Model.removeSignalBox(Model.selectedSignalBoxIndex:peek())
+                end
+
                 -- Also handle text input for printable keys
                 if keys.isPrintable(sc) then
                     local char = isShiftDown() and keys.getShiftedChar(sc) or keys.getChar(sc)
@@ -509,7 +443,15 @@ function update(dt)
             elseif not isDown and prevDown then
                 -- Key Released
                 events.dispatch(events.createEvent(events.Type.KEY_UP, {key=n, scancode=sc, modifiers=currentFrameTags}))
+
+                if n == "SLASH" and selectedSignalBoxGhostIdx then
+                    -- Solidify the ghost
+                    local box = Model.signalBoxes:peek()[selectedSignalBoxGhostIdx]
+                    if box then box.ghost = false end
+                    selectedSignalBoxGhostIdx = nil
+                end
             end
+
         end
     end
     
@@ -527,13 +469,83 @@ function update(dt)
     
     local wheel = getMouseWheel()
     if wheel ~= 0 then events.dispatch(events.createEvent(events.Type.MOUSE_WHEEL, {x=mx,y=my,delta=wheel,modifiers=currentFrameTags})) end
+
     for b = 0, 2 do
-        if isMouseClicked(b) then events.dispatch(events.createEvent(events.Type.MOUSE_DOWN, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=currentFrameTags}))
-        elseif isMouseReleased(b) then events.dispatch(events.createEvent(events.Type.MOUSE_UP, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=currentFrameTags})) end
+        if isMouseClicked(b) then 
+            events.dispatch(events.createEvent(events.Type.MOUSE_DOWN, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=currentFrameTags}))
+            
+            -- Detect if we clicked a SignalBox or the Spectrum Background
+            local hovered = events.getWidgetAt(mx, my)
+            if hovered then
+                if hovered.id:match("^sb%d+") then
+                    local idx = tonumber(hovered.id:sub(3))
+                    if idx then
+                        Model.selectedSignalBoxIndex:set(idx)
+                        draggedSignalBoxIdx = idx
+                    end
+                elseif hovered.id == "spec" then
+                    isDraggingSpectrum = true
+                end
+            end
+        elseif isMouseReleased(b) then 
+            events.dispatch(events.createEvent(events.Type.MOUSE_UP, {x=mx,y=my,button=BUTTON_NAMES[b+1],modifiers=currentFrameTags}))
+            draggedSignalBoxIdx = nil
+            isDraggingSpectrum = false
+        end
     end
     if mx ~= lastMouseX or my ~= lastMouseY then
-        events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, {x=mx,y=my,dx=mx-lastMouseX,dy=my-lastMouseY,modifiers=currentFrameTags}))
+        local dx = mx - lastMouseX
+        local dy = my - lastMouseY
+        events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, {x=mx,y=my,dx=dx,dy=dy,modifiers=currentFrameTags}))
         lastMouseX, lastMouseY = mx, my
+        
+        local span = 96000
+        local center = Model.spectrumCenterFreq:peek()
+        
+        -- If ghosting, update selected signal box freq to track mouse
+        if selectedSignalBoxGhostIdx then
+            local spec = events.getWidget("spec")
+            if spec then
+                local xRel = (mx - spec.bounds.x) / spec.bounds.w
+                local newFreq = (center - span/2) + xRel * span
+                Model.set("rx.VFO.activeValue", newFreq)
+            end
+        elseif draggedSignalBoxIdx then
+            -- Dragging an existing signal box
+            local spec = events.getWidget("spec")
+            if spec then
+                local xRel = (mx - spec.bounds.x) / spec.bounds.w
+                local newFreq = (center - span/2) + xRel * span
+                
+                -- Pushing the edge: if box is near edge, slide the spectrum
+                local box = Model.getSelectedSignalBox()
+                if box then
+                    local bw = box.bandwidth or 4000
+                    local margin = 2000 -- 2kHz safety margin
+                    local fLow, fHigh = newFreq, newFreq
+                    if box.mode == "USB" then fHigh = newFreq + bw
+                    elseif box.mode == "LSB" then fLow = newFreq - bw
+                    elseif box.mode == "AM" then fLow, fHigh = newFreq - bw, newFreq + bw
+                    elseif box.mode == "CW" then fLow, fHigh = newFreq - 500, newFreq + 500 end
+                    
+                    if fLow < (center - span/2 + margin) then
+                        Model.spectrumCenterFreq:set(fLow + span/2 - margin)
+                    elseif fHigh > (center + span/2 - margin) then
+                        Model.spectrumCenterFreq:set(fHigh - span/2 + margin)
+                    end
+                end
+
+                Model.set("rx.VFO.activeValue", newFreq)
+            end
+        elseif isDraggingSpectrum then
+            -- Dragging the spectrum background
+            local spec = events.getWidget("spec")
+            if spec then
+                local freqPerPx = span / spec.bounds.w
+                local freqDelta = dx * freqPerPx
+                Model.spectrumCenterFreq:set(center - freqDelta)
+            end
+        end
     end
     
     -- Hardware Synchronization Round
@@ -606,7 +618,7 @@ function draw()
         layout.endHorizontal(); layout.newLine(32)
 
         cx, cy = layout.getCursor()
-        local freq = (Model.rx.VFO.active:get() == "A") and Model.rx.VFO.A:get() or Model.rx.VFO.B:get()
+        local freq = Model.rx.VFO.activeValue:get()
         uiInstances.freqSlider:draw("freq-slider", cx, cy, rL.w - 24, 0.1e6, 30.0e6, freq, lwc)
         layout.newLine(32)
 
@@ -668,6 +680,41 @@ function draw()
             Hardware.renderSpectrum(spectrumData, rs.x, rs.y, rs.w, rs.h)
             uiInstances.graticuleLegend:draw("spec-legend", rs.x + 10, rs.y + 10, 100, 45, "9.6 kHz/div", "20 dB/div")
             events.registerWidget("spec", rs, {"widget.Spectrum", "widget.VFOControl"})
+
+            -- Render SignalBoxes
+            local span = 96000
+            local center = Model.spectrumCenterFreq:get()
+            local startF = center - span/2
+            local selectedIdx = Model.selectedSignalBoxIndex:get()
+            local boxes = Model.signalBoxes:get()
+            
+            for i, box in ipairs(boxes) do
+                local bw = box.bandwidth
+                local freq = box.frequency
+                local mode = box.mode
+                
+                -- Calculate X and W
+                local fLow, fHigh = freq, freq
+                if mode == "USB" then fHigh = freq + bw
+                elseif mode == "LSB" then fLow = freq - bw
+                elseif mode == "AM" then fLow, fHigh = freq - bw, freq + bw
+                elseif mode == "CW" then
+                   local pitch = Model.rx.CW.pitch:peek() or 600
+                   fLow, fHigh = freq + pitch - 500, freq + pitch + 500
+                end
+                
+                local x1 = rs.x + (fLow - startF) / span * rs.w
+                local x2 = rs.x + (fHigh - startF) / span * rs.w
+                local bx = x1
+                local bw_px = x2 - x1
+                
+                local boxTags = {}
+                if i == selectedIdx then table.insert(boxTags, "state.Selected") end
+                if box.ghost then table.insert(boxTags, "state.Ghost") end
+                
+                uiInstances.signalBox:draw("sb"..i, bx, rs.y, bw_px, rs.h, tostring(box.id), boxTags)
+            end
+
             layout.endRegion()
         end
         if sub["wf"] then

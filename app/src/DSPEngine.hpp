@@ -51,6 +51,8 @@ public:
   void setMatrixBypass(bool en) { matrixBypass.store(en); }
   void setModeId(int id);
   int getModeId() const { return static_cast<int>(demod.getMode()); }
+  void setTuningOffset(double offsetHz) { tuningOffsetHz = offsetHz; }
+  double getTuningOffset() const { return tuningOffsetHz; }
   
   // Calibration
   void setCalibration(int ch, float gainDB, float phaseDeg, float alignR = 0.5f, float alignI = 0.0f);
@@ -75,9 +77,13 @@ private:
 
   std::atomic<float> rfGainDB{20.0f};
   double qsdOffsetKhz = 12.0;
+  double tuningOffsetHz = 0.0;
   double lastK_hz = -1.0;
   double shiftCos = 1.0, shiftSin = 0.0;
   double shiftCos_d = 1.0, shiftSin_d = 0.0;
+  double tuneCos = 1.0, tuneSin = 0.0;
+  double tuneCos_d = 1.0, tuneSin_d = 0.0;
+  double lastTune_hz = -1e9;
   double lastVFOHz = 14.2e6;
   std::atomic<float> lmsMu{0.01f};
   std::atomic<bool> lmsEnabled{true};

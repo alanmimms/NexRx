@@ -37,6 +37,12 @@ function Hardware.sync(commands)
         end
     end
 
+    if commands.tuningOffset then
+        if rx and rx.setTuningOffset then
+            rx.setTuningOffset(commands.tuningOffset)
+        end
+    end
+
     -- Preselector Synchronization
     if commands.preselector then
         local p = commands.preselector
