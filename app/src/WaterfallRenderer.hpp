@@ -46,6 +46,12 @@ public:
   void addRow(const float* data, int count);
 
   /**
+   * @brief Shift the entire waterfall horizontally
+   * @param bins Number of bins to shift (positive = right, negative = left)
+   */
+  void horizontalShift(int bins);
+
+  /**
    * @brief Render the waterfall at the specified position
    * @param x X position (screen coordinates)
    * @param y Y position (screen coordinates)

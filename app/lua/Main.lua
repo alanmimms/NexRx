@@ -528,10 +528,17 @@ function update(dt)
                     elseif box.mode == "AM" then fLow, fHigh = newFreq - bw, newFreq + bw
                     elseif box.mode == "CW" then fLow, fHigh = newFreq - 500, newFreq + 500 end
                     
+                    local freqShift = 0
                     if fLow < (center - span/2 + margin) then
-                        Model.spectrumCenterFreq:set(fLow + span/2 - margin)
+                        freqShift = fLow - (center - span/2 + margin)
                     elseif fHigh > (center + span/2 - margin) then
-                        Model.spectrumCenterFreq:set(fHigh - span/2 + margin)
+                        freqShift = fHigh - (center + span/2 - margin)
+                    end
+
+                    if freqShift ~= 0 then
+                        Model.spectrumCenterFreq:set(center + freqShift)
+                        local binShift = freqShift / span * wfBins
+                        dispatch.shiftWaterfall(math.floor(-binShift + 0.5))
                     end
                 end
 
@@ -544,6 +551,10 @@ function update(dt)
                 local freqPerPx = span / spec.bounds.w
                 local freqDelta = dx * freqPerPx
                 Model.spectrumCenterFreq:set(center - freqDelta)
+                
+                -- Visual shift: pixels to bins
+                local binsShift = dx * (wfBins / spec.bounds.w)
+                dispatch.shiftWaterfall(math.floor(binsShift + 0.5))
             end
         end
     end

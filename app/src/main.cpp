@@ -6,8 +6,21 @@
 #include "DSPEngine.hpp"
 #include "GUIEngine.hpp"
 #include <iostream>
+#include <atomic>
+#include <csignal>
+
+std::atomic<bool> gRunning{true};
+
+void signalHandler(int signum) {
+  if (signum == SIGINT) {
+    std::cout << "\n[Main] SIGINT received, shutting down..." << std::endl;
+    gRunning.store(false);
+  }
+}
 
 int main(int argc, char* argv[]) {
+  std::signal(SIGINT, signalHandler);
+
   DSPEngine dsp;
   GUIEngine gui(dsp);
 

@@ -12,6 +12,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+extern std::atomic<bool> gRunning;
+
 GUIEngine::GUIEngine(DSPEngine& dsp) : dsp_(dsp) {}
 
 GUIEngine::~GUIEngine() {
@@ -163,6 +165,13 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
       nexrx::TwinConfig c; c.host = h; c.controlPort = cp; c.streamPort = sp;
       if (twinHost.initialize(c)) {
         twinHost.setFrameCallback([this](const nexrx::IQFrame& f) { dsp_.processIQFrame(f); });
+        
+        // Invalidate Lua-side hardware state cache to force full sync on reconnect
+        if (lua["Hardware"].valid()) {
+          sol::function inv = lua["Hardware"]["invalidateState"];
+          if (inv.valid()) inv();
+        }
+
         if (twinHost.startReceiving()) {
           twinConnected.store(true);
           twinHost.startStream();
@@ -341,6 +350,7 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
       waterfall.renderSpectrum(data.data(), (int)data.size(), x, y, w, h);
     };
     dispatchTable["renderWaterfall"] = [this](float x, float y, float w, float h) { waterfall.render(x, y, w, h); };
+    dispatchTable["shiftWaterfall"] = [this](int bins) { waterfall.horizontalShift(bins); };
     dispatchTable["setRxActive"] = [this](bool active) {
       if (active) { dsp_.getAudioBuffer().clear(); twinHost.startStream(); }
       else { twinHost.stopStream(); }
@@ -367,12 +377,14 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
 
     if (!audio.init(48000, 2)) return false;
     
-    // Configure audio buffer for jitter absorption without artifact-prone adaptation
+    // Configure audio buffer for low latency with jitter adaptation
     BufferConfig audioConfig;
-    audioConfig.capacity = 32768; // ~680ms jitter buffer
-    audioConfig.enableAdaptation = false; 
+    audioConfig.capacity = 8192;      // ~170ms max jitter buffer
+    audioConfig.targetFillRatio = 0.2f; // Target ~34ms depth
+    audioConfig.lowThreshold = 0.1f;
+    audioConfig.highThreshold = 0.4f;
+    audioConfig.enableAdaptation = true;
     dsp_.getAudioBuffer().configure(audioConfig);
-
     audio.setCallback([this](float* out, uint32_t fC, uint32_t ch) {
       thread_local std::vector<float> tmp;
       tmp.resize(fC);
@@ -401,7 +413,7 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
 
 void GUIEngine::run() {
     uint32_t lastTime = SDL_GetTicks();
-    while (running) {
+    while (running && gRunning.load()) {
       uint32_t currentTime = SDL_GetTicks();
       float dt = (currentTime - lastTime) / 1000.0f; lastTime = currentTime;
       SDL_Event event;

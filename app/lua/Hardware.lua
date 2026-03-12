@@ -6,6 +6,7 @@
 ]]
 
 local Hardware = {}
+_G.Hardware = Hardware
 
 -- ============================================================================
 -- State & Initialization
@@ -13,6 +14,26 @@ local Hardware = {}
 
 local hwEnabled = false
 local waterfallEnabled = false
+
+-- Command deduplication state
+local lastSent = {}
+
+local function shouldSend(key, value)
+    local v = lastSent[key]
+    -- For tables, we need to deep compare if we want perfect deduplication, 
+    -- but for now we'll handle sub-keys individually in sync().
+    if type(value) ~= "table" then
+        if v == value then return false end
+        lastSent[key] = value
+        return true
+    end
+    return true -- Always send tables for now, but sync() will check fields
+end
+
+-- Force resend of all state (call on reconnect)
+function Hardware.invalidateState()
+    lastSent = {}
+end
 
 function Hardware.init()
     -- Subsystems initialization
@@ -29,17 +50,21 @@ function Hardware.sync(commands)
 
     -- VFO Synchronization
     if commands.VFO then
-        print("[Hardware] Syncing VFO: " .. tostring(commands.VFO) .. " (rx=" .. tostring(rx) .. ")")
-        if rx and rx.setVFO then
-            rx.setVFO(commands.VFO)
-        else
-            print("[Hardware] ERROR: rx.setVFO not found!")
+        if shouldSend("VFO.freq", commands.VFO) then
+            print("[Hardware] Syncing VFO: " .. tostring(commands.VFO) .. " (rx=" .. tostring(rx) .. ")")
+            if rx and rx.setVFO then
+                rx.setVFO(commands.VFO)
+            else
+                print("[Hardware] ERROR: rx.setVFO not found!")
+            end
         end
     end
 
     if commands.tuningOffset then
-        if rx and rx.setTuningOffset then
-            rx.setTuningOffset(commands.tuningOffset)
+        if shouldSend("VFO.tuning", commands.tuningOffset) then
+            if rx and rx.setTuningOffset then
+                rx.setTuningOffset(commands.tuningOffset)
+            end
         end
     end
 
@@ -47,16 +72,16 @@ function Hardware.sync(commands)
     if commands.preselector then
         local p = commands.preselector
         if hw then
-            if p.L ~= nil and hw.setPreselectorInd then
+            if p.L ~= nil and shouldSend("presel.L", p.L) and hw.setPreselectorInd then
                 hw.setPreselectorInd(p.L and 1 or 0)
             end
-            if p.capMask ~= nil and hw.setPreselectorCap then
+            if p.capMask ~= nil and shouldSend("presel.cap", p.capMask) and hw.setPreselectorCap then
                 hw.setPreselectorCap(p.capMask)
             end
-            if p.enabled ~= nil and hw.setPreselectorEnabled then
+            if p.enabled ~= nil and shouldSend("presel.en", p.enabled) and hw.setPreselectorEnabled then
                 hw.setPreselectorEnabled(p.enabled)
             end
-            if p.autoTune ~= nil and hw.setPreselectorAuto then
+            if p.autoTune ~= nil and shouldSend("presel.auto", p.autoTune) and hw.setPreselectorAuto then
                 hw.setPreselectorAuto(p.autoTune)
             end
         end
@@ -66,8 +91,8 @@ function Hardware.sync(commands)
     if commands.AGC then
         local a = commands.AGC
         if hw then
-            if a.enabled ~= nil and hw.setAGCEnabled then hw.setAGCEnabled(a.enabled) end
-            if a.mode ~= nil and hw.setAGCMode then hw.setAGCMode(a.mode) end
+            if a.enabled ~= nil and shouldSend("agc.en", a.enabled) and hw.setAGCEnabled then hw.setAGCEnabled(a.enabled) end
+            if a.mode ~= nil and shouldSend("agc.mode", a.mode) and hw.setAGCMode then hw.setAGCMode(a.mode) end
         end
     end
     
@@ -75,14 +100,14 @@ function Hardware.sync(commands)
     if commands.RF then
         local r = commands.RF
         if hw then
-            if r.gainDB ~= nil and hw.setRFGain then hw.setRFGain(r.gainDB) end
-            if r.attenuationDB ~= nil and hw.setRFAttenuation then hw.setRFAttenuation(r.attenuationDB) end
+            if r.gainDB ~= nil and shouldSend("rf.gain", r.gainDB) and hw.setRFGain then hw.setRFGain(r.gainDB) end
+            if r.attenuationDB ~= nil and shouldSend("rf.atten", r.attenuationDB) and hw.setRFAttenuation then hw.setRFAttenuation(r.attenuationDB) end
         end
     end
 
     -- QSD Control
     if commands.QSD then
-        if hw and hw.setQSDOffset then
+        if hw and shouldSend("qsd.offset", commands.QSD.offsetK) and hw.setQSDOffset then
             hw.setQSDOffset(commands.QSD.offsetK)
         end
     end
@@ -90,11 +115,13 @@ function Hardware.sync(commands)
     -- Volume Control
     if commands.volume then
         local v = commands.volume
-        if audio and audio.setVolume then
-            audio.setVolume(v.DB)
-        end
-        if audio and audio.setMuted then
-            audio.setMuted(v.muted)
+        if audio then
+            if v.DB ~= nil and shouldSend("audio.vol", v.DB) and audio.setVolume then
+                audio.setVolume(v.DB)
+            end
+            if v.muted ~= nil and shouldSend("audio.mute", v.muted) and audio.setMuted then
+                audio.setMuted(v.muted)
+            end
         end
     end
 end

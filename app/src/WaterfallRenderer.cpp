@@ -117,6 +117,30 @@ void WaterfallRenderer::addRow(const float* data, int count) {
   textureDirty = true;
 }
 
+void WaterfallRenderer::horizontalShift(int bins) {
+  if (!initialized || bins == 0) return;
+  
+  for (auto& row : rows) {
+    if (bins > 0) {
+      if (bins >= width) {
+        std::fill(row.begin(), row.end(), minDB);
+      } else {
+        std::move_backward(row.begin(), row.end() - bins, row.end());
+        std::fill(row.begin(), row.begin() + bins, minDB);
+      }
+    } else {
+      int absBins = -bins;
+      if (absBins >= width) {
+        std::fill(row.begin(), row.end(), minDB);
+      } else {
+        std::move(row.begin() + absBins, row.end(), row.begin());
+        std::fill(row.end() - absBins, row.end(), minDB);
+      }
+    }
+  }
+  textureDirty = true;
+}
+
 void WaterfallRenderer::render(float x, float y, float w, float h) {
   if (!initialized) return;
 
@@ -242,8 +266,36 @@ void WaterfallRenderer::initDefaultColormap() {
 void WaterfallRenderer::updateTexture() {
   if (!initialized) return;
   for (int row = 0; row < height; ++row) {
-    // topRow is the most recent. Map texture row 0 to topRow, row 1 to topRow-1, etc.
-    int bufferRow = (topRow - row + height) % height;
+    // To flow DOWNWARD:
+    // Texture row 0 (top) should be the NEWEST row (topRow).
+    // Texture row 1 should be the row before topRow, etc.
+    // Wait, if row 0 is topRow, then in next frame topRow+1 is newest and goes to row 0.
+    // The OLD topRow moves to row 1. This IS flowing downward visually.
+    
+    // My previous analysis said this was already happening. Let me re-verify.
+    // topRow index in circular buffer 'rows' is the NEWEST.
+    // row 0 of texture: bufferRow = topRow
+    // row 1 of texture: bufferRow = topRow - 1
+    
+    // If the user sees it flowing UP, it means row 0 of texture is at the BOTTOM of the screen.
+    // In render():
+    // glTexCoord2f(0.0f, 1.0f); glVertex2f(x, y);      <-- v=1 is top
+    // glTexCoord2f(1.0f, 0.0f); glVertex2f(x + w, y + h); <-- v=0 is bottom
+    // OpenGL textures usually have (0,0) at bottom-left. 
+    // So row 0 of 'textureData' is the BOTTOM of the texture (v=0).
+    
+    // If row 0 of textureData is bottom (v=0), and we put newest data there,
+    // and v=0 is mapped to y+h (bottom), then newest data is at the bottom.
+    // As topRow advances, the old data moves to row 1, which is ABOVE row 0.
+    // That's flowing UP.
+    
+    // To flow DOWN: Newest data (topRow) must be at v=1 (top of texture).
+    // v=1 is the LAST row of textureData if we follow standard OpenGL layout.
+    // Actually, glTexSubImage2D(..., 0, 0, width, height, ...) expects data starting from (0,0).
+    // If (0,0) is bottom-left, then row 0 is the bottom.
+    
+    // Let's map newest data (topRow) to the LAST row of textureData (top, v=1).
+    int bufferRow = (topRow - (height - 1 - row) + height) % height;
     const auto& rowData = rows[bufferRow];
     for (int col = 0; col < width; ++col) textureData[row * width + col] = dbToColor(rowData[col]);
   }

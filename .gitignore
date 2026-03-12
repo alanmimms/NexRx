@@ -22,3 +22,4 @@ app/config/layout-overrides.lua
 .venv/
 fpga/nexrx-sim
 fpga/*.vcd
+IDEAS.md
