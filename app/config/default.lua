@@ -24,10 +24,10 @@ rule {
         -- Radio Defaults
         -- =================================================================
         ["rx.VFO.active"] = "A",
-        ["rx.VFO.A"] = 14.200e6,         -- Hz
-        ["rx.VFO.B"] = 7.050e6,          -- Hz
-        ["rx.selectedMode"] = "USB",     -- Current mode
-        ["rx.selectedBand"] = "20m",     -- Current band
+        ["rx.VFO.A"] = 7.1e6,	     -- Hz
+        ["rx.VFO.B"] = 14.2e6,	     -- Hz
+        ["rx.selectedMode"] = "LSB",     -- Current mode
+        ["rx.selectedBand"] = "40m",     -- Current band
         ["rx.active"] = true,
 
         -- =================================================================
@@ -81,6 +81,7 @@ rule {
         wfColormap = "viridis",
         wfMinDB = -140,
         wfMaxDB = 0,
+        spectrumZoom = 1.0,             -- 1.0 = 96 kHz span
         spectrumEmaAlpha = 0.3,         -- Spectrum smoothing
 
         -- =================================================================

@@ -57,8 +57,10 @@ public:
    * @param y Y position (screen coordinates)
    * @param w Width to render
    * @param h Height to render
+   * @param zoom Horizontal zoom factor (1.0 = full width)
+   * @param center Horizontal center position (0.5 = middle of FFT)
    */
-  void render(float x, float y, float w, float h);
+  void render(float x, float y, float w, float h, float zoom = 1.0f, float center = 0.5f);
 
   /**
    * @brief Set colormap from gradient stops

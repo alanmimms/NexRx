@@ -24,23 +24,49 @@ visualization - it becomes a primary control surface. Mouse wheel
 scrolling tunes frequency with pixel-level precision, while modifier
 keys enable different functions directly on the graphical display.
 
+**Zooming**: The spectrum and waterfall can be zoomed horizontally to
+examine signals in high detail or to see the entire 96 kHz bandwidth
+at once. Zooming is controlled by the `+` and `-` keys (defined via
+SetBox rules). The system maintains a fractional zoom level, ensuring
+that zooming out never exceeds the point where the spectrum fills the
+available display width. Zooming specifically affects the frequency
+(horizontal) axis and automatically updates the graticule legend and
+all active SignalBoxes.
+
+**SignalBoxes**: NexRx introduces the concept of **SignalBoxes**—visual
+representations of active tuned signals. Unlike a traditional radio
+with a single VFO, NexRx allows you to create multiple SignalBoxes
+on the spectrum (using the `/` key).
+- Each SignalBox tracks its own frequency, mode, and bandwidth.
+- Clicking a SignalBox selects it, making it the "active" receiver
+  controlled by the VFO and mode buttons.
+- SignalBoxes can be dragged across the spectrum to retune.
+- Ghost SignalBoxes (temporary previews) allow you to see where a 
+  new box will be placed before committing.
+- When zooming, SignalBoxes automatically recalculate their 
+  visual size and position to remain locked to their tuned 
+  frequencies.
+
 ```mermaid
 graph TD
     A[Waterfall Display] --> B[Primary Tuning]
     A --> C[Zoom Control]
     A --> D[Filter Width]
     A --> E[Signal Analysis]
+    A --> J[SignalBoxes]
     
     B --> F[Mouse Wheel: Frequency]
-    C --> G[Ctrl+Wheel: Zoom Level]
+    C --> G[+/- Keys: Zoom Level]
     D --> H[Shift+Drag: Passband]
     E --> I[Click: Quick Tune]
+    J --> K[/ Key: Add SignalBox]
     
     style A fill:#e3f2fd
     style F fill:#e8f5e8
     style G fill:#e8f5e8
     style H fill:#e8f5e8
     style I fill:#e8f5e8
+    style K fill:#e8f5e8
 ```
 
 ### The SetBox Generalization Paradigm

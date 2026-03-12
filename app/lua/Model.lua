@@ -22,9 +22,11 @@ local Types = {
 }
 
 -- Polymorphic projection factory
-local function projection(name, typeObj)
+local function projection(name, typeObj, default)
     local obs = R.computed(function()
-        return typeObj:get(name)
+        local ok, val = pcall(function() return typeObj:get(name) end)
+        if ok and val ~= nil then return val end
+        return default
     end)
     -- Add set method to allow widgets to mutate the model via this reference
     function obs:set(value)
@@ -164,9 +166,10 @@ Model.ISG = {
 }
 
 Model.waterfall = {
-    minDB = projection("wfMinDB", Types.Number),
-    maxDB = projection("wfMaxDB", Types.Number),
-    colormap = projection("wfColormap", Types.String)
+    minDB = projection("wfMinDB", Types.Number, -120),
+    maxDB = projection("wfMaxDB", Types.Number, -40),
+    colormap = projection("wfColormap", Types.String, "viridis"),
+    zoom = projection("spectrumZoom", Types.Number, 1.0)
 }
 
 -- =============================================================================

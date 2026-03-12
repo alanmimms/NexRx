@@ -69,24 +69,13 @@ function AppController.init()
             bands.setCurrent(freq)
         end
         
-        -- Auto-centering logic for spectrum
-        local span = 96000 -- Total span is 96kHz (10 divisions * 9.6kHz)
+        -- Automatic centering: if the signal moves off-screen, re-center
+        local zoom = Model.waterfall.zoom:peek() or 1.0
+        local span = 96000 / zoom
         local center = Model.spectrumCenterFreq:peek()
-        local halfSpan = span / 2
+        local margin = span * 0.1 -- 10% margin
         
-        -- Bandwidth calculation for visibility check
-        local bw = box.bandwidth or 4000
-        local fLow, fHigh = freq, freq
-        if mode == "USB" then fHigh = freq + bw
-        elseif mode == "LSB" then fLow = freq - bw
-        elseif mode == "AM" then fLow, fHigh = freq - bw, freq + bw
-        elseif mode == "CW" then
-            local pitch = Model.rx.CW.pitch:peek() or 600
-            fLow, fHigh = freq + pitch - 500, freq + pitch + 500
-        end
-
-        -- Check if signal box is fully visible in current spectrum
-        if fLow < (center - halfSpan) or fHigh > (center + halfSpan) then
+        if math.abs(freq - center) > (span / 2 - margin) then
             Model.spectrumCenterFreq:set(freq)
         end
         

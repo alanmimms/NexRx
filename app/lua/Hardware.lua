@@ -157,9 +157,9 @@ function Hardware.updateWaterfall(data)
     end
 end
 
-function Hardware.renderWaterfall(x, y, w, h)
+function Hardware.renderWaterfall(x, y, w, h, zoom, center)
     if waterfallEnabled and waterfall and waterfall.render then
-        waterfall.render(x, y, w, h)
+        waterfall.render(x, y, w, h, zoom or 1.0, center or 0.5)
     end
 end
 

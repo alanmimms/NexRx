@@ -235,8 +235,15 @@ function init()
         local prop = isISG and "isgFrequency" or "rx.VFO.activeValue"
         
         if delta ~= 0 and p and p.step then 
+            -- Adjust step based on zoom if it's a mouse wheel over the spectrum
+            local step = p.step
+            if e.delta and w and w.id == "spec" then
+                -- Optional: could make tuning more precise when zoomed in
+                -- step = step / Model.waterfall.zoom:peek()
+            end
+            
             local current = isISG and Model.ISG.frequencyHz:peek() or Model.rx.VFO.activeValue:peek()
-            local newVal = clamp(current + delta * p.step, 0.1e6, 30.0e6)
+            local newVal = clamp(current + delta * step, 0.1e6, 30.0e6)
             setProperty(prop, newVal)
             if not isISG then bands.setCurrent(newVal) end
             return true 
@@ -431,6 +438,19 @@ function update(dt)
                 elseif n == "DELETE" then
                     -- Remove current signal box
                     Model.removeSignalBox(Model.selectedSignalBoxIndex:peek())
+                elseif n == "EQUALS" or n == "KP_PLUS" then
+                    -- Zoom In
+                    local currentZoom = Model.waterfall.zoom:peek()
+                    Model.set("spectrumZoom", currentZoom * 1.1)
+                    local box = Model.getSelectedSignalBox()
+                    if box then Model.spectrumCenterFreq:set(box.frequency) end
+                elseif n == "MINUS" or n == "KP_MINUS" then
+                    -- Zoom Out
+                    local currentZoom = Model.waterfall.zoom:peek()
+                    local newZoom = math.max(1.0, currentZoom / 1.1)
+                    Model.set("spectrumZoom", newZoom)
+                    local box = Model.getSelectedSignalBox()
+                    if box then Model.spectrumCenterFreq:set(box.frequency) end
                 end
 
                 -- Also handle text input for printable keys
@@ -499,7 +519,7 @@ function update(dt)
         events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, {x=mx,y=my,dx=dx,dy=dy,modifiers=currentFrameTags}))
         lastMouseX, lastMouseY = mx, my
         
-        local span = 96000
+        local span = 96000 / (Model.waterfall.zoom:peek() or 1.0)
         local center = Model.spectrumCenterFreq:peek()
         
         -- If ghosting, update selected signal box freq to track mouse
@@ -521,7 +541,7 @@ function update(dt)
                 local box = Model.getSelectedSignalBox()
                 if box then
                     local bw = box.bandwidth or 4000
-                    local margin = 2000 -- 2kHz safety margin
+                    local margin = span * 0.05 -- 5% safety margin
                     local fLow, fHigh = newFreq, newFreq
                     if box.mode == "USB" then fHigh = newFreq + bw
                     elseif box.mode == "LSB" then fLow = newFreq - bw
@@ -537,7 +557,8 @@ function update(dt)
 
                     if freqShift ~= 0 then
                         Model.spectrumCenterFreq:set(center + freqShift)
-                        local binShift = freqShift / span * wfBins
+                        local currentZoom = Model.waterfall.zoom:peek() or 1.0
+                        local binShift = freqShift / (96000 / currentZoom) * wfBins
                         dispatch.shiftWaterfall(math.floor(-binShift + 0.5))
                     end
                 end
@@ -548,12 +569,13 @@ function update(dt)
             -- Dragging the spectrum background
             local spec = events.getWidget("spec")
             if spec then
+                local currentZoom = Model.waterfall.zoom:peek() or 1.0
                 local freqPerPx = span / spec.bounds.w
                 local freqDelta = dx * freqPerPx
                 Model.spectrumCenterFreq:set(center - freqDelta)
                 
                 -- Visual shift: pixels to bins
-                local binsShift = dx * (wfBins / spec.bounds.w)
+                local binsShift = dx * (wfBins / spec.bounds.w) * currentZoom
                 dispatch.shiftWaterfall(math.floor(binsShift + 0.5))
             end
         end
@@ -689,11 +711,17 @@ function draw()
             local rs = sub["spec"]
             layout.setRegion(rs.x, rs.y, rs.w, rs.h, "spec")
             Hardware.renderSpectrum(spectrumData, rs.x, rs.y, rs.w, rs.h)
-            uiInstances.graticuleLegend:draw("spec-legend", rs.x + 10, rs.y + 10, 100, 45, "9.6 kHz/div", "20 dB/div")
+            
+            local currentZoom = Model.waterfall.zoom:get() or 1.0
+            local span = 96000 / currentZoom
+            local hScale = span / 10
+            local hScaleStr = string.format("%.1f kHz/div", hScale / 1000)
+            if hScale < 1000 then hScaleStr = string.format("%.0f Hz/div", hScale) end
+            
+            uiInstances.graticuleLegend:draw("spec-legend", rs.x + 10, rs.y + 10, 100, 45, hScaleStr, "20 dB/div")
             events.registerWidget("spec", rs, {"widget.Spectrum", "widget.VFOControl"})
 
             -- Render SignalBoxes
-            local span = 96000
             local center = Model.spectrumCenterFreq:get()
             local startF = center - span/2
             local selectedIdx = Model.selectedSignalBoxIndex:get()
@@ -731,7 +759,24 @@ function draw()
         if sub["wf"] then
             local rw = sub["wf"]
             layout.setRegion(rw.x, rw.y, rw.w, rw.h, "wf")
-            Hardware.renderWaterfall(rw.x, rw.y, rw.w, rw.h)
+            
+            local zoom = Model.waterfall.zoom:get()
+            local loFreq = Model.spectrumCenterFreq:get()
+            -- Center is normalized frequency within the full 96kHz bandwidth
+            -- Let's assume the hardware streams -48kHz to +48kHz around loFreq?
+            -- Wait, the digital tuning uses sigFreq - loFreq.
+            -- Actually, the waterfall in C++ is just an array of FFT bins.
+            -- The LO is always at the center of the FFT bins.
+            -- So 'center' in the OpenGL sense is 0.5.
+            -- But we can PAN by shifting loFreq. 
+            -- The prompt says "scrolling (panning)".
+            -- If we pan by changing loFreq, the hardware NCO changes, 
+            -- and the waterfall bins now represent different frequencies.
+            
+            -- If the user DRAGS the spectrum, we change Model.spectrumCenterFreq.
+            -- This changes the hardware LO. The waterfall should shift.
+            
+            Hardware.renderWaterfall(rw.x, rw.y, rw.w, rw.h, zoom, 0.5)
             events.registerWidget("wf", rw, {"widget.Waterfall", "widget.VFOControl"})
             layout.endRegion()
         end

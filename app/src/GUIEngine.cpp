@@ -321,7 +321,9 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
       for (size_t i = 1; i <= t.size(); ++i) { sol::object item = t[i]; data.push_back(item.is<float>() ? item.as<float>() : -100.0f); }
       waterfall.renderSpectrum(data.data(), (int)data.size(), x, y, w, h);
     };
-    waterfallTable["render"] = [this](float x, float y, float w, float h) { waterfall.render(x, y, w, h); };
+    waterfallTable["render"] = [this](float x, float y, float w, float h, float zoom, float center) { 
+      waterfall.render(x, y, w, h, zoom, center); 
+    };
     waterfallTable["setColormapData"] = [this](sol::object obj) {
       if (!obj.is<sol::table>()) return;
       sol::table t = obj.as<sol::table>();

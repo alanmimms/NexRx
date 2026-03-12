@@ -141,20 +141,24 @@ void WaterfallRenderer::horizontalShift(int bins) {
   textureDirty = true;
 }
 
-void WaterfallRenderer::render(float x, float y, float w, float h) {
+void WaterfallRenderer::render(float x, float y, float w, float h, float zoom, float center) {
   if (!initialized) return;
 
   if (textureDirty) updateTexture();
+
+  float halfSpan = 0.5f / zoom;
+  float s1 = std::clamp(center - halfSpan, 0.0f, 1.0f);
+  float s2 = std::clamp(center + halfSpan, 0.0f, 1.0f);
 
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textureID);
   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
   glBegin(GL_QUADS);
-  glTexCoord2f(0.0f, 1.0f); glVertex2f(x, y);
-  glTexCoord2f(1.0f, 1.0f); glVertex2f(x + w, y);
-  glTexCoord2f(1.0f, 0.0f); glVertex2f(x + w, y + h);
-  glTexCoord2f(0.0f, 0.0f); glVertex2f(x, y + h);
+  glTexCoord2f(s1, 1.0f); glVertex2f(x, y);
+  glTexCoord2f(s2, 1.0f); glVertex2f(x + w, y);
+  glTexCoord2f(s2, 0.0f); glVertex2f(x + w, y + h);
+  glTexCoord2f(s1, 0.0f); glVertex2f(x, y + h);
   glEnd();
 
   glDisable(GL_TEXTURE_2D);
