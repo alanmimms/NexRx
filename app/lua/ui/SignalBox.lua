@@ -33,10 +33,12 @@ function SignalBox.new()
     return self
 end
 
-function SignalBox:draw(id, x, y, w, h, label, extraTags, parentLWC)
+function SignalBox:draw(id, x, y, w, h, parentLWC, label, extraTags)
     local tags = {"widget.SignalBox", "id." .. id}
     if extraTags then
-        for _, t in ipairs(extraTags) do table.insert(tags, t) end
+        if type(extraTags) == "table" then
+            for _, t in ipairs(extraTags) do table.insert(tags, t) end
+        end
     end
     
     -- Register widget for event system
@@ -55,10 +57,9 @@ function SignalBox:draw(id, x, y, w, h, label, extraTags, parentLWC)
     local isSelected = lwc:hasTag("state.Selected")
     
     -- Style resolution
-    local ui = require("ui.Widgets")
-    local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = ui.hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = state.hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     
     local alpha = lwc:getNumber("opacity")
     local bWidth = lwc:getNumber("borderWidth")

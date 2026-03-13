@@ -6,6 +6,7 @@
 
 local setbox = require("SetBox")
 local state = require("ui.State")
+local TextMixin = require("ui.TextMixin")
 
 local Checkbox = {}
 Checkbox.__index = Checkbox
@@ -37,7 +38,7 @@ function Checkbox.new(options)
     return self
 end
 
-function Checkbox:draw(id, x, y, checked, parentLWC)
+function Checkbox:draw(id, x, y, w, h, parentLWC, checked)
     if state.isHot(id) and state.mouseDown then
         -- print("[Checkbox] Draw: " .. id .. " checked=" .. tostring(checked))
     end
@@ -61,9 +62,12 @@ function Checkbox:draw(id, x, y, checked, parentLWC)
         label = lwc:getString("label")
     end
     
-    local labelW = measureText(label)
-    local w = boxSize + spacing + labelW
-    local h = boxSize
+    -- If dimensions aren't provided, use calculated content size
+    if not w or not h then
+        local labelW = measureText(label)
+        w = w or (boxSize + spacing + labelW)
+        h = h or boxSize
+    end
     
     state.registerWidget(id, {x=x, y=y, w=w, h=h}, tags)
     
@@ -74,10 +78,10 @@ function Checkbox:draw(id, x, y, checked, parentLWC)
     end
     
     -- Styling from rules
-    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
-    local aR, aG, aB = require("ui.Widgets").hexToRgb(lwc:getString("accent"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = state.hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
+    local aR, aG, aB = state.hexToRgb(lwc:getString("accent"))
     local bWidth = lwc:getNumber("borderWidth")
     local alpha = lwc:getNumber("opacity")
     
@@ -94,7 +98,7 @@ function Checkbox:draw(id, x, y, checked, parentLWC)
     end
     
     -- Draw label
-    drawText(x + boxSize + spacing, y + (boxSize - getLineHeight()) / 2, label, fgR, fgG, fgB, alpha)
+    TextMixin.draw(x + boxSize + spacing, y + (boxSize - TextMixin.getLineHeight()) / 2, label, lwc)
     
     local clicked = state.wasClicked(id)
     if clicked then

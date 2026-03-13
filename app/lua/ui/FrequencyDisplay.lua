@@ -39,13 +39,27 @@ function FrequencyDisplay.new(props)
 end
 
 
-function formatFreq(f)
-   local s = string.format("%.6fMHz", f)
-   return s:sub(1, -7) .. "," .. s:sub(-6)
+function formatFreq(f_hz, lwc)
+    local sep = ","
+    if lwc and lwc.optString then
+        sep = lwc:optString("locale.thousandsSeparator", ",")
+    end
+    local s = string.format("%.0f", f_hz)
+    local res = ""
+    local count = 0
+    for i = #s, 1, -1 do
+        res = s:sub(i, i) .. res
+        count = count + 1
+        if count == 3 and i > 1 then
+            res = sep .. res
+            count = 0
+        end
+    end
+    return res .. " Hz"
 end
 
 
-function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, cursorIdx, tags, parentLWC)
+function FrequencyDisplay:draw(id, x, y, w, h, parentLWC, freqEntryText, cursorIdx, tags)
     local widgetTags = {"widget.FrequencyDisplay", "id." .. id}
     
     local isEditing = (freqEntryText and freqEntryText ~= "")
@@ -74,13 +88,12 @@ function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, cursorIdx, tags, p
         if state.mouseClicked then state.setActive(id) end
     end
 
-    local ui = require("ui.Widgets")
-    local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = ui.hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = state.hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     
     if lwc:getBool("highlighted") then
-        bR, bG, bB = ui.hexToRgb(lwc:getString("highlight"))
+        bR, bG, bB = state.hexToRgb(lwc:getString("highlight"))
     end
 
     local bWidth = lwc:getNumber("borderWidth")
@@ -102,7 +115,7 @@ function FrequencyDisplay:draw(id, x, y, w, h, freqEntryText, cursorIdx, tags, p
     if isEditing then
         text = freqEntryText
     else
-        text = formatFreq(frequency / 1e6)
+        text = formatFreq(frequency, lwc)
     end
 
     local tw = measureText(text)

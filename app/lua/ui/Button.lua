@@ -6,6 +6,7 @@
 
 local setbox = require("SetBox")
 local state = require("ui.State")
+local TextMixin = require("ui.TextMixin")
 
 local Button = {}
 Button.__index = Button
@@ -38,10 +39,12 @@ function Button.new(options)
     return self
 end
 
-function Button:draw(id, x, y, w, h, extraTags, parentLWC)
+function Button:draw(id, x, y, w, h, parentLWC, extraTags)
     local tags = {"widget.Button", "id." .. id}
     if extraTags then
-        for _, t in ipairs(extraTags) do table.insert(tags, t) end
+        if type(extraTags) == "table" then
+            for _, t in ipairs(extraTags) do table.insert(tags, t) end
+        end
     end
     
     -- Interaction tags (state namespaces)
@@ -63,9 +66,9 @@ function Button:draw(id, x, y, w, h, extraTags, parentLWC)
     end
     
     -- Style resolution
-    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local fgR, fgG, fgB = state.hexToRgb(lwc:getString("foreground"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
@@ -82,13 +85,15 @@ function Button:draw(id, x, y, w, h, extraTags, parentLWC)
         label = self.getText()
     elseif lwc:has("label") then
         label = lwc:getString("label")
+    elseif lwc:has("text") then
+        label = lwc:getString("text")
     else
         label = id
     end
     
-    local labelW = measureText(label)
-    local lineH = getLineHeight()
-    drawText(x + (w - labelW) / 2, y + (h - lineH) / 2, label, fgR, fgG, fgB, alpha)
+    local labelW = TextMixin.measure(label)
+    local lineH = TextMixin.getLineHeight()
+    TextMixin.draw(x + (w - labelW) / 2, y + (h - lineH) / 2, label, lwc)
     
     local clicked = state.wasClicked(id)
     if clicked and self.onClick then self.onClick() end

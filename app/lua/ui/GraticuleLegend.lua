@@ -5,6 +5,7 @@
 ]]
 
 local setbox = require("SetBox")
+local state = require("ui.State")
 local Label = require("ui.Label")
 
 local GraticuleLegend = {}
@@ -53,12 +54,12 @@ function GraticuleLegend.new()
     return self
 end
 
-function GraticuleLegend:draw(id, x, y, w, h, hText, vText, parentLWC)
+function GraticuleLegend:draw(id, x, y, w, h, parentLWC, hText, vText)
     local lwc = setbox.newContext({"widget.GraticuleLegend", "id." .. id}, parentLWC)
     
     -- Properties from rules
-    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = require("ui.Widgets").hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     local bWidth = lwc:getNumber("borderWidth")
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
@@ -71,10 +72,10 @@ function GraticuleLegend:draw(id, x, y, w, h, hText, vText, parentLWC)
     
     -- Draw Scale Labels
     if hText then self.hLabel.getText = function() return hText end end
-    self.hLabel:draw(id .. "-h", x + pad, y + pad, lwc)
+    self.hLabel:draw(id .. "-h", x + pad, y + pad, w - pad*2, 18, lwc)
     
     if vText then self.vLabel.getText = function() return vText end end
-    self.vLabel:draw(id .. "-v", x + pad, y + pad + 18, lwc)
+    self.vLabel:draw(id .. "-v", x + pad, y + pad + 18, w - pad*2, 18, lwc)
 end
 
 return GraticuleLegend

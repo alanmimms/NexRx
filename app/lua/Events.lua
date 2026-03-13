@@ -30,6 +30,10 @@
         })
 ]]
 
+local setbox = require("SetBox")
+local Model = require("Model")
+local state = require("ui.State")
+
 local Events = {}
 
 -- ============================================================================
@@ -252,11 +256,103 @@ function Events.registerHandler(name, fn)
     Events.handlers[name] = fn
 end
 
---- Unregister a handler
--- @param name handler name
-function Events.unregisterHandler(name)
-    Events.handlers[name] = nil
+-- ============================================================================
+-- Generic Slider Handlers
+-- ============================================================================
+
+local function setModelValue(prop, val)
+    if not prop then return end
+    -- Support nested properties like "rx.volume.DB"
+    local parts = {}
+    for p in prop:gmatch("[^%.]+") do table.insert(parts, p) end
+    
+    local target = Model
+    for i = 1, #parts - 1 do
+        target = target[parts[i]]
+        if not target then return end
+    end
+    
+    local finalProp = parts[#parts]
+    if target[finalProp] and target[finalProp].set then
+        target[finalProp]:set(val)
+    else
+        -- Fallback to Model.set if direct observable access fails
+        Model.set(prop, val)
+    end
 end
+
+Events.registerHandler("slider_activate", function(event, widget)
+    if not widget or not widget.id then return false end
+    state.setActive(widget.id)
+    return true
+end)
+
+Events.registerHandler("slider_adjust", function(event, widget, props)
+    if not widget or not widget.data then return false end
+    
+    local data = widget.data
+    local prop = data.property or props.property
+    if not prop then return false end
+    
+    local min = data.min or props.min or 0
+    local max = data.max or props.max or 100
+    local val = data.value or props.value or min
+    
+    local range = max - min
+    local delta = 0
+    
+    if event.type == Events.Type.MOUSE_WHEEL then
+        -- Wheel adjustment: default 1% step
+        local step = props.step or (range * 0.01)
+        delta = event.delta * step
+    elseif event.type == Events.Type.KEY_DOWN then
+        local step = props.step or (range * 0.01)
+        if event.key == "RIGHT" or event.key == "UP" then
+            delta = step
+        elseif event.key == "LEFT" or event.key == "DOWN" then
+            delta = -step
+        end
+    end
+    
+    if delta ~= 0 then
+        local newVal = math.max(min, math.min(max, val + delta))
+        setModelValue(prop, newVal)
+        return true
+    end
+    
+    return false
+end)
+
+Events.registerHandler("slider_adjust_log", function(event, widget, props)
+    if not widget or not widget.data then return false end
+    
+    local data = widget.data
+    local prop = data.property or props.property
+    if not prop then return false end
+    
+    local min = data.min or props.min or 0.0001
+    local max = data.max or props.max or 1.0
+    local val = data.value or props.value or min
+    
+    local factor = props.factor or 1.5
+    local newVal = val
+    
+    if event.type == Events.Type.MOUSE_WHEEL then
+        if event.delta > 0 then newVal = val * factor
+        else newVal = val / factor end
+    elseif event.type == Events.Type.KEY_DOWN then
+        if event.key == "RIGHT" or event.key == "UP" then newVal = val * factor
+        elseif event.key == "LEFT" or event.key == "DOWN" then newVal = val / factor end
+    end
+    
+    if newVal ~= val then
+        newVal = math.max(min, math.min(max, newVal))
+        setModelValue(prop, newVal)
+        return true
+    end
+    
+    return false
+end)
 
 -- ============================================================================
 -- Public API - Event Dispatch

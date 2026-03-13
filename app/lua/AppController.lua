@@ -143,7 +143,7 @@ function AppController.init()
     -- Watch CW Pitch
     R.watch(function()
         local pitch = Model.rx.CW.pitch:get()
-        if rx and rx.setBfoOffset then
+        if rx and rx.setBfoOffset and pitch ~= nil then
             rx.setBfoOffset(pitch)
         end
     end)
@@ -151,8 +151,7 @@ function AppController.init()
     -- Watch test tone
     R.watch(function()
         local enabled = Model.rx.testToneEnabled:get()
-        print("[AppController] Test Tone -> " .. tostring(enabled))
-        if audio and audio.setTestTone then
+        if audio and audio.setTestTone and enabled ~= nil then
             audio.setTestTone(enabled, 440.0)
         end
     end)

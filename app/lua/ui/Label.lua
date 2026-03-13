@@ -5,6 +5,8 @@
 ]]
 
 local setbox = require("SetBox")
+local state = require("ui.State")
+local TextMixin = require("ui.TextMixin")
 
 local Label = {}
 Label.__index = Label
@@ -30,7 +32,7 @@ function Label.new(options)
     return self
 end
 
-function Label:draw(id, x, y, parentLWC)
+function Label:draw(id, x, y, w, h, parentLWC)
     -- Combine generic type tag with specific instance ID tag
     local lwc = setbox.newContext({"widget.Label", "id." .. id}, parentLWC)
     
@@ -44,14 +46,10 @@ function Label:draw(id, x, y, parentLWC)
         text = lwc:has("title") and lwc:getString("title") or ""
     end
     
-    -- All styling comes from rules
-    local fgR, fgG, fgB = require("ui.Widgets").hexToRgb(lwc:getString("foreground"))
-    local alpha = lwc:getNumber("opacity")
-    
-    drawText(x, y, text, fgR, fgG, fgB, alpha)
+    TextMixin.draw(x, y, text, lwc)
     
     -- Return size for layout systems
-    return measureText(text), getLineHeight()
+    return TextMixin.measure(text), TextMixin.getLineHeight()
 end
 
 return Label

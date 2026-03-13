@@ -5,6 +5,7 @@
 ]]
 
 local setbox = require("SetBox")
+local state = require("ui.State")
 local Label = require("ui.Label")
 
 local SMeter = {}
@@ -16,6 +17,7 @@ setbox.rule {
     tags = {"widget.SMeter"},
     priority = -1000,
     apply = {
+        title = "S-METER",
         background = "#0f172a",
         colorWeak = "#22c55e",
         colorMid = "#eab308",
@@ -26,6 +28,9 @@ setbox.rule {
         barCount = 12,
         barGap = 2,
         opacity = 1.0,
+        height = function(lwc)
+            return 18 + 28 + 20 -- Title + Bar + Text
+        end
     }
 }
 
@@ -35,44 +40,47 @@ function SMeter.new()
     return self
 end
 
-function SMeter:draw(id, x, y, w, h, reading, parentLWC)
+function SMeter:draw(id, x, y, w, h, parentLWC, reading)
     local lwc = setbox.newContext({"widget.SMeter", "id." .. id}, parentLWC)
     
     -- Properties from rules
-    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
-    local weakR, weakG, weakB = require("ui.Widgets").hexToRgb(lwc:getString("colorWeak"))
-    local midR, midG, midB = require("ui.Widgets").hexToRgb(lwc:getString("colorMid"))
-    local strongR, strongG, strongB = require("ui.Widgets").hexToRgb(lwc:getString("colorStrong"))
-    local offR, offG, offB = require("ui.Widgets").hexToRgb(lwc:getString("colorOff"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local weakR, weakG, weakB = state.hexToRgb(lwc:getString("colorWeak"))
+    local midR, midG, midB = state.hexToRgb(lwc:getString("colorMid"))
+    local strongR, strongG, strongB = state.hexToRgb(lwc:getString("colorStrong"))
+    local offR, offG, offB = state.hexToRgb(lwc:getString("colorOff"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local pad = lwc:getNumber("padding")
     local barCount = lwc:getNumber("barCount")
     local barGap = lwc:getNumber("barGap")
 
-    drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
+    -- Draw Title
+    self.titleLabel.getText = function() return lwc:getString("title") end
+    self.titleLabel:draw(id .. "-title", x, y, w, 18, lwc)
+    
+    local barY = y + 18
+    local barActualH = 28
+    drawRoundedRect(x, barY, w, barActualH, radius, bgR, bgG, bgB, alpha)
 
     local barW = (w - pad * 2 - barGap * (barCount - 1)) / barCount
-    local barH = h - pad * 2
+    local barH = barActualH - pad * 2
     
     for i = 0, barCount - 1 do
         local barX = x + pad + i * (barW + barGap)
-        -- Map 12 bars: 
-        -- 0-8: S1-S9 (thresholds 1.0 to 9.0)
-        -- 9-11: S9+20, S9+40, S9+60 (thresholds 12.33, 15.66, 19.0)
         local barThreshold = (i < 9) and (i + 1) or (9 + (i - 8) * (20/6))
 
         if reading.sUnits >= barThreshold then
-        local r, g, b = weakR, weakG, weakB
-        if i >= 9 then r, g, b = strongR, strongG, strongB
-        elseif i >= 6 then r, g, b = midR, midG, midB end
-        drawRect(barX, y + pad, barW, barH, r, g, b, alpha)
-    else
-        drawRect(barX, y + pad, barW, barH, offR, offG, offB, alpha)
+            local r, g, b = weakR, weakG, weakB
+            if i >= 9 then r, g, b = strongR, strongG, strongB
+            elseif i >= 6 then r, g, b = midR, midG, midB end
+            drawRect(barX, barY + pad, barW, barH, r, g, b, alpha)
+        else
+            drawRect(barX, barY + pad, barW, barH, offR, offG, offB, alpha)
+        end
     end
-end
 
-    local ty = y + h + 4
+    local ty = barY + barActualH + 4
     local sW = measureText(reading.sText)
     local dW = measureText(reading.dBmText)
     local startX = x + (w - (sW + 10 + dW)) / 2

@@ -77,6 +77,44 @@ button to the logic of a frequency readout—as a resolvable property.
 The power of this mechanism comes from its **consistent
 applicability** and **strict rule-driven nature**.
 
+#### Hierarchical Spring Layout
+NexRx uses a recursive spring-based layout system to manage complex
+UI hierarchies like the sidebar.
+
+**Incompressible Minimums**: Every UI element (labels, checkboxes,
+groups) calculates its own "floor" size based on its content, where
+leaf widgets have a fixed size based on their implementation and
+current rule resolution. The layout engine is prohibited from
+shrinking any element below this limit. This guarantees that even on
+small screens, the UI remains legible and interactive, with overflow
+items simply extending beyond the visible area rather than being
+crushed.
+
+**Edge Magnetism (Stickiness)**: Widgets define "magnetic" properties 
+to determine how they respond as their parent container (the window or 
+a parent group) grows:
+- **Attachment**: Sticking a single edge (e.g., `stickRight`) keeps a 
+  component locked to that boundary as the parent area expands.
+- **Stretching**: Sticking opposing edges (e.g., `stickTop` AND 
+  `stickBottom`) forces a component to expand to fill the available 
+  dimension in its parent.
+- **Hierarchical Magnetism**: This behavior is fractal. A Sidebar 
+  sticks to the window's edges to claim its area, and then acts as a 
+  magnetic parent for its own internal stack of groups.
+
+**Proportional Expansion**: When a widget is stretched by magnetism, 
+it uses **Spring Strength** (`springY` or `springX`) to determine how 
+much of the extra space it should claim relative to its peers.
+- Elements with `springY = 0` stay at their incompressible minimum.
+- Elements with `springY > 0` expand proportionally.
+- **Elastic Space**: By placing high-strength springs (Spacers) 
+  between fixed-size components, the UI "breathes" naturally, 
+  distributing gaps as the container grows.
+
+**Fractal Resolution**: The layout is resolved recursively. The root 
+window distributes space to high-level magnets (Sidebar, Center Area), 
+which then act as parents for their own internal spring-loaded stacks.
+
 #### 1. No Hardcoded Defaults
 In NexRx, there are no "default values" buried in the source code. If
 a widget needs to know its border width, its background color, or even

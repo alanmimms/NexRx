@@ -38,3 +38,7 @@
 * Build SSTV decoder.
 
 * Build FT8 decoder.
+
+* Use bands.lua data to create bands list for buttons.
+
+* Use a new modes.lua to create modes list for modes.

@@ -5,6 +5,7 @@
 ]]
 
 local setbox = require("SetBox")
+local state = require("ui.State")
 local Label = require("ui.Label")
 
 local ActiveTags = {}
@@ -42,11 +43,11 @@ function ActiveTags.new()
     return self
 end
 
-function ActiveTags:draw(id, x, y, w, h, tags, parentLWC)
+function ActiveTags:draw(id, x, y, w, h, parentLWC, tags)
     local lwc = setbox.newContext({"widget.ActiveTagsViewer", "id." .. id}, parentLWC)
     
     -- Style resolution
-    local bgR, bgG, bgB = require("ui.Widgets").hexToRgb(lwc:getString("background"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local pad = lwc:getNumber("padding")
@@ -54,15 +55,17 @@ function ActiveTags:draw(id, x, y, w, h, tags, parentLWC)
     drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
     
     -- Draw Title
-    self.titleLabel:draw("active-tags-title", x + pad, y + pad, lwc)
+    self.titleLabel:draw("active-tags-title", x + pad, y + pad, w - pad*2, 20, lwc)
     
     local ty = y + 32
-    for _, tag in ipairs(tags) do
-        -- Draw each tag using dynamic label text
-        self.tagLabel.getText = function() return tag end
-        self.tagLabel:draw(id .. "-tag-" .. tag, x + pad + 4, ty, lwc)
-        ty = ty + 18
-        if ty > y + h - 20 then break end
+    if tags then
+        for _, tag in ipairs(tags) do
+            -- Draw each tag using dynamic label text
+            self.tagLabel.getText = function() return tag end
+            self.tagLabel:draw(id .. "-tag-" .. tag, x + pad + 4, ty, w - pad*2 - 8, 18, lwc)
+            ty = ty + 18
+            if ty > y + h - 20 then break end
+        end
     end
 end
 

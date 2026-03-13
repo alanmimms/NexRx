@@ -4,7 +4,9 @@
   Style and behavior driven entirely by SetBox rules.
 ]]
 
-local ui = require("ui.Widgets")
+local state = require("ui.State")
+local Label = require("ui.Label")
+local Checkbox = require("ui.Checkbox")
 local layout = require("ui.Layout")
 local setbox = require("SetBox")
 local Model = require("Model")
@@ -32,6 +34,14 @@ setbox.rule {
         gridColWidth = 60,
         gridColGap = 8,
         gridCols = 4,
+        height = function(lwc)
+            local rowH = lwc:getNumber("gridRowHeight")
+            local rowGap = lwc:getNumber("gridRowGap")
+            local numCheckboxes = 12
+            local rows = math.ceil(numCheckboxes / lwc:getNumber("gridCols"))
+            -- Title (8) + TopMargin (32) + Auto-tune row (rowH+rowGap) + Grid rows + Padding (12)
+            return lwc:getNumber("topMargin") + (rowH + rowGap) + (rows * (rowH + rowGap)) + lwc:getNumber("padding")
+        end,
     }
 }
 
@@ -42,8 +52,8 @@ function Preselector.new(props)
     local cbNames = {"L", "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10"}
 
     -- Initialize widget instances
-    self.titleLabel = ui.Label.new()
-    self.autoCheckbox = ui.Checkbox.new({
+    self.titleLabel = Label.new()
+    self.autoCheckbox = Checkbox.new({
         onToggle = function(val) Model.set("preselector.auto", val) end
     })
     
@@ -51,7 +61,7 @@ function Preselector.new(props)
 
     for k, name in ipairs(cbNames) do
         if name == "L" then
-            self.checkboxes[k] = ui.Checkbox.new({
+            self.checkboxes[k] = Checkbox.new({
                 getText = function() return "L1" end,
                 onToggle = function(val) 
                     Model.set("preselector.auto", false)
@@ -60,7 +70,7 @@ function Preselector.new(props)
             })
         else
             local bitIndex = tonumber(name:match("C(%d+)"))
-            self.checkboxes[k] = ui.Checkbox.new({
+            self.checkboxes[k] = Checkbox.new({
                 getText = function() return name end,
                 onToggle = function(val)
                     Model.set("preselector.auto", false)
@@ -77,12 +87,12 @@ function Preselector.new(props)
     return self
 end
 
-function Preselector:draw(id, x, y, w, h)
-    local lwc = setbox.newContext({"widget.Panel", "widget.PreselectorFrame", "id." .. id})
+function Preselector:draw(id, x, y, w, h, parentLWC)
+    local lwc = setbox.newContext({"widget.Panel", "widget.PreselectorFrame", "id." .. id}, parentLWC)
     
     -- 1. Draw surrounding frame
-    local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local bWidth = lwc:getNumber("borderWidth")
@@ -93,7 +103,7 @@ function Preselector:draw(id, x, y, w, h)
     end
     
     -- 2. Draw Frame Label
-    self.titleLabel:draw(id .. "-title", x + 12, y + 8, lwc)
+    self.titleLabel:draw(id .. "-title", x + 12, y + 8, w - 24, 20, lwc)
     
     -- 3. Setup inner layout region
     local padding = lwc:getNumber("padding")
@@ -107,7 +117,7 @@ function Preselector:draw(id, x, y, w, h)
     local rowGap = lwc:getNumber("gridRowGap")
     cx, cy = layout.getCursor()
     self.autoCheckbox.getText = function() return lwc:getString("labelAuto") end
-    self.autoCheckbox:draw(id .. "-auto", cx, cy, self.preselector.auto:get(), lwc)
+    self.autoCheckbox:draw(id .. "-auto", cx, cy, w - padding * 2, rowH, lwc, self.preselector.auto:get())
     layout.newLine(rowH + rowGap)
     
     -- Parameterized Component Grid
@@ -132,7 +142,7 @@ function Preselector:draw(id, x, y, w, h)
             checked = (mask & (2 ^ bitIndex)) ~= 0
         end
 
-        cb:draw(id .. "-" .. cb.name, bx, by, checked, lwc)
+        cb:draw(id .. "-" .. cb.name, bx, by, colW, rowH, lwc, checked)
         
         if gridIdx < cols - 1 and i < #self.checkboxes then 
             layout.space(colGap) 

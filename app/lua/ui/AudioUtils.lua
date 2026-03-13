@@ -4,10 +4,11 @@
   Style and layout driven entirely by SetBox rules.
 ]]
 
-local ui = require("ui.Widgets")
 local layout = require("ui.Layout")
 local setbox = require("SetBox")
 local state = require("ui.State")
+local Label = require("ui.Label")
+local Checkbox = require("ui.Checkbox")
 local Model = require("Model")
 
 local AudioUtils = {}
@@ -27,6 +28,10 @@ setbox.rule {
         opacity = 1.0,
         padding = 12,
         topMargin = 32,
+        height = function(lwc)
+            -- TopMargin (32) + Mute (28) + Tone (28) + Padding (12) + Spacing
+            return lwc:getNumber("topMargin") + 28 + 28 + lwc:getNumber("padding") + 16
+        end,
         labelMute = "Master Mute",
         labelFilters = "Demod Filters",
         labelTone = "440Hz Test Tone",
@@ -38,22 +43,22 @@ function AudioUtils.new(props)
     self.rx = props.rx -- Model.rx
     
     -- Initialize widget instances
-    self.titleLabel = ui.Label.new()
-    self.muteCheckbox = ui.Checkbox.new({
+    self.titleLabel = Label.new()
+    self.muteCheckbox = Checkbox.new({
         onToggle = function(val) Model.set("rx.volume.muted", val) end
     })
-    self.toneCheckbox = ui.Checkbox.new({
+    self.toneCheckbox = Checkbox.new({
         onToggle = function(val) Model.set("rx.testToneEnabled", val) end
     })
     
     return self
 end
 
-function AudioUtils:draw(id, x, y, w, h)
-    local lwc = setbox.newContext({"widget.Panel", "widget.AudioUtilsFrame", "id." .. id})
+function AudioUtils:draw(id, x, y, w, h, parentLWC)
+    local lwc = setbox.newContext({"widget.Panel", "widget.AudioUtilsFrame", "id." .. id}, parentLWC)
     
-    local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local bWidth = lwc:getNumber("borderWidth")
@@ -64,7 +69,7 @@ function AudioUtils:draw(id, x, y, w, h)
     end
     
     -- Title
-    self.titleLabel:draw(id .. "-title", x + 12, y + 8, lwc)
+    self.titleLabel:draw(id .. "-title", x + 12, y + 8, w - 24, 20, lwc)
     
     local padding = lwc:getNumber("padding")
     local topMargin = lwc:getNumber("topMargin")
@@ -72,7 +77,7 @@ function AudioUtils:draw(id, x, y, w, h)
     
     local cx, cy = layout.getCursor()
     self.muteCheckbox.getText = function() return lwc:getString("labelMute") end
-    self.muteCheckbox:draw(id .. "-mute", cx, cy, self.rx.volume.muted:get(), lwc)
+    self.muteCheckbox:draw(id .. "-mute", cx, cy, w - padding * 2, 28, lwc, self.rx.volume.muted:get())
     layout.newLine(28)
     
     cx, cy = layout.getCursor()
@@ -81,7 +86,7 @@ function AudioUtils:draw(id, x, y, w, h)
     if state.isHot(id .. "-tone") then
         -- print("[AudioUtils] toneVal=" .. tostring(toneVal))
     end
-    self.toneCheckbox:draw(id .. "-tone", cx, cy, toneVal, lwc)
+    self.toneCheckbox:draw(id .. "-tone", cx, cy, w - padding * 2, 28, lwc, toneVal)
     layout.newLine(28)
     
     layout.endRegion()

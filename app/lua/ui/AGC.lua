@@ -4,7 +4,9 @@
   Style and layout driven entirely by SetBox rules.
 ]]
 
-local ui = require("ui.Widgets")
+local state = require("ui.State")
+local Label = require("ui.Label")
+local Button = require("ui.Button")
 local layout = require("ui.Layout")
 local setbox = require("SetBox")
 local Model = require("Model")
@@ -29,6 +31,9 @@ setbox.rule {
         topMargin = 32,
         buttonHeight = 18,
         buttonGap = 4,
+        height = function(lwc)
+            return lwc:getNumber("topMargin") + lwc:getNumber("buttonHeight") + lwc:getNumber("padding") + 12
+        end,
         labelOff = "Off",
         labelSlow = "Slow",
         labelMed = "Med",
@@ -41,26 +46,26 @@ function AGC.new(props)
     self.AGC = props.AGC -- Model.rx.AGC
     
     -- Initialize widget instances
-    self.titleLabel = ui.Label.new({ 
+    self.titleLabel = Label.new({ 
         getText = function(lwc) 
             return lwc and lwc:getString("title") or "AGC" 
         end 
     })
     self.modeButtons = {
-        off  = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 0) end }),
-        slow = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 3) end }),
-        med  = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 2) end }),
-        fast = ui.Button.new({ onClick = function() Model.set("rx.AGC.mode", 1) end })
+        off  = Button.new({ onClick = function() Model.set("rx.AGC.mode", 0) end }),
+        slow = Button.new({ onClick = function() Model.set("rx.AGC.mode", 3) end }),
+        med  = Button.new({ onClick = function() Model.set("rx.AGC.mode", 2) end }),
+        fast = Button.new({ onClick = function() Model.set("rx.AGC.mode", 1) end })
     }
     return self
 end
 
-function AGC:draw(id, x, y, w, h)
-    local lwc = setbox.newContext({"widget.Panel", "widget.AGCFrame", "id." .. id})
+function AGC:draw(id, x, y, w, h, parentLWC)
+    local lwc = setbox.newContext({"widget.Panel", "widget.AGCFrame", "id." .. id}, parentLWC)
     
     -- Background and border
-    local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local bWidth = lwc:getNumber("borderWidth")
@@ -72,7 +77,7 @@ function AGC:draw(id, x, y, w, h)
     
     -- Title
     self.titleLabel.getText = function() return lwc:getString("title") or "AGC" end
-    self.titleLabel:draw(id .. "-title", x + 12, y + 8, lwc)
+    self.titleLabel:draw(id .. "-title", x + 12, y + 8, w - 24, 20, lwc)
     
     local padding = lwc:getNumber("padding")
     local topMargin = lwc:getNumber("topMargin")
@@ -103,7 +108,7 @@ function AGC:draw(id, x, y, w, h)
         -- Add active state tag if matches current mode
         local activeTags = (currentMode == m.val) and {"state.Active"} or {}
         
-        btn:draw(id .. "-mode-" .. m.id, bx, by, buttonW, bH, activeTags, lwc)
+        btn:draw(id .. "-mode-" .. m.id, bx, by, buttonW, bH, lwc, activeTags)
         
         if i < #modes then layout.space(bG) end
     end

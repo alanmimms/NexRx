@@ -110,7 +110,7 @@ function Context:getHierarchyTags()
     return list
 end
 
-function Context:getMatchingRules(propertyName)
+function Context:getMatchingRules(propertyName, ruleToExclude)
     -- REACTIVE DEPENDENCY: 
     -- If we're looking for a specific property, depend only on THAT property's rules.
     -- Otherwise, depend on the global rule set version.
@@ -125,7 +125,7 @@ function Context:getMatchingRules(propertyName)
     if not source then return matching end
 
     for _, rule in ipairs(source) do
-        if rule.enabled then
+        if rule.enabled and rule ~= ruleToExclude then
             local matches = true
             local prioritySum = rule.priority
             local tagCount = 0
@@ -179,22 +179,45 @@ function Context:resolve()
     return result
 end
 
-function Context:get(name)
-    local matching = self:getMatchingRules(name)
+function Context:get(name, ruleToExclude)
+    local matching = self:getMatchingRules(name, ruleToExclude)
     if #matching == 0 then
         local tagList = table.concat(self:getHierarchyTags(), ", ")
         error(string.format("[SetBox] Property '%s' not found in any matching rule.\nContext Tags: [%s]", name, tagList), 2)
     end
-    return matching[1].rule.properties[name]
+    
+    -- Find the first rule in the sorted list that actually contains this property
+    for _, m in ipairs(matching) do
+        local val = m.rule.properties[name]
+        if val ~= nil then
+            if type(val) == "function" then
+                return val(self, m.rule)
+            end
+            return val
+        end
+    end
+    
+    local tagList = table.concat(self:getHierarchyTags(), ", ")
+    local ruleIds = {}
+    for _, m in ipairs(matching) do table.insert(ruleIds, m.rule.id) end
+    error(string.format("[SetBox] Property '%s' found in matching rules [%s] but with nil value.\nContext Tags: [%s]", 
+        name, table.concat(ruleIds, ", "), tagList), 2)
 end
 
-function Context:has(name)
-    local matching = self:getMatchingRules(name)
-    return #matching > 0
+function Context:has(name, ruleToExclude)
+    local matching = self:getMatchingRules(name, ruleToExclude)
+    if #matching == 0 then return false end
+    
+    for _, m in ipairs(matching) do
+        if m.rule.properties[name] ~= nil then
+            return true
+        end
+    end
+    return false
 end
 
-function Context:getNumber(name)
-    local val = self:get(name)
+function Context:getNumber(name, ruleToExclude)
+    local val = self:get(name, ruleToExclude)
     if type(val) == "number" then return val end
     local num = tonumber(val)
     if not num then
@@ -203,15 +226,41 @@ function Context:getNumber(name)
     return num
 end
 
-function Context:getString(name)
-    local val = self:get(name)
+function Context:getString(name, ruleToExclude)
+    local val = self:get(name, ruleToExclude)
     return tostring(val)
 end
 
-function Context:getBool(name)
-    local val = self:get(name)
+function Context:getBool(name, ruleToExclude)
+    local val = self:get(name, ruleToExclude)
     if type(val) == "boolean" then return val end
     return val == true or val == "true" or val == 1 or val == "1" or val == "yes"
+end
+
+function Context:optNumber(name, default)
+    local matching = self:getMatchingRules(name)
+    if #matching == 0 then return default end
+    for _, m in ipairs(matching) do
+        local val = m.rule.properties[name]
+        if val ~= nil then
+            if type(val) == "function" then val = val(self, m.rule) end
+            return tonumber(val) or default
+        end
+    end
+    return default
+end
+
+function Context:optString(name, default)
+    local matching = self:getMatchingRules(name)
+    if #matching == 0 then return default end
+    for _, m in ipairs(matching) do
+        local val = m.rule.properties[name]
+        if val ~= nil then
+            if type(val) == "function" then val = val(self, m.rule) end
+            return tostring(val)
+        end
+    end
+    return default
 end
 
 local globalCtx = setmetatable({localTags = {}}, Context)
@@ -394,6 +443,7 @@ function SetBox.rule(def)
     end
 
     local function addProp(name, value)
+        if value == nil then return end
         rule.properties[name] = value
         if not rulesByKey[name] then rulesByKey[name] = {} end
         
@@ -467,6 +517,8 @@ function SetBox.get(name) return globalCtx:get(name) end
 function SetBox.getNumber(name) return globalCtx:getNumber(name) end
 function SetBox.getString(name) return globalCtx:getString(name) end
 function SetBox.getBool(name) return globalCtx:getBool(name) end
+function SetBox.optNumber(name, default) return globalCtx:optNumber(name, default) end
+function SetBox.optString(name, default) return globalCtx:optString(name, default) end
 
 -- =============================================================================
 -- Script Loading

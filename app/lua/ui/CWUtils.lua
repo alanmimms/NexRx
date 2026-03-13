@@ -4,7 +4,9 @@
   Style and layout driven entirely by SetBox rules.
 ]]
 
-local ui = require("ui.Widgets")
+local state = require("ui.State")
+local Label = require("ui.Label")
+local Slider = require("ui.Slider")
 local layout = require("ui.Layout")
 local setbox = require("SetBox")
 local Model = require("Model")
@@ -37,21 +39,21 @@ function CWUtils.new(props)
     self.rx = props.rx -- Model.rx
     
     -- Initialize widget instances
-    self.titleLabel = ui.Label.new()
-    self.pitchSlider = ui.Slider.new({
+    self.titleLabel = Label.new()
+    self.pitchSlider = Slider.new({
         valueObs = self.rx.CW.pitch,
         propertyName = "rx.CW.pitch"
     })
-    self.pitchLabel = ui.Label.new()
+    self.pitchLabel = Label.new()
     
     return self
 end
 
-function CWUtils:draw(id, x, y, w, h)
-    local lwc = setbox.newContext({"widget.Panel", "widget.CWUtilsFrame", "id." .. id})
+function CWUtils:draw(id, x, y, w, h, parentLWC)
+    local lwc = setbox.newContext({"widget.Panel", "widget.CWUtilsFrame", "id." .. id}, parentLWC)
     
-    local bgR, bgG, bgB = ui.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = ui.hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
+    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
     local radius = lwc:getNumber("borderRadius")
     local alpha = lwc:getNumber("opacity")
     local bWidth = lwc:getNumber("borderWidth")
@@ -62,7 +64,7 @@ function CWUtils:draw(id, x, y, w, h)
     end
     
     -- Title
-    self.titleLabel:draw(id .. "-title", x + 12, y + 8, lwc)
+    self.titleLabel:draw(id .. "-title", x + 12, y + 8, w - 24, 20, lwc)
     
     local padding = lwc:getNumber("padding")
     local topMargin = lwc:getNumber("topMargin")
@@ -72,13 +74,13 @@ function CWUtils:draw(id, x, y, w, h)
     self.pitchLabel.getText = function() 
         return string.format("%s: %.0f", lwc:getString("labelPitch"), self.rx.CW.pitch:get())
     end
-    self.pitchLabel:draw(id .. "-pitch-label", cx, cy, lwc)
+    self.pitchLabel:draw(id .. "-pitch-label", cx, cy, w - padding * 2, 20, lwc)
     layout.newLine(24)
     
     cx, cy = layout.getCursor()
-    self.pitchSlider:draw(id .. "-pitch-slider", cx, cy, w - padding * 2, 
+    self.pitchSlider:draw(id .. "-pitch-slider", cx, cy, w - padding * 2, 24, lwc, 
         lwc:getNumber("minPitch"), lwc:getNumber("maxPitch"), 
-        self.rx.CW.pitch:get(), lwc)
+        self.rx.CW.pitch:get())
     layout.newLine(32)
     
     layout.endRegion()

@@ -366,13 +366,20 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
 
     // 6. Font Initialization
     float fontSize = 16.0f;
-    sol::function getNumF = lua["setbox"]["getNumber"];
-    if (getNumF.valid()) fontSize = (float)getNumF("fontSize").get<double>();
+    sol::protected_function getNumF = lua["setbox"]["getNumber"];
+    if (getNumF.valid()) {
+      auto res = getNumF("fontSize");
+      if (res.valid()) fontSize = (float)res.get<double>();
+    }
 
-    sol::object fP = lua["setbox"]["get"]("fontPaths");
-    if (fP.is<sol::table>()) {
-      for (auto& kv : fP.as<sol::table>()) {
-        if (kv.second.is<std::string>() && font.loadFont(kv.second.as<std::string>().c_str(), fontSize)) break;
+    sol::protected_function getF = lua["setbox"]["get"];
+    if (getF.valid()) {
+      auto fP_res = getF("fontPaths");
+      if (fP_res.valid() && fP_res.get<sol::object>().is<sol::table>()) {
+        sol::table fP = fP_res.get<sol::table>();
+        for (auto& kv : fP) {
+          if (kv.second.is<std::string>() && font.loadFont(kv.second.as<std::string>().c_str(), fontSize)) break;
+        }
       }
     }
     if (!font.isLoaded()) std::cerr << "WARNING: No font loaded!" << std::endl;

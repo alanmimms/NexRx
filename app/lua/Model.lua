@@ -94,7 +94,7 @@ end
 -- =============================================================================
 
 Model.rx = {
-    active = projection("rx.active", Types.Bool),
+    active = projection("rx.active", Types.Bool, true),
     
     -- VFO properties now proxy the selected SignalBox
     VFO = {
@@ -114,55 +114,55 @@ Model.rx = {
         return box and box.mode or "USB"
     end),
     
-    selectedBand = projection("rx.selectedBand", Types.String),
+    selectedBand = projection("rx.selectedBand", Types.String, "40m"),
     volume = {
-        DB = projection("rx.volume.DB", Types.Number),
-        muted = projection("rx.volume.muted", Types.Bool)
+        DB = projection("rx.volume.DB", Types.Number, -20),
+        muted = projection("rx.volume.muted", Types.Bool, false)
     },
     AGC = {
-        enabled = projection("rx.AGC.enabled", Types.Bool),
-        mode = projection("rx.AGC.mode", Types.Number)
+        enabled = projection("rx.AGC.enabled", Types.Bool, true),
+        mode = projection("rx.AGC.mode", Types.Number, 0)
     },
     RF = {
-        gainDB = projection("rx.RF.gainDB", Types.Number),
-        attenuationDB = projection("rx.RF.attenuationDB", Types.Number)
+        gainDB = projection("rx.RF.gainDB", Types.Number, 0),
+        attenuationDB = projection("rx.RF.attenuationDB", Types.Number, 0)
     },
     QSD = {
-        offsetK = projection("rx.QSD.offsetK", Types.Number)
+        offsetK = projection("rx.QSD.offsetK", Types.Number, 0)
     },
     DSP = {
-        NR = { enabled = projection("rx.NR.enabled", Types.Bool) },
-        NB = { enabled = projection("rx.NB.enabled", Types.Bool) },
+        NR = { enabled = projection("rx.NR.enabled", Types.Bool, false) },
+        NB = { enabled = projection("rx.NB.enabled", Types.Bool, false) },
         bandpass = {
-            enabled = projection("rx.bandpass.enabled", Types.Bool),
-            width = projection("rx.bandpass.width", Types.Number),
-            center = projection("rx.bandpass.center", Types.Number)
+            enabled = projection("rx.bandpass.enabled", Types.Bool, true),
+            width = projection("rx.bandpass.width", Types.Number, 3000),
+            center = projection("rx.bandpass.center", Types.Number, 0)
         },
         notch = {
-            enabled = projection("rx.notch.enabled", Types.Bool),
-            width = projection("rx.notch.width", Types.Number),
-            center = projection("rx.notch.center", Types.Number)
+            enabled = projection("rx.notch.enabled", Types.Bool, false),
+            width = projection("rx.notch.width", Types.Number, 200),
+            center = projection("rx.notch.center", Types.Number, 1000)
         }
     },
     CW = {
-        pitch = projection("rx.CW.pitch", Types.Number)
+        pitch = projection("rx.CW.pitch", Types.Number, 600)
     },
-    testToneEnabled = projection("rx.testToneEnabled", Types.Bool)
+    testToneEnabled = projection("rx.testToneEnabled", Types.Bool, false)
 }
 
 -- Spectrum center is an observable we can shift
 Model.spectrumCenterFreq = R.observable(14.2e6)
 
 Model.preselector = {
-    enabled = projection("preselector.enabled", Types.Bool),
-    auto = projection("preselector.auto", Types.Bool),
-    L = projection("preselector.L", Types.Bool),
-    capMask = projection("preselector.capMask", Types.Number)
+    enabled = projection("preselector.enabled", Types.Bool, true),
+    auto = projection("preselector.auto", Types.Bool, true),
+    L = projection("preselector.L", Types.Bool, true),
+    capMask = projection("preselector.capMask", Types.Number, 0)
 }
 
 Model.ISG = {
-    enabled = projection("isgEnabled", Types.Bool),
-    frequencyHz = projection("isgFrequency", Types.Number)
+    enabled = projection("isgEnabled", Types.Bool, false),
+    frequencyHz = projection("isgFrequency", Types.Number, 14.0e6)
 }
 
 Model.waterfall = {

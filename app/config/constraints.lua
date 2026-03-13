@@ -23,9 +23,9 @@
 -- Top Bar
 -- =============================================================================
 rule { tags = {"widget.TopBar"}, apply = {
-    anchorTop = 1.0,
-    anchorLeft = 1.0,
-    anchorRight = 1.0,
+    stickTop = true,
+    stickLeft = true,
+    stickRight = true,
     height = "32",
     marginInner = 0.0,
     marginOuter = 0.0,
@@ -35,9 +35,9 @@ rule { tags = {"widget.TopBar"}, apply = {
 -- Bottom Bar
 -- =============================================================================
 rule { tags = {"widget.BottomBar"}, apply = {
-    anchorBottom = 1.0,
-    anchorLeft = 1.0,
-    anchorRight = 1.0,
+    stickBottom = true,
+    stickLeft = true,
+    stickRight = true,
     height = "28",
     marginInner = 0.0,
     marginOuter = 0.0,
@@ -46,9 +46,9 @@ rule { tags = {"widget.BottomBar"}, apply = {
 -- Left Sidebar
 -- =============================================================================
 rule { tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = {
-    anchorLeft = 1.0,
-    anchorTop = 1.0,
-    anchorBottom = 1.0,
+    stickLeft = true,
+    stickTop = true,
+    stickBottom = true,
     minWidth = "280",
     maxWidth = "350",
     springX = 1.0,  -- Low strength expansion
@@ -59,9 +59,9 @@ rule { tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = {
 -- Right Sidebar
 -- =============================================================================
 rule { tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = {
-    anchorRight = 1.0,
-    anchorTop = 1.0,
-    anchorBottom = 1.0,
+    stickRight = true,
+    stickTop = true,
+    stickBottom = true,
     minWidth = "150",
     maxWidth = "300",
     springX = 1.0,  -- Low strength expansion
@@ -72,9 +72,9 @@ rule { tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = {
 -- Debug Panel (Active Tags Viewer)
 -- =============================================================================
 rule { tags = {"widget.DebugPanel"}, apply = {
-    anchorRight = 1.0,
-    anchorTop = 1.0,
-    anchorBottom = 1.0,
+    stickRight = true,
+    stickTop = true,
+    stickBottom = true,
     minWidth = "180",
     maxWidth = "350",
     springX = 1.0,  -- Low strength expansion
@@ -87,6 +87,10 @@ rule { tags = {"widget.DebugPanel"}, apply = {
 -- =============================================================================
 rule { tags = {"widget.CenterArea"}, apply = {
     -- Takes majority of space via high spring strength
+    stickTop = true,
+    stickBottom = true,
+    stickLeft = true,
+    stickRight = true,
     minWidth = "400",
     springX = 10.0, 
     springY = 1.0,
@@ -98,10 +102,10 @@ rule { tags = {"widget.CenterArea"}, apply = {
 -- Display Area (Vertical group for Spectrum + Waterfall)
 -- =============================================================================
 rule { tags = {"widget.DisplayArea"}, apply = {
-    anchorTop = 1.0,
-    anchorLeft = 1.0,
-    anchorRight = 1.0,
-    anchorBottom = 1.0,
+    stickTop = true,
+    stickLeft = true,
+    stickRight = true,
+    stickBottom = true,
     springX = 1.0,
     springY = 1.0,
     marginInner = 0.0,
@@ -111,6 +115,10 @@ rule { tags = {"widget.DisplayArea"}, apply = {
 -- Spectrum Display
 -- =============================================================================
 rule { tags = {"widget.Spectrum"}, apply = {
+    stickTop = true,
+    stickBottom = true,
+    stickLeft = true,
+    stickRight = true,
     minHeight = "150",
     maxHeight = "600",
     springY = 2.0,  -- High priority for vertical space
@@ -119,6 +127,10 @@ rule { tags = {"widget.Spectrum"}, apply = {
 -- Waterfall Display
 -- =============================================================================
 rule { tags = {"widget.Waterfall"}, apply = {
+    stickTop = true,
+    stickBottom = true,
+    stickLeft = true,
+    stickRight = true,
     minHeight = "200",
     springY = 1.0,  -- Shared vertical space
 }}
