@@ -12,6 +12,31 @@ local rootWindow = nil
 print("[UITest] Loading configuration...")
 setbox.loadFile("config/default.lua")
 
+
+local function evalProp(prop, lwc, id)
+   if type(prop) ~= "function" then return prop end
+   local evalCtx = { id = id, lwc = lwc }
+   setmetatable(evalCtx, { __index = function(_, k) return lwc[k] or _G[k] end })
+   local ok, res = pcall(prop, evalCtx)
+   return ok and res or nil
+end
+
+function dumpWidgets(w, level)
+   if not w then return end
+
+   level = level or 0
+   local indent = string.rep(" ", level*2)
+   print(indent .. w.id) -- .. " [" .. (getmetatable(w).name or "??") .. "]")
+
+   local kids = parentToChildren[w.id]
+   if not kids or #kids == 0 then return end
+
+   for i, kid in ipairs(kids) do
+      dumpWidgets(kid, level + 1)
+   end
+end
+
+
 function init()
    print("[UITest] init() starting...")
 
@@ -81,7 +106,7 @@ function init()
 	 direction = "horizontal",
 	 padding = 5,
 	 spacing = 5,
-	 backgroundColor = {0.18, 0.18, 0.25, 1.0},
+	 backgroundColor = {0.18, 0.9, 0.25, 1.0},
 	 outlineColor = {0.4, 0.4, 0.9, 1.0}
       }
    }
@@ -93,8 +118,8 @@ function init()
 	 parent = "id-row-2",
 	 order = 1,
 	 label = "C",
-	 backgroundColor = {0.25, 0.25, 0.4, 1.0},
-	 textColor = {1.0, 1.0, 1.0, 1.0}
+	 backgroundColor = {0.7, 0.25, 0.7, 1.0},
+	 textColor = {1.0, 6.0, 1.0, 1.0}
       }
    }
 
@@ -105,8 +130,8 @@ function init()
 	 parent = "id-row-2",
 	 order = 2,
 	 label = "D",
-	 backgroundColor = {0.25, 0.25, 0.4, 1.0},
-	 textColor = {1.0, 1.0, 1.0, 1.0}
+	 backgroundColor = {0.7, 0.7, 0.15, 1.0},
+	 textColor = {1.0, 1.0, 0.6, 1.0}
       }
    }
 
@@ -146,7 +171,7 @@ function init()
 	    springRight = springRight,
 	    order = i,
 	    label = "B." .. sub,
-	    backgroundColor = {0.2, 0.3, 0.4, 1.0}
+	    backgroundColor = {0.6, 0.4, 0.4, 1.0}
 	 }
       }
    end
@@ -171,6 +196,18 @@ function init()
    table.insert(allWidgets, widgets.Label.new("id-B-C"))
 
    print("[UITest] UI Initialized with " .. #allWidgets .. " widgets.")
+
+   parentToChildren = {}
+   for _, w in ipairs(allWidgets) do
+      local props = Widget.getProps(w.id, w.tags)
+      local parentId = evalProp(props.parent, props._lwc, w.id)
+      if parentId then
+	 if not parentToChildren[parentId] then parentToChildren[parentId] = {} end
+	 table.insert(parentToChildren[parentId], w)
+      end
+   end
+
+   dumpWidgets(rootWindow)
 end
 
 function update(dt)

@@ -15,27 +15,11 @@
 local container = {}
 local setbox = require("SetBox")
 
+
 -- Internal State
 local parentToChildren = {}
 local measurementCache = {}
 local allRegions = {}
-
-local function getWidgetProps(id, tags)
-    local lwc = setbox.newContext(tags)
-    local props = {}
-    local propNames = {
-        "parent", "width", "height", "minWidth", "minHeight",
-        "springLeft", "springRight", "springTop", "springBottom",
-        "spacing", "padding", "order", "direction", "label"
-    }
-
-    for _, name in ipairs(propNames) do
-        local val = lwc:getRaw(name)
-        if val ~= nil then props[name] = val end
-    end
-    props._lwc = lwc
-    return props
-end
 
 local function evalProp(prop, lwc, id, parentDim, windowDim)
     if type(prop) ~= "function" then return prop end
@@ -47,7 +31,7 @@ end
 
 local function measureRecursive(widget, windowDim, depth)
     if depth > 20 then return 0, 0 end
-    local props = getWidgetProps(widget.id, widget.tags)
+    local props = Widget.getProps(widget.id, widget.tags)
     local lwc = props._lwc
     local children = parentToChildren[widget.id]
     
@@ -93,7 +77,7 @@ local function solveRecursive(widget, x, y, w, h, windowDim, depth)
     local children = parentToChildren[widget.id]
     if not children or #children == 0 then return end
     
-    local props = getWidgetProps(widget.id, widget.tags)
+    local props = Widget.getProps(widget.id, widget.tags)
     local lwc = props._lwc
     local padding = evalProp(props.padding, lwc, widget.id, {w=w, h=h}, windowDim) or 0
     local spacing = evalProp(props.spacing, lwc, widget.id, {w=w, h=h}, windowDim) or 0
@@ -113,7 +97,7 @@ local function solveRecursive(widget, x, y, w, h, windowDim, depth)
     for i = 1, n do
         local child = children[i]
         local m = measurementCache[child.id]
-        local cProps = getWidgetProps(child.id, child.tags)
+        local cProps = Widget.getProps(child.id, child.tags)
         local cLwc = cProps._lwc
         
         child._m = m
@@ -208,7 +192,7 @@ function container.solveAll(rootWidget, allWidgets, winW, winH)
     local windowDim = { w = winW, h = winH }
     
     for _, w in ipairs(allWidgets) do
-        local props = getWidgetProps(w.id, w.tags)
+        local props = Widget.getProps(w.id, w.tags)
         local parentId = evalProp(props.parent, props._lwc, w.id, nil, windowDim)
         if parentId then
             if not parentToChildren[parentId] then parentToChildren[parentId] = {} end
@@ -218,8 +202,8 @@ function container.solveAll(rootWidget, allWidgets, winW, winH)
     
     for pId, children in pairs(parentToChildren) do
         table.sort(children, function(a, b)
-            local pa = getWidgetProps(a.id, a.tags)
-            local pb = getWidgetProps(b.id, b.tags)
+            local pa = Widget.getProps(a.id, a.tags)
+            local pb = Widget.getProps(b.id, b.tags)
             return (pa.order or 0) < (pb.order or 0)
         end)
     end

@@ -7,11 +7,11 @@
 local setbox = require("SetBox")
 local Reactive = require("Reactive")
 
-local Widget = {}
+_G.Widget = {}
 Widget.__index = Widget
 
 function Widget.new(id, tags)
-    local self = setmetatable({}, Widget)
+    local self = setmetatable({name = "Widget"}, Widget)
     self.id = id
     self.tags = tags or {}
     table.insert(self.tags, "id." .. id)
@@ -42,22 +42,40 @@ function Widget:draw(x, y, w, h)
     end
 end
 
+function Widget.getProps(id, tags)
+    local lwc = setbox.newContext(tags)
+    local props = {}
+    local propNames = {
+        "parent", "width", "height", "minWidth", "minHeight",
+        "springLeft", "springRight", "springTop", "springBottom",
+        "spacing", "padding", "order", "direction", "label"
+    }
+
+    for _, name in ipairs(propNames) do
+        local val = lwc:getRaw(name)
+        if val ~= nil then props[name] = val end
+    end
+    props._lwc = lwc
+    return props
+end
+
+
+
 -- =============================================================================
 -- WindowWidget
 -- =============================================================================
-local WindowWidget = setmetatable({}, { __index = Widget })
+local WindowWidget = setmetatable({name = "Window"}, { __index = Widget })
 WindowWidget.__index = WindowWidget
 
 function WindowWidget.new(id, tags)
     local t = tags or {}
-    table.insert(t, "widget.Window")
     return setmetatable(Widget.new(id, t), WindowWidget)
 end
 
 -- =============================================================================
 -- CompoundWidget
 -- =============================================================================
-local CompoundWidget = setmetatable({}, { __index = Widget })
+local CompoundWidget = setmetatable({name = "Compound"}, { __index = Widget })
 CompoundWidget.__index = CompoundWidget
 
 function CompoundWidget.new(id, tags)
@@ -74,14 +92,13 @@ end
 -- =============================================================================
 -- LabelWidget (Leaf)
 -- =============================================================================
-local LabelWidget = setmetatable({}, { __index = Widget })
+local LabelWidget = setmetatable({name = "Label"}, { __index = Widget })
 LabelWidget.__index = LabelWidget
 
 function LabelWidget.new(id, tags)
     local t = tags or {}
     table.insert(t, "widget.Label")
     table.insert(t, "widget.Leaf")
-    print("LabelWidget.new(" .. id .. ")")
     return setmetatable(Widget.new(id, t), LabelWidget)
 end
 
