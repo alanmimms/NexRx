@@ -71,7 +71,7 @@ function AppController.init()
         
         -- Automatic centering: if the signal moves off-screen, re-center
         local zoom = Model.waterfall.zoom:peek() or 1.0
-        local span = 96000 / zoom
+        local span = _G.sampleRate / zoom
         local center = Model.spectrumCenterFreq:peek()
         local margin = span * 0.1 -- 10% margin
         

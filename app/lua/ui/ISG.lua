@@ -63,13 +63,13 @@ function ISG.new(props)
         propertyName = "isgFrequency"
     })
     self.round1k = Button.new({
-        getText = function() return "<0k>" end,
+        getText = function() return "=000" end,
         onClick = function()
             Model.roundFrequency("isgFrequency", 1000)
         end
     })
     self.round100 = Button.new({
-        getText = function() return "<00>" end,
+        getText = function() return "=00" end,
         onClick = function()
             Model.roundFrequency("isgFrequency", 100)
         end

@@ -80,9 +80,9 @@ function constraints.query(id, tags)
     
     local ctx = SetBox.newContext(queryTags)
     local props = {
-        "stickLeft", "stickRight", "stickTop", "stickBottom",
         "width", "height", "minWidth", "maxWidth", "minHeight", "maxHeight",
-        "springX", "springY", "spacing", "padding", "order", "group"
+        "springLeft", "springRight", "springTop", "springBottom",
+        "spacing", "padding", "order", "group", "direction", "label"
     }
 
     local result = {}

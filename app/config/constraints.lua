@@ -1,217 +1,151 @@
 --[[
-    Constraint Rules for Layout System
+    Constraint Rules for Layout System (Pure Spring-Constraint)
 
-    Each widget's layout is determined by constraint properties resolved via SetBox.
-    Constraints use Lua expressions evaluated with parent dimensions in scope.
-
-    Available constraint properties:
-    - anchorLeft, anchorRight, anchorTop, anchorBottom: spring strength (0-1) to that edge
-    - width, height: Lua expression for size (e.g., "parent.width * 0.2", "200")
-    - minWidth, maxWidth, minHeight, maxHeight: size bounds
-    - marginInner: percentage padding inside widget (0.02 = 2%)
-    - marginOuter: percentage gap outside widget (0.01 = 1%)
-    - springX, springY: spring strength for flexible space distribution
-
-    Sizing modes:
-    - Fixed: width = "260" (pixels, avoid if possible)
-    - Percentage: width = "parent.width * 0.2"
-    - Content: width = "content.width" (from children)
-    - Spring: springX = 1.0 (share available space proportionally)
+    Each widget's layout is determined by spring stiffness properties.
+    - math.huge: Rigid (stuck)
+    - S > 0: Elastic (proportional to 1/S)
+    - S < 0: Repulsive (explosive expansion)
+    - S = 0: Neutral (passive)
 ]]
+
+-- =============================================================================
+-- Root Window
+-- =============================================================================
+rule { id = "id-root-window", apply = {
+    width = function(ctx) return ctx.window.width end,
+    height = function(ctx) return ctx.window.height end,
+    direction = "vertical",
+    padding = 0,
+    spacing = 0,
+}}
 
 -- =============================================================================
 -- Top Bar
 -- =============================================================================
-rule { tags = {"widget.TopBar"}, apply = {
-    stickTop = true,
-    stickLeft = true,
-    stickRight = true,
-    height = "32",
-    marginInner = 0.0,
-    marginOuter = 0.0,
+rule { id = "top-bar", tags = {"widget.TopBar"}, apply = {
+    parent = "id-root-window",
+    order = 1,
+    springTop = math.huge,
+    springLeft = math.huge,
+    springRight = math.huge,
+    height = 32,
 }}
 
 -- =============================================================================
--- Bottom Bar
+-- Main Area (Sidebar + Center + Sidebar)
 -- =============================================================================
-rule { tags = {"widget.BottomBar"}, apply = {
-    stickBottom = true,
-    stickLeft = true,
-    stickRight = true,
-    height = "28",
-    marginInner = 0.0,
-    marginOuter = 0.0,
+rule { id = "main-area", apply = {
+    parent = "id-root-window",
+    order = 2,
+    direction = "horizontal",
+    springTop = math.huge,
+    springBottom = math.huge,
+    springLeft = math.huge,
+    springRight = math.huge,
+    springY = 1.0, -- Stretch vertically in parent
 }}
 
 -- Left Sidebar
--- =============================================================================
-rule { tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = {
-    stickLeft = true,
-    stickTop = true,
-    stickBottom = true,
-    minWidth = "280",
-    maxWidth = "350",
-    springX = 1.0,  -- Low strength expansion
-    marginInner = 0.02,
-    marginOuter = 0.0,
+rule { id = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = {
+    parent = "main-area",
+    order = 1,
+    direction = "vertical",
+    springLeft = math.huge,
+    springTop = math.huge,
+    springBottom = math.huge,
+    minWidth = 280,
+    padding = 8,
+    spacing = 4,
+}}
+
+-- Center Area
+rule { id = "center-area", tags = {"widget.CenterArea"}, apply = {
+    parent = "main-area",
+    order = 2,
+    direction = "vertical",
+    springLeft = 1.0, springRight = 1.0, -- Expand to fill
+    springTop = math.huge,
+    springBottom = math.huge,
+    minWidth = 400,
 }}
 
 -- Right Sidebar
--- =============================================================================
-rule { tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = {
-    stickRight = true,
-    stickTop = true,
-    stickBottom = true,
-    minWidth = "150",
-    maxWidth = "300",
-    springX = 1.0,  -- Low strength expansion
-    marginInner = 0.02,
-    marginOuter = 0.0,
+rule { id = "right-sidebar", tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = {
+    parent = "main-area",
+    order = 3,
+    direction = "vertical",
+    springRight = math.huge,
+    springTop = math.huge,
+    springBottom = math.huge,
+    minWidth = 150,
+    padding = 8,
+    spacing = 4,
 }}
 
--- Debug Panel (Active Tags Viewer)
--- =============================================================================
-rule { tags = {"widget.DebugPanel"}, apply = {
-    stickRight = true,
-    stickTop = true,
-    stickBottom = true,
-    minWidth = "180",
-    maxWidth = "350",
-    springX = 1.0,  -- Low strength expansion
-    marginInner = 0.01,
-    marginOuter = 0.0,
-}}
-
--- =============================================================================
--- Center Area (contains Spectrum + Waterfall)
--- =============================================================================
-rule { tags = {"widget.CenterArea"}, apply = {
-    -- Takes majority of space via high spring strength
-    stickTop = true,
-    stickBottom = true,
-    stickLeft = true,
-    stickRight = true,
-    minWidth = "400",
-    springX = 10.0, 
-    springY = 1.0,
-    marginInner = 0.01,
-    marginOuter = 0.0,
+-- Active Tags Sidebar
+rule { id = "active-tags", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"}, apply = {
+    parent = "main-area",
+    order = 4,
+    direction = "vertical",
+    springRight = math.huge,
+    springTop = math.huge,
+    springBottom = math.huge,
+    minWidth = 180,
+    padding = 8,
+    spacing = 4,
 }}
 
 -- =============================================================================
--- Display Area (Vertical group for Spectrum + Waterfall)
+-- Display Area (inside Center Area)
 -- =============================================================================
 rule { tags = {"widget.DisplayArea"}, apply = {
-    stickTop = true,
-    stickLeft = true,
-    stickRight = true,
-    stickBottom = true,
-    springX = 1.0,
-    springY = 1.0,
-    marginInner = 0.0,
-    marginOuter = 0.0,
+    direction = "vertical",
+    springLeft = math.huge, springRight = math.huge,
+    springTop = math.huge, springBottom = math.huge,
 }}
 
--- Spectrum Display
--- =============================================================================
-rule { tags = {"widget.Spectrum"}, apply = {
-    stickTop = true,
-    stickBottom = true,
-    stickLeft = true,
-    stickRight = true,
-    minHeight = "150",
-    maxHeight = "600",
-    springY = 2.0,  -- High priority for vertical space
+-- Spectrum
+rule { id = "id-spec", tags = {"widget.Spectrum"}, apply = {
+    parent = "center-area",
+    order = 1,
+    springLeft = math.huge, springRight = math.huge,
+    springTop = 1.0, springBottom = 1.0, -- Expand vertically
+    minHeight = 150,
 }}
 
--- Waterfall Display
--- =============================================================================
-rule { tags = {"widget.Waterfall"}, apply = {
-    stickTop = true,
-    stickBottom = true,
-    stickLeft = true,
-    stickRight = true,
-    minHeight = "200",
-    springY = 1.0,  -- Shared vertical space
+-- Waterfall
+rule { id = "id-wf", tags = {"widget.Waterfall"}, apply = {
+    parent = "center-area",
+    order = 2,
+    springLeft = math.huge, springRight = math.huge,
+    springTop = 1.0, springBottom = 1.0,
+    minHeight = 200,
 }}
 
 -- =============================================================================
--- Generic Panel (default constraints)
--- =============================================================================
-rule { tags = {"widget.Panel"}, apply = {
-    marginInner = 0.02,
-    marginOuter = 0.01,
-}}
-
--- =============================================================================
--- Widget Type Defaults - ALL sizes come from rules, not hardcoded
+-- Sidebar Content Widgets
 -- =============================================================================
 
--- Buttons
-rule { tags = {"widget.Button"}, apply = {
-    marginInner = 0.0,
-    marginOuter = 0.005,
+rule { tags = {"widget.Sidebar", "widget.Label"}, apply = {
+    springLeft = math.huge, springRight = math.huge,
+    height = 24,
 }}
 
--- Toggle buttons (same as regular buttons)
-rule { tags = {"widget.Toggle"}, apply = {
+rule { tags = {"widget.Sidebar", "widget.Button"}, apply = {
+    springLeft = math.huge, springRight = math.huge,
+    height = 28,
 }}
 
--- Checkboxes
-rule { tags = {"widget.Checkbox"}, apply = {
-    height = "18",
+rule { tags = {"widget.Sidebar", "widget.Slider"}, apply = {
+    springLeft = math.huge, springRight = math.huge,
+    height = 12,
 }}
 
--- Sliders
-rule { tags = {"widget.Slider"}, apply = {
-    height = "8",
-}}
+-- Special widgets in sidebar
+rule { id = "id-smeter", apply = { parent = "left-sidebar", order = 1 }}
+rule { id = "id-rx-freq", apply = { parent = "left-sidebar", order = 2 }}
+rule { id = "id-rx-slider", apply = { parent = "left-sidebar", order = 3 }}
+rule { id = "id-rx-vol", apply = { parent = "left-sidebar", order = 4 }}
+rule { id = "id-rx-gain", apply = { parent = "left-sidebar", order = 5 }}
 
--- Progress bars
-rule { tags = {"widget.ProgressBar"}, apply = {
-    height = "8",
-}}
-
--- Labels
-rule { tags = {"widget.Label"}, apply = {
-    -- Labels size to content by default, but can be overridden
-}}
-
--- Text inputs
-rule { tags = {"widget.TextInput"}, apply = {
-    height = "28",
-}}
-
--- Meters
-rule { tags = {"widget.Meter"}, apply = {
-    height = "28",
-}}
-
--- Separators
-rule { tags = {"widget.Separator"}, apply = {
-    height = "1",
-}}
-
--- =============================================================================
--- Custom Widget Defaults (manually drawn in main.lua)
--- =============================================================================
-
--- Frequency display box in sidebar (VFO readout)
-rule { tags = {"widget.FrequencyDisplay"}, apply = {
-    height = "36",
-    -- width is contextual (parent.width - padding), handled by fallback
-}}
-
--- S-Meter LED bar display
-rule { tags = {"widget.SMeter"}, apply = {
-    height = "28",
-    -- width is contextual (parent.width - padding), handled by fallback
-}}
-
--- S-Meter text readout
-rule { tags = {"widget.SMeterText"}, apply = {
-    height = "20",
-    -- width matches meter width, handled by fallback
-}}
-
-print("[constraints.lua] Layout constraint rules loaded")
+print("[constraints.lua] Pure Spring-Constraint rules loaded")

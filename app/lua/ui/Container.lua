@@ -1,325 +1,206 @@
 --[[
-    Container Layout Solver
+    Hierarchical Container Layout Solver (Pure Spring-Constraint)
 
-    Computes widget regions based on anchors and springs.
-    Recursive version that correctly calculates minimum sizes and distributes surplus space.
+    Computes widget regions based on parent/child relationships defined in SetBox.
+    Uses spring stiffness values (springTop, springBottom, springLeft, springRight) 
+    to distribute surplus space proportional to 1/Stiffness (compliance).
 ]]
 
 local container = {}
-
-local Constraints = require("ui.Constraints")
 local SetBox = require("SetBox")
-
--- Force unbuffered output for debugging
-io.stdout:setvbuf("no")
+local Constraints = require("ui.Constraints")
 
 -- Internal State (Reset every pass)
 local parentToChildren = {}
-local resolvedWidgets = {}
 local measurementCache = {}
 local allRegions = {}
 
--- Virtual Root Definition
-local virtualRoot = {
-    { id = "top-bar",       tags = {"widget.TopBar"} },
-    { id = "left-sidebar",  tags = {"widget.Sidebar", "widget.LeftSidebar"},      group = "main-row" },
-    { id = "center-area",   tags = {"widget.CenterArea"},                         group = "main-row" },
-    { id = "right-sidebar", tags = {"widget.Sidebar", "widget.RightSidebar"},     group = "main-row" },
-    { id = "active-tags",   tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"}, group = "main-row" },
-}
-
-local function resolveWidgetProps(id, tags)
-    local props = Constraints.query(id, tags)
-    return {
-        id = id,
-        tags = tags,
-        cons = props,
-        group = props.group or nil,
-        priority = props.order or 0
-    }
+local function getWidgetProps(id, tags)
+    -- This returns a table of resolved properties and their _LWC
+    return Constraints.query(id, tags)
 end
 
-local function getAnchor(w)
-    if w.cons.stickLeft and not w.cons.stickRight then return "left"
-    elseif w.cons.stickRight and not w.cons.stickLeft then return "right"
-    elseif w.cons.stickBottom and not w.cons.stickTop then return "bottom"
-    end
-    return "top"
+local function evalProp(prop, lwc, id, parentDim, windowDim)
+    return Constraints.eval(prop, lwc, parentDim, windowDim, id)
 end
 
-local measureRecursive
-local solveRecursive
-
--- Helper to group children sequentially based on anchor and group ID
-local function getSequentialGroups(children)
-    local groups = {}
-    if #children == 0 then return groups end
+local function measureRecursive(widget, windowDim, depth)
+    if depth > 25 then return 0, 0 end
     
-    local currentGroup = nil
-    for _, child in ipairs(children) do
-        local anchor = getAnchor(child)
-        local gName = child.group or ("atomic-" .. child.id)
-        
-        if not currentGroup or currentGroup.name ~= gName or currentGroup.anchor ~= anchor then
-            currentGroup = {
-                name = gName,
-                anchor = anchor,
-                widgets = {},
-                isH = (anchor == "left" or anchor == "right")
-            }
-            table.insert(groups, currentGroup)
-        end
-        table.insert(currentGroup.widgets, child)
-    end
-    return groups
-end
-
-measureRecursive = function(widgetId, parentW, parentH, windowSize, depth)
-    if depth > 15 then return 50, 50 end
+    local lwc = widget._props._LWC
+    local children = parentToChildren[widget.id]
     
-    local cacheKey = widgetId .. ":" .. parentW .. "x" .. parentH
-    if measurementCache[cacheKey] then return measurementCache[cacheKey].w, measurementCache[cacheKey].h end
-
-    local wData = resolvedWidgets[widgetId]
-    if not wData then return 50, 50 end
-
-    local children = parentToChildren[widgetId]
-    local lwc = wData.cons._LWC
-    local parentDim = { width = parentW, height = parentH }
+    local minW = evalProp(widget._props.width or widget._props.minWidth, lwc, widget.id, nil, windowDim) or 0
+    local minH = evalProp(widget._props.height or widget._props.minHeight, lwc, widget.id, nil, windowDim) or 0
     
-    local ownMinW = Constraints.eval(wData.cons.minWidth or wData.cons.width, lwc, parentDim, windowSize) or 0
-    local ownMinH = Constraints.eval(wData.cons.minHeight or wData.cons.height, lwc, parentDim, windowSize) or 0
-    local spacing = Constraints.eval(wData.cons.spacing, lwc, parentDim, windowSize) or 0
-    local padding = Constraints.eval(wData.cons.padding, lwc, parentDim, windowSize) or 0
-
-    local resW, resH = 0, 0
     if not children or #children == 0 then
-        resW, resH = math.max(ownMinW, 1), math.max(ownMinH, 1)
+        -- Default leaf size based on label if not specified
+        if minW == 0 or minH == 0 then
+            local label = evalProp(widget._props.label, lwc, widget.id, nil, windowDim) or widget.id
+            local tw = measureText(label)
+            local th = getLineHeight()
+            if minW == 0 then minW = tw end
+            if minH == 0 then minH = th end
+        end
     else
-        local groups = getSequentialGroups(children)
+        -- Compound size: sum of children + padding + spacing
+        local padding = evalProp(widget._props.padding, lwc, widget.id, nil, windowDim) or 0
+        local spacing = evalProp(widget._props.spacing, lwc, widget.id, nil, windowDim) or 0
+        local isHoriz = (evalProp(widget._props.direction, lwc, widget.id, nil, windowDim) or "horizontal") == "horizontal"
+        
         local totalW, totalH = 0, 0
-        local availW, availH = parentW - padding * 2, parentH - padding * 2
-
-        for i, g in ipairs(groups) do
-            local groupW, groupH = 0, 0
-            for j, child in ipairs(g.widgets) do
-                local cw, ch = measureRecursive(child.id, availW, availH, windowSize, depth + 1)
-                if g.isH then
-                    groupW = groupW + cw + (j < #g.widgets and spacing or 0)
-                    groupH = math.max(groupH, ch)
-                else
-                    groupH = groupH + ch + (j < #g.widgets and spacing or 0)
-                    groupW = math.max(groupW, cw)
-                end
-            end
-
-            if g.isH then
-                totalW = totalW + groupW + (i > 1 and spacing or 0)
-                totalH = math.max(totalH, groupH)
+        for i, child in ipairs(children) do
+            local cw, ch = measureRecursive(child, windowDim, depth + 1)
+            if isHoriz then
+                totalW = totalW + cw + (i > 1 and spacing or 0)
+                totalH = math.max(totalH, ch)
             else
-                totalH = totalH + groupH + (i > 1 and spacing or 0)
-                totalW = math.max(totalW, groupW)
+                totalH = totalH + ch + (i > 1 and spacing or 0)
+                totalW = math.max(totalW, cw)
             end
         end
-        resW, resH = math.max(totalW + padding * 2, ownMinW), math.max(totalH + padding * 2, ownMinH)
+        minW = math.max(minW, totalW + padding * 2)
+        minH = math.max(minH, totalH + padding * 2)
     end
 
-    measurementCache[cacheKey] = { w = resW, h = resH }
-    return resW, resH
+    measurementCache[widget.id] = { w = minW, h = minH }
+    return minW, minH
 end
 
-solveRecursive = function(region, widgets, windowSize, parentWData)
-    local lwc = parentWData and parentWData.cons._LWC or SetBox.newContext({})
-    local parentDim = { width = region.w, height = region.h }
-    local padding = Constraints.eval(parentWData and parentWData.cons.padding, lwc, parentDim, windowSize) or 0
-    local spacing = Constraints.eval(parentWData and parentWData.cons.spacing, lwc, parentDim, windowSize) or 0
-
-    local remaining = { 
-        x = region.x + padding, 
-        y = region.y + padding, 
-        w = region.w - padding * 2, 
-        h = region.h - padding * 2 
-    }
-
-    local groups = getSequentialGroups(widgets)
-    if #groups == 0 then return end
-
-    -- 1. Measure all groups and their total required extent
-    local totalRequiredH = 0
-    local totalRequiredW = 0
-    local groupInfo = {}
-
-    for i, g in ipairs(groups) do
-        local gW, gH = 0, 0
-        local items = {}
-        for j, w in ipairs(g.widgets) do
-            local iw, ih = measureRecursive(w.id, remaining.w, remaining.h, windowSize, 0)
-            local springX = w.cons.springX or 0
-            local springY = w.cons.springY or 0
-            -- Default springs for stretched widgets
-            if w.cons.stickLeft and w.cons.stickRight and springX == 0 then springX = 1 end
-            if w.cons.stickTop and w.cons.stickBottom and springY == 0 then springY = 1 end
-            
-            table.insert(items, { w = w, minW = iw, minH = ih, springX = springX, springY = springY, curW = iw, curH = ih })
-            
-            if g.isH then
-                gW = gW + iw + (j < #g.widgets and spacing or 0)
-                gH = math.max(gH, ih)
-            else
-                gH = gH + ih + (j < #g.widgets and spacing or 0)
-                gW = math.max(gW, iw)
-            end
-        end
-        
-        local info = { g = g, minW = gW, minH = gH, items = items, curW = gW, curH = gH }
-        table.insert(groupInfo, info)
-        
-        -- Sum up the primary axis requirements
-        -- NOTE: This logic assumes parent is either a vertical stack or horizontal row
-        -- For sidebars, it's a vertical stack of groups.
-        totalRequiredH = totalRequiredH + gH + (i > 1 and spacing or 0)
-        totalRequiredW = math.max(totalRequiredW, gW)
-    end
-
-    -- 2. Distribute surplus space in the parent's primary axis (vertical for sidebars)
-    local availH = remaining.h
-    local surplusH = math.max(0, availH - totalRequiredH)
+local function solveRecursive(widget, x, y, w, h, windowDim, depth)
+    if depth > 25 then return end
     
-    if surplusH > 0 then
-        -- Are there any vertical springs in any child group?
-        local totalSpringY = 0
-        for _, info in ipairs(groupInfo) do
-            for _, item in ipairs(info.items) do totalSpringY = totalSpringY + item.springY end
-        end
+    allRegions[widget.id] = { x = x, y = y, w = w, h = h }
+    
+    local children = parentToChildren[widget.id]
+    if not children or #children == 0 then return end
+    
+    local lwc = widget._props._LWC
+    local padding = evalProp(widget._props.padding, lwc, widget.id, {width=w, height=h}, windowDim) or 0
+    local spacing = evalProp(widget._props.spacing, lwc, widget.id, {width=w, height=h}, windowDim) or 0
+    local isHoriz = (evalProp(widget._props.direction, lwc, widget.id, {width=w, height=h}, windowDim) or "horizontal") == "horizontal"
+    
+    local availW = w - padding * 2
+    local availH = h - padding * 2
+    local n = #children
+    
+    -- 1. Measure children and collect springs
+    local totalMinSize = 0
+    for i = 1, n do
+        local child = children[i]
+        local m = measurementCache[child.id]
+        child._m = m
+        local cLwc = child._props._LWC
         
-        if totalSpringY > 0 then
-            -- Allocate to widget heights
-            for _, info in ipairs(groupInfo) do
-                local groupAddedH = 0
-                for _, item in ipairs(info.items) do
-                    if not info.g.isH then -- Vertical group: grow items
-                        local added = surplusH * item.springY / totalSpringY
-                        item.curH = item.curH + added
-                        groupAddedH = groupAddedH + added
-                    end
-                end
-                info.curH = info.curH + groupAddedH
-            end
+        if isHoriz then
+            totalMinSize = totalMinSize + m.w
+            child._s1 = evalProp(child._props.springLeft, cLwc, child.id, {width=availW, height=availH}, windowDim) or 0
+            child._s2 = evalProp(child._props.springRight, cLwc, child.id, {width=availW, height=availH}, windowDim) or 0
         else
-            -- Magnetic distribution: Increase inter-group spacing if parent is stretched
-            local parentIsStretched = parentWData and parentWData.cons.stickTop and parentWData.cons.stickBottom
-            if parentIsStretched and #groupInfo > 1 then
-                local extraSpacing = surplusH / (#groupInfo - 1)
-                -- We'll apply this during positioning
-                spacing = spacing + extraSpacing
+            totalMinSize = totalMinSize + m.h
+            child._s1 = evalProp(child._props.springTop, cLwc, child.id, {width=availW, height=availH}, windowDim) or 0
+            child._s2 = evalProp(child._props.springBottom, cLwc, child.id, {width=availW, height=availH}, windowDim) or 0
+        end
+    end
+    totalMinSize = totalMinSize + (n - 1) * spacing
+
+    -- 2. Calculate Gap Stiffnesses (averaging opposing springs)
+    local gapStiff = {}
+    for i = 0, n do
+        local s1 = (i == 0) and math.huge or children[i]._s2
+        local s2 = (i == n) and math.huge or children[i+1]._s1
+        gapStiff[i] = (s1 + s2) / 2
+    end
+
+    -- 3. Distribute Surplus (or Deficit)
+    local surplus = (isHoriz and availW or availH) - totalMinSize
+    local gapSizes = {}
+    for i = 0, n do gapSizes[i] = (i > 0 and i < n) and spacing or 0 end
+
+    if surplus ~= 0 then
+        local compliances = {}
+        local totalCompliance = 0
+        for i = 0, n do
+            local s = gapStiff[i]
+            local c = 0
+            if s < 0 then
+                c = 1e12 -- Repulsive force (high compliance)
+            elseif s > 0 and s ~= math.huge then
+                c = 1 / s
             end
+            compliances[i] = c
+            totalCompliance = totalCompliance + c
+        end
+
+        if totalCompliance > 0 then
+            for i = 0, n do
+                gapSizes[i] = gapSizes[i] + surplus * (compliances[i] / totalCompliance)
+            end
+        elseif surplus < 0 then
+            -- Pivot Rule: anchor at Top/Left, last gap absorbs deficit
+            gapSizes[n] = gapSizes[n] + surplus
         end
     end
 
-    -- 3. Position and solve recursively
-    local currentY = remaining.y
-    for _, info in ipairs(groupInfo) do
-        local g = info.g
-        local currentX = remaining.x
+    -- 4. Final Positioning and Recursion
+    local pos = isHoriz and (x + padding) or (y + padding)
+    for i = 1, n do
+        local child = children[i]
+        pos = pos + gapSizes[i-1]
         
-        -- For each group, if it's horizontal, it might have internal horizontal springs
-        local groupSurplusW = math.max(0, remaining.w - info.minW)
-        local groupTotalSpringX = 0
-        for _, item in ipairs(info.items) do groupTotalSpringX = groupTotalSpringX + item.springX end
-        
-        local currentGroupSpacing = spacing
-        if g.isH and groupTotalSpringX == 0 and groupSurplusW > 0 and #info.items > 1 then
-            -- Horizontal magnetic spacing
-            currentGroupSpacing = spacing + (groupSurplusW / (#info.items - 1))
-        end
-
-        for j, item in ipairs(info.items) do
-            if g.isH and groupTotalSpringX > 0 then
-                item.curW = item.curW + (groupSurplusW * item.springX / groupTotalSpringX)
-            end
-            
-            -- Stretch in the secondary axis if requested
-            local finalW = item.curW
-            local finalH = item.curH
-            if g.isH then -- Horizontal group
-                if item.w.cons.stickTop and item.w.cons.stickBottom then finalH = remaining.h end
-            else -- Vertical group
-                if item.w.cons.stickLeft and item.w.cons.stickRight then finalW = remaining.w end
-            end
-
-            local r = { x = currentX, y = currentY, w = math.floor(finalW+0.5), h = math.floor(finalH+0.5) }
-            
-            -- Anchor adjustments within the group area
-            if g.isH then
-                if item.w.cons.stickBottom and not item.w.cons.stickTop then r.y = currentY + info.curH - finalH
-                elseif not item.w.cons.stickTop and not item.w.cons.stickBottom then r.y = currentY + (info.curH - finalH)/2 end
-            else
-                if item.w.cons.stickRight and not item.w.cons.stickLeft then r.x = currentX + remaining.w - finalW
-                elseif not item.w.cons.stickLeft and not item.w.cons.stickRight then r.x = currentX + (remaining.w - finalW)/2 end
-            end
-
-            allRegions[item.w.id] = r
-            if parentToChildren[item.w.id] then solveRecursive(r, parentToChildren[item.w.id], windowSize, item.w) end
-            
-            if g.isH then
-                currentX = currentX + item.curW + currentGroupSpacing
-            else
-                currentY = currentY + item.curH + spacing
-            end
-        end
-        
-        -- If it was a horizontal group, advance vertical cursor by group height
-        if g.isH then
-            currentY = currentY + info.curH + spacing
+        local cw, ch
+        if isHoriz then
+            cw = child._m.w
+            ch = availH
+            solveRecursive(child, pos, y + padding, cw, ch, windowDim, depth + 1)
+            pos = pos + cw
+        else
+            cw = availW
+            ch = child._m.h
+            solveRecursive(child, x + padding, pos, cw, ch, windowDim, depth + 1)
+            pos = pos + ch
         end
     end
 end
 
-function container.solve(winW, winH)
-    parentToChildren = {}; resolvedWidgets = {}; measurementCache = {}; allRegions = {}
-    local windowSize = { width = winW, height = winH }
+function container.solveAll(rootWidget, allWidgets, winW, winH)
+    parentToChildren = {}; measurementCache = {}; allRegions = {}
+    local windowDim = { width = winW, height = winH }
     
-    -- Pre-index and resolve properties ONCE
-    local allRules = SetBox.getRules()
-    for _, rule in ipairs(allRules) do
-        if rule.properties and rule.properties.parent then
-            local pId = rule.properties.parent
-            local tags = {}
-            for t in pairs(rule.tags) do tags[t] = true end
-            local tagList = {}
-            for t in pairs(tags) do table.insert(tagList, t) end
-            
-            local resolved = resolveWidgetProps(rule.id, tagList)
-            resolvedWidgets[rule.id] = resolved
-            if not parentToChildren[pId] then parentToChildren[pId] = {} end
-            table.insert(parentToChildren[pId], resolved)
+    -- Associate properties with widgets
+    for _, w in ipairs(allWidgets) do
+        w._props = getWidgetProps(w.id, w.tags)
+    end
+
+    -- Build hierarchy
+    for _, w in ipairs(allWidgets) do
+        local parentId = evalProp(w._props.parent, w._props._LWC, w.id, nil, windowDim)
+        if parentId then
+            if not parentToChildren[parentId] then parentToChildren[parentId] = {} end
+            table.insert(parentToChildren[parentId], w)
         end
     end
-    for _, list in pairs(parentToChildren) do table.sort(list, function(a,b) return a.priority < b.priority end) end
-
-    -- Resolve virtual root
-    local rootResolved = {}
-    for _, v in ipairs(virtualRoot) do
-        local res = resolveWidgetProps(v.id, v.tags)
-        res.group = v.group -- Override virtual group
-        resolvedWidgets[v.id] = res
-        table.insert(rootResolved, res)
+    
+    -- Sort by order
+    for pId, children in pairs(parentToChildren) do
+        table.sort(children, function(a, b)
+            local oa = evalProp(a._props.order, a._props._LWC, a.id, nil, windowDim) or 0
+            local ob = evalProp(b._props.order, b._props._LWC, b.id, nil, windowDim) or 0
+            return oa < ob
+        end)
     end
 
-    solveRecursive({x=0, y=0, w=winW, h=winH}, rootResolved, windowSize, nil)
+    measureRecursive(rootWidget, windowDim, 0)
+    solveRecursive(rootWidget, 0, 0, winW, winH, windowDim, 0)
+    
     return allRegions
 end
 
--- Compatibility function for older widget code
-function container.solveDynamicSublayout(region, parentId)
-    local subset = {}
-    for id, r in pairs(allRegions) do
-        local w = resolvedWidgets[id]
-        if w and w.cons and w.cons.parent == parentId then
-            subset[id] = r
-        end
-    end
-    return subset
+-- Backward compatibility for old calls in Main.lua
+function container.solve(winW, winH)
+    -- This requires a global list of widgets.
+    -- Main.lua should probably call solveAll instead.
+    return nil
 end
 
 function container.getRegions()

@@ -647,6 +647,9 @@ end
 -- @param eventType Events.Type value
 -- @param data additional event data
 -- @return event table
+
+-- XXX should this be polymorphic so "data" is based on type of event
+-- here and not in calling code?
 function Events.createEvent(eventType, data)
     local mx, my = getMousePos()
     local event = {
@@ -666,6 +669,9 @@ function Events.createEvent(eventType, data)
 
     -- Build modifiers array (namespaced)
     -- Prefer values passed in data, fall back to global functions
+
+    -- XXX this should always be done; modifiers should not come from
+    -- caller.
     if not event.modifiers then
         event.modifiers = {}
         

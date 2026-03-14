@@ -36,7 +36,6 @@ local defaultBands = {
     {name = "15m",  startHz = 21.0e6,  endHz = 21.45e6, defaultFreqHz = 21.2e6},
     {name = "12m",  startHz = 24.89e6, endHz = 24.99e6, defaultFreqHz = 24.93e6},
     {name = "10m",  startHz = 28.0e6,  endHz = 29.7e6,  defaultFreqHz = 28.5e6},
-    {name = "6m",   startHz = 50.0e6,  endHz = 54.0e6,  defaultFreqHz = 50.1e6},
 }
 
 --- Initialize the band system
