@@ -133,6 +133,16 @@ Layout logic is treated as a swappable strategy applied to containers.
 The layout function interprets a child's constraints (e.g., edge
 sticking) and distributes available space.
 
+
+The layout process uses the Stick bits to pin the edges of a given
+widget to its siblings corresponding adjacent or parent's
+corresponding edge to make its size fill or not fill the available
+space. This is done in box X and Y axes based in the stickiness bits.
+The size of a label is taken into account for its height and width to
+force the parent's dimensions to encompass it if it's tallest or
+widest of the kids.
+
+
 #### Generic Sticking and Stretching
 
 For standard UI elements (buttons, panels), widgets declare their
