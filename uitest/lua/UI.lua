@@ -85,9 +85,7 @@ local rxTree = Widget.Window{
 }
 
 local function renderUI(bridge, width, height)
-  print("about to call rxTree:layout")
   rxTree:layout(bridge, 0, 0, width, height)
-  print("about to call rxTree:draw")
   rxTree:draw(bridge)
 end
 

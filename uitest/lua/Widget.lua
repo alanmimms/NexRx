@@ -57,11 +57,6 @@ function Widget:init(def)
   
   for _, kid in ipairs(self.kids) do kid.parent = self end
   if def.focused then self:setFocus() end
-
-  print("Widget:init",
-    (self.debugName or self), self.id,
-    self.props.x, self.props.y,
-    self.props.w, self.props.h)
 end
 
 function Widget.mkType(typeName, base)
