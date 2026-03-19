@@ -19,7 +19,8 @@ function Layout.hFlow(container)
     end
   end
 
-  local availW, availH, startX, startY = container.props.w, container.props.h, container.props.x, container.props.y
+  local availW, availH = container.props.w, container.props.h
+  local startX, startY = container.props.x, container.props.y
   local flexSpace = math.max(0, availW - totalFixedW)
   local currentX = startX
 
@@ -91,7 +92,8 @@ function Layout.vFlow(container)
     end
   end
 
-  local availW, availH, startX, startY = container.props.w, container.props.h, container.props.x, container.props.y
+  local availW, availH = container.props.w, container.props.h
+  local startX, startY = container.props.x, container.props.y
   local flexSpace = math.max(0, availH - totalFixedH)
   local currentY = startY
 

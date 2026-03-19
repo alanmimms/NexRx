@@ -2,12 +2,6 @@ local Color = require("Color")
 local Layout = require("Layout")
 local Stick = require("Stick")
 
-local LOG_TRACE = 1
-local LOG_DEBUG = 2
-local LOG_INFO  = 3
-local LOG_WARN  = 4
-local LOG_ERR   = 5
-
 local Widget = { typeName = "Widget" }
 Widget.__index = Widget
 
@@ -24,7 +18,7 @@ end
 function Widget:init(def)
   def = def or {}
   self.id = def.id or Widget.newID()
-  self.debugName = def.debugName
+  self.name = def.name
   self.type = self.typeName or "Widget"
   self.props = def.props or {}
   self.kids = def.kids or {}
@@ -76,38 +70,37 @@ function Widget.mkType(typeName, base)
 end
 
 function Widget:getMetrics() return self.metrics end
-function Widget:calcMetrics(bridge)
+function Widget:calcMetrics()
   if self.metrics.prefW == 0 then self.metrics.prefW = 10 end
   if self.metrics.prefH == 0 then self.metrics.prefH = 10 end
 end
 
-function Widget:draw(bridge)
+function Widget:draw()
   if self.showBackground and self.backgroundColor then
-    bridge.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, self.backgroundColor:toTable())
+    System.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, self.backgroundColor:toTable())
   end
 
   if (self.showBorder and self.borderColor) or self.isMouseOver then
     local thickness = self.isMouseOver and 3 or 1
     local color = (self.borderColor or DEFAULT_HIGHLIGHT_COLOR):toTable()
-    bridge.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, thickness, color)
+    System.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, thickness, color)
   end
 
   for _, kid in ipairs(self.kids) do 
-    local ok, err = pcall(kid.draw, kid, bridge)
+    local ok, err = pcall(kid.draw, kid)
     if not ok then
-      print("Error drawing kid", kid.debugName or kid, kid.id, err)
+      print("Error drawing kid", kid.name or kid, kid.id, err)
     end
   end
 end
 
-function Widget:layout(bridge, x, y, w, h)
-  if not bridge then return end
-  if not self.parent then self:calcMetrics(bridge) end
+function Widget:layout(x, y, w, h)
+  if not self.parent then self:calcMetrics() end
   self.props.x, self.props.y, self.props.w, self.props.h = x, y, w, h
   if self.layoutFunc then 
     local ok, err = pcall(self.layoutFunc, self)
     if not ok then
-      print("Error in layoutFunc for", self.debugName or self, self.id, err)
+      print("Error in layoutFunc for", self.name or self, self.id, err)
     end
   end
 end
@@ -158,11 +151,11 @@ function Container:init(def)
   if not self.layoutFunc then self.layoutFunc = Layout.hFlow end
 end
 
-function Container:calcMetrics(bridge)
+function Container:calcMetrics()
   local maxW, maxH = 0, 0
   local sumW, sumH = 0, 0
   for _, kid in ipairs(self.kids) do
-    kid:calcMetrics(bridge)
+    kid:calcMetrics()
     local m = kid:getMetrics()
     local kw, kh = m.prefW + m.margin.left + m.margin.right, m.prefH + m.margin.top + m.margin.bottom
     if kw > maxW then maxW = kw end
@@ -182,20 +175,19 @@ function Container:calcMetrics(bridge)
   if self.metrics.prefH == 0 then self.metrics.prefH = 10 end
 end
 
-function Container:layout(bridge, x, y, w, h)
-  if not bridge then return end
-  if not self.parent then self:calcMetrics(bridge) end
+function Container:layout(x, y, w, h)
+  if not self.parent then self:calcMetrics() end
   self.props.x, self.props.y, self.props.w, self.props.h = x, y, w, h
   if self.layoutFunc then 
     local ok, err = pcall(self.layoutFunc, self)
     if not ok then
-      print("Error in layoutFunc for", self.debugName or self, self.id, err)
+      print("Error in layoutFunc for", self.name or self, self.id, err)
     end
   end
   for _, kid in ipairs(self.kids) do 
-    local ok, err = pcall(kid.layout, kid, bridge, kid.props.x, kid.props.y, kid.props.w, kid.props.h)
+    local ok, err = pcall(kid.layout, kid, kid.props.x, kid.props.y, kid.props.w, kid.props.h)
     if not ok then
-      print("Error in recursive layout for kid", kid.debugName or kid, kid.id, err)
+      print("Error in recursive layout for kid", kid.name or kid, kid.id, err)
     end
   end
 end
@@ -218,23 +210,23 @@ end
 -- --- Label Class ---
 local Label = Widget.mkType("Label", Widget)
 function Label:init(def) Widget.init(self, def); self.text = self.props.text or self.id end
-function Label:calcMetrics(bridge)
+function Label:calcMetrics()
   local fontSize = self.props.fontSize or 20
-  local tw = bridge.measureText(self.text, fontSize)
+  local tw = System.measureText(self.text, fontSize)
   if self.metrics.prefW == 0 then self.metrics.prefW = tw + 10 end
   if self.metrics.prefH == 0 then self.metrics.prefH = fontSize + 10 end
 end
-function Label:draw(bridge)
-  Widget.draw(self, bridge)
+function Label:draw()
+  Widget.draw(self)
   local fontSize, stick = self.props.fontSize or 20, self.metrics.stick
-  local textW = bridge.measureText(self.text, fontSize)
+  local textW = System.measureText(self.text, fontSize)
   local tx, ty = self.props.x + 5, self.props.y + (self.props.h - fontSize) / 2
   if (stick & Stick.R) ~= 0 and (stick & Stick.L) ~= 0 then tx = self.props.x + (self.props.w - textW) / 2
   elseif (stick & Stick.R) ~= 0 then tx = self.props.x + self.props.w - textW - 5
   elseif (stick & Stick.L) == 0 then tx = self.props.x + (self.props.w - textW) / 2 end
   if (stick & Stick.B) ~= 0 and (stick & Stick.T) == 0 then ty = self.props.y + self.props.h - fontSize - 5
   elseif (stick & Stick.T) ~= 0 and (stick & Stick.B) == 0 then ty = self.props.y + 5 end
-  bridge.drawText(self.text, tx, ty, fontSize, Color("#FFF"):toTable())
+  System.drawText(self.text, tx, ty, fontSize, Color("#FFF"):toTable())
 end
 
 -- --- Window Class ---
@@ -247,12 +239,11 @@ function Window:init(def)
   self.props.w, self.props.h = def.width or 1280, def.height or 720
 end
 
-function Window:layout(bridge, x, y, w, h)
-  Container.layout(self, bridge, x, y, w, h)
+function Window:layout(x, y, w, h)
+  Container.layout(self, x, y, w, h)
 end
 
-
-function Window:calcMetrics(bridge) Container.calcMetrics(self, bridge) end
+function Window:calcMetrics() Container.calcMetrics(self) end
 function Window:onResize(w, h) self.props.w, self.props.h = w, h end
 
 -- --- Button Class ---
@@ -263,14 +254,14 @@ function Button:init(def)
   self.onClicked = def.onClicked
 end
 
-function Button:calcMetrics(bridge)
+function Button:calcMetrics()
   local fontSize = self.props.fontSize or 20
-  local tw = bridge.measureText(self.text, fontSize)
+  local tw = System.measureText(self.text, fontSize)
   if self.metrics.prefW == 0 then self.metrics.prefW = tw + 20 end
   if self.metrics.prefH == 0 then self.metrics.prefH = fontSize + 15 end
 end
 
-function Button:draw(bridge)
+function Button:draw()
   local baseColor = self.backgroundColor or Color("#444")
   if self.isMouseOver then
     if self.isDown then
@@ -280,14 +271,14 @@ function Button:draw(bridge)
     end
   end
   
-  bridge.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, baseColor:toTable())
-  bridge.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, 1, Color("#FFF"):toTable())
+  System.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, baseColor:toTable())
+  System.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, 1, Color("#FFF"):toTable())
   
   local fontSize = self.props.fontSize or 20
-  local tw = bridge.measureText(self.text, fontSize)
+  local tw = System.measureText(self.text, fontSize)
   local tx = self.props.x + (self.props.w - tw) / 2
   local ty = self.props.y + (self.props.h - fontSize) / 2
-  bridge.drawText(self.text, tx, ty, fontSize, Color("#FFF"):toTable())
+  System.drawText(self.text, tx, ty, fontSize, Color("#FFF"):toTable())
 end
 
 function Button:handleEvent(event)

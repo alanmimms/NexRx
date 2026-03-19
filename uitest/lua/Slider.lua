@@ -13,7 +13,7 @@ function Slider:init(def)
   self.isDragging = false
 end
 
-function Slider:calcMetrics(bridge)
+function Slider:calcMetrics()
   if self.metrics.prefW == 0 then self.metrics.prefW = 100 end
   if self.metrics.prefH == 0 then self.metrics.prefH = 30 end
 end
@@ -52,8 +52,8 @@ function Slider:handleEvent(event)
   return Widget.handleEvent(self, event)
 end
 
-function Slider:draw(bridge)
-  Widget.draw(self, bridge)
+function Slider:draw()
+  Widget.draw(self)
   
   local x, y, w, h = self.props.x, self.props.y, self.props.w, self.props.h
   local trackY = y + (h - self.railH) / 2
@@ -62,7 +62,7 @@ function Slider:draw(bridge)
   local handleY = y + (h - handleH) / 2
   
   -- Draw track
-  bridge.drawRect(x + 5, trackY, w - 10, self.railH, Color("#888"):toTable())
+  System.drawRect(x + 5, trackY, w - 10, self.railH, Color("#888"):toTable())
   
   -- Calculate handle position
   local range = math.max(1, self.max - self.min)
@@ -70,8 +70,8 @@ function Slider:draw(bridge)
   local handleX = x + 5 + (w - 10 - handleW) * percent
   
   -- Draw handle
-  bridge.drawRect(handleX, handleY, handleW, handleH, Color("#CCC"):toTable())
-  bridge.drawRectLines(handleX, handleY, handleW, handleH, 1, Color("#FFF"):toTable())
+  System.drawRect(handleX, handleY, handleW, handleH, Color("#CCC"):toTable())
+  System.drawRectLines(handleX, handleY, handleW, handleH, 1, Color("#FFF"):toTable())
 end
 
 local DiscreteSlider = Widget.mkType("DiscreteSlider", Slider)
@@ -89,10 +89,10 @@ function DiscreteSlider:init(def)
   self.fontSize = def.fontSize or 12
 end
 
-function DiscreteSlider:calcMetrics(bridge)
+function DiscreteSlider:calcMetrics()
   local maxLabelW = 0
   for _, stop in ipairs(self.stops) do
-    local tw = bridge.measureText(stop.label or "", self.fontSize)
+    local tw = System.measureText(stop.label or "", self.fontSize)
     if tw > maxLabelW then maxLabelW = tw end
   end
   
@@ -120,11 +120,32 @@ function DiscreteSlider:setValue(v)
   end
 end
 
-function DiscreteSlider:draw(bridge)
-  Widget.draw(self, bridge) -- Draw background/border
+function DiscreteSlider:updateValueFromPos(mouseX)
+  local x, w = self.props.x, self.props.w
+  local nStops = #self.stops
+  if nStops < 2 then
+    self:setValue(0)
+    return
+  end
+
+  local firstLabelW = System.measureText(self.stops[1].label or "", self.fontSize)
+  local lastLabelW = System.measureText(self.stops[nStops].label or "", self.fontSize)
+  
+  local railStartX = x + firstLabelW / 2
+  local railEndX = x + w - lastLabelW / 2
+  local railWidth = railEndX - railStartX
+
+  local percent = (mouseX - railStartX) / railWidth
+  local range = self.max - self.min
+  self:setValue(self.min + percent * range)
+end
+
+function DiscreteSlider:draw()
+  Widget.draw(self) -- Draw background/border
   
   local x, y, w, h = self.props.x, self.props.y, self.props.w, self.props.h
   local nStops = #self.stops
+  if nStops == 0 then return end
   
   local labelGap = 4
   local labelY = 0
@@ -137,31 +158,43 @@ function DiscreteSlider:draw(bridge)
     labelY = y + 2
     railY = labelY + self.fontSize + labelGap + 8
   end
+
+  -- Calculate rail span based on first and last label widths
+  local firstLabelW = System.measureText(self.stops[1].label or "", self.fontSize)
+  local lastLabelW = System.measureText(self.stops[nStops].label or "", self.fontSize)
+  
+  local railStartX = x + firstLabelW / 2
+  local railEndX = x + w - lastLabelW / 2
+  local railWidth = railEndX - railStartX
   
   -- Draw rail
-  bridge.drawRect(x + 5, railY - self.railH/2, w - 10, self.railH, Color("#888"):toTable())
+  System.drawRect(railStartX, railY - self.railH/2, railWidth, self.railH, Color("#888"):toTable())
   
   -- Handle
   local range = math.max(1, self.max - self.min)
   local percent = (self.value - self.min) / range
   local handleW = 10
   local handleH = 16
-  local handleX = x + 5 + (w - 10 - handleW) * percent
-  bridge.drawRect(handleX, railY - handleH/2, handleW, handleH, Color("#CCC"):toTable())
-  bridge.drawRectLines(handleX, railY - handleH/2, handleW, handleH, 1, Color("#FFF"):toTable())
+  local handleX = railStartX + railWidth * percent - handleW / 2
+  System.drawRect(handleX, railY - handleH/2, handleW, handleH, Color("#CCC"):toTable())
+  System.drawRectLines(handleX, railY - handleH/2, handleW, handleH, 1, Color("#FFF"):toTable())
 
   -- Labels
-  if nStops > 0 then
-    local rangeW = w - 10
-    for i = 1, nStops do
-      local p = (i - 1) / math.max(1, nStops - 1)
-      local stopX = x + 5 + rangeW * p
-      local label = self.stops[i].label or tostring(i)
-      local tw = bridge.measureText(label, self.fontSize)
-      
-      local color = (i == self.currentIndex) and Color("#FFF") or Color("#888")
-      bridge.drawText(label, stopX - tw/2, labelY, self.fontSize, color:toTable())
+  for i = 1, nStops do
+    local p = (i - 1) / math.max(1, nStops - 1)
+    local detentX = railStartX + railWidth * p
+    local label = self.stops[i].label or tostring(i)
+    local tw = System.measureText(label, self.fontSize)
+    
+    local lx = detentX - tw / 2
+    if i == 1 then
+      lx = x -- Left aligned
+    elseif i == nStops then
+      lx = x + w - tw -- Right aligned
     end
+
+    local color = (i == self.currentIndex) and Color("#FFF") or Color("#888")
+    System.drawText(label, lx, labelY, self.fontSize, color:toTable())
   end
 end
 

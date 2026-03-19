@@ -30,10 +30,11 @@ void UIEngine::init() {
   InitWindow(1280, 720, "NexRx UI Test");
   SetTargetFPS(60);
 
-  Font font = LoadFont("fonts/DejaVuSans.ttf");
+  Font font = LoadFontEx("fonts/DejaVuSans.ttf", 128, NULL, 0);
   if (font.texture.id == 0) {
     std::cerr << "Failed to load font fonts/DejaVuSans.ttf" << std::endl;
   } else {
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
     LuaBridge::setFont(font);
   }
   
@@ -121,7 +122,7 @@ void UIEngine::render() {
     sol::function renderFunc = uiModule["render"];
     if (renderFunc.valid()) {
       try {
-        renderFunc(lua["bridge"], GetScreenWidth(), GetScreenHeight());
+        renderFunc(GetScreenWidth(), GetScreenHeight());
       } catch (const sol::error& e) {
         std::cerr << "Lua render error: " << e.what() << std::endl;
       }

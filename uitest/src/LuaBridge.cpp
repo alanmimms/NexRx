@@ -27,7 +27,7 @@ void LuaBridge::registerWithLua(sol::state& lua) {
   bridge["drawText"] = &LuaBridge::drawText;
   bridge["measureText"] = &LuaBridge::measureText;
   bridge["traceLog"] = &LuaBridge::traceLog;
-  lua["bridge"] = bridge;
+  lua["System"] = bridge;
 
   lua["LOG_ALL"] = 0; lua["LOG_TRACE"] = 1; lua["LOG_DEBUG"] = 2; lua["LOG_INFO"] = 3;
   lua["LOG_WARNING"] = 4; lua["LOG_ERROR"] = 5; lua["LOG_FATAL"] = 6; lua["LOG_NONE"] = 7;

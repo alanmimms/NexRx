@@ -11,13 +11,13 @@ function Spectrum:init(def)
   self.showBorder = true
 end
 
-function Spectrum:calcMetrics(bridge)
+function Spectrum:calcMetrics()
   if self.metrics.prefW == 0 then self.metrics.prefW = 400 end
   if self.metrics.prefH == 0 then self.metrics.prefH = 200 end
 end
 
-function Spectrum:draw(bridge)
-  Widget.draw(self, bridge)
+function Spectrum:draw()
+  Widget.draw(self)
   
   local x, y, w, h = self.props.x, self.props.y, self.props.w, self.props.h
   local startX = x + 5
@@ -36,7 +36,7 @@ function Spectrum:draw(bridge)
   end
   
   for i = 1, #points - 1 do
-    bridge.drawLine(points[i][1], points[i][2], points[i+1][1], points[i+1][2], 2, self.borderColor:toTable())
+    System.drawLine(points[i][1], points[i][2], points[i+1][1], points[i+1][2], 2, self.borderColor:toTable())
   end
 end
 

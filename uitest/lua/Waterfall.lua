@@ -11,13 +11,13 @@ function Waterfall:init(def)
   self.showBorder = true
 end
 
-function Waterfall:calcMetrics(bridge)
+function Waterfall:calcMetrics()
   if self.metrics.prefW == 0 then self.metrics.prefW = 400 end
   if self.metrics.prefH == 0 then self.metrics.prefH = 200 end
 end
 
-function Waterfall:draw(bridge)
-  Widget.draw(self, bridge)
+function Waterfall:draw()
+  Widget.draw(self)
   
   local x, y, w, h = self.props.x, self.props.y, self.props.w, self.props.h
   local stripeH = 4
@@ -32,7 +32,7 @@ function Waterfall:draw(bridge)
     local g = 0.1 * math.random()
     local b = 0.5 + 0.5 * math.random()
     local c = Color{r, g, b, 1.0}
-    bridge.drawRect(sx, sy, sw, sh, c:toTable())
+    System.drawRect(sx, sy, sw, sh, c:toTable())
   end
 end
 

@@ -1,6 +1,7 @@
 local Color = {}
 Color.__index = Color
 
+-- Define a color based on RGB[A] with each in range 0..1.
 function Color.new(r, g, b, a)
   local self = setmetatable({}, Color)
   if type(r) == "table" then
@@ -53,6 +54,7 @@ function Color:toTable()
   return { self.r, self.g, self.b, self.a }
 end
 
+-- Darken the color or lighten it if factor is negative.
 function Color:darken(factor)
   return Color.new(self.r * (1.0 - factor), self.g * (1.0 - factor), self.b * (1.0 - factor), self.a)
 end
