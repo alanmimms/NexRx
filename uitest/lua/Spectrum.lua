@@ -30,7 +30,7 @@ function Spectrum:draw(bridge)
   for i = 0, nPoints do
     local px = startX + (endX - startX) * (i / nPoints)
     -- Ensure random range is valid (upper bound >= lower bound)
-    local maxPeak = math.max(5, h - 10)
+    local maxPeak = math.floor(math.max(5, h - 10))
     local py = startY - math.random(5, maxPeak)
     table.insert(points, {px, py})
   end
