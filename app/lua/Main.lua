@@ -3,7 +3,7 @@
 ]]
 
 io.stdout:setvbuf("no")
-print("[Main] New Script loading...")
+print("[Main] Script loading...")
 
 -- Core systems
 require("SetBox")
@@ -13,9 +13,7 @@ local R = require("Reactive")
 local Widget = require("ui.Widget")
 local Color = require("ui.Color")
 local Stick = require("ui.Stick")
-local SliderNew = require("ui.Slider") 
-local SpectrumNew = require("ui.Spectrum")
-local WaterfallNew = require("ui.Waterfall")
+local Layout = require("ui.Layout")
 
 -- Original App UI Modules
 local uiState = require("ui.State")
@@ -25,20 +23,21 @@ local AppController = require("AppController")
 local events = require("Events")
 local animate = require("Animate")
 local keys = require("Keycodes")
-local smeterCalc = require("SMeterCalc")
 _G.bands = require("Bands")
 _G.calibration = require("Calibration")
 
--- Original Widget Classes
+-- Widget Classes
 local Panel = require("ui.Panel")
-local SMeterWidget = require("ui.SMeter")
+local SMeter = require("ui.SMeter")
 local ActiveTags = require("ui.ActiveTags")
 local GraticuleLegend = require("ui.GraticuleLegend")
 local SignalBox = require("ui.SignalBox")
-local ButtonOrig = require("ui.Button")
-local SliderOrig = require("ui.SliderOld")
-local FrequencyDisplayOrig = require("ui.FrequencyDisplay")
+local Button = require("ui.Button")
+local Slider = require("ui.Slider")
+local FrequencyDisplay = require("ui.FrequencyDisplay")
 local Label = require("ui.Label")
+local Waterfall = require("ui.Waterfall")
+local Spectrum = require("ui.Spectrum")
 
 _G.sampleRate = 96000
 local spectrumData = {}
@@ -128,23 +127,23 @@ function init()
       waterfall.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
    end
 
-   -- Instantiate Original Widgets for bridging
-   local wSMeter = SMeterWidget.new()
-   local wFreq = FrequencyDisplayOrig.new({ valueObs = Model.rx.VFO.activeValue })
-   local wSlider = SliderOrig.new({ valueObs = Model.rx.VFO.activeValue })
-   local wVol = SliderOrig.new({ valueObs = Model.rx.volume.DB })
-   local wGain = SliderOrig.new({ valueObs = Model.rx.RF.gainDB })
-   local wTags = ActiveTags.new()
+   -- Instantiate Widgets for bridging
+   local sMeter = SMeter.new()
+   local freqDisplay = FrequencyDisplay.new({ valueObs = Model.rx.VFO.activeValue })
+   local vfoSlider = Slider.new({ valueObs = Model.rx.VFO.activeValue })
+   local volSlider = Slider.new({ valueObs = Model.rx.volume.DB })
+   local rfGainSlider = Slider.new({ valueObs = Model.rx.RF.gainDB })
+   local activeTags = ActiveTags.new()
 
    -- Sidebar
    local leftSidebar = Widget.Column{
       name = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"},
       metrics = { stick = Stick.TLB, prefW = 280, margin = {left=8, right=8, top=8, bottom=8} },
       kids = {
-         Widget.BridgeWidget{ id = "id-rx-freq", orig = wFreq, metrics = { stick = Stick.TLR, prefH = 40 },
+         Widget.BridgeWidget{ id = "id-rx-freq", orig = freqDisplay, metrics = { stick = Stick.TLR, prefH = 40 },
             drawArgs = { _G.freqEntryText, _G.freqEntryCursor, {"VFOControl"} }
          },
-         Widget.BridgeWidget{ id = "id-rx-slider", orig = wSlider, metrics = { stick = Stick.TLR, prefH = 20 },
+         Widget.BridgeWidget{ id = "id-rx-slider", orig = vfoSlider, metrics = { stick = Stick.TLR, prefH = 20 },
             drawArgs = { 0.1e6, 30.0e6, 14.2e6 } 
          },
          Widget.Label{text = "Mode", metrics = {stick = Stick.TLR, prefH = 20, margin={top=10}}},
@@ -176,11 +175,11 @@ function init()
             end)()
          },
          Widget.Label{text = "Volume", metrics = {stick = Stick.TLR, prefH = 20, margin={top=10}}},
-         Widget.BridgeWidget{ id = "id-rx-vol", orig = wVol, metrics = { stick = Stick.TLR, prefH = 20 },
+         Widget.BridgeWidget{ id = "id-rx-vol", orig = volSlider, metrics = { stick = Stick.TLR, prefH = 20 },
             drawArgs = { -60, 0, 0 }
          },
          Widget.Label{text = "RF Gain", metrics = {stick = Stick.TLR, prefH = 20, margin={top=10}}},
-         Widget.BridgeWidget{ id = "id-rx-gain", orig = wGain, metrics = { stick = Stick.TLR, prefH = 20 },
+         Widget.BridgeWidget{ id = "id-rx-gain", orig = rfGainSlider, metrics = { stick = Stick.TLR, prefH = 20 },
             drawArgs = { -20, 60, 0 }
          }
       }
@@ -222,11 +221,11 @@ function init()
       name = "active-tags-sidebar", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"},
       metrics = { stick = Stick.TRB, prefW = 180, margin = {left=8, right=8, top=8, bottom=8} },
       kids = {
-         Widget.BridgeWidget{ id = "id-smeter", orig = wSMeter, metrics = { stick = Stick.TLR, prefH = 66 }, 
+         Widget.BridgeWidget{ id = "id-smeter", orig = sMeter, metrics = { stick = Stick.TLR, prefH = 66 }, 
             onEvent = function(self, ev) return false end,
             drawArgs = {} 
          },
-         Widget.BridgeWidget{ id = "id-active-tags", orig = wTags, metrics = { flexH = 1 } }
+         Widget.BridgeWidget{ id = "id-active-tags", orig = activeTags, metrics = { flexH = 1 } }
       }
    }
 
@@ -241,8 +240,8 @@ function init()
                   name = "top-bar", metrics = { stick = Stick.TLR, prefH = 32 },
                   backgroundColor = Color("#111b2b"),
                   kids = {
-                     Widget.Label{ name = "titleLabel", text = "NexRx SDR", metrics = {stick = Stick.L, flexW = 1} },
-                     Widget.Label{ name = "fpsLabel", text = "0 FPS", metrics = {stick = Stick.R, prefW = 100} }
+                     Widget.Label{ id = "titleLabel", text = "NexRx SDR", metrics = {stick = Stick.L, flexW = 1} },
+                     Widget.Label{ id = "fpsLabel", text = "0 FPS", metrics = {stick = Stick.R, prefW = 100} }
                   }
                },
                Widget.Row{
@@ -265,7 +264,7 @@ function update(dt)
    fps = 1.0 / dt
    local fpsLabel = rxTree:findByName("fpsLabel")
    if fpsLabel then
-      fpsLabel.text = string.format("%.0f FPS", fps)
+      fpsLabel.props.text = string.format("%.0f FPS", fps)
    end
 
    -- Input
@@ -292,7 +291,7 @@ function update(dt)
 
    -- Update BridgeWidget drawArgs for dynamic components
    local smW = rxTree:findByName("id-smeter")
-   if smW then smW.drawArgs = { smeterCalc.getReading() } end
+   if smW then smW.drawArgs = { SMeter.getReading() } end
 
    local freqW = rxTree:findByName("id-rx-freq")
    if freqW then freqW.drawArgs = { _G.freqEntryText, _G.freqEntryCursor, {"VFOControl"} } end

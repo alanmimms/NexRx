@@ -9,6 +9,7 @@ local R = require("Reactive")
 local Model = require("Model")
 local Hardware = require("Hardware")
 local bands = require("Bands")
+local smeter = require("ui.SMeter")
 
 local AppController = {}
 
