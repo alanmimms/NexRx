@@ -277,21 +277,7 @@ function Context:optBool(name, default)
     return default
 end
 
-function Context:optNumber(name, default)
-    local matching = self:getMatchingRules(name)
-    if #matching == 0 then return default end
-    for _, m in ipairs(matching) do
-        local val = m.rule.properties[name]
-        if val ~= nil then
-            if type(val) == "function" then val = val(self, m.rule) end
-            return tonumber(val) or default
-        end
-    end
-    return default
-end
-
-local globalCtx = setmetatable({localTags = {}}, Context)
-
+local cacheValid = false
 local function _invalidateCache(propertyName)
     cacheValid = false
     
@@ -315,6 +301,14 @@ local function _invalidateCache(propertyName)
         end
     end
 end
+
+function Context:addTag(tag)
+    if not self.localTags then self.localTags = {} end
+    table.insert(self.localTags, tag)
+    _invalidateCache()
+end
+
+local globalCtx = setmetatable({localTags = {}}, Context)
 
 -- =============================================================================
 -- Public API - Tag Management

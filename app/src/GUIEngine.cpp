@@ -53,7 +53,7 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
   // 4. Lua Setup
   lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math, sol::lib::os, sol::lib::debug, sol::lib::io);
   lua["basePath"] = "lua/";
-  lua["package"]["path"] = "lua/?.lua;lua/?/init.lua;lua/ui_new/?.lua";
+  lua["package"]["path"] = "lua/?.lua;lua/?/init.lua";
   
   AppLuaBridge::registerWithLua(lua, this);
 
@@ -61,8 +61,8 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
     // Load SetBox first as it's a core dependency
     lua.safe_script_file("lua/SetBox.lua");
     
-    // Load the main entry point (we'll create a new one for the Raylib UI)
-    lua.safe_script_file("lua/Main_new.lua");
+    // Load the main entry point
+    lua.safe_script_file("lua/Main.lua");
     
     // In our new architecture, Main.lua should return the UI module with standard hooks
     uiModule = lua["UI"]; 

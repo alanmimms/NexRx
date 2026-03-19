@@ -1,5 +1,5 @@
-local Widget = require("Widget")
-local Color = require("Color")
+local Widget = require("ui.Widget")
+local Color = require("ui.Color")
 
 local Waterfall = Widget.mkType("Waterfall", Widget)
 

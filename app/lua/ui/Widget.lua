@@ -1,6 +1,6 @@
-local Color = require("Color")
-local Layout = require("Layout")
-local Stick = require("Stick")
+local Color = require("ui.Color")
+local Layout = require("ui.Layout")
+local Stick = require("ui.Stick")
 
 local Widget = { typeName = "Widget" }
 Widget.__index = Widget
@@ -17,15 +17,15 @@ end
 
 function Widget:init(def)
   def = def or {}
-  self.id = def.id or Widget.newID()
-  self.name = def.name
+  self.id = def.id or def.props and def.props.id or Widget.newID()
+  self.name = def.name or self.id
   self.type = self.typeName or "Widget"
   self.props = def.props or {}
   
   -- Merge specific def fields into props for convenience (text, value, etc)
   for k, v in pairs(def) do
     if k ~= "props" and k ~= "kids" and k ~= "metrics" and k ~= "tags" and k ~= "parent" then
-      self.props[k] = self.props[k] or v
+      if self.props[k] == nil then self.props[k] = v end
     end
   end
 
@@ -34,6 +34,7 @@ function Widget:init(def)
   
   -- LWC (Local Widget Context) for SetBox
   self.lwc = setbox.newContext(def.tags, def.parent and def.parent.lwc)
+  if self.id then self.lwc:addTag("id." .. self.id) end
 
   self.borderColor = def.borderColor or (self.lwc:has("borderColor") and self.lwc:get("borderColor"))
   self.backgroundColor = def.backgroundColor or (self.lwc:has("backgroundColor") and self.lwc:get("backgroundColor"))

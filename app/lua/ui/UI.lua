@@ -1,9 +1,9 @@
-local Widget = require("Widget")
-local Color = require("Color")
-local Stick = require("Stick")
-local Slider = require("Slider")
-local Spectrum = require("Spectrum")
-local Waterfall = require("Waterfall")
+local Widget = require("ui.Widget")
+local Color = require("ui.Color")
+local Stick = require("ui.Stick")
+local Slider = require("ui.Slider")
+local Spectrum = require("ui.Spectrum")
+local Waterfall = require("ui.Waterfall")
 
 -- Labels
 local fpsLabel = Widget.Label{name = "fpsLabel", props = {text = "120 FPS"}, metrics = {stick = Stick.L}}
