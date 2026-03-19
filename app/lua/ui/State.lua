@@ -43,24 +43,30 @@ function state.registerWidget(id, bounds, tags, data)
         eventsModule.registerWidget(id, bounds, tags, nil, data)
     end
 end
-
-function state.beginFrame()
+function state.beginFrame(data)
     state.prevHot = state.hot
     state.prevActive = state.active
-    state.hot = nil  -- Will be set by widgets as they're drawn
+    state.hot = nil
 
-    -- Get input state from C++ host
-    state.mouseX, state.mouseY = getMousePos()
-    if state.mouseX == nil or state.mouseY == nil then
-        -- Fallback to 0,0 if bridge failed
-        state.mouseX = state.mouseX or 0
-        state.mouseY = state.mouseY or 0
+    -- Get input state from C++ host or provided data
+    if data then
+        state.mouseX = data.mouseX or state.mouseX
+        state.mouseY = data.mouseY or state.mouseY
+        state.mouseDown = (data.mouseDown ~= nil) and data.mouseDown or state.mouseDown
+        state.mouseClicked = (data.mouseClicked ~= nil) and data.mouseClicked or false
+        state.mouseReleased = (data.mouseReleased ~= nil) and data.mouseReleased or false
+        state.mouseWheel = data.mouseWheel or 0
+    else
+        state.mouseX, state.mouseY = getMousePos()
+        if state.mouseX == nil or state.mouseY == nil then
+            state.mouseX = state.mouseX or 0
+            state.mouseY = state.mouseY or 0
+        end
+        state.mouseDown = isMouseDown(0)
+        state.mouseClicked = isMouseClicked(0)
+        state.mouseReleased = isMouseReleased(0)
+        state.mouseWheel = getMouseWheel()
     end
-    
-    state.mouseDown = isMouseDown(0)
-    state.mouseClicked = isMouseClicked(0)
-    state.mouseReleased = isMouseReleased(0)
-    state.mouseWheel = getMouseWheel()
 
     -- Clear single-frame state
     state.keyPressed = nil
@@ -105,12 +111,12 @@ end
 
 -- Check if widget is hot (hovered)
 function state.isHot(id)
-    return state.prevHot == id
+    return state.hot == id
 end
 
 -- Check if widget is active (being pressed/dragged)
 function state.isActive(id)
-    return state.prevActive == id
+    return state.active == id
 end
 
 -- Check if widget has focus

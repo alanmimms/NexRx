@@ -11,6 +11,9 @@ local setbox = require("SetBox")
 
 local Model = {}
 
+-- Global revision tracker to force re-evaluation of projections
+Model.revision = R.observable(0)
+
 -- =============================================================================
 -- Type Objects (Polymorphic Interface)
 -- =============================================================================
@@ -24,6 +27,9 @@ local Types = {
 -- Polymorphic projection factory
 local function projection(name, typeObj, default)
     local obs = R.computed(function()
+        -- Track dependency on global model revision
+        Model.revision:get()
+        
         local ok, val = pcall(function() return typeObj:get(name) end)
         if ok and val ~= nil then return val end
         return default
@@ -55,6 +61,7 @@ function Model.addSignalBox(freq, mode, bandwidth, ghost)
         mode = mode or "USB",
         bandwidth = bandwidth or 4000,
         id = newId,
+        name = "Box " .. newId,
         ghost = ghost or false
     })
     
@@ -184,10 +191,12 @@ function Model.set(name, value)
     if name == "rx.selectedMode" then
         local box = Model.getSelectedSignalBox()
         if box then box.mode = value end
+        Model.revision:set(Model.revision:peek() + 1)
         return
     elseif name:match("^rx%.VFO%.") then
         local box = Model.getSelectedSignalBox()
         if box then box.frequency = value end
+        Model.revision:set(Model.revision:peek() + 1)
         return
     end
 
@@ -197,6 +206,8 @@ function Model.set(name, value)
         priority = 1000,
         apply = { [name] = value }
     })
+    
+    Model.revision:set(Model.revision:peek() + 1)
 end
 
 --- Round frequency to nearest step

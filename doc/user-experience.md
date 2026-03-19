@@ -1,94 +1,63 @@
 # NexRx: User Experience & Features
 ## Interface Design, Workflows, and Operating Features
 
-### The Browser-Native Interface
+### The Native Interface
 
-Opening NexRx feels nothing like traditional radio software. There's no installation process, no driver hunting, no compatibility concerns across operating systems. Plug in the USB cable, open Chrome or Safari, navigate to the captive portal, and you're immediately presented with a modern, responsive interface that feels more like a professional audio application than a ham radio.
+Opening NexRx feels like starting a professional audio workstation. It is a high-performance native application built in **Lua 5.4** and **Raylib**, providing a hardware-accelerated, OpenGL-rendered interface that responds with the fluid precision of a modern game engine. 
 
-The interface adapts to your screen size and usage patterns. On a large monitor, you might have multiple waterfall displays showing different zoom levels, constellation plots for digital modes, and audio analysis tools. On a tablet, the interface reorganizes to prioritize the most commonly used controls while keeping advanced features accessible through intuitive gestures.
+The interface is fully responsive, adapting seamlessly to large high-resolution monitors or compact tablet screens. It prioritizes high-framerate visualizations of the RF spectrum and waterfall, ensuring that signal discovery and monitoring are as smooth as possible.
 
 ### Waterfall-Centric Operation
 
-The waterfall display serves as far more than just a spectrum visualization - it becomes a primary control surface. Mouse wheel scrolling tunes frequency with pixel-level precision, while modifier keys enable different functions directly on the graphical display.
+The waterfall display serves as far more than just a spectrum visualization—it is the primary control surface for the radio.
 
-**Zooming**: The spectrum and waterfall can be zoomed horizontally to examine signals in high detail or to see the entire 96 kHz bandwidth at once. Zooming is controlled by the `+` and `-` keys (defined via SetBox rules). The system maintains a fractional zoom level, ensuring that zooming out never exceeds the point where the spectrum fills the available display width. Zooming specifically affects the frequency (horizontal) axis and automatically updates the graticule legend and all active SignalBoxes.
+**Zooming**: The spectrum and waterfall can be zoomed horizontally to examine signals in high detail or to see the entire bandwidth at once. Zooming is controlled by the `+` and `-` keys. The system maintains a fractional zoom level, ensuring that zooming out never exceeds the point where the spectrum fills the available display width. Zooming specifically affects the frequency (horizontal) axis and automatically updates the graticule legend and all active SignalBoxes.
 
-**SignalBoxes**: NexRx introduces the concept of **SignalBoxes**—visual representations of active tuned signals. Unlike a traditional radio with a single VFO, NexRx allows you to create multiple SignalBoxes on the spectrum (using the `/` key).
-- Each SignalBox tracks its own frequency, mode, and bandwidth.
-- Clicking a SignalBox selects it, making it the "active" receiver controlled by the VFO and mode buttons.
-- SignalBoxes can be dragged across the spectrum to retune.
-- Ghost SignalBoxes (temporary previews) allow you to see where a new box will be placed before committing.
-- When zooming, SignalBoxes automatically recalculate their visual size and position to remain locked to their tuned frequencies.
+**SignalBoxes**: NexRx uses **SignalBoxes**—rectangular windows on the spectrum that represent active tuned signals.
+- A SignalBox is highlighted when selected and dim when inactive.
+- The selected SignalBox is the source of demodulated audio; frequency and mode changes apply to it.
+- **Dragging**: SignalBoxes can be dragged across the spectrum to retune the demodulator. Dragging to the edges of the display scrolls the spectrum center frequency and warps the mouse to keep the signal centered.
+- **Naming**: Pressing the double-quote (`"`) key starts naming the selected SignalBox, with full support for arrow keys, backspace, and cursor navigation.
+- **Navigation**: The `Tab` key cycles through onscreen SignalBoxes, while `Shift-Tab` includes offscreen boxes in the rotation.
 
-### The SetBox Generalization Paradigm
+### The Unified Widget & Layout System
 
-NexRx is powered by **SetBox**, a rule-based configuration and styling system that treats every aspect of the interface—from the color of a button to the logic of a frequency readout—as a resolvable property. The power of this mechanism comes from its **consistent applicability** and **strict rule-driven nature**. 
+NexRx uses a structured, object-oriented UI system where every element is an independent **Widget**. This system manages its own hierarchy, focus, and interaction logic, providing a more robust and predictable experience than traditional immediate-mode or tag-driven GUIs.
 
-#### Pure Spring-Constraint Layout Engine
+#### Flexible Layout Strategies
 
+Instead of hardcoded coordinates, the UI employs a **Unified Layout Engine** that processes widget hierarchies based on swappable strategies:
 
+*   **Stick-based Alignment**: Widgets use "stick bits" (Top, Left, Bottom, Right) to anchor themselves to container edges or siblings. This allows for classic stretching and pinning behaviors.
+*   **Flex Distribution**: Containers can distribute surplus space among children using proportional flex values (`flexW`, `flexH`), allowing sidebars and control panels to resize intelligently.
+*   **Domain-Driven Mapping**: Specialized widgets like the `Spectrum` use direct frequency-to-pixel mapping for SignalBoxes, ensuring they remain perfectly locked to their tuned RF frequencies regardless of layout changes.
 
-NexRx completely eschews traditional fixed-coordinate positioning and legacy "anchoring" mechanisms in favor of a unified **Pure Spring-Constraint Layout**. The UI is treated as a transient physical system in equilibrium, calculated dynamically every frame in two distinct passes.
+#### State & Focus Management
 
-**Pass 1: Incompressible Minimums (Bottom-Up)**
-Every UI element (labels, checkboxes, groups) calculates its own "floor" size based on its content, where leaf widgets have a fixed size based on their implementation and current rule resolution. The layout engine is prohibited from shrinking any element below this limit. A parent compound widget calculates its minimum size by accumulating the minimums of its children. This guarantees that even on small screens, the UI remains legible and interactive.
+Input handling and focus are managed directly by the Widget hierarchy:
+*   **Hit Testing**: The system performs recursive hit testing to identify the deepest widget under the mouse for motion and click events.
+*   **Explicit Focus**: Keyboard focus is tracked explicitly, allowing widgets like frequency displays or naming fields to "capture" input only when active.
+*   **Event Bubbling**: Events bubble from the leaf widgets up through their parents until handled, allowing for sophisticated interaction patterns with minimal boilerplate.
 
-**Pass 2: Spring Force Distribution (Top-Down)**
-Instead of binary "stickiness," the layout is governed entirely by **Spring Stiffness** values (`springTop`, `springBottom`, `springLeft`, `springRight`) assigned to every widget by SetBox rules. The actual "gap" spring between two sibling widgets is the average of their opposing spring strengths. 
+### SetBox: Configuration & Styling
 
-Once the parent's total available space is determined, the "Surplus" (or Deficit) padding is distributed to the gaps and widgets based on these physical properties:
-* **Infinite Stiffness (`math.huge`)**: Acts as a rigid, unyielding link. A widget with `math.huge` spring to its left edge is mathematically "stuck" to it. The gap takes 0% of the surplus space.
-* **Positive Stiffness ($S > 0$)**: An elastic spring. The layout engine distributes available surplus proportional to the *reciprocal* of the stiffness ($1/S$). Softer springs (lower values) expand more eagerly to fill space.
-* **Neutral Stiffness ($S = 0$)**: Passive geometry. The element only moves if pushed or pulled by surrounding forces.
-* **Negative Stiffness ($S < 0$)**: A repulsive force ("The Pusher"). It actively attempts to expand its gap, pushing adjacent widgets away.
+While the core UI logic is managed by the Widget system, the **SetBox** paradigm remains the backbone of NexRx's configuration and styling. SetBox acts as a hierarchical, rule-based property provider that decouples *values* from *implementation*.
 
-**The Pivot Rule (Overflow Handling)**: If the window is too small, the "Surplus" becomes negative. To prevent unsolvable layouts or squished text, widgets remain at their incompressible minimums. The engine anchors the layout at the Top/Left edges (0,0) and negative springs/deficit space force the trailing widgets to extend cleanly off-screen, maintaining usability for primary controls.
+#### 1. Decoupled Styling
+If a widget needs to know its border width, background color, or font size, it queries its **Local Widget Context (LWC)**. SetBox resolves these queries by matching the widget's ID, type, and state tags against global configuration rules. This allows for complete UI skinning and theming without touching procedural code.
 
-#### 1. No Hardcoded Defaults
-In NexRx, there are no "default values" buried in the source code. If a widget needs to know its border width, its background color, or even the text it should display, it must ask SetBox. If no rule matches the current context, the system explicitly fails. This enforces a discipline where every behavior and visual element is declared in configuration files, making the entire application a "blank canvas" for the user.
+#### 2. Hierarchical Configuration Inheritance
+Traditional radios force operators to adjust many independent parameters when changing bands or modes. In NexRx, a **SetBox** is a named configuration profile (e.g., "Contest-20m-CW"). These profiles form inheritance hierarchies:
 
-#### 2. Local Widget Context (LWC)
-Every UI element is a standalone object (e.g., `Button.lua`, `Slider.lua`) that operates within a **Local Widget Context**. When a widget is drawn, it creates an LWC that combines:
-* **Specific Identity**: A unique ID tag (e.g., `id.vfo-slider`).
-* **Generic Type**: A widget type tag (e.g., `widget.Slider`).
-* **Hierarchical Parentage**: Inherited tags from its parent container (e.g., `widget.Sidebar`).
-* **Global State**: Global tags like the current band (`tag.20m`) or theme (`theme.Dark`).
+*   **Global-Defaults** defines baseline AGC and audio settings.
+*   **Contest-Base** inherits from defaults and adds a contest callsign.
+*   **Contest-20m-CW** inherits from its parent and overrides only the frequency, filter width, and mode.
 
-#### 3. Rule Resolution: Specificity Over Priority
-SetBox uses a sophisticated resolution engine where **specificity** (the number of matching tags) takes precedence. There are no arbitrary integer priorities. This allows for surgical overrides.
+Switching profiles instantly re-evaluates the entire system state—antenna selections, DSP parameters, volume levels, and even UI colors—ensuring the radio is perfectly tuned for the current task in a single click.
 
-* A rule matching `{"widget.Button"}` (specificity 1) sets the global button style.
-* A rule matching `{"widget.Sidebar", "widget.Button"}` (specificity 2) overrides that style only for buttons inside sidebars.
-* A rule matching `{"id.rx-toggle", "state.Active"}` (specificity 2) can change the text and color of one specific button only when it is engaged.
+#### 3. Reactive Property Graph
+The hardware state is synchronized with the UI through a **Reactive Property Graph**. When a hardware parameter changes (like an AGC level or S-meter reading), the change propagates through the graph, triggering only the necessary UI updates. This ensures the interface is always a live, accurate projection of the hardware state.
 
-#### 4. Practical Layout Examples
-
-By combining SetBox Specificity with Spring Physics, complex responsive UI behaviors emerge naturally without procedural code.
-
-**Example A: The Centered VFO Display**
-We want the main frequency display to remain dead-center in the top bar, regardless of window size.
-* We add a spacer widget on the left and right of the VFO.
-* SetBox rule `{"widget.TopBar", "widget.Spacer"}` assigns a soft elastic spring (`springX = 1.0`).
-* SetBox rule `{"id.MainVFO"}` assigns infinite internal stiffness (`springX = math.huge`) so it doesn't stretch, and calculates its incompressible minimum based on the font size.
-* *Result:* The VFO stays at its minimum size, and the two soft spacers equally absorb 100% of the window's surplus width, perfectly centering the VFO.
-
-**Example B: The Responsive Sidebar**
-We want a sidebar that stays rigidly attached to the right edge on large monitors, but gracefully pushes off-screen when the window is too narrow (e.g., `< 800px`).
-* Global state emits a `tag.NarrowScreen` tag when the window shrinks.
-* Base rule `{"widget.Sidebar"}` sets `springRight = math.huge` (anchoring it to the right edge) and `springLeft = 10.0` (resisting expansion).
-* Override rule `{"widget.Sidebar", "tag.NarrowScreen"}` sets `springRight = -math.huge` (explosive repulsion).
-* *Result:* Because specificity 2 beats specificity 1, the moment the screen narrows, the sidebar's right spring becomes repulsive. It actively pushes itself rightward, seamlessly sliding off-screen while the rest of the UI (which uses top-left anchoring via the Pivot Rule) remains perfectly intact.
-
-#### 5. Generalized Content
-Even UI strings are generalized. A `Label` widget can resolve its `text` property from a rule, or use a dynamic callback for real-time data like frequency. For instance, the "ACTIVE TAGS" header is not a hardcoded string; it is a property resolved by a `Label` widget matching the `activeTags.title` tag. This makes the UI entirely localizable and customizable without touching a single line of procedural code.
-
-#### 6. Tag-Driven Interaction & Focus
-NexRx eschews traditional discrete "focus" state variables. Instead, it employs a **dynamic focus-by-hover** model driven by the same SetBox tag resolution used for styling.
-
-* **Dynamic Context Propagation**: As the mouse moves across the interface, the system identifies the widget under the cursor and propagates its entire set of tags (type, ID, and groups) to the global active tag list.
-* **Implicit Focus Rules**: Interactive behaviors are defined by rules that intersect an input event with these propagated tags. For example, a rule matching `{"event.KeyDown-Digit", "widget.VFOControl"}` handles frequency entry. Because the Spectrum and Waterfall widgets also carry the `widget.VFOControl` tag, they implicitly "focus" the VFO when hovered without requiring any procedural state management.
-* **Reactive Highlighting**: Visual feedback follows the same logic. A frequency display highlights itself only when it detects that its group or identity tags are currently global (meaning its control area is hovered) or when specific state tags like `state.VFOEditing` are active.
-* **Event Gobbling by Priority**: The event dispatch system bubbles through the hierarchy, allowing specific rules to "gobble" events. This allows complex modes—like the frequency entry mode—to hijack keyboard input by providing high-priority handlers that only trigger when the correct environmental tags are present.
 
 ### Setbox Workflow in Practice
 

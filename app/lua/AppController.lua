@@ -56,7 +56,177 @@ end
 -- Reactive Logic (Property Coordination)
 -- =============================================================================
 
+-- =============================================================================
+-- Event Handlers (Registered with Events system)
+-- =============================================================================
+
+local events = require("Events")
+
+function AppController.registerHandlers()
+    -- VFO Control (Wheel/Arrows)
+    events.registerHandler("vfo_control", function(event, widget, props)
+        local prop = props.property or "rx.VFO.activeValue"
+        local step = props.step or 100
+        local current = 0
+        
+        if prop == "rx.VFO.activeValue" then
+            local box = Model.getSelectedSignalBox()
+            current = box and box.frequency or 14.2e6
+        else
+            current = setbox.getNumber(prop)
+        end
+        
+        local delta = 0
+        if event.type == events.Type.MOUSE_WHEEL then
+            delta = event.delta * step
+        elseif event.type == events.Type.KEY_DOWN then
+            if event.key == "RIGHT" or event.key == "UP" then delta = step
+            elseif event.key == "LEFT" or event.key == "DOWN" then delta = -step end
+        end
+        
+        if delta ~= 0 then
+            Model.set(prop, current + delta)
+            return true
+        end
+        return false
+    end)
+
+    -- Frequency Entry
+    events.registerHandler("freq_entry_start", function(event, widget)
+        _G.freqEntryText = ""
+        _G.freqEntryCursor = 0
+        events.addModeTag("state.FreqEntryMode")
+        return true
+    end)
+
+    events.registerHandler("freq_entry_text", function(event, widget)
+        if not event.text then return false end
+        _G.freqEntryText = _G.freqEntryText .. event.text
+        _G.freqEntryCursor = #_G.freqEntryText
+        return true
+    end)
+
+    events.registerHandler("freq_entry_confirm", function(event, widget)
+        local val = tonumber(_G.freqEntryText)
+        if val then
+            -- Handle MHz vs Hz (simple heuristic: < 1000 = MHz)
+            if val < 1000 then val = val * 1e6 end
+            Model.set("rx.VFO.activeValue", val)
+        end
+        _G.freqEntryText = ""
+        events.removeModeTag("state.FreqEntryMode")
+        return true
+    end)
+
+    events.registerHandler("freq_entry_cancel", function(event, widget)
+        _G.freqEntryText = ""
+        events.removeModeTag("state.FreqEntryMode")
+        return true
+    end)
+
+    -- SignalBox Management
+    events.registerHandler("sb_select", function(event, widget)
+        if not widget or not widget.data or not widget.data.index then return false end
+        Model.selectedSignalBoxIndex:set(widget.data.index)
+        return true
+    end)
+
+    events.registerHandler("sb_drag_start", function(event, widget)
+        if not widget or not widget.data or not widget.data.index then return false end
+        Model.selectedSignalBoxIndex:set(widget.data.index)
+        AppController.dragState = {
+            index = widget.data.index,
+            startFreq = Model.getSelectedSignalBox().frequency,
+            startX = event.x
+        }
+        return true
+    end)
+
+    events.registerHandler("sb_drag_move", function(event, widget)
+        if not AppController.dragState then return false end
+        local ds = AppController.dragState
+        local box = Model.signalBoxes:peek()[ds.index]
+        if not box then return false end
+
+        -- Calculate frequency change based on pixels moved
+        -- Need spectrum width and span
+        local specW = widget and widget.bounds.w or 1000
+        local zoom = Model.waterfall.zoom:get() or 1.0
+        local span = _G.sampleRate / zoom
+        local hzPerPx = span / specW
+        
+        local dx = event.x - ds.startX
+        local newFreq = ds.startFreq + dx * hzPerPx
+        
+        -- Handle edge warping
+        local margin = 10 -- pixels
+        if event.x < widget.bounds.x + margin then
+            -- Scroll spectrum left
+            local shift = span * 0.1
+            Model.spectrumCenterFreq:set(Model.spectrumCenterFreq:peek() - shift)
+            ds.startX = ds.startX + (shift / hzPerPx)
+        elseif event.x > widget.bounds.x + widget.bounds.w - margin then
+            -- Scroll spectrum right
+            local shift = span * 0.1
+            Model.spectrumCenterFreq:set(Model.spectrumCenterFreq:peek() + shift)
+            ds.startX = ds.startX - (shift / hzPerPx)
+        end
+
+        box.frequency = newFreq
+        return true
+    end)
+
+    events.registerHandler("sb_drag_end", function(event, widget)
+        AppController.dragState = nil
+        return true
+    end)
+
+    -- Tab through SignalBoxes
+    events.registerHandler("sb_next", function(event, widget)
+        local boxes = Model.signalBoxes:peek()
+        local idx = Model.selectedSignalBoxIndex:peek()
+        idx = (idx % #boxes) + 1
+        Model.selectedSignalBoxIndex:set(idx)
+        return true
+    end)
+
+    -- Naming
+    events.registerHandler("sb_name_start", function(event, widget)
+        local box = Model.getSelectedSignalBox()
+        if not box then return false end
+        
+        _G.sbNamingText = box.name or ""
+        _G.sbNamingCursor = #_G.sbNamingText
+        events.addModeTag("state.SbNamingMode")
+        return true
+    end)
+
+    events.registerHandler("sb_name_text", function(event, widget)
+        if not event.text then return false end
+        _G.sbNamingText = _G.sbNamingText .. event.text
+        _G.sbNamingCursor = #_G.sbNamingText
+        return true
+    end)
+
+    events.registerHandler("sb_name_confirm", function(event, widget)
+        local box = Model.getSelectedSignalBox()
+        if box then
+            box.name = _G.sbNamingText
+        end
+        _G.sbNamingText = ""
+        events.removeModeTag("state.SbNamingMode")
+        return true
+    end)
+
+    events.registerHandler("sb_name_cancel", function(event, widget)
+        _G.sbNamingText = ""
+        events.removeModeTag("state.SbNamingMode")
+        return true
+    end)
+end
+
 function AppController.init()
+    AppController.registerHandlers()
     -- Watch selected signal box frequency and sync to hardware
     R.watch(function()
         local box = Model.getSelectedSignalBox()
@@ -68,6 +238,10 @@ function AppController.init()
         -- Update Bands system
         if bands and bands.setCurrent then
             bands.setCurrent(freq)
+            local currentBand = bands.getCurrent()
+            if currentBand ~= "OOB" and Model.rx.selectedBand:peek() ~= currentBand then
+                Model.rx.selectedBand:set(currentBand)
+            end
         end
         
         -- Automatic centering: if the signal moves off-screen, re-center
@@ -89,6 +263,10 @@ function AppController.init()
         Model.preselector.capMask:get()
         Model.preselector.auto:get()
         Model.preselector.enabled:get()
+        
+        local box = Model.getSelectedSignalBox()
+        if box then local _ = box.frequency end
+        
         dirty.preselector = true
     end)
 
@@ -172,6 +350,8 @@ function AppController.pollState()
 
     -- Update Preselector L/C from hardware IF auto-tune is ON
     if Model.preselector.auto:peek() then
+        -- Temporarily disabled to ensure it doesn't overwrite manual changes
+        --[[
         if state.psL ~= nil then
             local hwL = (state.psL == 1)
             if hwL ~= Model.preselector.L:peek() then
@@ -183,6 +363,7 @@ function AppController.pollState()
                 Model.set("preselector.capMask", state.psC)
             end
         end
+        ]]
     end
 end
 
@@ -197,11 +378,8 @@ function AppController.sync()
             local sigFreq = box.frequency
             local tuneHz = sigFreq - loFreq
             
-            -- Sync hardware VFO (LO) and DSP digital tuning offset
-            Hardware.sync({
-                VFO = loFreq,
-                tuningOffset = tuneHz
-            })
+            commands.VFO = loFreq
+            commands.tuningOffset = tuneHz
             print(string.format("[AppController] VFO Sync: LO=%.3f MHz, Tune=%.3f kHz", loFreq/1e6, tuneHz/1000.0))
         end
         dirty.VFO = false
@@ -210,38 +388,26 @@ function AppController.sync()
 
     if dirty.preselector then
         local p = Model.preselector
-        local autoEn = p.auto:get()
+        local autoEn = p.auto:peek()
+        local box = Model.getSelectedSignalBox()
+        local freq = box and box.frequency or 14.2e6
+        
         commands.preselector = {
-            enabled = p.enabled:get(),
+            enabled = p.enabled:peek(),
             autoTune = autoEn
         }
-        if not autoEn then
-            commands.preselector.L = p.L:get()
-            commands.preselector.capMask = p.capMask:get()
+        
+        if autoEn then
+            local L, C = PreselCal.calculate(freq)
+            commands.preselector.L = L
+            commands.preselector.capMask = C
+        else
+            commands.preselector.L = p.L:peek()
+            commands.preselector.capMask = p.capMask:peek()
         end
         dirty.preselector = false
         anyDirty = true
     end
-
-    if dirty.AGC then
-        commands.AGC = {
-            enabled = Model.rx.AGC.enabled:peek(),
-            mode = Model.rx.AGC.mode:peek()
-        }
-        dirty.AGC = false
-        anyDirty = true
-    end
-
-    if dirty.RF then
-        commands.RF = {
-            gainDB = Model.rx.RF.gainDB:peek(),
-            attenuationDB = Model.rx.RF.attenuationDB:peek()
-        }
-        dirty.RF = false
-        anyDirty = true
-    end
-    
-    dirty.QSD = false -- Managed by VFO block now
 
     if dirty.volume then
         commands.volume = {

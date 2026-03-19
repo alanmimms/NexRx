@@ -80,6 +80,72 @@ rule {
 }
 
 -- =============================================================================
+-- SignalBox Interaction
+-- =============================================================================
+
+-- Click to select
+rule {
+    id = "event-sb-click",
+    tags = {"event.MouseDown-LEFT", "widget.SignalBox"},
+    apply = { handler = "sb_drag_start" }
+}
+
+-- Dragging
+rule {
+    id = "event-sb-drag",
+    tags = {"event.MouseMove", "widget.SignalBox", "state.Active"},
+    apply = { handler = "sb_drag_move" }
+}
+
+rule {
+    id = "event-sb-drag-end",
+    tags = {"event.MouseUp-LEFT", "widget.SignalBox"},
+    apply = { handler = "sb_drag_end" }
+}
+
+-- Navigation
+rule {
+    id = "event-sb-next",
+    tags = {"event.KeyDown-TAB"},
+    apply = { handler = "sb_next" }
+}
+
+rule {
+    id = "event-sb-prev",
+    tags = {"event.KeyDown-TAB", "input.SHIFT"},
+    priority = 10,
+    apply = { handler = "sb_prev" }
+}
+
+-- Naming
+rule {
+    id = "event-sb-name-start",
+    tags = {"event.KeyDown-APOSTROPHE"},
+    apply = { handler = "sb_name_start" }
+}
+
+rule {
+    id = "event-sb-name-text",
+    tags = {"event.TextInput", "state.SbNamingMode"},
+    priority = 100,
+    apply = { handler = "sb_name_text" }
+}
+
+rule {
+    id = "event-sb-name-confirm",
+    tags = {"event.KeyDown-ENTER", "state.SbNamingMode"},
+    priority = 100,
+    apply = { handler = "sb_name_confirm" }
+}
+
+rule {
+    id = "event-sb-name-cancel",
+    tags = {"event.KeyDown-ESC", "state.SbNamingMode"},
+    priority = 100,
+    apply = { handler = "sb_name_cancel" }
+}
+
+-- =============================================================================
 -- VFO Control (Global tuning)
 -- Frequency is in Hz.
 -- =============================================================================

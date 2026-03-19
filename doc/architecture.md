@@ -57,40 +57,35 @@ the DSP required.
 
 ### Software Architecture
 
-The software stack divides responsibilities between the embedded
-system and the native host application, with each handling what it
-does best.
+The software stack divides responsibilities between the embedded system and the native host application, with each handling what it does best.
 
 ```mermaid
 graph TB
-    subgraph Native app
-        A[Advanced DSP]
-        B[Setbox Management]
-        C[User Interface]
-        D[Visualizations]
-        E[Digital Mode Decoding]
+    subgraph Native app ["Native App (Lua + Raylib + C++)"]
+        A[Advanced DSP - C++]
+        B[Setbox Config Management - Lua]
+        C[Unified Widget UI - Lua]
+        D[Visualizations - C++/Raylib]
+        E[Digital Mode Decoding - C++]
     end
     
     subgraph Comms ["Communication Layer"]
-        F[WebSocket Protocol]
+        F[Direct TCP/UDP Sockets]
         G[Binary I/Q Data]
-        H[JSON Control Messages]
+        H[CBOR/JSON Control Messages]
     end
     
     subgraph Embedded ["STM32 Embedded (C++20/Zephyr)"]
         I[Real-time RF Control]
         J[Basic DSP]
-        K[ReST or similar API Server]
-        L[USB]
+        K[Control Plane Server]
+        L[USB/Ethernet]
     end
     
-    Native App --> Comms
+    Native app --> Comms
     Comms --> Embedded
 ```
 
-
-### RF Signal Processing
-=======
 ### Receiver Architecture
 
 The receive path implements a sophisticated three-receiver
@@ -246,25 +241,23 @@ The following outlines requirements and approach:
 ### Development Standards and Practices
 
 The project maintains consistent coding standards across both embedded
-and browser components. All code uses CamelCase naming conventions for
+and host application components. All code uses CamelCase naming conventions for
 variables, functions, and methods, with SNAKE_CASE reserved only for
 constants and preprocessor macros.
 
 The embedded system targets C++20 running on Zephyr RTOS, taking
 advantage of modern language features for safer and more expressive
-code. The browser application uses modern JavaScript (ES2022+) with
-React for component management and state handling.
+code. The host application leverages a high-performance C++ DSP core
+integrated with a Lua 5.4 scripting environment for UI and high-level
+logic, utilizing Raylib for hardware-accelerated rendering.
 
 **Performance Requirements**: The system maintains sub-100ms response
 times for critical RF parameter changes, continuous I/Q streaming at
 96 kS/s, and smooth real-time waterfall displays. These requirements
 drive many of the architectural decisions, particularly the division
-of responsibilities between embedded and browser components.
+of responsibilities between embedded and native host components.
 
-**Communication Protocol**: The WebSocket protocol uses binary frames
-for high-throughput I/Q data and JSON messages for control and status
-updates. This hybrid approach optimizes for both efficiency and
-development simplicity.
+**Communication Protocol**: The system uses binary frames for high-throughput I/Q data and structured messages (CBOR or JSON) for control and status updates. This hybrid approach optimizes for both efficiency and developer productivity.
 
 ### Hardware Interface Abstractions
 

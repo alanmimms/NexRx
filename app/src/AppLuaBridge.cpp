@@ -28,6 +28,9 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   sol::table system = lua.create_table();
   system["drawRect"] = &AppLuaBridge::drawRect;
   system["drawRectLines"] = &AppLuaBridge::drawRectLines;
+  system["drawRoundedRect"] = &AppLuaBridge::drawRoundedRect;
+  system["drawCircle"] = &AppLuaBridge::drawCircle;
+  system["drawCircleOutline"] = &AppLuaBridge::drawCircleOutline;
   system["drawLine"] = &AppLuaBridge::drawLine;
   system["drawText"] = &AppLuaBridge::drawText;
   system["measureText"] = &AppLuaBridge::measureText;
@@ -49,6 +52,9 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   });
   lua.set("drawRectOutline", [](float x, float y, float w, float h, float r, float g, float b, float a, float t) {
     DrawRectangleLinesEx({x, y, w, h}, t, Color{ (unsigned char)(r*255), (unsigned char)(g*255), (unsigned char)(b*255), (unsigned char)(a*255) });
+  });
+  lua.set("drawLine", [](float x1, float y1, float x2, float y2, float r, float g, float b, float a, float t) {
+    DrawLineEx({x1, y1}, {x2, y2}, t, Color{ (unsigned char)(r*255), (unsigned char)(g*255), (unsigned char)(b*255), (unsigned char)(a*255) });
   });
   lua.set("drawRoundedRect", [](float x, float y, float w, float h, float radius, float r, float g, float b, float a) {
     DrawRectangleRounded({x, y, w, h}, radius / (h/2.0f), 8, Color{ (unsigned char)(r*255), (unsigned char)(g*255), (unsigned char)(b*255), (unsigned char)(a*255) });
@@ -126,6 +132,7 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   rxTable["setBandpassEnabled"] = [engine](bool en) { engine->getDSP().getFilter().setBandpassEnabled(en); };
   rxTable["setBandpassCenter"] = [engine](float hz) { engine->getDSP().getFilter().setBandpassCenter(hz); };
   rxTable["setBandpassWidth"] = [engine](float hz) { engine->getDSP().getFilter().setBandpassWidth(hz); };
+  rxTable["setTuningOffset"] = [engine](double hz) { engine->getDSP().setTuningOffset(hz); };
   rxTable["setMute"] = [engine](bool en) { engine->getAudio().setMuted(en); };
   rxTable["setVFO"] = [engine](double f) {
     engine->setLastVFOHz(f);
@@ -212,6 +219,18 @@ void AppLuaBridge::drawRect(float x, float y, float w, float h, sol::table color
 
 void AppLuaBridge::drawRectLines(float x, float y, float w, float h, float thickness, sol::table color) { 
   DrawRectangleLinesEx({x, y, w, h}, thickness, tableToColor(color)); 
+}
+
+void AppLuaBridge::drawRoundedRect(float x, float y, float w, float h, float radius, sol::table color) {
+  DrawRectangleRounded({x, y, w, h}, radius / (h/2.0f), 8, tableToColor(color));
+}
+
+void AppLuaBridge::drawCircle(float x, float y, float radius, sol::table color) {
+  DrawCircle((int)x, (int)y, radius, tableToColor(color));
+}
+
+void AppLuaBridge::drawCircleOutline(float x, float y, float radius, float thickness, sol::table color) {
+  DrawCircleLines((int)x, (int)y, radius, tableToColor(color));
 }
 
 void AppLuaBridge::drawLine(float x1, float y1, float x2, float y2, float thickness, sol::table color) { 

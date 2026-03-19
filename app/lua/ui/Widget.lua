@@ -295,13 +295,19 @@ end
 
 function Button:draw()
   local baseColor = self.backgroundColor or Color("#444")
-  if self.isMouseOver then
+  local selected = self.props.selected or self.selected
+  
+  if selected then
+    baseColor = Color("#facc15") -- Yellow highlight for selected
+  elseif self.isMouseOver then
     if self.isDown then
       baseColor = baseColor:darken(0.3)
     else
       baseColor = baseColor:darken(-0.2)
     end
   end
+  
+  local textColor = selected and Color("#000") or Color("#FFF")
   
   System.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, baseColor:toTable())
   System.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, 1, Color("#FFF"):toTable())
@@ -310,7 +316,7 @@ function Button:draw()
   local tw = System.measureText(self.text, fontSize)
   local tx = self.props.x + (self.props.w - tw) / 2
   local ty = self.props.y + (self.props.h - fontSize) / 2
-  System.drawText(self.text, tx, ty, fontSize, Color("#FFF"):toTable())
+  System.drawText(self.text, tx, ty, fontSize, textColor:toTable())
 end
 
 function Button:handleEvent(event)

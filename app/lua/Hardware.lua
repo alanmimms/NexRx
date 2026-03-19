@@ -48,7 +48,6 @@ end
 function Hardware.sync(commands)
     if not hwEnabled or not commands then return end
 
-    -- VFO Synchronization
     if commands.VFO then
         if shouldSend("VFO.freq", commands.VFO) then
             print("[Hardware] Syncing VFO: " .. tostring(commands.VFO) .. " (rx=" .. tostring(rx) .. ")")

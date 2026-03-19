@@ -33,7 +33,7 @@ function SignalBox.new()
     return self
 end
 
-function SignalBox:draw(id, x, y, w, h, parentLWC, label, extraTags)
+function SignalBox:draw(id, x, y, w, h, parentLWC, label, extraTags, data)
     local tags = {"widget.SignalBox", "id." .. id}
     if extraTags then
         if type(extraTags) == "table" then
@@ -42,7 +42,7 @@ function SignalBox:draw(id, x, y, w, h, parentLWC, label, extraTags)
     end
     
     -- Register widget for event system
-    state.registerWidget(id, {x=x, y=y, w=w, h=h}, tags)
+    state.registerWidget(id, {x=x, y=y, w=w, h=h}, tags, data)
     
     -- Hit testing
     if state.pointInRect(state.mouseX, state.mouseY, x, y, w, h) then

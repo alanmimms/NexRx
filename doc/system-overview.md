@@ -2,7 +2,7 @@
 ## Open-Source HF SDR Receiver
 
 **Document Version:** 1.0
-**Date:** December 2025
+**Date:** March 2026
 **License:** MIT License (hardware, firmware, and software)
 
 ---
@@ -54,7 +54,7 @@ bank and preselector operate nominally at 200Ω for superior
 selectivity and lower component stress.
 
 **Software-Defined Configuration**: The SetBox paradigm replaces
-traditional knobs and buttons with hierarchical configuration
+traditional fixed knobs with hierarchical configuration
 inheritance. Complex operating scenarios become simple profile
 switches, with all parameters managed intelligently by the software.
 
@@ -110,8 +110,7 @@ add mode-specific parameters.
 
 When you switch from Contest-20m-CW to Contest-40m-SSB, the system
 instantly reconfigures everything—antenna, power, frequency, mode,
-audio processing, waterfall colors, even active keyboard shortcuts.
-Settings common to all contest operations (inherited from
+audio processing, and waterfall colors. Settings common to all contest operations (inherited from
 Contest-Base) remain consistent, while band and mode specifics adjust
 automatically.
 
@@ -153,33 +152,28 @@ supported in some fashion.
 
 ### Native Application
 
-The NexRx user interface is a **native desktop application**. The
-framework to use for this is still TBD.
+The NexRx user interface is a high-performance **native desktop application** built with **Lua 5.4** and **Raylib**.
 
 **Cross-Platform**: A single codebase produces native applications for:
 - Windows (10/11)
 - macOS (11.0+)
 - Linux (Ubuntu, Fedora, Arch, etc.)
 
-The application is packaged using a method that is TBD, creating
-platform-specific installers (`.exe`, `.dmg`, `.AppImage`, `.deb`)
-with appropriate signing and notarization.
+The application is packaged as a standalone binary with embedded Lua scripts and assets, ensuring a consistent experience across platforms.
 
-### Application Architecture
+#### Application Architecture
 
-**Main Process**
-- Manages application lifecycle (startup, shutdown, updates)
-- Creates and controls application window
-- Handles Ethernet and/or USB socket connections (TCP/UDP, etc)
-- Interfaces with native OS features (file system, audio devices)
-- Manages SetBox storage (JSON files on disk)
+**Main Process (C++ Engine)**
+- High-throughput I/Q signal processing and DSP.
+- Hardware-accelerated rendering of spectrum and waterfall.
+- Low-latency socket communication with the STM32.
+- Operating system integration (Audio, File I/O).
 
-**Renderer Process**
-- TBD framework based user interface components
-- DSP processing
-- Waterfall display
-- Real-time visualizations (S-meter, spectrum, constellation)
-
+**Scripting Layer (Lua UI)**
+- Unified Widget system for UI hierarchy and interaction logic.
+- Reactive property graph for state synchronization.
+- SetBox configuration and styling management.
+- User-definable macros and operating workflows.
 
 ### DSP Responsibilities
 
@@ -199,8 +193,7 @@ noise reduction filters applied in the frequency domain (FFT-based).
 **AGC (Automatic Gain Control)**: Adaptive gain control with
 configurable attack/release times to maintain consistent audio levels.
 
-**Audio Processing**: De-emphasis and bass/treble controls for receive
-audio.
+**Audio Processing**: High-fidelity audio output with user-adjustable equalization.
 
 **Visualization**: Real-time FFT for waterfall and spectrum displays,
 constellation diagrams for digital modes, waveform display.
@@ -208,7 +201,7 @@ constellation diagrams for digital modes, waveform display.
 ### User Interface Highlights
 
 **Waterfall Display**: Primary tuning interface. Mouse wheel scrolling
-tunes frequency. Click-and-drag selects signals. Zoom controls adjust
+tunes frequency. Click-and-drag selects signals via SignalBoxes. Zoom controls adjust
 span.
 
 **SetBox Selector**: Dropdown or tree view showing available
@@ -230,24 +223,11 @@ modes with automatic frequency tracking and logging.
 ### The Problem with Traditional Radios
 
 A typical contest operator switching from 20-meter CW to 40-meter SSB
-must manually adjust:
-- Frequency (VFO)
-- Mode (CW → SSB)
-- Antenna selection (20m beam → 40m dipole)
-- Filter bandwidth (CW narrow → SSB wide)
-- AGC settings (CW fast → SSB slow)
-- Waterfall span and color scheme
-
-Traditional radios force operators to remember and execute this
-sequence every time they change bands or modes. Memory channels help
-with frequency but leave all other settings independent.
+must manually adjust dozens of independent parameters. Traditional radios force operators to execute complex sequences of knob turns and button presses, leading to errors and slow transitions.
 
 ### The SetBox Solution
 
-A **SetBox** is a named configuration containing values for every
-adjustable parameter in the system. SetBoxes form **inheritance
-hierarchies**, where child SetBoxes inherit parameter values from
-parents and override only what changes.
+A **SetBox** is a named configuration profile containing values for every adjustable parameter in the system. SetBoxes form **inheritance hierarchies**, where child SetBoxes inherit parameter values from parents and override only what changes. This decouples the *intent* of the operator from the *implementation* of the radio's state.
 
 **Example Hierarchy**:
 
@@ -280,7 +260,6 @@ Global-Defaults
 - Mode: CW
 - Filter bandwidth: 500 Hz
 - AGC: Fast
-- Keyboard shortcuts: CW-specific
 
 When the operator switches to Contest-20m-CW, the system applies:
 - Callsign: W1ABC/M (from Contest-Base)
@@ -305,17 +284,13 @@ callsign) are defined once in Contest-Base and automatically apply to
 all child SetBoxes.
 
 **Flexibility**: Any parameter can be overridden at any level of the
-hierarchy. Want more power on 40m SSB for DX? Override in
-Contest-40m-SSB without affecting other configurations.
+hierarchy.
 
 **Simplicity**: Switching between complex operating scenarios becomes
-a single SetBox selection. The system handles all parameter changes
-atomically.
+a single SetBox selection.
 
 **Transparency**: The user interface shows exactly where each active
-parameter value comes from in the inheritance chain. Adjusting a
-parameter prompts: "Save to current SetBox?" or "Save as new child
-SetBox?"
+parameter value comes from in the inheritance chain.
 
 **Experimentation**: Trying new settings is safe. Create a new child
 SetBox, experiment, and discard if unsuccessful. The parent SetBox
@@ -332,9 +307,7 @@ maximum control over their equipment. NexRx provides direct access to
 every parameter while simplifying complex operations through SetBoxes.
 
 **Digital Mode Enthusiasts**: Built-in decoders and optimized
-configurations for PSK31, FT8, RTTY, and other digital modes. The host
-PC's computational power enables sophisticated decoding and automatic
-frequency tracking.
+configurations for digital modes.
 
 **Contesters**: Rapid band/mode switching via SetBoxes. Multiple
 receiver windows. Logging integration.
@@ -349,14 +322,10 @@ panels—all without hardware changes.
 detailed analysis and optimization. The modular architecture supports
 subsystem replacement without redesigning the entire radio.
 
-**Software Developers**: Electron/React UI is accessible to web
-developers. Contribution doesn't require embedded systems expertise.
-The API between hardware and software is well-documented and stable.
+**Software Developers**: The Lua-based UI is highly accessible for customization. Contribution doesn't require deep embedded systems expertise.
 
 **Educators**: NexRx serves as a teaching platform for SDR concepts,
-DSP algorithms, RF engineering, and software architecture. Students
-can experiment with real hardware while understanding complete signal
-flow.
+DSP algorithms, RF engineering, and software architecture.
 
 ### Open-Source Community
 
@@ -389,7 +358,7 @@ benefit the entire community.
 
 ### Physical Interfaces
 
-**Power**: USB-C connector, default USB 5V at 3A or even 1A.
+**Power**: USB-C connector.
 **Data**: RJ45 Ethernet, 100 Mbps (Fast Ethernet) or USB2 480Mb/s (still pending).
 **Antenna**: SO-239 or Type-N connector (TBD)
 
@@ -411,10 +380,7 @@ equipment costing thousands of dollars.
 
 The open-source nature of the project—hardware, firmware, and
 software—encourages experimentation, learning, and community
-contribution. Whether you're an experienced RF engineer, a software
-developer, or an amateur radio operator seeking a powerful and
-flexible receiver, NexRx offers a platform for exploration and
-innovation.
+contribution.
 
 The following documents provide detailed technical information:
 
@@ -426,7 +392,7 @@ Welcome to the NexRx project. We look forward to your contributions and innovati
 
 ---
 
-**Document Revision**: 1.0
-**Last Updated**: January 2026
+**Document Revision**: 1.1
+**Last Updated**: March 2026
 **Project Repository**: https://github.com/alanmimms/nexrx.git
 **License**: MIT License - See LICENSE.md
