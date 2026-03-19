@@ -14,6 +14,7 @@ public:
   bool shouldClose();
 
 private:
+  void pollEvents();
   sol::state lua;
   sol::table uiModule;
 };

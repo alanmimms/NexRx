@@ -10,6 +10,7 @@ function Slider:init(def)
   self.value = def.value or self.min
   self.onChanged = def.onChanged
   self.railH = 4
+  self.isDragging = false
 end
 
 function Slider:calcMetrics(bridge)
@@ -23,6 +24,32 @@ function Slider:setValue(v)
   if self.value ~= oldVal and self.onChanged then
     self.onChanged(self, self.value)
   end
+end
+
+function Slider:updateValueFromPos(mouseX)
+  local x, w = self.props.x, self.props.w
+  local range = math.max(1, self.max - self.min)
+  local percent = (mouseX - (x + 5)) / (w - 10)
+  self:setValue(self.min + percent * range)
+end
+
+function Slider:handleEvent(event)
+  if event.type == "mouseButton" then
+    if event.button == 0 then -- Left Button
+      if event.isDown then
+        self.isDragging = true
+        self:updateValueFromPos(event.x)
+        return true
+      else
+        self.isDragging = false
+        return true
+      end
+    end
+  elseif event.type == "mouseMotion" and self.isDragging then
+    self:updateValueFromPos(event.x)
+    return true
+  end
+  return Widget.handleEvent(self, event)
 end
 
 function Slider:draw(bridge)
@@ -57,7 +84,7 @@ function DiscreteSlider:init(def)
   
   Slider.init(self, def)
   self.stops = stops
-  self.currentIndex = def.initialIndex or 1
+  self.currentIndex = (def.initialIndex or 1)
   self.labelPos = def.labelPos or "below" -- "above" or "below"
   self.fontSize = def.fontSize or 12
 end
@@ -77,19 +104,20 @@ function DiscreteSlider:calcMetrics(bridge)
   end
 end
 
-function DiscreteSlider:setIndex(idx)
-  if idx < 1 or idx > #self.stops then return end
+function DiscreteSlider:setValue(v)
+  local rounded = math.floor(v + 0.5)
   local oldIndex = self.currentIndex
-  if oldIndex == idx then return end
   
-  local oldStop = self.stops[oldIndex]
-  if oldStop and oldStop.onDeactivate then oldStop.onDeactivate(self, oldStop.value) end
-  
-  self.currentIndex = idx
-  self:setValue(idx - 1)
-  
-  local newStop = self.stops[idx]
-  if newStop and newStop.onActivate then newStop.onActivate(self, newStop.value) end
+  Slider.setValue(self, rounded)
+  self.currentIndex = math.floor(self.value + 1.5)
+  if self.currentIndex > #self.stops then self.currentIndex = #self.stops end
+
+  if self.currentIndex ~= oldIndex then
+    local oldStop = self.stops[oldIndex]
+    if oldStop and oldStop.onDeactivate then oldStop.onDeactivate(self, oldStop.value) end
+    local newStop = self.stops[self.currentIndex]
+    if newStop and newStop.onActivate then newStop.onActivate(self, newStop.value) end
+  end
 end
 
 function DiscreteSlider:draw(bridge)

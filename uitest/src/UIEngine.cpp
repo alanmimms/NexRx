@@ -34,7 +34,7 @@ void UIEngine::init() {
   if (font.texture.id == 0) {
     std::cerr << "Failed to load font fonts/DejaVuSans.ttf" << std::endl;
   } else {
-    RenderBridge::setFont(font);
+    LuaBridge::setFont(font);
   }
   
   if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -44,7 +44,7 @@ void UIEngine::init() {
   lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math);
   lua.script("package.path = package.path .. ';lua/?.lua;?.lua'");
   
-  RenderBridge::registerWithLua(lua);
+  LuaBridge::registerWithLua(lua);
 
   try {
     uiModule = lua.require_file("UI", "lua/UI.lua");
@@ -54,8 +54,47 @@ void UIEngine::init() {
 }
 
 void UIEngine::update() {
-  if (sQuitRequested) {
-    // Raylib's WindowShouldClose will return true if we simulate escape or close
+  if (sQuitRequested) return;
+  pollEvents();
+}
+
+void UIEngine::pollEvents() {
+  if (uiModule == sol::nil) return;
+
+  // Mouse Motion
+  Vector2 mousePos = GetMousePosition();
+  sol::function onMouseMove = uiModule["onMouseMove"];
+  if (onMouseMove.valid()) {
+    onMouseMove(mousePos.x, mousePos.y);
+  }
+
+  // Modifiers
+  int mods = 0;
+  if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) mods |= 1;
+  if (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) mods |= 2;
+  if (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) mods |= 4;
+  if (IsKeyDown(KEY_LEFT_SUPER) || IsKeyDown(KEY_RIGHT_SUPER)) mods |= 8;
+
+  // Mouse Buttons
+  sol::function onMouseEvent = uiModule["onMouseEvent"];
+  if (onMouseEvent.valid()) {
+    for (int b = 0; b < 3; b++) {
+      if (IsMouseButtonPressed(b)) {
+        onMouseEvent("button", mousePos.x, mousePos.y, b, true, mods);
+      } else if (IsMouseButtonReleased(b)) {
+        onMouseEvent("button", mousePos.x, mousePos.y, b, false, mods);
+      }
+    }
+  }
+
+  // Keyboard
+  sol::function onKeyEvent = uiModule["onKeyEvent"];
+  if (onKeyEvent.valid()) {
+    int key = GetKeyPressed();
+    while (key > 0) {
+      onKeyEvent(key, true, mods);
+      key = GetKeyPressed();
+    }
   }
 }
 
@@ -64,8 +103,6 @@ bool UIEngine::shouldClose() {
 }
 
 void UIEngine::render() {
-  double frameStartTime = GetTime();
-
   if (IsWindowResized() && uiModule != sol::nil) {
     sol::function resizeFunc = uiModule["onResize"];
     if (resizeFunc.valid()) {
@@ -92,13 +129,4 @@ void UIEngine::render() {
   }
 
   EndDrawing();
-
-  double frameTime = GetTime() - frameStartTime;
-  double targetFrameTime = 1.0 / 60.0;
-  if (frameTime < targetFrameTime) {
-    // We already have SetTargetFPS(60), which does its own waiting in EndDrawing().
-    // But if we want manual control or higher precision:
-    // double sleepTime = targetFrameTime - frameTime;
-    // std::this_thread::sleep_for(std::chrono::duration<double>(sleepTime));
-  }
 }

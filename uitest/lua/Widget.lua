@@ -2,10 +2,19 @@ local Color = require("Color")
 local Layout = require("Layout")
 local Stick = require("Stick")
 
+local LOG_TRACE = 1
+local LOG_DEBUG = 2
+local LOG_INFO  = 3
+local LOG_WARN  = 4
+local LOG_ERR   = 5
+
 local Widget = { typeName = "Widget" }
 Widget.__index = Widget
 
 local widgetN = 0
+local focusedWidget = nil
+local hoveredWidget = nil
+local DEFAULT_HIGHLIGHT_COLOR = Color("#FFF")
 
 function Widget.newID()
   widgetN = widgetN + 1
@@ -15,19 +24,20 @@ end
 function Widget:init(def)
   def = def or {}
   self.id = def.id or Widget.newID()
+  self.debugName = def.debugName
   self.type = self.typeName or "Widget"
   self.props = def.props or {}
-  self.tags = def.tags or {}
   self.kids = def.kids or {}
-  self.layoutFunc = def.layoutFunc or nil
+  self.layoutFunc = def.layoutFunc
   
-  -- Rendering properties
-  self.borderColor = def.borderColor or nil
-  self.backgroundColor = def.backgroundColor or nil
-  self.showBorder = def.showBorder or (self.borderColor ~= nil)
-  self.showBackground = def.showBackground or (self.backgroundColor ~= nil)
+  self.borderColor = def.borderColor
+  self.backgroundColor = def.backgroundColor
+  self.showBorder = (def.showBorder ~= nil) and def.showBorder or (self.borderColor ~= nil)
+  self.showBackground = (def.showBackground ~= nil) and def.showBackground or (self.backgroundColor ~= nil)
   
-  -- Metrics for Layout.lua
+  self.isMouseOver = false
+  self.focused = false
+
   self.metrics = def.metrics or {}
   self.metrics.margin = self.metrics.margin or { left = 0, right = 0, top = 0, bottom = 0 }
   self.metrics.stick = self.metrics.stick or (Stick.L | Stick.T)
@@ -40,46 +50,37 @@ function Widget:init(def)
   self.metrics.maxW = self.metrics.maxW or 10000
   self.metrics.maxH = self.metrics.maxH or 10000
 
-  -- Final geometry updated by Layout.lua
   self.props.x = self.props.x or 0
   self.props.y = self.props.y or 0
   self.props.w = self.props.w or 0
   self.props.h = self.props.h or 0
   
-  for _, kid in ipairs(self.kids) do 
-    kid.parent = self 
-  end
+  for _, kid in ipairs(self.kids) do kid.parent = self end
+  if def.focused then self:setFocus() end
+
+  print("Widget:init",
+    (self.debugName or self), self.id,
+    self.props.x, self.props.y,
+    self.props.w, self.props.h)
 end
 
--- Factory to take type name and create a new Widget type that calls
--- its own init function.
 function Widget.mkType(typeName, base)
   base = base or Widget
   local newT = { typeName = typeName, super = base }
-  
-  -- Instances will look up methods in this specific type table
   newT.__index = newT
-
   local typeMT = {
-    -- Allow the type itself to inherit class-level methods from base
     __index = base,
-    
-    -- The constructor invoked when calling MyNewWidgetType{ ... }
     __call = function(theClass, def)
       local instance = setmetatable({}, theClass)
       instance:init(def)
       return instance
     end
   }
-
   setmetatable(newT, typeMT)
   return newT
 end
 
-function Widget:getMetrics()
-  return self.metrics
-end
-
+function Widget:getMetrics() return self.metrics end
 function Widget:calcMetrics(bridge)
   if self.metrics.prefW == 0 then self.metrics.prefW = 10 end
   if self.metrics.prefH == 0 then self.metrics.prefH = 10 end
@@ -89,160 +90,226 @@ function Widget:draw(bridge)
   if self.showBackground and self.backgroundColor then
     bridge.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, self.backgroundColor:toTable())
   end
-  if self.showBorder and self.borderColor then
-    bridge.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, 1, self.borderColor:toTable())
+
+  if (self.showBorder and self.borderColor) or self.isMouseOver then
+    local thickness = self.isMouseOver and 3 or 1
+    local color = (self.borderColor or DEFAULT_HIGHLIGHT_COLOR):toTable()
+    bridge.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, thickness, color)
   end
-  for _, kid in ipairs(self.kids) do kid:draw(bridge) end
+
+  for _, kid in ipairs(self.kids) do 
+    local ok, err = pcall(kid.draw, kid, bridge)
+    if not ok then
+      print("Error drawing kid", kid.debugName or kid, kid.id, err)
+    end
+  end
 end
 
 function Widget:layout(bridge, x, y, w, h)
   if not bridge then return end
-  -- Root layout call should trigger recursive calcMetrics
-  if not self.parent then
-    self:calcMetrics(bridge)
-  end
+  if not self.parent then self:calcMetrics(bridge) end
   self.props.x, self.props.y, self.props.w, self.props.h = x, y, w, h
   if self.layoutFunc then 
-    self.layoutFunc(self) 
+    local ok, err = pcall(self.layoutFunc, self)
+    if not ok then
+      print("Error in layoutFunc for", self.debugName or self, self.id, err)
+    end
   end
+end
+
+function Widget:contains(x, y)
+  return x >= self.props.x and x <= self.props.x + self.props.w and
+         y >= self.props.y and y <= self.props.y + self.props.h
+end
+
+function Widget:setFocus()
+  if focusedWidget then focusedWidget.focused = false end
+  focusedWidget = self
+  self.focused = true
+end
+
+function Widget.getFocused() return focusedWidget end
+
+function Widget:handleEvent(event)
+  local consumed = false
+  if self.onEvent then consumed = self.onEvent(self, event) end
+  if not consumed and self.parent then return self.parent:handleEvent(event) end
+  return consumed
+end
+
+function Widget:hitTest(x, y)
+  if not self:contains(x, y) then return nil end
+  for i = #self.kids, 1, -1 do
+    local hit = self.kids[i]:hitTest(x, y)
+    if hit then return hit end
+  end
+  return self
+end
+
+function Widget.updateGlobalMouse(root, x, y)
+  local hit = root:hitTest(x, y)
+  if hit ~= hoveredWidget then
+    if hoveredWidget then hoveredWidget.isMouseOver = false end
+    hoveredWidget = hit
+    if hoveredWidget then hoveredWidget.isMouseOver = true end
+  end
+  return hit
 end
 
 -- --- Container Class ---
 local Container = Widget.mkType("Container", Widget)
-
 function Container:init(def)
   Widget.init(self, def)
-  if not self.layoutFunc then
-    self.layoutFunc = Layout.hFlow
-  end
+  if not self.layoutFunc then self.layoutFunc = Layout.hFlow end
 end
 
 function Container:calcMetrics(bridge)
   local maxW, maxH = 0, 0
   local sumW, sumH = 0, 0
-  
   for _, kid in ipairs(self.kids) do
     kid:calcMetrics(bridge)
     local m = kid:getMetrics()
-    local kw = m.prefW + m.margin.left + m.margin.right
-    local kh = m.prefH + m.margin.top + m.margin.bottom
-    
+    local kw, kh = m.prefW + m.margin.left + m.margin.right, m.prefH + m.margin.top + m.margin.bottom
     if kw > maxW then maxW = kw end
     if kh > maxH then maxH = kh end
-    sumW = sumW + kw
-    sumH = sumH + kh
-  end
-  
-  -- Use calculated values if not explicitly set by user (still 0)
-  if self.metrics.prefW == 0 then
-    if self.layoutFunc == Layout.hFlow then self.metrics.prefW = sumW
-    elseif self.layoutFunc == Layout.vFlow then self.metrics.prefW = maxW
-    else self.metrics.prefW = maxW end
-  end
-  
-  if self.metrics.prefH == 0 then
-    if self.layoutFunc == Layout.hFlow then self.metrics.prefH = maxH
-    elseif self.layoutFunc == Layout.vFlow then self.metrics.prefH = sumH
-    else self.metrics.prefH = maxH end
+    sumW, sumH = sumW + kw, sumH + kh
   end
 
-  -- Fallback
+  -- XXX these comparisons on layoutFunc values are despicable, scurrilous, and evil.
+  if self.metrics.prefW == 0 then
+    if self.layoutFunc == Layout.hFlow then self.metrics.prefW = sumW else self.metrics.prefW = maxW end
+  end
+  if self.metrics.prefH == 0 then
+    if self.layoutFunc == Layout.vFlow then self.metrics.prefH = sumH else self.metrics.prefH = maxH end
+  end
+
   if self.metrics.prefW == 0 then self.metrics.prefW = 10 end
   if self.metrics.prefH == 0 then self.metrics.prefH = 10 end
 end
 
 function Container:layout(bridge, x, y, w, h)
   if not bridge then return end
-  if not self.parent then
-    self:calcMetrics(bridge)
-  end
+  if not self.parent then self:calcMetrics(bridge) end
   self.props.x, self.props.y, self.props.w, self.props.h = x, y, w, h
-  if self.layoutFunc then
-    self.layoutFunc(self)
+  if self.layoutFunc then 
+    local ok, err = pcall(self.layoutFunc, self)
+    if not ok then
+      print("Error in layoutFunc for", self.debugName or self, self.id, err)
+    end
   end
-  -- Containers must recursively layout their kids
-  for _, kid in ipairs(self.kids) do
-    kid:layout(bridge, kid.props.x, kid.props.y, kid.props.w, kid.props.h)
+  for _, kid in ipairs(self.kids) do 
+    local ok, err = pcall(kid.layout, kid, bridge, kid.props.x, kid.props.y, kid.props.w, kid.props.h)
+    if not ok then
+      print("Error in recursive layout for kid", kid.debugName or kid, kid.id, err)
+    end
   end
+end
+
+-- --- Column/Row Classes ---
+local Column = Widget.mkType("Column", Container)
+function Column:init(def)
+  def = def or {}
+  def.layoutFunc = def.layoutFunc or Layout.vFlow
+  Container.init(self, def)
+end
+
+local Row = Widget.mkType("Row", Container)
+function Row:init(def)
+  def = def or {}
+  def.layoutFunc = def.layoutFunc or Layout.hFlow
+  Container.init(self, def)
 end
 
 -- --- Label Class ---
 local Label = Widget.mkType("Label", Widget)
-
-function Label:init(def)
-  Widget.init(self, def)
-  self.text = self.props.text or self.id
-end
-
+function Label:init(def) Widget.init(self, def); self.text = self.props.text or self.id end
 function Label:calcMetrics(bridge)
   local fontSize = self.props.fontSize or 20
   local tw = bridge.measureText(self.text, fontSize)
-  -- Only update if not explicitly set
   if self.metrics.prefW == 0 then self.metrics.prefW = tw + 10 end
   if self.metrics.prefH == 0 then self.metrics.prefH = fontSize + 10 end
 end
-
 function Label:draw(bridge)
   Widget.draw(self, bridge)
-  local fontSize = self.props.fontSize or 20
+  local fontSize, stick = self.props.fontSize or 20, self.metrics.stick
   local textW = bridge.measureText(self.text, fontSize)
-  local stick = self.metrics.stick
-  local tx = self.props.x + 5
-  local ty = self.props.y + (self.props.h - fontSize) / 2
-  
-  if (stick & Stick.R) ~= 0 and (stick & Stick.L) ~= 0 then
-    tx = self.props.x + (self.props.w - textW) / 2
-  elseif (stick & Stick.R) ~= 0 and (stick & Stick.L) == 0 then
-    tx = self.props.x + self.props.w - textW - 5
-  elseif (stick & Stick.R) == 0 and (stick & Stick.L) == 0 then
-    tx = self.props.x + (self.props.w - textW) / 2
-  end
-
-  if (stick & Stick.B) ~= 0 and (stick & Stick.T) == 0 then
-    ty = self.props.y + self.props.h - fontSize - 5
-  elseif (stick & Stick.T) ~= 0 and (stick & Stick.B) == 0 then
-    ty = self.props.y + 5
-  end
-  
+  local tx, ty = self.props.x + 5, self.props.y + (self.props.h - fontSize) / 2
+  if (stick & Stick.R) ~= 0 and (stick & Stick.L) ~= 0 then tx = self.props.x + (self.props.w - textW) / 2
+  elseif (stick & Stick.R) ~= 0 then tx = self.props.x + self.props.w - textW - 5
+  elseif (stick & Stick.L) == 0 then tx = self.props.x + (self.props.w - textW) / 2 end
+  if (stick & Stick.B) ~= 0 and (stick & Stick.T) == 0 then ty = self.props.y + self.props.h - fontSize - 5
+  elseif (stick & Stick.T) ~= 0 and (stick & Stick.B) == 0 then ty = self.props.y + 5 end
   bridge.drawText(self.text, tx, ty, fontSize, Color("#FFF"):toTable())
 end
 
 -- --- Window Class ---
 local Window = Widget.mkType("Window", Container)
-
 function Window:init(def)
   Container.init(self, def)
   self.borderColor = def.borderColor or Color("#444")
   self.backgroundColor = self.borderColor:darken(0.8)
-  self.showBackground = true
-  self.showBorder = true
-  self.props.w = def.width or 1280
-  self.props.h = def.height or 720
+  self.showBackground, self.showBorder = true, true
+  self.props.w, self.props.h = def.width or 1280, def.height or 720
 end
 
-function Window:calcMetrics(bridge)
-  Container.calcMetrics(self, bridge)
+function Window:layout(bridge, x, y, w, h)
+  Container.layout(self, bridge, x, y, w, h)
 end
 
-function Window:onResize(w, h)
-  self.props.w = w
-  self.props.h = h
+
+function Window:calcMetrics(bridge) Container.calcMetrics(self, bridge) end
+function Window:onResize(w, h) self.props.w, self.props.h = w, h end
+
+-- --- Button Class ---
+local Button = Widget.mkType("Button", Widget)
+function Button:init(def)
+  Widget.init(self, def)
+  self.text = self.props.text or "Button"
+  self.onClicked = def.onClicked
 end
 
--- Export Factory Methods and Classes under Widget table
-Widget.Container = Container
-Widget.Label = Label
-Widget.Window = Window
-Widget.Column = function(def) 
-  def = def or {}
-  def.layoutFunc = Layout.vFlow
-  return Container(def) 
+function Button:calcMetrics(bridge)
+  local fontSize = self.props.fontSize or 20
+  local tw = bridge.measureText(self.text, fontSize)
+  if self.metrics.prefW == 0 then self.metrics.prefW = tw + 20 end
+  if self.metrics.prefH == 0 then self.metrics.prefH = fontSize + 15 end
 end
-Widget.Row = function(def) 
-  def = def or {}
-  def.layoutFunc = Layout.hFlow
-  return Container(def) 
-end
-Widget.Stick = Stick
 
+function Button:draw(bridge)
+  local baseColor = self.backgroundColor or Color("#444")
+  if self.isMouseOver then
+    if self.isDown then
+      baseColor = baseColor:darken(0.3)
+    else
+      baseColor = baseColor:darken(-0.2)
+    end
+  end
+  
+  bridge.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, baseColor:toTable())
+  bridge.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, 1, Color("#FFF"):toTable())
+  
+  local fontSize = self.props.fontSize or 20
+  local tw = bridge.measureText(self.text, fontSize)
+  local tx = self.props.x + (self.props.w - tw) / 2
+  local ty = self.props.y + (self.props.h - fontSize) / 2
+  bridge.drawText(self.text, tx, ty, fontSize, Color("#FFF"):toTable())
+end
+
+function Button:handleEvent(event)
+  if event.type == "mouseButton" and event.button == 0 then
+    if event.isDown then
+      self.isDown = true
+      return true
+    else
+      if self.isDown and self.isMouseOver then
+        if self.onClicked then self.onClicked(self) end
+      end
+      self.isDown = false
+      return true
+    end
+  end
+  return Widget.handleEvent(self, event)
+end
+
+Widget.Container, Widget.Column, Widget.Row, Widget.Label, Widget.Window, Widget.Stick, Widget.Button = Container, Column, Row, Label, Window, Stick, Button
 return Widget
