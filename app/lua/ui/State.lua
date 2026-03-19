@@ -51,6 +51,12 @@ function state.beginFrame()
 
     -- Get input state from C++ host
     state.mouseX, state.mouseY = getMousePos()
+    if state.mouseX == nil or state.mouseY == nil then
+        -- Fallback to 0,0 if bridge failed
+        state.mouseX = state.mouseX or 0
+        state.mouseY = state.mouseY or 0
+    end
+    
     state.mouseDown = isMouseDown(0)
     state.mouseClicked = isMouseClicked(0)
     state.mouseReleased = isMouseReleased(0)

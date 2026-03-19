@@ -152,19 +152,24 @@ end
 -- ============================================================================
 
 function Hardware.updateWaterfall(data)
-    if waterfallEnabled and waterfall and waterfall.addRow then
+    if waterfall and waterfall.addRow then
         waterfall.addRow(data)
     end
 end
 
 function Hardware.renderWaterfall(x, y, w, h, zoom, center)
-    if waterfallEnabled and waterfall and waterfall.render then
+    if waterfall and waterfall.render then
         waterfall.render(x, y, w, h, zoom or 1.0, center or 0.5)
     end
 end
 
 function Hardware.renderSpectrum(data, x, y, w, h)
-    if waterfallEnabled and waterfall and waterfall.renderSpectrum then
+    if waterfall and waterfall.renderSpectrum then
+        if not data or #data == 0 then
+            -- Generate dummy spectrum if no data
+            data = {}
+            for i = 1, 1024 do data[i] = -100 + 20 * math.sin(i / 50) + 5 * math.random() end
+        end
         waterfall.renderSpectrum(data, x, y, w, h)
     end
 end

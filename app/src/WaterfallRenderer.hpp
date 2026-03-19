@@ -1,10 +1,11 @@
 /**
  * @file WaterfallRenderer.hpp
- * @brief OpenGL-based waterfall/spectrogram display
+ * @brief Raylib-based waterfall/spectrogram display
  */
 
 #pragma once
 
+#include <raylib.h>
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -13,17 +14,13 @@
 /**
  * @brief Waterfall/spectrogram display renderer
  *
- * Uses OpenGL texture streaming with a circular buffer approach
- * for efficient scrolling without copying data each frame.
+ * Uses Raylib texture streaming with a circular buffer approach
+ * for efficient scrolling.
  */
 class WaterfallRenderer {
 public:
   WaterfallRenderer();
   ~WaterfallRenderer();
-
-  // Non-copyable
-  WaterfallRenderer(const WaterfallRenderer&) = delete;
-  WaterfallRenderer& operator=(const WaterfallRenderer&) = delete;
 
   /**
    * @brief Initialize the waterfall display
@@ -116,7 +113,7 @@ private:
   void updateTexture();
   uint32_t dbToColor(float db);
 
-  unsigned int textureID = 0;
+  Texture2D waterfallTexture = { 0 };
   int width = 0;
   int height = 0;
   bool initialized = false;

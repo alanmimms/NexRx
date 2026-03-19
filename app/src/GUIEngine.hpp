@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <raylib.h>
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 #include <string>
@@ -16,28 +15,10 @@
 #include <atomic>
 #include <functional>
 
-#include "FontRenderer.hpp"
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
 #include "TwinConn.hpp"
 #include "DSPEngine.hpp"
-
-struct InputState {
-  int mouseX = 0, mouseY = 0, mouseWheel = 0;
-  bool mouseDown[3] = {false, false, false};
-  bool mouseClicked[3] = {false, false, false};
-  bool mouseReleased[3] = {false, false, false};
-  bool keyDown[512] = {false};
-  bool shiftDown = false, ctrlDown = false, altDown = false;
-
-  void beginFrame() {
-    for (int i = 0; i < 3; ++i) {
-      mouseClicked[i] = false;
-      mouseReleased[i] = false;
-    }
-    mouseWheel = 0;
-  }
-};
 
 class GUIEngine {
 public:
@@ -48,27 +29,37 @@ public:
   void run();
   void shutdown();
 
+  // Getters for Lua Bridge
+  DSPEngine& getDSP() { return dsp_; }
+  AudioEngine& getAudio() { return audio; }
+  WaterfallRenderer& getWaterfall() { return waterfall; }
+  nexrx::TwinConn& getTwinConn() { return twinHost; }
+  
+  bool connectTwin(const std::string& host, int cp, int sp);
+  void disconnectTwin();
+  bool isTwinConnected() const { return twinConnected.load(); }
+  sol::object getTwinState(sol::this_state s);
+  
+  void postTwinCommand(std::function<void()> cmd);
+  double getLastVFOHz() const { return lastVFOHz; }
+  void setLastVFOHz(double f) { lastVFOHz = f; }
+
 private:
   void update(float dt);
   void render();
   
   void startCommandThread();
   void stopCommandThread();
-  void postCommand(std::function<void()> cmd);
-  void processCommands();
 
   DSPEngine& dsp_;
   
-  SDL_Window* window = nullptr;
-  SDL_GLContext glContext = nullptr;
   sol::state lua;
+  sol::table uiModule;
   
-  FontRenderer font;
   AudioEngine audio;
   WaterfallRenderer waterfall;
   nexrx::TwinConn twinHost;
   
-  InputState input;
   int windowWidth, windowHeight;
   bool running = false;
   double lastVFOHz = 14.2e6;

@@ -21,7 +21,7 @@ struct ma_device_config;
  * @param frameCount Number of frames to generate
  * @param channels Number of channels (typically 2 for stereo)
  */
-using AudioCallback = std::function<void(float* output, uint32_t frameCount, uint32_t channels)>;
+using AppAudioCallback = std::function<void(float* output, uint32_t frameCount, uint32_t channels)>;
 
 /**
  * @brief Simple audio playback engine
@@ -67,7 +67,7 @@ public:
   /**
    * @brief Set the audio callback for generating samples
    */
-  void setCallback(AudioCallback callback) { this->callback = std::move(callback); }
+  void setCallback(AppAudioCallback cb) { this->appCallback = std::move(cb); }
 
   /**
    * @brief Set master volume (0.0 to 1.0)
@@ -124,7 +124,7 @@ private:
   void processAudio(float* output, uint32_t frameCount);
 
   ma_device* device = nullptr;
-  AudioCallback callback;
+  AppAudioCallback appCallback;
 
   uint32_t sampleRate = 48000;
   uint32_t channels = 2;

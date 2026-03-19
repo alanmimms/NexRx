@@ -134,7 +134,7 @@ private:
   void computeHilbertCoeffs() {
     hilbertCoeffs.assign(hilbertTaps, 0.0f);
     int M = (hilbertTaps - 1) / 2;
-    constexpr float PI = 3.14159265f;
+    const float pi = 3.14159265f;
     for (int n = 0; n < hilbertTaps; n++) {
       if (n == M) {
         hilbertCoeffs[n] = 0;
@@ -144,9 +144,9 @@ private:
           hilbertCoeffs[n] = 0;
         } else {
           // h(n) = 2/(pi * (n-M))
-          hilbertCoeffs[n] = 2.0f / (PI * x);
+          hilbertCoeffs[n] = 2.0f / (pi * x);
           // Apply Hamming window
-          float w = 0.54f - 0.46f * std::cos(2.0f * PI * n / (hilbertTaps - 1));
+          float w = 0.54f - 0.46f * std::cos(2.0f * pi * n / (hilbertTaps - 1));
           hilbertCoeffs[n] *= w;
         }
       }

@@ -119,8 +119,9 @@ void AudioEngine::processAudio(float* output, uint32_t frameCount) {
 
   // 1. Get DSP audio if available
   std::fill(callbackBuffer.begin(), callbackBuffer.begin() + totalSamples, 0.0f);
-  if (callback) {
-    callback(callbackBuffer.data(), frameCount, chs);
+  if (appCallback) {
+    appCallback(callbackBuffer.data(), frameCount, channels);
+
   }
 
   // 2. Mix and apply Volume/Mute/Tone

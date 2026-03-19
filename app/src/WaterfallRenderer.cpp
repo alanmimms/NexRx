@@ -1,17 +1,17 @@
 /**
  * @file WaterfallRenderer.cpp
- * @brief Waterfall display implementation
+ * @brief Raylib-based waterfall display implementation
  */
 
 #include "WaterfallRenderer.hpp"
-
-#include <SDL_opengl.h>
+#include <rlgl.h>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
 
 namespace {
 
+// Pack RGBA values into a single uint32_t (Raylib format: R8G8B8A8)
 constexpr uint32_t packRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
   return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(b) << 16) | 
          (static_cast<uint32_t>(g) << 8) | static_cast<uint32_t>(r);
@@ -80,13 +80,17 @@ bool WaterfallRenderer::init(int widthIn, int heightIn) {
 
   textureData.assign(width * height, packRGBA(0, 0, 0));
 
-  glGenTextures(1, &textureID);
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData.data());
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // Load an empty image to create the texture
+  Image image = {
+    textureData.data(),
+    width,
+    height,
+    1,
+    PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
+  };
+  waterfallTexture = LoadTextureFromImage(image);
+  SetTextureFilter(waterfallTexture, TEXTURE_FILTER_BILINEAR);
+  SetTextureWrap(waterfallTexture, TEXTURE_WRAP_CLAMP);
 
   initDefaultColormap();
   initialized = true;
@@ -96,9 +100,9 @@ bool WaterfallRenderer::init(int widthIn, int heightIn) {
 }
 
 void WaterfallRenderer::shutdown() {
-  if (textureID != 0) {
-    glDeleteTextures(1, &textureID);
-    textureID = 0;
+  if (waterfallTexture.id != 0) {
+    UnloadTexture(waterfallTexture);
+    waterfallTexture.id = 0;
   }
   rows.clear();
   textureData.clear();
@@ -150,103 +154,85 @@ void WaterfallRenderer::render(float x, float y, float w, float h, float zoom, f
   float s1 = std::clamp(center - halfSpan, 0.0f, 1.0f);
   float s2 = std::clamp(center + halfSpan, 0.0f, 1.0f);
 
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  Rectangle source = { s1 * waterfallTexture.width, 0, (s2 - s1) * waterfallTexture.width, (float)waterfallTexture.height };
+  Rectangle dest = { x, y, w, h };
+  DrawTexturePro(waterfallTexture, source, dest, {0, 0}, 0, WHITE);
 
-  glBegin(GL_QUADS);
-  glTexCoord2f(s1, 1.0f); glVertex2f(x, y);
-  glTexCoord2f(s2, 1.0f); glVertex2f(x + w, y);
-  glTexCoord2f(s2, 0.0f); glVertex2f(x + w, y + h);
-  glTexCoord2f(s1, 0.0f); glVertex2f(x, y + h);
-  glEnd();
-
-  glDisable(GL_TEXTURE_2D);
-
-  glLineWidth(2.0f);
-  glColor4f(1.0f, 1.0f, 1.0f, 0.4f); 
-  glBegin(GL_LINES);
-  glVertex2f(x + w * 0.5f, y);
-  glVertex2f(x + w * 0.5f, y + h);
-  glEnd();
-  glLineWidth(1.0f);
+  // Center line
+  DrawLineEx({x + w * 0.5f, y}, {x + w * 0.5f, y + h}, 2.0f, Fade(WHITE, 0.4f));
 }
 
 void WaterfallRenderer::renderSpectrum(const float* data, int count, float x, float y, float w, float h) {
   if (!data || count <= 0) return;
 
   // Background
-  glColor4f(0.05f, 0.05f, 0.08f, 1.0f);
-  glBegin(GL_QUADS);
-  glVertex2f(x, y); glVertex2f(x + w, y);
-  glVertex2f(x + w, y + h); glVertex2f(x, y + h);
-  glEnd();
+  DrawRectangleRec({x, y, w, h}, Color{13, 13, 20, 255});
 
   // Grid
-  glColor4f(0.2f, 0.2f, 0.25f, 0.8f);
-  glBegin(GL_LINES);
+  Color gridColor = Color{51, 51, 64, 204};
   for (int i = 1; i < 5; ++i) {
     float gy = y + h * i / 5.0f;
-    glVertex2f(x, gy); glVertex2f(x + w, gy);
+    DrawLineEx({x, gy}, {x + w, gy}, 1.0f, gridColor);
   }
   for (int i = 1; i < 10; ++i) {
     if (i == 5) continue;
     float gx = x + w * i / 10.0f;
-    glVertex2f(gx, y); glVertex2f(gx, y + h);
+    DrawLineEx({gx, y}, {gx, y + h}, 1.0f, gridColor);
   }
-  glEnd();
 
   // Center line
-  glLineWidth(2.0f);
-  glColor4f(1.0f, 1.0f, 1.0f, 0.8f); 
-  glBegin(GL_LINES);
-  float gxc = x + w * 0.5f;
-  glVertex2f(gxc, y); glVertex2f(gxc, y + h);
-  glEnd();
-  glLineWidth(1.0f);
+  DrawLineEx({x + w * 0.5f, y}, {x + w * 0.5f, y + h}, 2.0f, Fade(WHITE, 0.8f));
 
   float range = maxDB - minDB;
   if (range <= 0) range = 1.0f;
   float binWidth = w / count;
 
-  // Spectrum fill
-  glBegin(GL_TRIANGLE_STRIP);
-  for (int i = 0; i < count; ++i) {
-    float db = std::clamp(data[i], minDB, maxDB);
-    float norm = (db - minDB) / range;
-    float px = x + (static_cast<float>(i) + 0.5f) * binWidth;
-    float py = y + h * (1.0f - norm);
+  // Use rlgl for the complex filled spectrum area
+  rlBegin(RL_TRIANGLES);
+  for (int i = 0; i < count - 1; ++i) {
+    float db1 = std::clamp(data[i], minDB, maxDB);
+    float norm1 = (db1 - minDB) / range;
+    float px1 = x + (static_cast<float>(i) + 0.5f) * binWidth;
+    float py1 = y + h * (1.0f - norm1);
 
-    uint32_t color = dbToColor(db);
-    float r = (color & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = ((color >> 16) & 0xFF) / 255.0f;
+    float db2 = std::clamp(data[i+1], minDB, maxDB);
+    float norm2 = (db2 - minDB) / range;
+    float px2 = x + (static_cast<float>(i+1) + 0.5f) * binWidth;
+    float py2 = y + h * (1.0f - norm2);
 
-    glColor4f(r * 0.5f, g * 0.5f, b * 0.5f, 0.6f);
-    glVertex2f(px, y + h);
-    glColor4f(r, g, b, 0.8f);
-    glVertex2f(px, py);
+    uint32_t c1 = dbToColor(db1);
+    Color color1 = { (unsigned char)(c1 & 0xFF), (unsigned char)((c1 >> 8) & 0xFF), (unsigned char)((c1 >> 16) & 0xFF), 150 };
+    uint32_t c2 = dbToColor(db2);
+    Color color2 = { (unsigned char)(c2 & 0xFF), (unsigned char)((c2 >> 8) & 0xFF), (unsigned char)((c2 >> 16) & 0xFF), 150 };
+
+    // Triangle 1
+    rlColor4ub(color1.r/2, color1.g/2, color1.b/2, 150); rlVertex2f(px1, y + h);
+    rlColor4ub(color1.r, color1.g, color1.b, 150);       rlVertex2f(px1, py1);
+    rlColor4ub(color2.r, color2.g, color2.b, 150);       rlVertex2f(px2, py2);
+
+    // Triangle 2
+    rlColor4ub(color1.r/2, color1.g/2, color1.b/2, 150); rlVertex2f(px1, y + h);
+    rlColor4ub(color2.r, color2.g, color2.b, 150);       rlVertex2f(px2, py2);
+    rlColor4ub(color2.r/2, color2.g/2, color2.b/2, 150); rlVertex2f(px2, y + h);
   }
-  glEnd();
+  rlEnd();
 
   // Spectrum line
-  glLineWidth(1.5f);
-  glBegin(GL_LINE_STRIP);
-  for (int i = 0; i < count; ++i) {
-    float db = std::clamp(data[i], minDB, maxDB);
-    float norm = (db - minDB) / range;
-    float px = x + (static_cast<float>(i) + 0.5f) * binWidth;
-    float py = y + h * (1.0f - norm);
+  for (int i = 0; i < count - 1; ++i) {
+    float db1 = std::clamp(data[i], minDB, maxDB);
+    float norm1 = (db1 - minDB) / range;
+    float px1 = x + (static_cast<float>(i) + 0.5f) * binWidth;
+    float py1 = y + h * (1.0f - norm1);
 
-    uint32_t color = dbToColor(db);
-    float r = (color & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = ((color >> 16) & 0xFF) / 255.0f;
-    glColor4f(r, g, b, 1.0f);
-    glVertex2f(px, py);
+    float db2 = std::clamp(data[i+1], minDB, maxDB);
+    float norm2 = (db2 - minDB) / range;
+    float px2 = x + (static_cast<float>(i+1) + 0.5f) * binWidth;
+    float py2 = y + h * (1.0f - norm2);
+
+    uint32_t c = dbToColor(db1);
+    Color color = { (unsigned char)(c & 0xFF), (unsigned char)((c >> 8) & 0xFF), (unsigned char)((c >> 16) & 0xFF), 255 };
+    DrawLineEx({px1, py1}, {px2, py2}, 1.5f, color);
   }
-  glEnd();
-  glLineWidth(1.0f);
 }
 
 void WaterfallRenderer::setColormapData(const std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>>& stops) {
@@ -270,41 +256,16 @@ void WaterfallRenderer::initDefaultColormap() {
 void WaterfallRenderer::updateTexture() {
   if (!initialized) return;
   for (int row = 0; row < height; ++row) {
-    // To flow DOWNWARD:
-    // Texture row 0 (top) should be the NEWEST row (topRow).
-    // Texture row 1 should be the row before topRow, etc.
-    // Wait, if row 0 is topRow, then in next frame topRow+1 is newest and goes to row 0.
-    // The OLD topRow moves to row 1. This IS flowing downward visually.
-    
-    // My previous analysis said this was already happening. Let me re-verify.
-    // topRow index in circular buffer 'rows' is the NEWEST.
-    // row 0 of texture: bufferRow = topRow
-    // row 1 of texture: bufferRow = topRow - 1
-    
-    // If the user sees it flowing UP, it means row 0 of texture is at the BOTTOM of the screen.
-    // In render():
-    // glTexCoord2f(0.0f, 1.0f); glVertex2f(x, y);      <-- v=1 is top
-    // glTexCoord2f(1.0f, 0.0f); glVertex2f(x + w, y + h); <-- v=0 is bottom
-    // OpenGL textures usually have (0,0) at bottom-left. 
-    // So row 0 of 'textureData' is the BOTTOM of the texture (v=0).
-    
-    // If row 0 of textureData is bottom (v=0), and we put newest data there,
-    // and v=0 is mapped to y+h (bottom), then newest data is at the bottom.
-    // As topRow advances, the old data moves to row 1, which is ABOVE row 0.
-    // That's flowing UP.
-    
-    // To flow DOWN: Newest data (topRow) must be at v=1 (top of texture).
-    // v=1 is the LAST row of textureData if we follow standard OpenGL layout.
-    // Actually, glTexSubImage2D(..., 0, 0, width, height, ...) expects data starting from (0,0).
-    // If (0,0) is bottom-left, then row 0 is the bottom.
-    
-    // Let's map newest data (topRow) to the LAST row of textureData (top, v=1).
-    int bufferRow = (topRow - (height - 1 - row) + height) % height;
+    // Map texture row to circular buffer:
+    // row 0 (top) = newest (topRow)
+    // row height-1 (bottom) = oldest
+    int bufferRow = (topRow - row + height) % height;
     const auto& rowData = rows[bufferRow];
-    for (int col = 0; col < width; ++col) textureData[row * width + col] = dbToColor(rowData[col]);
+    for (int col = 0; col < width; ++col) {
+        textureData[row * width + col] = dbToColor(rowData[col]);
+    }
   }
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, textureData.data());
+  UpdateTexture(waterfallTexture, textureData.data());
   textureDirty = false;
 }
 
