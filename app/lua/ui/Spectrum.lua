@@ -1,4 +1,5 @@
 local Widget = require("ui.Widget")
+local state = require("ui.State")
 local Color = require("ui.Color")
 local Model = require("Model")
 local Hardware = require("Hardware")
@@ -55,7 +56,7 @@ function Spectrum:drawSelf(spectrumData)
   end
   
   self.gl:draw("spec-legend", 10, 10, 100, 45, parentLWC, string.format("%.1f kHz/div", span/10000), "20 dB/div")
-  events.registerWidget(self.id, {x=0, y=0, w=w, h=h}, self.tags)
+  state.registerWidget(self.id, {x=0, y=0, w=w, h=h}, self.tags)
 end
 
 return Spectrum

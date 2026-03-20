@@ -1,4 +1,5 @@
 local Widget = require("ui.Widget")
+local state = require("ui.State")
 local Color = require("ui.Color")
 local Model = require("Model")
 local Hardware = require("Hardware")
@@ -39,7 +40,7 @@ function Waterfall:drawSelf()
      System.drawRect(boxX, 0, boxW, h, {r, g, b, alpha})
   end
   
-  events.registerWidget(self.id, {x=0, y=0, w=w, h=h}, self.tags)
+  state.registerWidget(self.id, {x=0, y=0, w=w, h=h}, self.tags)
 end
 
 return Waterfall
