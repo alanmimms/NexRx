@@ -78,7 +78,6 @@ local function onResize(w, h)
 end
 
 local function onMouseMove(x, y)
-  -- print("[Main] MouseMove", x, y)
   frameInput.mouseX, frameInput.mouseY = x, y
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
   
@@ -106,7 +105,6 @@ local function translateMods(mods)
 end
 
 local function onMouseEvent(type, x, y, button, isDown, mods)
-  -- print("[Main] MouseEvent", type, x, y, button, isDown)
   frameInput.mouseX, frameInput.mouseY = x, y
   if type == "button" then
     frameInput.mouseDown = isDown
@@ -120,7 +118,6 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
   end
 
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
-  -- if type == "button" and isDown then print("[Main] Hit widget:", hit and hit.name or "NIL") end
   
   local eventData = {
     type = (type == "wheel") and "mouseWheel" or "mouseButton",

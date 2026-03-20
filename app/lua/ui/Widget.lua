@@ -291,9 +291,7 @@ function Widget:handleEvent(event)
     if et then
       -- Dispatch rules for THIS widget ONLY. 
       -- Bubbling is handled by Widget:handleEvent itself.
-      -- print("[Widget] resolving rules for", self.name, et)
       consumed = events.resolve(events.createEvent(et, event), self)
-      -- if consumed then print("[Widget] rule handled", self.name, et) end
     end
   end
 
@@ -307,10 +305,7 @@ end
 function Widget:hitTest(x, y)
   -- x, y are LOCAL to this widget's parent's content area
   -- 1. Is it inside me?
-  if not self:contains(x, y) then 
-    -- print("[Widget] hitTest failed contains:", self.name, x, y, "w/h:", self.props.w, self.props.h)
-    return nil 
-  end
+  if not self:contains(x, y) then return nil end
   
   -- 2. Check kids (localized to ME)
   local localX, localY = x, y -- Already localized by parent
@@ -320,7 +315,6 @@ function Widget:hitTest(x, y)
     if hit then return hit end
   end
   
-  -- print("[Widget] hitTest SUCCESS:", self.name)
   return self
 end
 
