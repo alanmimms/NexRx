@@ -25,8 +25,11 @@ function Spectrum:drawSelf(spectrumData)
   local id = self.id
   local parentLWC = self.lwc
   
+  -- Use provided data or fallback to global cached hardware data
+  local data = (type(spectrumData) == "table" and spectrumData ~= self) and spectrumData or _G.lastSpectrumData
+  
   -- Local 0,0
-  Hardware.renderSpectrum(spectrumData or {}, 0, 0, w, h)
+  Hardware.renderSpectrum(data or {}, 0, 0, w, h)
   
   local zoom = Model.waterfall.zoom:get() or 1.0
   local span = _G.sampleRate / zoom

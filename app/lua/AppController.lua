@@ -296,7 +296,11 @@ function AppController.init()
         local b = Model.rx.selectedBand:get()
         local freq = bands.getDefaultFreq(b)
         if freq then
-            Model.set("rx.VFO.activeValue", freq)
+            -- Only update VFO if it's not already within the band or at default
+            local current = Model.rx.VFO.activeValue:peek()
+            if math.abs(current - freq) > 1 then
+                Model.set("rx.VFO.activeValue", freq)
+            end
         end
     end)
 
@@ -380,7 +384,6 @@ function AppController.sync()
             
             commands.VFO = loFreq
             commands.tuningOffset = tuneHz
-            print(string.format("[AppController] VFO Sync: LO=%.3f MHz, Tune=%.3f kHz", loFreq/1e6, tuneHz/1000.0))
         end
         dirty.VFO = false
         anyDirty = true
@@ -410,11 +413,41 @@ function AppController.sync()
     end
 
     if dirty.volume then
+        local vol = Model.rx.volume.DB:peek()
+        local muted = Model.rx.volume.muted:peek()
         commands.volume = {
-            DB = Model.rx.volume.DB:peek(),
-            muted = Model.rx.volume.muted:peek()
+            DB = vol,
+            muted = muted
         }
         dirty.volume = false
+        anyDirty = true
+    end
+
+    if dirty.AGC then
+        commands.AGC = {
+            enabled = Model.rx.AGC.enabled:peek(),
+            mode = Model.rx.AGC.mode:peek()
+        }
+        dirty.AGC = false
+        anyDirty = true
+    end
+
+    if dirty.RF then
+        local gain = Model.rx.RF.gainDB:peek()
+        local atten = Model.rx.RF.attenuationDB:peek()
+        commands.RF = {
+            gainDB = gain,
+            attenuationDB = atten
+        }
+        dirty.RF = false
+        anyDirty = true
+    end
+
+    if dirty.QSD then
+        commands.QSD = {
+            offsetK = Model.rx.QSD.offsetK:peek()
+        }
+        dirty.QSD = false
         anyDirty = true
     end
 

@@ -21,6 +21,8 @@ rule {
         ["rx.volume.muted"] = false,
         ["rx.testToneEnabled"] = false,
         ["rx.AGC.mode"] = 0,
+        ["rx.RF.gainDB"] = 30,
+        ["rx.RF.attenuationDB"] = 0,
         
         windowWidth = 1900,
         windowHeight = 850,

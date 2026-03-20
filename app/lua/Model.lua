@@ -11,8 +11,13 @@ local setbox = require("SetBox")
 
 local Model = {}
 
--- Global revision tracker to force re-evaluation of projections
-Model.revision = R.observable(0)
+local propertyVersions = {}
+local function getPropertyVersion(name)
+    if not propertyVersions[name] then
+        propertyVersions[name] = R.observable(0)
+    end
+    return propertyVersions[name]
+end
 
 -- =============================================================================
 -- Type Objects (Polymorphic Interface)
@@ -27,8 +32,8 @@ local Types = {
 -- Polymorphic projection factory
 local function projection(name, typeObj, default)
     local obs = R.computed(function()
-        -- Track dependency on global model revision
-        Model.revision:get()
+        -- Track dependency on specific property version
+        getPropertyVersion(name):get()
         
         local ok, val = pcall(function() return typeObj:get(name) end)
         if ok and val ~= nil then return val end
@@ -157,6 +162,10 @@ Model.rx = {
     testToneEnabled = projection("rx.testToneEnabled", Types.Bool, false)
 }
 
+-- Add set methods to proxies for interactive widgets
+function Model.rx.VFO.activeValue:set(val) Model.set("rx.VFO.activeValue", val) end
+function Model.rx.selectedMode:set(val) Model.set("rx.selectedMode", val) end
+
 -- Spectrum center is an observable we can shift
 Model.spectrumCenterFreq = R.observable(14.2e6)
 
@@ -190,15 +199,25 @@ function Model.set(name, value)
     -- Handle special proxy cases for backward compatibility
     if name == "rx.selectedMode" then
         local box = Model.getSelectedSignalBox()
-        if box then box.mode = value end
-        Model.revision:set(Model.revision:peek() + 1)
+        if box and box.mode ~= value then 
+            box.mode = value 
+            local obs = getPropertyVersion("rx.selectedMode")
+            obs:set(obs:peek() + 1)
+        end
         return
     elseif name:match("^rx%.VFO%.") then
         local box = Model.getSelectedSignalBox()
-        if box then box.frequency = value end
-        Model.revision:set(Model.revision:peek() + 1)
+        if box and box.frequency ~= value then 
+            box.frequency = value 
+            local obs = getPropertyVersion("rx.VFO.activeValue")
+            obs:set(obs:peek() + 1)
+        end
         return
     end
+
+    -- For standard properties, check if it actually changed before bumping revision
+    local current = setbox.get(name)
+    if current == value then return end
 
     -- Create or update a high-priority rule (1000) for this property.
     mutationRules[name] = setbox.rule({
@@ -207,7 +226,8 @@ function Model.set(name, value)
         apply = { [name] = value }
     })
     
-    Model.revision:set(Model.revision:peek() + 1)
+    local obs = getPropertyVersion(name)
+    obs:set(obs:peek() + 1)
 end
 
 --- Round frequency to nearest step

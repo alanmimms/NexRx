@@ -100,7 +100,11 @@ void GUIEngine::update(float dt) {
     
     // Mouse Motion
     sol::function onMouseMove = uiModule["onMouseMove"];
-    if (onMouseMove.valid()) onMouseMove(mousePos.x, mousePos.y);
+    if (onMouseMove.valid()) {
+        static int moveCount = 0;
+        // if (++moveCount % 60 == 0) std::cout << "[C++] Mouse move to " << mousePos.x << ", " << mousePos.y << std::endl;
+        onMouseMove(mousePos.x, mousePos.y);
+    }
 
     // Mouse Buttons
     sol::function onMouseEvent = uiModule["onMouseEvent"];

@@ -315,6 +315,7 @@ function Widget:hitTest(x, y)
     if hit then return hit end
   end
   
+  -- if self.name ~= "Main Window" then print("[Widget] hitTest SUCCESS:", self.name) end
   return self
 end
 

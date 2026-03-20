@@ -121,8 +121,11 @@ function Context:getMatchingRules(propertyName, ruleToExclude)
     end
 
     local matching = {}
-    local source = propertyName and rulesByKey[propertyName] or rules
-    if not source then return matching end
+    local source = rules
+    if propertyName then
+        source = rulesByKey[propertyName]
+        if not source then return matching end
+    end
 
     for _, rule in ipairs(source) do
         if rule.enabled and rule ~= ruleToExclude then
@@ -465,14 +468,10 @@ function SetBox.rule(def)
         knownTags[name] = true
     end
 
+    -- Process properties
     local function addProp(name, value)
         if value == nil then return end
         rule.properties[name] = value
-        if not rulesByKey[name] then rulesByKey[name] = {} end
-        
-        -- If replacing, remove old reference if still there (should be gone from clean-up)
-        -- Then add new to the end so it has highest precedence among equal priority/specificity
-        table.insert(rulesByKey[name], rule)
     end
 
     if def.apply then
@@ -485,36 +484,27 @@ function SetBox.rule(def)
         if not reserved[k] then addProp(k, v) end
     end
 
+    -- If replacement, clean up old references
     if existingIndex then
-        -- Clean up old rule from rulesByKey before replacing
         local oldRule = rules[existingIndex]
         for name, _ in pairs(oldRule.properties) do
             local keyTable = rulesByKey[name]
             if keyTable then
                 for i = #keyTable, 1, -1 do
-                    if keyTable[i] == oldRule then
-                        table.remove(keyTable, i)
-                    end
+                    if keyTable[i] == oldRule then table.remove(keyTable, i) end
                 end
             end
         end
-        rules[existingIndex] = rule
-        
-        -- Since we replaced a rule, we must re-add properties to rulesByKey 
-        -- to ensure they are at the end (highest declaration order)
-        for name, value in pairs(rule.properties) do
-            if not rulesByKey[name] then rulesByKey[name] = {} end
-            -- Check if already added by shorthand loop above
-            local alreadyAdded = false
-            for _, r in ipairs(rulesByKey[name]) do if r == rule then alreadyAdded = true break end end
-            if not alreadyAdded then table.insert(rulesByKey[name], rule) end
-        end
-    else
-        table.insert(rules, rule)
+        table.remove(rules, existingIndex)
     end
-    
-    -- Invalidate each property provided by this rule specifically
+
+    -- Add to global list
+    table.insert(rules, rule)
+
+    -- Add to property-specific lists (ensures correct order for precedence)
     for name, _ in pairs(rule.properties) do
+        if not rulesByKey[name] then rulesByKey[name] = {} end
+        table.insert(rulesByKey[name], rule)
         _invalidateCache(name)
     end
     

@@ -130,9 +130,14 @@ end
 -- ============================================================================
 
 function Hardware.getSpectrum()
-    if not hwEnabled or not hw or not hw.isConnected() then return nil end
+    if not hwEnabled then return nil end
+    if not hw or not hw.isConnected() then return nil end
+    
     local spectrum = hw.getSpectrum()
-    if spectrum and #spectrum > 0 then return spectrum end
+    if spectrum and #spectrum > 0 then
+        return spectrum
+    end
+    
     return nil
 end
 
@@ -165,9 +170,14 @@ end
 function Hardware.renderSpectrum(data, x, y, w, h)
     if waterfall and waterfall.renderSpectrum then
         if not data or #data == 0 then
-            -- Generate dummy spectrum if no data
-            data = {}
-            for i = 1, 1024 do data[i] = -100 + 20 * math.sin(i / 50) + 5 * math.random() end
+            if not hwEnabled then
+                -- Only generate dummy spectrum if hardware is NOT enabled
+                data = {}
+                for i = 1, 1024 do data[i] = -100 + 20 * math.sin(i / 50) + 5 * math.random() end
+            else
+                -- If hardware is enabled but data is empty, just return early
+                return
+            end
         end
         waterfall.renderSpectrum(data, x, y, w, h)
     end

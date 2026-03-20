@@ -43,13 +43,19 @@ local Spectrum = require("ui.Spectrum")
 _G.lowestFreq = 100.0e3
 _G.highestFreq = 30.0e6
 _G.sampleRate = 96.0e3
-local spectrumData = {}
+_G.lastSpectrumData = {}
 local frameCount = 0
 local fps = 0
 local rxTree = nil
 
 -- Data for widgets
 _G.freqEntryText = ""; _G.freqEntryCursor = 0
+
+local frameInput = {
+   mouseX = 0, mouseY = 0,
+   mouseDown = false, mouseClicked = false, mouseReleased = false,
+   mouseWheel = 0
+}
 
 print("[Main] Script loaded.")
 
@@ -58,9 +64,6 @@ local function renderUI(width, height)
   if not rxTree then return end
   rxTree:layout(0, 0, width, height)
 
-  _G.drawOffsetX = 0
-  _G.drawOffsetY = 0
-  
   -- Clear background
   System.drawRect(0, 0, width, height, {0.05, 0.05, 0.1, 1.0})
 
@@ -68,7 +71,7 @@ local function renderUI(width, height)
   rxTree:draw()
   uiState.endFrame()
 
-  -- Clear one-shot click/release for next frame
+  -- Clear transient input state for next frame
   frameInput.mouseClicked = false
   frameInput.mouseReleased = false
   frameInput.mouseWheel = 0
@@ -77,11 +80,16 @@ local function onResize(w, h)
   if rxTree then rxTree:onResize(w, h) end
 end
 
+local lastHitName = nil
 local function onMouseMove(x, y)
   frameInput.mouseX, frameInput.mouseY = x, y
+
+  if not rxTree then return end
+
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
-  
+
   local handled = false
+
   if hit and hit.handleEvent then
     handled = hit:handleEvent({
       type = "mouseMotion",
@@ -173,6 +181,9 @@ _G.UI = {
 
 function init()
    print("[Main] init() starting...")
+   
+   -- Link state and events modules explicitly
+   uiState.setEventsModule(events)
    
    -- Load configurations
    local configFiles = {
@@ -273,12 +284,6 @@ function init()
    print("[Main] init() complete.")
 end
 
-local frameInput = {
-   mouseX = 0, mouseY = 0,
-   mouseDown = false, mouseClicked = false, mouseReleased = false,
-   mouseWheel = 0
-}
-
 function update(dt)
    _G.frameCount = (_G.frameCount or 0) + 1
    animate.update(dt)
@@ -297,16 +302,16 @@ function update(dt)
       if _G.frameCount % 10 == 0 then AppController.pollState() end
       local hwSpec = Hardware.getSpectrum()
       if hwSpec and #hwSpec > 0 then 
-         spectrumData = hwSpec
-         Hardware.updateWaterfall(spectrumData) 
+         _G.lastSpectrumData = hwSpec
+         Hardware.updateWaterfall(_G.lastSpectrumData) 
       end
    else
       -- Dummy data for UI testing
       if _G.frameCount % 2 == 0 then
          local dummy = {}
          for i = 1, 1024 do dummy[i] = -100 + 20 * math.sin(i / 50 + _G.frameCount/10) + 5 * math.random() end
-         spectrumData = dummy
-         Hardware.updateWaterfall(spectrumData)
+         _G.lastSpectrumData = dummy
+         Hardware.updateWaterfall(_G.lastSpectrumData)
       end
    end
 end

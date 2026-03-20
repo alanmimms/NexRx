@@ -94,8 +94,8 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   hwTable["isConnected"] = [engine]() { return engine->isTwinConnected(); };
   hwTable["getSpectrum"] = [engine](sol::this_state s) { 
     engine->getDSP().computeSpectrum();
-    sol::state_view lView(s); sol::table res = lView.create_table(); 
     std::vector<float> data = engine->getDSP().getSpectrumData();
+    sol::state_view lView(s); sol::table res = lView.create_table(); 
     for (size_t i = 0; i < data.size(); ++i) res[i + 1] = data[i]; 
     return res; 
   };

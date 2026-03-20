@@ -366,22 +366,44 @@ end)
 -- Debug flag for event dispatch (disabled by default for performance)
 Events.debugDispatch = false
 
+--- Resolve and execute rule-based handlers for a single widget
+-- @param event properly formatted event object
+-- @param widget the widget to resolve for
+-- @return true if handled
+function Events.resolve(event, widget)
+    if not event or not event.type then return false end
+    
+    local tags = Events._buildEventTags(event, widget)
+    local props = Events._resolveHandler(tags)
+
+    if props and props.handler then
+        local handler = Events.handlers[props.handler]
+        if handler then
+            local ok, result = pcall(handler, event, widget, props)
+            if ok and result == true then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 --- Dispatch an event through the widget hierarchy
 -- @param event {type, x, y, button, key, delta, modifiers, ...}
+-- @param targetWidget optional widget to start bubbling from (skips hit testing)
 -- @return true if handled, false if bubbled to root unhandled
-function Events.dispatch(event)
+function Events.dispatch(event, targetWidget)
     if not event or not event.type then
         return false
     end
 
     -- Find widget under mouse (for mouse events or keyboard events without position)
-    local targetWidget = nil
     local tx, ty = event.x, event.y
     if not tx or not ty then
         tx, ty = getMousePos()
     end
     
-    if tx and ty then
+    if not targetWidget and tx and ty then
         targetWidget = Events.getWidgetAt(tx, ty)
     end
 
@@ -389,31 +411,14 @@ function Events.dispatch(event)
     local currentWidget = targetWidget
     local handled = false
     
-    if event.type == Events.Type.MOUSE_WHEEL or event.type == Events.Type.KEY_DOWN then
-    end
-
-    while true do
-        -- Build tags for SetBox resolution
-        local tags = Events._buildEventTags(event, currentWidget)
-
-        -- Resolve handler and properties via SetBox
-        local props = Events._resolveHandler(tags)
-
-        if props and props.handler then
-            local handler = Events.handlers[props.handler]
-            if handler then
-                local ok, result = pcall(handler, event, currentWidget, props)
-                if ok and result == true then
-                    handled = true
-                    break
-                end
-                if not ok then
-                end
-            end
+    while currentWidget do
+        if Events.resolve(event, currentWidget) then
+            handled = true
+            break
         end
 
         -- Bubble to parent
-        if currentWidget and currentWidget.parent then
+        if currentWidget.parent then
             currentWidget = Events.widgets[currentWidget.parent]
         else
             -- Reached root
@@ -423,13 +428,8 @@ function Events.dispatch(event)
 
     -- If not handled by any widget, try global handlers (tags without widget tags)
     if not handled then
-        local globalTags = Events._buildEventTags(event, nil)
-        local props = Events._resolveHandler(globalTags)
-        if props and props.handler and Events.handlers[props.handler] then
-            local ok, result = pcall(Events.handlers[props.handler], event, nil, props)
-            if ok and result == true then
-                handled = true
-            end
+        if Events.resolve(event, nil) then
+            handled = true
         end
     end
 
