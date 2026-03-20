@@ -95,6 +95,10 @@ function state.beginFrame(data)
     state.prevActive = state.active
     state.hot = nil
     
+    if eventsModule and eventsModule.clearWidgets then
+        eventsModule.clearWidgets()
+    end
+
     -- Reset offsets
     offsetStack = {}
     currentOffsetX = 0

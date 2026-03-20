@@ -102,6 +102,7 @@ function Widget:init(def)
   end
 
   self.kids = def.kids or {}
+  self.tags = def.tags or {}
   self.layoutFunc = def.layoutFunc
   self.mouseAction = def.mouseAction
   self.keyAction = def.keyAction
@@ -241,15 +242,32 @@ local function getEvents()
   return require("Events")
 end
 
+function Widget:getAbsolutePos()
+  local ax, ay = self.props.x or 0, self.props.y or 0
+  local p = self.parent
+  while p do
+    ax = ax + (p.props.x or 0)
+    ay = ay + (p.props.y or 0)
+    p = p.parent
+  end
+  return ax, ay
+end
+
 -- New Event Handling with recursive coordinate localization
 function Widget:handleEvent(event)
-  -- Create a localized version of the event for self and dispatcher
+  -- Create a localized version of the event for self actions
   local localEvent = {}
   for k, v in pairs(event) do localEvent[k] = v end
   
+  if localEvent.x and localEvent.y then
+    local ax, ay = self:getAbsolutePos()
+    localEvent.x = localEvent.x - ax
+    localEvent.y = localEvent.y - ay
+  end
+
   local consumed = false
   
-  -- Handle via new mouseAction/keyAction properties
+  -- Handle via new mouseAction/keyAction properties (using localized coordinates)
   if localEvent.type:match("^mouse") or localEvent.type:match("^wheel") then
     if self.mouseAction then consumed = self:mouseAction(localEvent) end
   elseif localEvent.type == "key" then
@@ -259,7 +277,9 @@ function Widget:handleEvent(event)
   -- Fallback to legacy onEvent
   if not consumed and self.onEvent then consumed = self.onEvent(self, localEvent) end
   
-  -- Unified Dispatch
+  -- Unified Dispatch to rule-based system (for THIS widget only)
+  -- Note: We use ORIGINAL event (global coords) for dispatch hit testing if needed,
+  -- but we pass 'self' to Events.dispatch to ensure it starts from HERE.
   if not consumed then
     local events = getEvents()
     local et = nil
@@ -269,7 +289,11 @@ function Widget:handleEvent(event)
     elseif localEvent.type == "key" then et = localEvent.isDown and events.Type.KEY_DOWN or events.Type.KEY_UP end
     
     if et then
-      consumed = events.dispatch(events.createEvent(et, localEvent))
+      -- Dispatch rules for THIS widget ONLY. 
+      -- Bubbling is handled by Widget:handleEvent itself.
+      -- print("[Widget] resolving rules for", self.name, et)
+      consumed = events.resolve(events.createEvent(et, event), self)
+      -- if consumed then print("[Widget] rule handled", self.name, et) end
     end
   end
 
@@ -283,7 +307,10 @@ end
 function Widget:hitTest(x, y)
   -- x, y are LOCAL to this widget's parent's content area
   -- 1. Is it inside me?
-  if not self:contains(x, y) then return nil end
+  if not self:contains(x, y) then 
+    -- print("[Widget] hitTest failed contains:", self.name, x, y, "w/h:", self.props.w, self.props.h)
+    return nil 
+  end
   
   -- 2. Check kids (localized to ME)
   local localX, localY = x, y -- Already localized by parent
@@ -293,6 +320,7 @@ function Widget:hitTest(x, y)
     if hit then return hit end
   end
   
+  -- print("[Widget] hitTest SUCCESS:", self.name)
   return self
 end
 

@@ -114,6 +114,10 @@ void GUIEngine::update(float dt) {
             if (IsMouseButtonPressed(b)) onMouseEvent("button", mousePos.x, mousePos.y, b, true, mods);
             else if (IsMouseButtonReleased(b)) onMouseEvent("button", mousePos.x, mousePos.y, b, false, mods);
         }
+
+        // Mouse Wheel
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0) onMouseEvent("wheel", mousePos.x, mousePos.y, (int)wheel, false, mods);
     }
 
     // Keys

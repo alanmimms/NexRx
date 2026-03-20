@@ -77,33 +77,36 @@ local function onResize(w, h)
   if rxTree then rxTree:onResize(w, h) end
 end
 
-local function getAbsolutePos(widget)
-  local ax, ay = widget.props.x, widget.props.y
-  local p = widget.parent
-  while p do
-    ax = ax + p.props.x
-    ay = ay + p.props.y
-    p = p.parent
-  end
-  return ax, ay
-end
-
 local function onMouseMove(x, y)
+  -- print("[Main] MouseMove", x, y)
   frameInput.mouseX, frameInput.mouseY = x, y
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
   
+  local handled = false
   if hit and hit.handleEvent then
-    local ax, ay = getAbsolutePos(hit)
-    hit:handleEvent({
+    handled = hit:handleEvent({
       type = "mouseMotion",
-      x = x - ax, y = y - ay
+      x = x, y = y
     })
   end
   
-  events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, { x=x, y=y }))
+  if not handled then
+    events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, { x=x, y=y }))
+  end
+end
+
+local function translateMods(mods)
+  local t = {}
+  if mods then
+    if (mods & 1) ~= 0 then table.insert(t, "input.SHIFT") end
+    if (mods & 2) ~= 0 then table.insert(t, "input.CTRL") end
+    if (mods & 4) ~= 0 then table.insert(t, "input.ALT") end
+  end
+  return t
 end
 
 local function onMouseEvent(type, x, y, button, isDown, mods)
+  -- print("[Main] MouseEvent", type, x, y, button, isDown)
   frameInput.mouseX, frameInput.mouseY = x, y
   if type == "button" then
     frameInput.mouseDown = isDown
@@ -117,35 +120,49 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
   end
 
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
+  -- if type == "button" and isDown then print("[Main] Hit widget:", hit and hit.name or "NIL") end
   
-  -- Dispatch to Widget hierarchy
+  local eventData = {
+    type = (type == "wheel") and "mouseWheel" or "mouseButton",
+    button = button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT"),
+    isDown = isDown,
+    x = x, y = y,
+    delta = type == "wheel" and button or 0,
+    modifiers = translateMods(mods)
+  }
+
+  -- Dispatch to Widget hierarchy (using GLOBAL coordinates)
   local handled = false
   if hit and hit.handleEvent then
-    local ax, ay = getAbsolutePos(hit)
-    handled = hit:handleEvent({
-	type = (type == "wheel") and "mouseWheel" or "mouseButton",
-	button = button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT"),
-	isDown = isDown,
-	x = x - ax, y = y - ay, -- Initial localization for the hit widget
-	delta = type == "wheel" and button or 0,
-	mods = mods
-    })
+    handled = hit:handleEvent(eventData)
     if isDown then hit:setFocus() end
   end
 
-  -- Generic global events handled by Widget:handleEvent bubbling already
+  -- If not handled by widget tree, try global rules
+  if not handled then
+    local et = (type == "wheel") and events.Type.MOUSE_WHEEL or 
+               (isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP)
+    events.dispatch(events.createEvent(et, eventData))
+  end
 end
 
 local function onKeyEvent(key, isDown, mods)
   local focused = Widget.getFocused()
   local handled = false
+  local eventData = {
+    type = "key",
+    key = keys.getName(key) or tostring(key),
+    isDown = isDown,
+    modifiers = translateMods(mods)
+  }
+
   if focused and focused.handleEvent then
-    handled = focused:handleEvent({type = "key", key = key, isDown = isDown, mods = mods})
+    handled = focused:handleEvent(eventData)
   end
   
   if not handled then
     local et = isDown and events.Type.KEY_DOWN or events.Type.KEY_UP
-    events.dispatch(events.createEvent(et, { key = key, isDown = isDown, mods = mods }))
+    events.dispatch(events.createEvent(et, eventData))
   end
 end
 

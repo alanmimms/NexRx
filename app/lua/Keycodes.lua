@@ -1,303 +1,133 @@
 --[[
-    keycodes.lua - SDL Scan Code Definitions and Key Name Mapping
-
-    Provides SDL scan codes as Lua constants and bidirectional mapping
-    between scan codes and human-readable key names.
-
-    Usage:
-        local keys = require("Keycodes")
-
-        if event.scancode == keys.SC_ESCAPE then ... end
-        local name = keys.getName(event.scancode)  -- "Escape"
-        local code = keys.getCode("Enter")  -- 40
+    Keycodes.lua - Raylib Key Code Definitions and Mapping
 ]]
 
 local Keys = {}
 
--- =============================================================================
--- SDL Scan Codes (from SDL_scancode.h)
--- =============================================================================
-
--- Letters (A-Z)
-Keys.SC_A = 4
-Keys.SC_B = 5
-Keys.SC_C = 6
-Keys.SC_D = 7
-Keys.SC_E = 8
-Keys.SC_F = 9
-Keys.SC_G = 10
-Keys.SC_H = 11
-Keys.SC_I = 12
-Keys.SC_J = 13
-Keys.SC_K = 14
-Keys.SC_L = 15
-Keys.SC_M = 16
-Keys.SC_N = 17
-Keys.SC_O = 18
-Keys.SC_P = 19
-Keys.SC_Q = 20
-Keys.SC_R = 21
-Keys.SC_S = 22
-Keys.SC_T = 23
-Keys.SC_U = 24
-Keys.SC_V = 25
-Keys.SC_W = 26
-Keys.SC_X = 27
-Keys.SC_Y = 28
-Keys.SC_Z = 29
-
--- Numbers (top row)
-Keys.SC_1 = 30
-Keys.SC_2 = 31
-Keys.SC_3 = 32
-Keys.SC_4 = 33
-Keys.SC_5 = 34
-Keys.SC_6 = 35
-Keys.SC_7 = 36
-Keys.SC_8 = 37
-Keys.SC_9 = 38
-Keys.SC_0 = 39
-
--- Special keys
-Keys.SC_RETURN = 40
-Keys.SC_ENTER = 40  -- Alias
-Keys.SC_ESCAPE = 41
-Keys.SC_BACKSPACE = 42
-Keys.SC_TAB = 43
-Keys.SC_SPACE = 44
-
--- Punctuation
-Keys.SC_MINUS = 45
-Keys.SC_EQUALS = 46
-Keys.SC_LEFTBRACKET = 47
-Keys.SC_RIGHTBRACKET = 48
-Keys.SC_BACKSLASH = 49
-Keys.SC_SEMICOLON = 51
-Keys.SC_APOSTROPHE = 52
-Keys.SC_GRAVE = 53
-Keys.SC_COMMA = 54
-Keys.SC_PERIOD = 55
-Keys.SC_SLASH = 56
-
--- Lock keys
-Keys.SC_CAPSLOCK = 57
-Keys.SC_SCROLLLOCK = 71
-Keys.SC_NUMLOCKCLEAR = 83
+-- Raylib Key Codes
+Keys.KEY_SPACE = 32
+Keys.KEY_APOSTROPHE = 39
+Keys.KEY_COMMA = 44
+Keys.KEY_MINUS = 45
+Keys.KEY_PERIOD = 46
+Keys.KEY_SLASH = 47
+Keys.KEY_ZERO = 48
+Keys.KEY_ONE = 49
+Keys.KEY_TWO = 50
+Keys.KEY_THREE = 51
+Keys.KEY_FOUR = 52
+Keys.KEY_FIVE = 53
+Keys.KEY_SIX = 54
+Keys.KEY_SEVEN = 55
+Keys.KEY_EIGHT = 56
+Keys.KEY_NINE = 57
+Keys.KEY_SEMICOLON = 59
+Keys.KEY_EQUAL = 61
+Keys.KEY_A = 65
+Keys.KEY_B = 66
+Keys.KEY_C = 67
+Keys.KEY_D = 68
+Keys.KEY_E = 69
+Keys.KEY_F = 70
+Keys.KEY_G = 71
+Keys.KEY_H = 72
+Keys.KEY_I = 73
+Keys.KEY_J = 74
+Keys.KEY_K = 75
+Keys.KEY_L = 76
+Keys.KEY_M = 77
+Keys.KEY_N = 78
+Keys.KEY_O = 79
+Keys.KEY_P = 80
+Keys.KEY_Q = 81
+Keys.KEY_R = 82
+Keys.KEY_S = 83
+Keys.KEY_T = 84
+Keys.KEY_U = 85
+Keys.KEY_V = 86
+Keys.KEY_W = 87
+Keys.KEY_X = 88
+Keys.KEY_Y = 89
+Keys.KEY_Z = 90
+Keys.KEY_LEFT_BRACKET = 91
+Keys.KEY_BACKSLASH = 92
+Keys.KEY_RIGHT_BRACKET = 93
+Keys.KEY_GRAVE = 96
 
 -- Function keys
-Keys.SC_F1 = 58
-Keys.SC_F2 = 59
-Keys.SC_F3 = 60
-Keys.SC_F4 = 61
-Keys.SC_F5 = 62
-Keys.SC_F6 = 63
-Keys.SC_F7 = 64
-Keys.SC_F8 = 65
-Keys.SC_F9 = 66
-Keys.SC_F10 = 67
-Keys.SC_F11 = 68
-Keys.SC_F12 = 69
-
--- Navigation
-Keys.SC_PRINTSCREEN = 70
-Keys.SC_PAUSE = 72
-Keys.SC_INSERT = 73
-Keys.SC_HOME = 74
-Keys.SC_PAGEUP = 75
-Keys.SC_DELETE = 76
-Keys.SC_END = 77
-Keys.SC_PAGEDOWN = 78
-Keys.SC_RIGHT = 79
-Keys.SC_LEFT = 80
-Keys.SC_DOWN = 81
-Keys.SC_UP = 82
-
--- Numpad
-Keys.SC_KP_DIVIDE = 84
-Keys.SC_KP_MULTIPLY = 85
-Keys.SC_KP_MINUS = 86
-Keys.SC_KP_PLUS = 87
-Keys.SC_KP_ENTER = 88
-Keys.SC_KP_1 = 89
-Keys.SC_KP_2 = 90
-Keys.SC_KP_3 = 91
-Keys.SC_KP_4 = 92
-Keys.SC_KP_5 = 93
-Keys.SC_KP_6 = 94
-Keys.SC_KP_7 = 95
-Keys.SC_KP_8 = 96
-Keys.SC_KP_9 = 97
-Keys.SC_KP_0 = 98
-Keys.SC_KP_PERIOD = 99
+Keys.KEY_ESCAPE = 256
+Keys.KEY_ENTER = 257
+Keys.KEY_TAB = 258
+Keys.KEY_BACKSPACE = 259
+Keys.KEY_INSERT = 260
+Keys.KEY_DELETE = 261
+Keys.KEY_RIGHT = 262
+Keys.KEY_LEFT = 263
+Keys.KEY_DOWN = 264
+Keys.KEY_UP = 265
+Keys.KEY_PAGE_UP = 266
+Keys.KEY_PAGE_DOWN = 267
+Keys.KEY_HOME = 268
+Keys.KEY_END = 269
+Keys.KEY_CAPS_LOCK = 280
+Keys.KEY_SCROLL_LOCK = 281
+Keys.KEY_NUM_LOCK = 282
+Keys.KEY_PRINT_SCREEN = 283
+Keys.KEY_PAUSE = 284
+Keys.KEY_F1 = 290
+Keys.KEY_F2 = 291
+Keys.KEY_F3 = 292
+Keys.KEY_F4 = 293
+Keys.KEY_F5 = 294
+Keys.KEY_F6 = 295
+Keys.KEY_F7 = 296
+Keys.KEY_F8 = 297
+Keys.KEY_F9 = 298
+Keys.KEY_F10 = 299
+Keys.KEY_F11 = 300
+Keys.KEY_F12 = 301
 
 -- Modifiers
-Keys.SC_LCTRL = 224
-Keys.SC_LSHIFT = 225
-Keys.SC_LALT = 226
-Keys.SC_LGUI = 227  -- Windows/Command key
-Keys.SC_RCTRL = 228
-Keys.SC_RSHIFT = 229
-Keys.SC_RALT = 230
-Keys.SC_RGUI = 231
+Keys.KEY_LEFT_SHIFT = 340
+Keys.KEY_LEFT_CONTROL = 341
+Keys.KEY_LEFT_ALT = 342
+Keys.KEY_LEFT_SUPER = 343
+Keys.KEY_RIGHT_SHIFT = 344
+Keys.KEY_RIGHT_CONTROL = 345
+Keys.KEY_RIGHT_ALT = 346
+Keys.KEY_RIGHT_SUPER = 347
+Keys.KEY_KB_MENU = 348
 
--- =============================================================================
--- Scan Code to Name Mapping
--- =============================================================================
-
--- UPPERCASE for all key names as per unified tag architecture
 local codeToName = {
-    -- Letters (UPPERCASE)
-    [4] = "A", [5] = "B", [6] = "C", [7] = "D", [8] = "E",
-    [9] = "F", [10] = "G", [11] = "H", [12] = "I", [13] = "J",
-    [14] = "K", [15] = "L", [16] = "M", [17] = "N", [18] = "O",
-    [19] = "P", [20] = "Q", [21] = "R", [22] = "S", [23] = "T",
-    [24] = "U", [25] = "V", [26] = "W", [27] = "X", [28] = "Y",
-    [29] = "Z",
-
-    -- Numbers
-    [30] = "1", [31] = "2", [32] = "3", [33] = "4", [34] = "5",
-    [35] = "6", [36] = "7", [37] = "8", [38] = "9", [39] = "0",
-
-    -- Special (UPPERCASE)
-    [40] = "ENTER", [41] = "ESC", [42] = "BACKSPACE",
-    [43] = "TAB", [44] = "SPACE",
-
-    -- Punctuation (UPPERCASE)
-    [45] = "MINUS", [46] = "EQUALS", [47] = "LEFTBRACKET",
-    [48] = "RIGHTBRACKET", [49] = "BACKSLASH", [51] = "SEMICOLON",
-    [52] = "APOSTROPHE", [53] = "GRAVE", [54] = "COMMA",
-    [55] = "PERIOD", [56] = "SLASH",
-
-    -- Lock keys (UPPERCASE)
-    [57] = "CAPSLOCK", [71] = "SCROLLLOCK", [83] = "NUMLOCK",
-
-    -- Function keys (already uppercase-ish)
-    [58] = "F1", [59] = "F2", [60] = "F3", [61] = "F4",
-    [62] = "F5", [63] = "F6", [64] = "F7", [65] = "F8",
-    [66] = "F9", [67] = "F10", [68] = "F11", [69] = "F12",
-
-    -- Navigation (UPPERCASE)
-    [70] = "PRINTSCREEN", [72] = "PAUSE", [73] = "INSERT",
-    [74] = "HOME", [75] = "PAGEUP", [76] = "DELETE",
-    [77] = "END", [78] = "PAGEDOWN",
-    [79] = "RIGHT", [80] = "LEFT", [81] = "DOWN", [82] = "UP",
-
-    -- Numpad (UPPERCASE)
-    [84] = "KP_DIVIDE", [85] = "KP_MULTIPLY", [86] = "KP_MINUS",
-    [87] = "KP_PLUS", [88] = "KP_ENTER",
-    [89] = "KP_1", [90] = "KP_2", [91] = "KP_3",
-    [92] = "KP_4", [93] = "KP_5", [94] = "KP_6",
-    [95] = "KP_7", [96] = "KP_8", [97] = "KP_9",
-    [98] = "KP_0", [99] = "KP_PERIOD",
-
-    -- Modifiers (UPPERCASE)
-    [224] = "LCTRL", [225] = "LSHIFT", [226] = "LALT", [227] = "LGUI",
-    [228] = "RCTRL", [229] = "RSHIFT", [230] = "RALT", [231] = "RGUI",
+    [32] = "SPACE", [39] = "APOSTROPHE", [44] = "COMMA", [45] = "MINUS",
+    [46] = "PERIOD", [47] = "SLASH",
+    [48] = "0", [49] = "1", [50] = "2", [51] = "3", [52] = "4",
+    [53] = "5", [54] = "6", [55] = "7", [56] = "8", [57] = "9",
+    [59] = "SEMICOLON", [61] = "EQUAL",
+    [65] = "A", [66] = "B", [67] = "C", [68] = "D", [69] = "E",
+    [70] = "F", [71] = "G", [72] = "H", [73] = "I", [74] = "J",
+    [75] = "K", [76] = "L", [77] = "M", [78] = "N", [79] = "O",
+    [80] = "P", [81] = "Q", [82] = "R", [83] = "S", [84] = "T",
+    [85] = "U", [86] = "V", [87] = "W", [88] = "X", [89] = "Y", [90] = "Z",
+    [91] = "LEFT_BRACKET", [92] = "BACKSLASH", [93] = "RIGHT_BRACKET", [96] = "GRAVE",
+    
+    [256] = "ESCAPE", [257] = "ENTER", [258] = "TAB", [259] = "BACKSPACE",
+    [260] = "INSERT", [261] = "DELETE",
+    [262] = "RIGHT", [263] = "LEFT", [264] = "DOWN", [265] = "UP",
+    [266] = "PAGE_UP", [267] = "PAGE_DOWN", [268] = "HOME", [269] = "END",
+    [280] = "CAPS_LOCK", [281] = "SCROLL_LOCK", [282] = "NUM_LOCK",
+    [283] = "PRINT_SCREEN", [284] = "PAUSE",
+    [290] = "F1", [291] = "F2", [292] = "F3", [293] = "F4", [294] = "F5",
+    [295] = "F6", [296] = "F7", [297] = "F8", [298] = "F9", [299] = "F10",
+    [300] = "F11", [301] = "F12",
 }
 
--- Build reverse mapping (name -> code)
-local nameToCode = {}
-for code, name in pairs(codeToName) do
-    nameToCode[name] = code
-    nameToCode[name:lower()] = code  -- Also support lowercase
+function Keys.getName(code)
+    return codeToName[code] or string.format("Unknown(%d)", code)
 end
 
--- =============================================================================
--- Public API
--- =============================================================================
-
---- Get human-readable name for a scan code
--- @param scancode SDL scan code
--- @return name string or "Unknown" if not mapped
-function Keys.getName(scancode)
-    return codeToName[scancode] or string.format("Unknown(%d)", scancode)
-end
-
---- Get scan code for a key name
--- @param name key name (case-insensitive)
--- @return scan code or nil if not found
-function Keys.getCode(name)
-    return nameToCode[name] or nameToCode[name:lower()]
-end
-
---- Check if a key name represents a printable character
--- @param name key name
--- @return true if printable (letter, number, punctuation)
-function Keys.isPrintable(scancode)
-    -- Letters, numbers, space, and punctuation
-    return (scancode >= 4 and scancode <= 39) or   -- A-Z, 0-9
-           scancode == 44 or                        -- Space
-           (scancode >= 45 and scancode <= 56)      -- Punctuation
-end
-
---- Get the character for a printable key (without modifiers)
--- @param scancode SDL scan code
--- @return character string or nil if not printable
-function Keys.getChar(scancode)
-    local name = codeToName[scancode]
-    if not name then return nil end
-
-    -- Single character names are the character
-    if #name == 1 then
-        return name:lower()
-    end
-
-    -- Special cases
-    if scancode == 44 then return " " end      -- Space
-    if scancode == 45 then return "-" end      -- Minus
-    if scancode == 46 then return "=" end      -- Equals
-    if scancode == 47 then return "[" end      -- LeftBracket
-    if scancode == 48 then return "]" end      -- RightBracket
-    if scancode == 49 then return "\\" end     -- Backslash
-    if scancode == 51 then return ";" end      -- Semicolon
-    if scancode == 52 then return "'" end      -- Apostrophe
-    if scancode == 53 then return "`" end      -- Grave
-    if scancode == 54 then return "," end      -- Comma
-    if scancode == 55 then return "." end      -- Period
-    if scancode == 56 then return "/" end      -- Slash
-
-    return nil
-end
-
---- Get the shifted character for a printable key
--- @param scancode SDL scan code
--- @return shifted character string or nil
-function Keys.getShiftedChar(scancode)
-    local name = codeToName[scancode]
-    if not name then return nil end
-
-    -- Single letter names -> uppercase
-    if #name == 1 and name:match("[A-Z]") then
-        return name
-    end
-
-    -- Number row shifted
-    local shiftMap = {
-        [30] = "!", [31] = "@", [32] = "#", [33] = "$", [34] = "%",
-        [35] = "^", [36] = "&", [37] = "*", [38] = "(", [39] = ")",
-        [45] = "_", [46] = "+", [47] = "{", [48] = "}", [49] = "|",
-        [51] = ":", [52] = "\"", [53] = "~", [54] = "<", [55] = ">",
-        [56] = "?",
-    }
-
-    return shiftMap[scancode]
-end
-
---- Get all dispatchable scancodes (all keys including modifiers)
--- @return array of all scancodes that should be checked for key events
-function Keys.getAllScancodes()
-    local scancodes = {}
-    for code, _ in pairs(codeToName) do
-        table.insert(scancodes, code)
-    end
-    return scancodes
-end
-
---- Check if a scancode is a modifier key
--- @param scancode SDL scan code
--- @return true if this is a modifier key (Ctrl, Shift, Alt, Gui)
-function Keys.isModifier(scancode)
-    return scancode >= 224 and scancode <= 231
+function Keys.isModifier(code)
+    return code >= 340 and code <= 348
 end
 
 return Keys
