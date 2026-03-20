@@ -44,6 +44,9 @@ end
 function Button:drawSelf(extraTags)
     local id, w, h = self.id, self.props.w, self.props.h
     local tags = {"widget.Button", "id." .. id}
+    if self.tags then
+        for _, t in ipairs(self.tags) do table.insert(tags, t) end
+    end
     if extraTags then
         if type(extraTags) == "table" then
             for _, t in ipairs(extraTags) do table.insert(tags, t) end

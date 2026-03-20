@@ -55,6 +55,9 @@ end
 function Slider:drawSelf()
     local id, w, h = self.id, self.props.w, self.props.h
     local tags = {"widget.Slider", "id." .. id}
+    if self.tags then
+        for _, t in ipairs(self.tags) do table.insert(tags, t) end
+    end
     
     -- Interaction tags
     if state.isActive(id) then table.insert(tags, "state.Active")
@@ -178,6 +181,9 @@ end
 function DiscreteSlider:drawSelf()
     local id, w, h = self.id, self.props.w, self.props.h
     local tags = {"widget.Slider", "widget.DiscreteSlider", "id." .. id}
+    if self.tags then
+        for _, t in ipairs(self.tags) do table.insert(tags, t) end
+    end
     
     -- Interaction tags for SetBox resolution
     if state.isActive(id) then table.insert(tags, "state.Active")

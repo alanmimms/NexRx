@@ -61,6 +61,9 @@ end
 function FrequencyDisplay:drawSelf(freqEntryText, cursorIdx, tags)
     local id, w, h = self.id, self.props.w, self.props.h
     local widgetTags = {"widget.FrequencyDisplay", "id." .. id}
+    if self.tags then
+        for _, t in ipairs(self.tags) do table.insert(widgetTags, t) end
+    end
     
     local isEditing = (freqEntryText and freqEntryText ~= "")
     local hasModeTag = events.hasModeTag("state.FreqEntryMode")

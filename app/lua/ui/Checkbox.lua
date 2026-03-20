@@ -52,6 +52,9 @@ function Checkbox:drawSelf(checked)
     if self.valueObs then checked = self.valueObs:get() end
 
     local tags = {"widget.Checkbox", "id." .. id}
+    if self.tags then
+        for _, t in ipairs(self.tags) do table.insert(tags, t) end
+    end
     if checked then table.insert(tags, "state.Checked") end
     
     -- Interaction tags
