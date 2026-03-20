@@ -38,16 +38,44 @@ rule {
     apply = { handler = "slider_activate" }
 }
 
--- Generic slider wheel (matches any Slider widget with property in widget.data)
+-- Step fractions for generic slider adjustment
+rule {
+    id = "slider-step-default",
+    tags = {"widget.Slider"},
+    priority = 1,
+    apply = { stepFraction = 0.01, factorMultiplier = 1.1 }
+}
+
+rule {
+    id = "slider-step-ctrl",
+    tags = {"widget.Slider", "input.CTRL"},
+    priority = 2,
+    apply = { stepFraction = 0.001, factorMultiplier = 1.01 }
+}
+
+rule {
+    id = "slider-step-shift",
+    tags = {"widget.Slider", "input.SHIFT"},
+    priority = 2,
+    apply = { stepFraction = 0.1, factorMultiplier = 1.5 }
+}
+
+rule {
+    id = "slider-step-ctrl-shift",
+    tags = {"widget.Slider", "input.CTRL", "input.SHIFT"},
+    priority = 3,
+    apply = { stepFraction = 0.25, factorMultiplier = 2.0 }
+}
+
+-- Generic slider handlers (matches any Slider widget with property in widget.data)
 rule {
     id = "event-slider-wheel",
     tags = {"event.MouseWheel", "widget.Slider"},
     apply = { handler = "slider_adjust" }
 }
 
--- Generic slider arrow keys
 rule {
-    id = "event-slider-arrow-right",
+    id = "event-slider-arrows",
     tags = {"event.KeyDown-RIGHT", "widget.Slider"},
     apply = { handler = "slider_adjust" }
 }
@@ -71,7 +99,6 @@ rule {
 }
 
 -- Logarithmic slider (for LogScale tagged sliders like LMS mu)
--- Uses multiplicative factors: default=1.5x, ctrl=1.1x, shift=2x, ctrl+shift=5x
 rule {
     id = "event-slider-log-wheel",
     tags = {"event.MouseWheel", "widget.Slider", "widget.LogScale"},
@@ -150,6 +177,102 @@ rule {
 -- Frequency is in Hz.
 -- =============================================================================
 
+-- VFO Control Base Rules
+rule {
+    id = "event-vfo-wheel",
+    tags = {"event.MouseWheel", "widget.VFOControl"},
+    priority = 20,
+    apply = { handler = "vfo_control" }
+}
+
+-- Global fallback for wheel (tunes VFO if nothing else handles it)
+rule {
+    id = "event-vfo-wheel-global",
+    tags = {"event.MouseWheel"},
+    priority = 1,
+    apply = { handler = "vfo_control" }
+}
+
+-- Global VFO steps (apply when no specific widget tag is present)
+rule {
+    id = "vfo-step-global-default",
+    tags = {"event.MouseWheel"},
+    priority = 0,
+    apply = { step = 100 }
+}
+
+rule {
+    id = "vfo-step-global-ctrl",
+    tags = {"event.MouseWheel", "input.CTRL"},
+    priority = 1,
+    apply = { step = 10000 }
+}
+
+rule {
+    id = "vfo-step-global-shift",
+    tags = {"event.MouseWheel", "input.SHIFT"},
+    priority = 1,
+    apply = { step = 100000 }
+}
+
+rule {
+    id = "vfo-step-global-ctrl-shift",
+    tags = {"event.MouseWheel", "input.CTRL", "input.SHIFT"},
+    priority = 2,
+    apply = { step = 1000 }
+}
+
+-- Default steps for VFO
+rule {
+    id = "vfo-step-default",
+    tags = {"widget.VFOControl"},
+    priority = 1,
+    apply = { step = 100 }
+}
+
+rule {
+    id = "vfo-step-ctrl",
+    tags = {"widget.VFOControl", "input.CTRL"},
+    priority = 2,
+    apply = { step = 10000 }
+}
+
+rule {
+    id = "vfo-step-shift",
+    tags = {"widget.VFOControl", "input.SHIFT"},
+    priority = 2,
+    apply = { step = 100000 }
+}
+
+rule {
+    id = "vfo-step-ctrl-shift",
+    tags = {"widget.VFOControl", "input.CTRL", "input.SHIFT"},
+    priority = 3,
+    apply = { step = 1000 }
+}
+
+rule {
+    id = "vfo-step-h",
+    tags = {"widget.VFOControl", "input.H"},
+    priority = 2,
+    apply = { step = 10 }
+}
+
+rule {
+    id = "vfo-step-shift-h",
+    tags = {"widget.VFOControl", "input.SHIFT", "input.H"},
+    priority = 3,
+    apply = { step = 100 }
+}
+
+-- VFO Highlight when hovered anywhere within VFO control area (VFO, Spectrum, WF)
+rule {
+    id = "vfo-highlight-vfo",
+    tags = {"widget.FrequencyDisplay", "widget.VFOControl"},
+    priority = 10,
+    apply = { highlighted = true }
+}
+
 -- Digit keys while hovering VFO start entry
 for i=0,9 do
 rule {
@@ -160,28 +283,6 @@ rule {
 }
 end
 
--- VFO Highlight when hovered anywhere within VFO control area (VFO, Spectrum, WF)
-rule {
-    id = "vfo-highlight-vfo",
-    tags = {"widget.FrequencyDisplay", "VFOControl"},
-    priority = 10,
-    apply = { highlighted = true }
-}
-
-rule {
-    id = "vfo-highlight-spectrum",
-    tags = {"widget.FrequencyDisplay", "widget.Spectrum"},
-    priority = 10,
-    apply = { highlighted = true }
-}
-
-rule {
-    id = "vfo-highlight-waterfall",
-    tags = {"widget.FrequencyDisplay", "widget.Waterfall"},
-    priority = 10,
-    apply = { highlighted = true }
-}
-
 -- VFO Highlight when in entry mode
 rule {
     id = "vfo-highlight-entry",
@@ -190,57 +291,75 @@ rule {
     apply = { highlighted = true }
 }
 
--- VFO Wheel: 100 Hz steps (no modifiers)
-rule {
-    id = "event-vfo-wheel",
-    tags = {"event.MouseWheel"},
-    priority = 20,
-    apply = { handler = "vfo_control", step = 100 }
-}
-
--- VFO + CTRL: 10 kHz steps
-rule {
-    id = "event-vfo-wheel-ctrl",
-    tags = {"event.MouseWheel", "input.CTRL"},
-    priority = 30,
-    apply = { handler = "vfo_control", step = 10000 }
-}
-
--- VFO + SHIFT: 100 kHz steps
-rule {
-    id = "event-vfo-wheel-shift",
-    tags = {"event.MouseWheel", "input.SHIFT"},
-    priority = 30,
-    apply = { handler = "vfo_control", step = 100000 }
-}
-
--- VFO + CTRL + SHIFT: 1 kHz steps
-rule {
-    id = "event-vfo-wheel-ctrl-shift",
-    tags = {"event.MouseWheel", "input.CTRL", "input.SHIFT"},
-    priority = 40,
-    apply = { handler = "vfo_control", step = 1000 }
-}
-
--- VFO + H: 10 Hz fine tuning
-rule {
-    id = "event-vfo-wheel-h",
-    tags = {"event.MouseWheel", "input.H"},
-    priority = 30,
-    apply = { handler = "vfo_control", step = 10 }
-}
-
--- VFO + SHIFT + H: 100 Hz fine tuning
-rule {
-    id = "event-vfo-wheel-shift-h",
-    tags = {"event.MouseWheel", "input.SHIFT", "input.H"},
-    priority = 40,
-    apply = { handler = "vfo_control", step = 100 }
-}
-
 -- =============================================================================
 -- ISG Control (Internal Signal Gen)
 -- =============================================================================
+
+-- Base ISG rule
+rule {
+    id = "event-isg-wheel",
+    tags = {"event.MouseWheel", "widget.IsgControl"},
+    priority = 100,
+    apply = { handler = "vfo_control", property = "isgFrequency" }
+}
+
+-- Default steps for ISG (same as VFO)
+rule {
+    id = "isg-step-default",
+    tags = {"widget.IsgControl"},
+    priority = 1,
+    apply = { step = 100 }
+}
+
+rule {
+    id = "isg-step-ctrl",
+    tags = {"widget.IsgControl", "input.CTRL"},
+    priority = 2,
+    apply = { step = 10000 }
+}
+
+rule {
+    id = "isg-step-shift",
+    tags = {"widget.IsgControl", "input.SHIFT"},
+    priority = 2,
+    apply = { step = 100000 }
+}
+
+rule {
+    id = "isg-step-ctrl-shift",
+    tags = {"widget.IsgControl", "input.CTRL", "input.SHIFT"},
+    priority = 3,
+    apply = { step = 1000 }
+}
+
+rule {
+    id = "isg-step-h",
+    tags = {"widget.IsgControl", "input.H"},
+    priority = 2,
+    apply = { step = 10 }
+}
+
+rule {
+    id = "isg-step-shift-h",
+    tags = {"widget.IsgControl", "input.SHIFT", "input.H"},
+    priority = 3,
+    apply = { step = 100 }
+}
+
+-- ISG Arrow keys
+rule {
+    id = "event-isg-arrow-right",
+    tags = {"event.KeyDown-RIGHT", "widget.IsgControl"},
+    priority = 100,
+    apply = { handler = "vfo_control", property = "isgFrequency" }
+}
+
+rule {
+    id = "event-isg-arrow-left",
+    tags = {"event.KeyDown-LEFT", "widget.IsgControl"},
+    priority = 100,
+    apply = { handler = "vfo_control", property = "isgFrequency" }
+}
 
 -- Digit keys while hovering ISG start entry
 for i=0,9 do
@@ -265,62 +384,6 @@ rule {
     tags = {"widget.FrequencyDisplay", "state.ISGEditing"},
     priority = 20,
     apply = { highlighted = true }
-}
-
-rule {
-    id = "event-isg-wheel",
-    tags = {"event.MouseWheel", "widget.IsgControl"},
-    priority = 100,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 100 }
-}
-
-rule {
-    id = "event-isg-wheel-ctrl",
-    tags = {"event.MouseWheel", "widget.IsgControl", "input.CTRL"},
-    priority = 110,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 10000 }
-}
-
-rule {
-    id = "event-isg-wheel-shift",
-    tags = {"event.MouseWheel", "widget.IsgControl", "input.SHIFT"},
-    priority = 110,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 100000 }
-}
-
-rule {
-    id = "event-isg-wheel-ctrl-shift",
-    tags = {"event.MouseWheel", "widget.IsgControl", "input.CTRL", "input.SHIFT"},
-    priority = 120,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 1000 }
-}
-
-rule {
-    id = "event-isg-wheel-h",
-    tags = {"event.MouseWheel", "widget.IsgControl", "input.H"},
-    priority = 110,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 10 }
-}
-
-rule {
-    id = "event-isg-wheel-shift-h",
-    tags = {"event.MouseWheel", "widget.IsgControl", "input.SHIFT", "input.H"},
-    priority = 120,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 100 }
-}
-
-rule {
-    id = "event-isg-arrow-right",
-    tags = {"event.KeyDown-RIGHT", "widget.IsgControl"},
-    priority = 100,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = 0.001 }
-}
-
-rule {
-    id = "event-isg-arrow-left",
-    tags = {"event.KeyDown-LEFT", "widget.IsgControl"},
-    priority = 100,
-    apply = { handler = "vfo_control", property = "isgFrequency", step = -0.001 }
 }
 
 -- KeyUp on VFOControl widgets - silently consume (keys used as modifiers)

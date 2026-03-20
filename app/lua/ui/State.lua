@@ -16,13 +16,52 @@ state.focus = nil      -- Widget ID with keyboard focus
 state.prevHot = nil
 state.prevActive = nil
 
--- Mouse state
+-- Global Mouse state (Screen space)
+state.globalMouseX = 0
+state.globalMouseY = 0
+
+-- Local Mouse state (Relative to current widget origin)
 state.mouseX = 0
 state.mouseY = 0
+
 state.mouseDown = false
 state.mouseClicked = false   -- True for one frame when clicked
 state.mouseReleased = false  -- True for one frame when released
 state.mouseWheel = 0
+
+-- Coordinate transformation stack
+local offsetStack = {}
+local currentOffsetX = 0
+local currentOffsetY = 0
+
+function state.pushOffset(x, y)
+    table.insert(offsetStack, {x = currentOffsetX, y = currentOffsetY})
+    currentOffsetX = currentOffsetX + x
+    currentOffsetY = currentOffsetY + y
+    state.mouseX = state.globalMouseX - currentOffsetX
+    state.mouseY = state.globalMouseY - currentOffsetY
+end
+
+function state.popOffset()
+    local old = table.remove(offsetStack)
+    if old then
+        currentOffsetX = old.x
+        currentOffsetY = old.y
+        state.mouseX = state.globalMouseX - currentOffsetX
+        state.mouseY = state.globalMouseY - currentOffsetY
+    end
+end
+
+function state.getOffset()
+    return currentOffsetX, currentOffsetY
+end
+
+function state.setOffset(x, y)
+    currentOffsetX = x or 0
+    currentOffsetY = y or 0
+    state.mouseX = state.globalMouseX - currentOffsetX
+    state.mouseY = state.globalMouseY - currentOffsetY
+end
 
 -- Keyboard state
 state.keyPressed = nil   -- Key code pressed this frame
@@ -40,33 +79,48 @@ end
 
 function state.registerWidget(id, bounds, tags, data)
     if eventsModule and eventsModule.registerWidget then
-        eventsModule.registerWidget(id, bounds, tags, nil, data)
+        -- Convert local bounds to global using current offset
+        local globalBounds = {
+            x = bounds.x + currentOffsetX,
+            y = bounds.y + currentOffsetY,
+            w = bounds.w,
+            h = bounds.h
+        }
+        eventsModule.registerWidget(id, globalBounds, tags, nil, data)
     end
 end
+
 function state.beginFrame(data)
     state.prevHot = state.hot
     state.prevActive = state.active
     state.hot = nil
+    
+    -- Reset offsets
+    offsetStack = {}
+    currentOffsetX = 0
+    currentOffsetY = 0
 
     -- Get input state from C++ host or provided data
     if data then
-        state.mouseX = data.mouseX or state.mouseX
-        state.mouseY = data.mouseY or state.mouseY
+        state.globalMouseX = data.mouseX or state.globalMouseX
+        state.globalMouseY = data.mouseY or state.globalMouseY
         state.mouseDown = (data.mouseDown ~= nil) and data.mouseDown or state.mouseDown
         state.mouseClicked = (data.mouseClicked ~= nil) and data.mouseClicked or false
         state.mouseReleased = (data.mouseReleased ~= nil) and data.mouseReleased or false
         state.mouseWheel = data.mouseWheel or 0
     else
-        state.mouseX, state.mouseY = getMousePos()
-        if state.mouseX == nil or state.mouseY == nil then
-            state.mouseX = state.mouseX or 0
-            state.mouseY = state.mouseY or 0
-        end
+        local mx, my = getMousePos()
+        state.globalMouseX = mx or 0
+        state.globalMouseY = my or 0
         state.mouseDown = isMouseDown(0)
         state.mouseClicked = isMouseClicked(0)
         state.mouseReleased = isMouseReleased(0)
         state.mouseWheel = getMouseWheel()
     end
+    
+    -- Initialize local mouse to global (at frame start)
+    state.mouseX = state.globalMouseX
+    state.mouseY = state.globalMouseY
 
     -- Clear single-frame state
     state.keyPressed = nil

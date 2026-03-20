@@ -1,81 +1,52 @@
 --[[
-  Graticule Legend Widget
-  Modular UI component for displaying graticule scale information.
-  Style and text driven entirely by SetBox rules.
+  GraticuleLegend Widget
+  Displays scaling info (e.g. "10 kHz/div") in corners of plot widgets.
 ]]
 
 local setbox = require("SetBox")
 local state = require("ui.State")
-local Label = require("ui.Label")
 
 local GraticuleLegend = {}
 GraticuleLegend.__index = GraticuleLegend
 
--- Default rules for GraticuleLegend widget (very low priority)
+-- Default rules
 setbox.rule {
-    id = "graticule-legend-defaults",
+    id = "graticule-defaults",
     tags = {"widget.GraticuleLegend"},
     priority = -1000,
     apply = {
-        background = "#0f172a",
-        border = "#334155",
-        borderWidth = 1,
+        background = "#000000",
+        foreground = "#ffffff",
+        opacity = 0.5,
         borderRadius = 4,
-        padding = 6,
-        opacity = 0.8,
-    }
-}
-
--- Default rules for nested labels
-setbox.rule {
-    id = "legend-h-text-default",
-    tags = {"widget.GraticuleLegend", "legend.hText"},
-    priority = -500,
-    apply = {
-        foreground = "#94a3b8",
-        text = "Scale H",
-    }
-}
-
-setbox.rule {
-    id = "legend-v-text-default",
-    tags = {"widget.GraticuleLegend", "legend.vText"},
-    priority = -500,
-    apply = {
-        foreground = "#94a3b8",
-        text = "Scale V",
+        padding = 4,
     }
 }
 
 function GraticuleLegend.new()
     local self = setmetatable({}, GraticuleLegend)
-    self.hLabel = Label.new()
-    self.vLabel = Label.new()
     return self
 end
 
-function GraticuleLegend:draw(id, x, y, w, h, parentLWC, hText, vText)
+function GraticuleLegend:draw(id, x, y, w, h, parentLWC, line1, line2)
     local lwc = setbox.newContext({"widget.GraticuleLegend", "id." .. id}, parentLWC)
     
-    -- Properties from rules
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
-    local bWidth = lwc:getNumber("borderWidth")
-    local radius = lwc:getNumber("borderRadius")
-    local alpha = lwc:getNumber("opacity")
-    local pad = lwc:getNumber("padding")
+    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#000000"))
+    local fgR, fgG, fgB = state.hexToRgb(lwc:optString("foreground", "#ffffff"))
+    local radius = lwc:optNumber("borderRadius", 4)
+    local alpha = lwc:optNumber("opacity", 0.5)
+    local pad = lwc:optNumber("padding", 4)
     
-    drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
-    if bWidth > 0 then
-        drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
+    System.drawRoundedRect(x, y, w, h, radius, {bgR, bgG, bgB, alpha})
+    
+    local ty = y + pad
+    if line1 then
+        System.drawText(line1, x + pad, ty, 14, {fgR, fgG, fgB, 1.0})
+        ty = ty + 16
     end
-    
-    -- Draw Scale Labels
-    if hText then self.hLabel.getText = function() return hText end end
-    self.hLabel:draw(id .. "-h", x + pad, y + pad, w - pad*2, 18, lwc)
-    
-    if vText then self.vLabel.getText = function() return vText end end
-    self.vLabel:draw(id .. "-v", x + pad, y + pad + 18, w - pad*2, 18, lwc)
+    if line2 then
+        System.drawText(line2, x + pad, ty, 14, {fgR, fgG, fgB, 0.7})
+    end
 end
 
 return GraticuleLegend

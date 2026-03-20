@@ -41,58 +41,60 @@ function SignalBox:draw(id, x, y, w, h, parentLWC, label, extraTags, data)
         end
     end
     
-    -- Register widget for event system
+    -- Interaction tags (state namespaces)
+    if state.isActive(id) then table.insert(tags, "state.Active")
+    elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
+
+    local lwc = setbox.newContext(tags, parentLWC)
+    
+    -- Register widget for event system (local bounds)
     state.registerWidget(id, {x=x, y=y, w=w, h=h}, tags, data)
     
-    -- Hit testing
+    -- Hit testing (Relative to parent origin)
     if state.pointInRect(state.mouseX, state.mouseY, x, y, w, h) then
         state.setHot(id)
         if state.mouseClicked then state.setActive(id) end
     end
 
-    local lwc = setbox.newContext(tags, parentLWC)
-    
-    -- Interaction tags (state namespaces)
     local isGhost = lwc:hasTag("state.Ghost")
     local isSelected = lwc:hasTag("state.Selected")
     
     -- Style resolution
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = state.hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
+    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#facc15"))
+    local fgR, fgG, fgB = state.hexToRgb(lwc:optString("foreground", "#ffffff"))
+    local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#facc15"))
     
-    local alpha = lwc:getNumber("opacity")
-    local bWidth = lwc:getNumber("borderWidth")
+    local alpha = lwc:optNumber("opacity", 0.3)
+    local bWidth = lwc:optNumber("borderWidth", 1)
     
     if isSelected then
-        alpha = lwc:getNumber("selectedOpacity")
-        bWidth = lwc:getNumber("selectedBorderWidth")
+        alpha = lwc:optNumber("selectedOpacity", 0.6)
+        bWidth = lwc:optNumber("selectedBorderWidth", 3)
     elseif isGhost then
-        alpha = lwc:getNumber("ghostOpacity")
+        alpha = lwc:optNumber("ghostOpacity", 0.2)
     end
     
     -- 1. Draw the translucent box (the signal area)
-    drawRect(x, y, w, h, bgR, bgG, bgB, alpha)
+    System.drawRect(x, y, w, h, {bgR, bgG, bgB, alpha})
     
     -- 2. Draw border
     if bWidth > 0 then
-        -- We draw vertical lines at the edges and a top line
-        drawLine(x, y, x, y + h, bR, bG, bB, alpha, bWidth)
-        drawLine(x + w, y, x + w, y + h, bR, bG, bB, alpha, bWidth)
-        drawLine(x, y, x + w, y, bR, bG, bB, alpha, bWidth)
+        System.drawLine(x, y, x, y + h, bWidth, {bR, bG, bB, alpha})
+        System.drawLine(x + w, y, x + w, y + h, bWidth, {bR, bG, bB, alpha})
+        System.drawLine(x, y, x + w, y, bWidth, {bR, bG, bB, alpha})
     end
     
     -- 3. Draw the numeric tag above the box
-    local tagH = lwc:getNumber("tagHeight")
-    local tagW = lwc:getNumber("tagWidth")
+    local tagH = lwc:optNumber("tagHeight", 20)
+    local tagW = lwc:optNumber("tagWidth", 30)
     local tx = x + (w - tagW) / 2
     local ty = y - tagH - 2
     
-    drawRoundedRect(tx, ty, tagW, tagH, 4, bgR, bgG, bgB, 1.0)
+    System.drawRoundedRect(tx, ty, tagW, tagH, 4, {bgR, bgG, bgB, 1.0})
     
-    local labelW = measureText(tostring(label))
-    local lineH = getLineHeight()
-    drawText(tx + (tagW - labelW) / 2, ty + (tagH - lineH) / 2, tostring(label), fgR, fgG, fgB, 1.0)
+    local labelW = System.measureText(tostring(label), 14)
+    local lineH = 14
+    System.drawText(tostring(label), tx + (tagW - labelW) / 2, ty + (tagH - lineH) / 2, 14, {fgR, fgG, fgB, 1.0})
 end
 
 return SignalBox

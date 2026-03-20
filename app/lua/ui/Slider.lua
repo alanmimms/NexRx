@@ -8,9 +8,9 @@ local setbox = require("SetBox")
 local state = require("ui.State")
 local Model = require("Model")
 local TextMixin = require("ui.TextMixin")
+local Widget = require("ui.Widget")
 
-local Slider = {}
-Slider.__index = Slider
+local Slider = Widget.mkType("Slider")
 
 -- Default rules for Slider widget (very low priority)
 setbox.rule {
@@ -30,26 +30,37 @@ setbox.rule {
     }
 }
 
-function Slider.new(options)
-    local self = setmetatable({}, Slider)
-    self.valueObs = options and options.valueObs
-    self.propertyName = options and options.propertyName
-    if options and options.getText then self.getText = options.getText end
-    return self
+function Slider:init(def)
+    Widget.init(self, def)
+    self.valueObs = def.valueObs
+    self.propertyName = def.propertyName
+    self.getText = def.getText
+    self.minVal = def.minVal or 0
+    self.maxVal = def.maxVal or 100
 end
 
 local function clamp(v, min, max)
     return math.max(min, math.min(max, v))
 end
 
-function Slider:draw(id, x, y, w, h, parentLWC, minVal, maxVal, value)
+function Slider:calcMetrics()
+    local trackH = self.lwc:optNumber("trackHeight", 8)
+    local labelSpacing = self.lwc:optNumber("labelSpacing", 4)
+    local labelH = (self.getText or self.lwc:has("label") or self.lwc:has("text")) and (TextMixin.getLineHeight() + labelSpacing) or 0
+    
+    if self.metrics.prefW == 0 then self.metrics.prefW = 100 end
+    if self.metrics.prefH == 0 then self.metrics.prefH = trackH + labelH end
+end
+
+function Slider:drawSelf()
+    local id, w, h = self.id, self.props.w, self.props.h
     local tags = {"widget.Slider", "id." .. id}
     
     -- Interaction tags
     if state.isActive(id) then table.insert(tags, "state.Active")
     elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
     
-    local lwc = setbox.newContext(tags, parentLWC)
+    local lwc = self.lwc
     
     -- Resolved properties
     local trackH = lwc:optNumber("trackHeight", 8)
@@ -71,29 +82,24 @@ function Slider:draw(id, x, y, w, h, parentLWC, minVal, maxVal, value)
         labelH = TextMixin.getLineHeight() + labelSpacing
     end
     
-    -- Total required height
-    local totalMinH = trackH + labelH
-    local actualH = h or totalMinH
-    
-    -- Use provided value or current value from observable
-    local currentValue = value
+    -- Use current value from observable or fallback
+    local currentValue = self.props.value
     if self.valueObs then currentValue = self.valueObs:get() end
     
-    -- Fallbacks for nil values
-    minVal = minVal or 0
-    maxVal = maxVal or 100
+    local minVal = self.minVal or 0
+    local maxVal = self.maxVal or 100
     if currentValue == nil then currentValue = minVal end
 
-    -- Register with bounds and metadata for event handling
-    state.registerWidget(id, {x=x - handleR, y=y, w=w + handleR*2, h=actualH}, tags, {
+    -- Register with local bounds
+    state.registerWidget(id, {x=-handleR, y=0, w=w + handleR*2, h=h}, tags, {
         min = minVal,
         max = maxVal,
         property = self.propertyName,
         value = currentValue
     })
     
-    -- Hit testing
-    if state.pointInRect(state.mouseX, state.mouseY, x - handleR, y, w + handleR*2, actualH) then
+    -- Hit testing (Relative to local 0,0)
+    if state.pointInRect(state.mouseX, state.mouseY, -handleR, 0, w + handleR*2, h) then
         state.setHot(id)
         if state.mouseClicked and state.active == nil then 
             state.setActive(id) 
@@ -108,8 +114,8 @@ function Slider:draw(id, x, y, w, h, parentLWC, minVal, maxVal, value)
     local alpha = lwc:optNumber("opacity", 1.0)
 
     -- Dragging logic
-    if state.isActive(id) and state.mouseDown then
-        local nt = clamp((state.mouseX - x) / w, 0, 1)
+    if state.isActive(id) and (state.mouseDown or state.mouseClicked or state.mouseReleased) then
+        local nt = clamp(state.mouseX / w, 0, 1)
         local newValue = minVal + nt * (maxVal - minVal)
         
         if newValue ~= currentValue then
@@ -122,32 +128,30 @@ function Slider:draw(id, x, y, w, h, parentLWC, minVal, maxVal, value)
         end
     end
 
-    -- 1. Draw Label at the very top
+    -- 1. Draw Label at the very top (Local 0,0)
     if label ~= "" then
-        TextMixin.draw(x, y, label, lwc)
+        TextMixin.draw(0, 0, label, lwc)
     end
     
     -- 2. Draw Track (vertically centered in the remaining space below label)
-    local remainingH = actualH - labelH
-    local trackY = y + labelH + (remainingH - trackH)/2
+    local remainingH = h - labelH
+    local trackY = labelH + (remainingH - trackH)/2
     
     local t = clamp((currentValue - minVal) / (maxVal - minVal), 0, 1)
     
     -- Draw track
-    System.drawRoundedRect(x, trackY, w, trackH, trackH/2, {bgR, bgG, bgB, alpha})
+    System.drawRoundedRect(0, trackY, w, trackH, trackH/2, {bgR, bgG, bgB, alpha})
     -- Draw fill
     if t > 0 then
-        System.drawRoundedRect(x, trackY, w * t, trackH, trackH/2, {aR, aG, aB, alpha})
+        System.drawRoundedRect(0, trackY, w * t, trackH, trackH/2, {aR, aG, aB, alpha})
     end
     -- Draw handle
-    local hX = x + w * t
+    local hX = w * t
     local hY = trackY + trackH/2
     System.drawCircle(hX, hY, handleR, {1, 1, 1, alpha})
     if bWidth > 0 then
         System.drawCircleOutline(hX, hY, handleR, bWidth, {bR, bG, bB, alpha})
     end
-    
-    return currentValue
 end
 
 -- =============================================================================
@@ -155,36 +159,67 @@ end
 -- Handles categorical choices (like Modes or Bands)
 -- =============================================================================
 
-Slider.DiscreteSlider = {}
-Slider.DiscreteSlider.__index = Slider.DiscreteSlider
+local DiscreteSlider = Widget.mkType("DiscreteSlider")
+Slider.DiscreteSlider = DiscreteSlider
 
-function Slider.DiscreteSlider.new(options)
-    local self = setmetatable({}, Slider.DiscreteSlider)
-    self.stops = options.stops or {} -- { {label="USB", value="USB"}, ... }
-    self.valueObs = options.valueObs
-    self.propertyName = options.propertyName
-    self.onChanged = options.onChanged
-    return self
+function DiscreteSlider:init(def)
+    Widget.init(self, def)
+    self.stops = def.stops or {} -- { {label="USB", value="USB"}, ... }
+    self.valueObs = def.valueObs
+    self.propertyName = def.propertyName
+    self.onChanged = def.onChanged
 end
 
-function Slider.DiscreteSlider:draw(id, x, y, w, h, parentLWC)
+function DiscreteSlider:calcMetrics()
+    if self.metrics.prefW == 0 then self.metrics.prefW = 200 end
+    if self.metrics.prefH == 0 then self.metrics.prefH = 30 end
+end
+
+function DiscreteSlider:drawSelf()
+    local id, w, h = self.id, self.props.w, self.props.h
     local tags = {"widget.Slider", "widget.DiscreteSlider", "id." .. id}
-    local lwc = setbox.newContext(tags, parentLWC)
     
-    state.registerWidget(id, {x=x, y=y, w=w, h=h}, tags)
-    if state.pointInRect(state.mouseX, state.mouseY, x, y, w, h) then
+    -- Interaction tags for SetBox resolution
+    if state.isActive(id) then table.insert(tags, "state.Active")
+    elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
+    
+    local lwc = self.lwc
+    
+    local currentValue = self.valueObs and self.valueObs:get() or nil
+    local nStops = #self.stops
+
+    -- Register with local bounds
+    state.registerWidget(id, {x=0, y=0, w=w, h=h}, tags, {
+        property = self.propertyName,
+        value = currentValue
+    })
+    
+    -- Hit testing & Activation (Relative to local 0,0)
+    if state.pointInRect(state.mouseX, state.mouseY, 0, 0, w, h) then
         state.setHot(id)
         if state.mouseClicked and state.active == nil then 
             state.setActive(id) 
         end
     end
 
+    -- Dragging/Interaction Logic: Use horizontal position to select stop
+    if nStops > 0 and state.isActive(id) and (state.mouseDown or state.mouseClicked or state.mouseReleased) then
+        local nt = clamp(state.mouseX / w, 0, 0.999)
+        local stopIdx = math.floor(nt * nStops) + 1
+        local stop = self.stops[stopIdx]
+        
+        if stop and stop.value ~= currentValue then
+            if self.propertyName then Model.set(self.propertyName, stop.value)
+            elseif self.valueObs and self.valueObs.set then self.valueObs:set(stop.value) end
+            if self.onChanged then self.onChanged(stop.value) end
+            currentValue = stop.value -- Immediate local feedback for drawing
+        end
+    end
+
     -- Draw outer border
     local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#475569"))
-    System.drawRectLines(x, y, w, h, 1, {bR, bG, bB, 1.0})
+    System.drawRectLines(0, 0, w, h, 1, {bR, bG, bB, 1.0})
 
-    local currentValue = self.valueObs and self.valueObs:get() or nil
-    local nStops = #self.stops
     if nStops == 0 then return end
     
     local stopW = w / nStops
@@ -192,29 +227,18 @@ function Slider.DiscreteSlider:draw(id, x, y, w, h, parentLWC)
     local aR, aG, aB = state.hexToRgb(lwc:optString("accent", "#3b82f6"))
     
     for i, stop in ipairs(self.stops) do
-        local sx = x + (i-1) * stopW
+        local sx = (i-1) * stopW
         local isSelected = (stop.value == currentValue)
         
         local r, g, b = bgR, bgG, bgB
         if isSelected then r, g, b = aR, aG, aB end
         
-        System.drawRect(sx + 1, y + 1, stopW - 2, h - 2, {r, g, b, 1.0})
-        System.drawRectLines(sx + 1, y + 1, stopW - 2, h - 2, 1, {1, 1, 1, 0.5})
+        System.drawRect(sx + 1, 1, stopW - 2, h - 2, {r, g, b, 1.0})
+        System.drawRectLines(sx + 1, 1, stopW - 2, h - 2, 1, {1, 1, 1, 0.5})
         
         local label = tostring(stop.label)
         local tw = System.measureText(label, 16)
-        System.drawText(label, sx + (stopW - tw)/2, y + (h - 16)/2, 16, {1, 1, 1, 1})
-        
-        if state.isActive(id) and state.mouseDown then
-            if state.pointInRect(state.mouseX, state.mouseY, sx, y, stopW, h) then
-                if stop.value ~= currentValue then
-                    if self.propertyName then Model.set(self.propertyName, stop.value)
-                    elseif self.valueObs and self.valueObs.set then self.valueObs:set(stop.value) end
-                    if self.onChanged then self.onChanged(stop.value) end
-                    currentValue = stop.value -- Immediate local feedback
-                end
-            end
-        end
+        System.drawText(label, sx + (stopW - tw)/2, (h - 16)/2, 16, {1, 1, 1, 1})
     end
 end
 

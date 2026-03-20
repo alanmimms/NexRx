@@ -8,8 +8,8 @@ local setbox = require("SetBox")
 local state = require("ui.State")
 local TextMixin = require("ui.TextMixin")
 
-local Label = {}
-Label.__index = Label
+local Widget = require("ui.Widget")
+local Label = Widget.mkType("Label")
 
 -- Default rules for Label widget (very low priority)
 setbox.rule {
@@ -23,18 +23,31 @@ setbox.rule {
     }
 }
 
-function Label.new(options)
-    local self = setmetatable({}, Label)
-    -- options.getText is an optional callback function () -> string
-    if options and options.getText then
-        self.getText = options.getText
+function Label:init(def)
+    Widget.init(self, def)
+    if def and def.getText then
+        self.getText = def.getText
     end
-    return self
 end
 
-function Label:draw(id, x, y, w, h, parentLWC)
-    -- Combine generic type tag with specific instance ID tag
-    local lwc = setbox.newContext({"widget.Label", "id." .. id}, parentLWC)
+function Label:calcMetrics()
+    local lwc = self.lwc
+    local text = ""
+    if self.getText then
+        text = self.getText(lwc)
+    elseif lwc:has("text") then
+        text = lwc:getString("text")
+    else
+        text = lwc:has("title") and lwc:getString("title") or ""
+    end
+    local tw = TextMixin.measure(text)
+    if self.metrics.prefW == 0 then self.metrics.prefW = tw end
+    if self.metrics.prefH == 0 then self.metrics.prefH = TextMixin.getLineHeight() end
+end
+
+function Label:drawSelf()
+    local id, w, h = self.id, self.props.w, self.props.h
+    local lwc = self.lwc
     
     local text = ""
     if self.getText then
@@ -46,10 +59,7 @@ function Label:draw(id, x, y, w, h, parentLWC)
         text = lwc:has("title") and lwc:getString("title") or ""
     end
     
-    TextMixin.draw(x, y, text, lwc)
-    
-    -- Return size for layout systems
-    return TextMixin.measure(text), TextMixin.getLineHeight()
+    TextMixin.draw(0, 0, text, lwc)
 end
 
 return Label

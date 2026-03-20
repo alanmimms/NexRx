@@ -7,10 +7,9 @@
 
 local setbox = require("SetBox")
 local state = require("ui.State")
-local Label = require("ui.Label")
+local Widget = require("ui.Widget")
 
-local SMeter = {}
-SMeter.__index = SMeter
+local SMeter = Widget.mkType("SMeter")
 
 -- =============================================================================
 -- Calculation Logic
@@ -53,6 +52,9 @@ function SMeter.getReading()
     local rms = 0
     if rx and rx.getSignalRms then
         rms = rx.getSignalRms()
+    elseif _G.rx and _G.rx.getStats then
+        local stats = _G.rx.getStats()
+        rms = stats.rms or 0
     end
 
     local dBm = SMeter.rmsTodBm(rms)
@@ -88,63 +90,66 @@ setbox.rule {
         padding = 4,
         barCount = 12,
         barGap = 2,
-        opacity = 1.0,
-        height = function(lwc)
-            return 18 + 28 + 20 -- Title + Bar + Text
-        end
+        opacity = 1.0
     }
 }
 
-function SMeter.new()
-    local self = setmetatable({}, SMeter)
-    self.titleLabel = Label.new()
-    return self
+function SMeter:init(def)
+    Widget.init(self, def)
 end
 
-function SMeter:draw(id, x, y, w, h, parentLWC, reading)
-    local lwc = setbox.newContext({"widget.SMeter", "id." .. id}, parentLWC)
-    
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local weakR, weakG, weakB = state.hexToRgb(lwc:getString("colorWeak"))
-    local midR, midG, midB = state.hexToRgb(lwc:getString("colorMid"))
-    local strongR, strongG, strongB = state.hexToRgb(lwc:getString("colorStrong"))
-    local offR, offG, offB = state.hexToRgb(lwc:getString("colorOff"))
-    local radius = lwc:getNumber("borderRadius")
-    local alpha = lwc:getNumber("opacity")
-    local pad = lwc:getNumber("padding")
-    local barCount = lwc:getNumber("barCount")
-    local barGap = lwc:getNumber("barGap")
+function SMeter:calcMetrics()
+    if self.metrics.prefW == 0 then self.metrics.prefW = 200 end
+    if self.metrics.prefH == 0 then self.metrics.prefH = 66 end
+end
 
-    self.titleLabel.getText = function() return lwc:getString("title") end
-    self.titleLabel:draw(id .. "-title", x, y, w, 18, lwc)
+function SMeter:drawSelf(reading)
+    local w, h = self.props.w, self.props.h
+    local lwc = self.lwc
     
-    local barY = y + 18
+    reading = reading or SMeter.getReading()
+
+    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#0f172a"))
+    local weakR, weakG, weakB = state.hexToRgb(lwc:optString("colorWeak", "#22c55e"))
+    local midR, midG, midB = state.hexToRgb(lwc:optString("colorMid", "#eab308"))
+    local strongR, strongG, strongB = state.hexToRgb(lwc:optString("colorStrong", "#ef4444"))
+    local offR, offG, offB = state.hexToRgb(lwc:optString("colorOff", "#1e293b"))
+    local radius = lwc:optNumber("borderRadius", 4)
+    local alpha = lwc:optNumber("opacity", 1.0)
+    local pad = lwc:optNumber("padding", 4)
+    local barCount = lwc:optNumber("barCount", 12)
+    local barGap = lwc:optNumber("barGap", 2)
+
+    local title = lwc:optString("title", "S-METER")
+    System.drawText(title, 0, 0, 16, {0.7, 0.7, 0.8, alpha})
+    
+    local barY = 18
     local barActualH = 28
-    drawRoundedRect(x, barY, w, barActualH, radius, bgR, bgG, bgB, alpha)
+    System.drawRoundedRect(0, barY, w, barActualH, radius, {bgR, bgG, bgB, alpha})
 
     local barW = (w - pad * 2 - barGap * (barCount - 1)) / barCount
     local barH = barActualH - pad * 2
     
     for i = 0, barCount - 1 do
-        local barX = x + pad + i * (barW + barGap)
+        local barX = pad + i * (barW + barGap)
         local barThreshold = (i < 9) and (i + 1) or (9 + (i - 8) * (20/6))
 
         if reading.sUnits >= barThreshold then
             local r, g, b = weakR, weakG, weakB
             if i >= 9 then r, g, b = strongR, strongG, strongB
             elseif i >= 6 then r, g, b = midR, midG, midB end
-            drawRect(barX, barY + pad, barW, barH, r, g, b, alpha)
+            System.drawRect(barX, barY + pad, barW, barH, {r, g, b, alpha})
         else
-            drawRect(barX, barY + pad, barW, barH, offR, offG, offB, alpha)
+            System.drawRect(barX, barY + pad, barW, barH, {offR, offG, offB, alpha})
         end
     end
 
     local ty = barY + barActualH + 4
-    local sW = measureText(reading.sText)
-    local dW = measureText(reading.dBmText)
-    local startX = x + (w - (sW + 10 + dW)) / 2
-    drawText(startX, ty, reading.sText, 0.9, 0.9, 0.95, alpha)
-    drawText(startX + sW + 10, ty, reading.dBmText, 0.5, 0.5, 0.55, alpha)
+    local sW = System.measureText(reading.sText, 14)
+    local dW = System.measureText(reading.dBmText, 14)
+    local startX = (w - (sW + 10 + dW)) / 2
+    System.drawText(reading.sText, startX, ty, 14, {0.9, 0.9, 0.95, alpha})
+    System.drawText(reading.dBmText, startX + sW + 10, ty, 14, {0.5, 0.5, 0.55, alpha})
 end
 
 return SMeter

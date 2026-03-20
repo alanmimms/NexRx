@@ -6,10 +6,9 @@
 
 local setbox = require("SetBox")
 local state = require("ui.State")
-local Label = require("ui.Label")
+local Widget = require("ui.Widget")
 
-local ActiveTags = {}
-ActiveTags.__index = ActiveTags
+local ActiveTags = Widget.mkType("ActiveTags")
 
 -- Default rules for ActiveTags widget (very low priority)
 setbox.rule {
@@ -25,47 +24,38 @@ setbox.rule {
     }
 }
 
--- Rule for the nested title label
-setbox.rule {
-    id = "active-tags-title",
-    tags = {"widget.ActiveTagsViewer", "activeTags.title"},
-    priority = -500,
-    apply = {
-        foreground = "#80b3ff",
-        text = "ACTIVE TAGS",
-    }
-}
-
-function ActiveTags.new()
-    local self = setmetatable({}, ActiveTags)
-    self.titleLabel = Label.new()
-    self.tagLabel = Label.new()
-    return self
+function ActiveTags:init(def)
+    Widget.init(self, def)
 end
 
-function ActiveTags:draw(id, x, y, w, h, parentLWC, tags)
-    local lwc = setbox.newContext({"widget.ActiveTagsViewer", "id." .. id}, parentLWC)
+function ActiveTags:calcMetrics()
+    if self.metrics.prefW == 0 then self.metrics.prefW = 180 end
+    if self.metrics.prefH == 0 then self.metrics.prefH = 200 end
+end
+
+function ActiveTags:drawSelf(tags)
+    local w, h = self.props.w, self.props.h
+    local lwc = self.lwc
     
     -- Style resolution
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local radius = lwc:getNumber("borderRadius")
-    local alpha = lwc:getNumber("opacity")
-    local pad = lwc:getNumber("padding")
+    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#08081a"))
+    local radius = lwc:optNumber("borderRadius", 4)
+    local alpha = lwc:optNumber("opacity", 0.8)
+    local pad = lwc:optNumber("padding", 8)
     
-    drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
+    System.drawRoundedRect(0, 0, w, h, radius, {bgR, bgG, bgB, alpha})
     
     -- Draw Title
-    self.titleLabel:draw("active-tags-title", x + pad, y + pad, w - pad*2, 20, lwc)
+    local title = lwc:optString("title", "ACTIVE TAGS")
+    System.drawText(title, pad, pad, 16, {0.5, 0.7, 1.0, alpha})
     
-    local ty = y + 32
-    if tags then
-        for _, tag in ipairs(tags) do
-            -- Draw each tag using dynamic label text
-            self.tagLabel.getText = function() return tag end
-            self.tagLabel:draw(id .. "-tag-" .. tag, x + pad + 4, ty, w - pad*2 - 8, 18, lwc)
-            ty = ty + 18
-            if ty > y + h - 20 then break end
-        end
+    local ty = 32
+    tags = tags or (setbox.getActiveTags and setbox.getActiveTags()) or {}
+    
+    for _, tag in ipairs(tags) do
+        System.drawText(tostring(tag), pad + 4, ty, 14, {1, 1, 1, alpha})
+        ty = ty + 18
+        if ty > h - 20 then break end
     end
 end
 

@@ -7,9 +7,9 @@
 local setbox = require("SetBox")
 local state = require("ui.State")
 local TextMixin = require("ui.TextMixin")
+local Widget = require("ui.Widget")
 
-local Button = {}
-Button.__index = Button
+local Button = Widget.mkType("Button")
 
 -- Default rules for Button widget (very low priority)
 setbox.rule {
@@ -29,17 +29,20 @@ setbox.rule {
     }
 }
 
-function Button.new(options)
-    local self = setmetatable({}, Button)
-    -- options.getText is an optional callback () -> string
-    if options and options.getText then
-        self.getText = options.getText
-    end
-    self.onClick = options and options.onClick
-    return self
+function Button:init(def)
+    Widget.init(self, def)
+    self.getText = def.getText
+    self.onClick = def.onClick
 end
 
-function Button:draw(id, x, y, w, h, parentLWC, extraTags)
+function Button:calcMetrics()
+    local lwc = self.lwc
+    if self.metrics.prefW == 0 then self.metrics.prefW = lwc:optNumber("width", 100) end
+    if self.metrics.prefH == 0 then self.metrics.prefH = lwc:optNumber("height", 32) end
+end
+
+function Button:drawSelf(extraTags)
+    local id, w, h = self.id, self.props.w, self.props.h
     local tags = {"widget.Button", "id." .. id}
     if extraTags then
         if type(extraTags) == "table" then
@@ -51,32 +54,28 @@ function Button:draw(id, x, y, w, h, parentLWC, extraTags)
     if state.isActive(id) then table.insert(tags, "state.Pressed")
     elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
     
-    local lwc = setbox.newContext(tags, parentLWC)
+    local lwc = self.lwc
     
-    -- Size from rules if not explicitly passed
-    w = w or lwc:getNumber("width")
-    h = h or lwc:getNumber("height")
+    state.registerWidget(id, {x=0, y=0, w=w, h=h}, tags)
     
-    state.registerWidget(id, {x=x, y=y, w=w, h=h}, tags)
-    
-    -- Hit testing and state update
-    if state.pointInRect(state.mouseX, state.mouseY, x, y, w, h) then
+    -- Hit testing and state update (Local 0,0)
+    if state.pointInRect(state.mouseX, state.mouseY, 0, 0, w, h) then
         state.setHot(id)
         if state.mouseClicked then state.setActive(id) end
     end
     
     -- Style resolution
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local fgR, fgG, fgB = state.hexToRgb(lwc:getString("foreground"))
-    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
-    local bWidth = lwc:getNumber("borderWidth")
-    local radius = lwc:getNumber("borderRadius")
-    local alpha = lwc:getNumber("opacity")
+    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#3b82f6"))
+    local fgR, fgG, fgB = state.hexToRgb(lwc:optString("foreground", "#ffffff"))
+    local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#2563eb"))
+    local bWidth = lwc:optNumber("borderWidth", 1)
+    local radius = lwc:optNumber("borderRadius", 6)
+    local alpha = lwc:optNumber("opacity", 1.0)
     
-    -- Draw
-    drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
+    -- Draw (Local 0,0)
+    System.drawRoundedRect(0, 0, w, h, radius, {bgR, bgG, bgB, alpha})
     if bWidth > 0 then
-        drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
+        System.drawRectLines(0, 0, w, h, bWidth, {bR, bG, bB, alpha})
     end
     
     -- Label text from callback or rule
@@ -93,11 +92,11 @@ function Button:draw(id, x, y, w, h, parentLWC, extraTags)
     
     local labelW = TextMixin.measure(label)
     local lineH = TextMixin.getLineHeight()
-    TextMixin.draw(x + (w - labelW) / 2, y + (h - lineH) / 2, label, lwc)
+    TextMixin.draw((w - labelW) / 2, (h - lineH) / 2, label, lwc)
     
-    local clicked = state.wasClicked(id)
-    if clicked and self.onClick then self.onClick() end
-    return clicked
+    if state.wasClicked(id) then
+        if self.onClick then self.onClick() end
+    end
 end
 
 return Button

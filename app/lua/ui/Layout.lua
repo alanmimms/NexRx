@@ -1,16 +1,20 @@
 local Stick = require("ui.Stick")
 local Layout = {}
 
+-- Helper to create a callable layout table with metadata
+local function makeLayout(axis, fn)
+  return setmetatable({ axis = axis }, { __call = function(_, ...) return fn(...) end })
+end
+
 -- Layout kids in container flowing along the horizontal axis.
-function Layout.hFlow(container)
+Layout.hFlow = makeLayout("horizontal", function(container)
   local totalFixedW = 0
   local totalFlexW = 0
 
-  -- Pass 1: Measure fixed space and sum flex weights
+  -- Pass 1: Measure
   for _, kid in ipairs(container.kids) do
     local m = kid:getMetrics()
     local marginW = m.margin.left + m.margin.right
-    
     if (m.flexW > 0) then
       totalFlexW = totalFlexW + m.flexW
       totalFixedW = totalFixedW + marginW
@@ -20,18 +24,16 @@ function Layout.hFlow(container)
   end
 
   local availW, availH = container.props.w, container.props.h
-  local startX, startY = container.props.x, container.props.y
   local flexSpace = math.max(0, availW - totalFixedW)
-  local currentX = startX
+  local currentX = 0
 
-  -- Pass 2: Calculate final geometry and apply stickiness
+  -- Pass 2: Position
   for _, kid in ipairs(container.kids) do
     local m = kid:getMetrics()
     local stick = m.stick
 
-    -- 1. Determine Width and Main Axis (X) Slot
     local slotW = m.prefW
-    if (m.flexW > 0) then
+    if (m.flexW > 0) and totalFlexW > 0 then
       slotW = flexSpace * (m.flexW / totalFlexW)
     end
     
@@ -44,46 +46,42 @@ function Layout.hFlow(container)
     local kidX = currentX + m.margin.left
     local remW = slotW - finalW
 
-    -- X-Axis Alignment within the slot
     if ((stick & Stick.L) == 0 and (stick & Stick.R) == 0) then
       kidX = kidX + (remW / 2)
     elseif ((stick & Stick.L) == 0 and (stick & Stick.R) ~= 0) then
       kidX = kidX + remW
     end
 
-    -- 2. Determine Height and Cross Axis (Y) Slot
+    -- Cross axis (Y) - Aligned WITHIN the container's height
     local finalH = m.prefH
     if ((stick & Stick.T) ~= 0 and (stick & Stick.B) ~= 0) then
       finalH = availH - m.margin.top - m.margin.bottom
     end
     finalH = math.max(m.minH, math.min(finalH, m.maxH))
     
-    local kidY = startY + m.margin.top
+    local kidY = m.margin.top
     local remH = availH - m.margin.top - m.margin.bottom - finalH
 
-    -- Y-Axis Alignment
     if ((stick & Stick.T) == 0 and (stick & Stick.B) == 0) then
       kidY = kidY + (remH / 2)
     elseif ((stick & Stick.T) == 0 and (stick & Stick.B) ~= 0) then
       kidY = kidY + remH
     end
 
-    kid.props.x, kid.props.y, kid.props.w, kid.props.h = kidX, kidY, finalW, finalH
+    kid:layout(kidX, kidY, finalW, finalH)
     currentX = currentX + slotW + m.margin.left + m.margin.right
   end
-end
-
+end)
 
 -- Layout kids in container flowing along the vertical axis.
-function Layout.vFlow(container)
+Layout.vFlow = makeLayout("vertical", function(container)
   local totalFixedH = 0
   local totalFlexH = 0
 
-  -- Pass 1: Measure fixed space and sum flex weights
+  -- Pass 1: Measure
   for _, kid in ipairs(container.kids) do
     local m = kid:getMetrics()
     local marginH = m.margin.top + m.margin.bottom
-    
     if (m.flexH > 0) then
       totalFlexH = totalFlexH + m.flexH
       totalFixedH = totalFixedH + marginH
@@ -93,18 +91,16 @@ function Layout.vFlow(container)
   end
 
   local availW, availH = container.props.w, container.props.h
-  local startX, startY = container.props.x, container.props.y
   local flexSpace = math.max(0, availH - totalFixedH)
-  local currentY = startY
+  local currentY = 0
 
-  -- Pass 2: Calculate final geometry and apply stickiness
+  -- Pass 2: Position
   for _, kid in ipairs(container.kids) do
     local m = kid:getMetrics()
     local stick = m.stick
 
-    -- 1. Determine Height and Main Axis (Y) Slot
     local slotH = m.prefH
-    if (m.flexH > 0) then
+    if (m.flexH > 0) and totalFlexH > 0 then
       slotH = flexSpace * (m.flexH / totalFlexH)
     end
     
@@ -117,38 +113,35 @@ function Layout.vFlow(container)
     local kidY = currentY + m.margin.top
     local remH = slotH - finalH
 
-    -- Y-Axis Alignment within the slot
     if ((stick & Stick.T) == 0 and (stick & Stick.B) == 0) then
       kidY = kidY + (remH / 2)
     elseif ((stick & Stick.T) == 0 and (stick & Stick.B) ~= 0) then
       kidY = kidY + remH
     end
 
-    -- 2. Determine Width and Cross Axis (X) Slot
+    -- Cross axis (X) - Aligned WITHIN the container's width
     local finalW = m.prefW
     if ((stick & Stick.L) ~= 0 and (stick & Stick.R) ~= 0) then
       finalW = availW - m.margin.left - m.margin.right
     end
     finalW = math.max(m.minW, math.min(finalW, m.maxW))
     
-    local kidX = startX + m.margin.left
+    local kidX = m.margin.left
     local remW = availW - m.margin.left - m.margin.right - finalW
 
-    -- X-Axis Alignment
     if ((stick & Stick.L) == 0 and (stick & Stick.R) == 0) then
       kidX = kidX + (remW / 2)
     elseif ((stick & Stick.L) == 0 and (stick & Stick.R) ~= 0) then
       kidX = kidX + remW
     end
 
-    kid.props.x, kid.props.y, kid.props.w, kid.props.h = kidX, kidY, finalW, finalH
+    kid:layout(kidX, kidY, finalW, finalH)
     currentY = currentY + slotH + m.margin.top + m.margin.bottom
   end
-end
+end)
 
-
-function Layout.zStack(container)
-  local availW, availH, startX, startY = container.props.w, container.props.h, container.props.x, container.props.y
+Layout.zStack = makeLayout("stack", function(container)
+  local availW, availH = container.props.w, container.props.h
 
   for _, kid in ipairs(container.kids) do
     local m = kid:getMetrics()
@@ -166,67 +159,52 @@ function Layout.zStack(container)
     end
     finalH = math.max(m.minH, math.min(finalH, m.maxH))
 
-    local kidX = startX + m.margin.left
-    local kidY = startY + m.margin.top
+    local kidX = m.margin.left
+    local kidY = m.margin.top
 
-    -- X-Axis Alignment
-    if ((stick & Stick.L) ~= 0 and (stick & Stick.R) ~= 0) then
-      -- Already set to fill
+    if ((stick & Stick.L) == 0 and (stick & Stick.R) == 0) then
+      kidX = (availW / 2) - (finalW / 2)
     elseif ((stick & Stick.L) == 0 and (stick & Stick.R) ~= 0) then
-      kidX = startX + availW - finalW - m.margin.right
-    elseif ((stick & Stick.L) == 0 and (stick & Stick.R) == 0) then
-      kidX = startX + (availW / 2) - (finalW / 2)
+      kidX = availW - finalW - m.margin.right
     end
 
-    -- Y-Axis Alignment
-    if ((stick & Stick.T) ~= 0 and (stick & Stick.B) ~= 0) then
-      -- Already set to fill
+    if ((stick & Stick.T) == 0 and (stick & Stick.B) == 0) then
+      kidY = (availH / 2) - (finalH / 2)
     elseif ((stick & Stick.T) == 0 and (stick & Stick.B) ~= 0) then
-      kidY = startY + availH - finalH - m.margin.bottom
-    elseif ((stick & Stick.T) == 0 and (stick & Stick.B) == 0) then
-      kidY = startY + (availH / 2) - (finalH / 2)
+      kidY = availH - finalH - m.margin.bottom
     end
 
-    kid.props.x, kid.props.y, kid.props.w, kid.props.h = kidX, kidY, finalW, finalH
+    kid:layout(kidX, kidY, finalW, finalH)
   end
-end
+end)
 
-
-function Layout.wrapFlow(container)
-  local availW, availH, startX, startY = container.props.w, container.props.h, container.props.x, container.props.y
-  local currentX, currentY = startX, startY
+Layout.wrapFlow = makeLayout("wrap", function(container)
+  local availW = container.props.w
+  local currentX, currentY = 0, 0
   local rowMaxH = 0
 
-  -- This one is more complex to handle "stretch" in wrap rows without a multi-pass.
-  -- For now, we keep it simple: alignment but no stretching beyond prefSize.
   for _, kid in ipairs(container.kids) do
     local m = kid:getMetrics()
-    local stick = m.stick
-    
     local kidTotalW = m.prefW + m.margin.left + m.margin.right
     local kidTotalH = m.prefH + m.margin.top + m.margin.bottom
 
-    if (currentX + kidTotalW > startX + availW and currentX > startX) then
-      currentX = startX
+    if (currentX + kidTotalW > availW and currentX > 0) then
+      currentX = 0
       currentY = currentY + rowMaxH
       rowMaxH = 0
     end
 
     local finalW = math.max(m.minW, math.min(m.prefW, m.maxW))
     local finalH = math.max(m.minH, math.min(m.prefH, m.maxH))
-    local kidX = currentX + m.margin.left
-    local kidY = currentY + m.margin.top
-
-    kid.props.x, kid.props.y, kid.props.w, kid.props.h = kidX, kidY, finalW, finalH
+    kid:layout(currentX + m.margin.left, currentY + m.margin.top, finalW, finalH)
     
     currentX = currentX + kidTotalW
     if (kidTotalH > rowMaxH) then rowMaxH = kidTotalH end
   end
-end
+end)
 
-
-function Layout.grid(container)
-  local availW, availH, startX, startY = container.props.w, container.props.h, container.props.x, container.props.y
+Layout.grid = makeLayout("grid", function(container)
+  local availW, availH = container.props.w, container.props.h
   local cols = container.props.cols or 1
   local nKids = #container.kids
   local rows = math.ceil(nKids / cols)
@@ -246,9 +224,9 @@ function Layout.grid(container)
     if (totalH > rowHeights[row]) then rowHeights[row] = totalH end
   end
 
-  local currentY = startY
+  local currentY = 0
   for row = 1, rows do
-    local currentX = startX
+    local currentX = 0
     for col = 1, cols do
       local kidIdx = (row - 1) * cols + col
       if (kidIdx > nKids) then break end
@@ -256,8 +234,7 @@ function Layout.grid(container)
       local kid = container.kids[kidIdx]
       local m = kid:getMetrics()
       local stick = m.stick
-      local cellW = colWidths[col]
-      local cellH = rowHeights[row]
+      local cellW, cellH = colWidths[col], rowHeights[row]
 
       local finalW = m.prefW
       if (stick & Stick.L) ~= 0 and (stick & Stick.R) ~= 0 then finalW = cellW - m.margin.left - m.margin.right end
@@ -270,18 +247,17 @@ function Layout.grid(container)
       local kidX = currentX + m.margin.left
       local kidY = currentY + m.margin.top
 
-      -- Alignment
-      if (stick & Stick.L) == 0 and (stick & Stick.R) == 0 then kidX = kidX + (cellW - finalW) / 2
-      elseif (stick & Stick.L) == 0 and (stick & Stick.R) ~= 0 then kidX = kidX + (cellW - finalW) end
+      if (stick & Stick.L) == 0 and (stick & Stick.R) == 0 then kidX = kidX + (cellW - (finalW + m.margin.left + m.margin.right)) / 2
+      elseif (stick & Stick.L) == 0 and (stick & Stick.R) ~= 0 then kidX = currentX + cellW - finalW - m.margin.right end
 
-      if (stick & Stick.T) == 0 and (stick & Stick.B) == 0 then kidY = kidY + (cellH - finalH) / 2
-      elseif (stick & Stick.T) == 0 and (stick & Stick.B) ~= 0 then kidY = kidY + (cellH - finalH) end
+      if (stick & Stick.T) == 0 and (stick & Stick.B) == 0 then kidY = kidY + (cellH - (finalH + m.margin.top + m.margin.bottom)) / 2
+      elseif (stick & Stick.T) == 0 and (stick & Stick.B) ~= 0 then kidY = currentY + cellH - finalH - m.margin.bottom end
 
-      kid.props.x, kid.props.y, kid.props.w, kid.props.h = kidX, kidY, finalW, finalH
+      kid:layout(kidX, kidY, finalW, finalH)
       currentX = currentX + cellW
     end
     currentY = currentY + rowHeights[row]
   end
-end
+end)
 
 return Layout

@@ -1,14 +1,13 @@
 local Widget = require("ui.Widget")
 local Color = require("ui.Color")
+local Model = require("Model")
+local Hardware = require("Hardware")
+local events = require("Events")
 
 local Waterfall = Widget.mkType("Waterfall", Widget)
 
 function Waterfall:init(def)
   Widget.init(self, def)
-  self.borderColor = def.borderColor or Color("#00F")
-  self.backgroundColor = def.backgroundColor or Color("#000")
-  self.showBackground = true
-  self.showBorder = true
 end
 
 function Waterfall:calcMetrics()
@@ -16,24 +15,31 @@ function Waterfall:calcMetrics()
   if self.metrics.prefH == 0 then self.metrics.prefH = 200 end
 end
 
-function Waterfall:draw()
-  Widget.draw(self)
+function Waterfall:drawSelf()
+  local w, h = self.props.w, self.props.h
   
-  local x, y, w, h = self.props.x, self.props.y, self.props.w, self.props.h
-  local stripeH = 4
-  local nStripes = math.floor((h - 10) / stripeH)
-  for i = 1, nStripes do
-    local sx = x + 5
-    local sy = y + 5 + (i-1) * stripeH
-    local sw = w - 10
-    local sh = stripeH
-    -- Random blueish/purplish color
-    local r = 0.1 * math.random()
-    local g = 0.1 * math.random()
-    local b = 0.5 + 0.5 * math.random()
-    local c = Color{r, g, b, 1.0}
-    System.drawRect(sx, sy, sw, sh, c:toTable())
+  -- Local 0,0
+  Hardware.renderWaterfall(0, 0, w, h, Model.waterfall.zoom:get(), 0.5)
+  
+  -- Render SignalBox highlights on waterfall too
+  local boxes = Model.signalBoxes:get()
+  local selectedIdx = Model.selectedSignalBoxIndex:get()
+  local zoom = Model.waterfall.zoom:get() or 1.0
+  local span = _G.sampleRate / zoom
+  local center = Model.spectrumCenterFreq:peek()
+
+  for i, box in ipairs(boxes) do
+     local bw = box.bandwidth
+     local freq = box.frequency
+     local boxW = (bw / span) * w
+     local boxX = (w / 2) + ((freq - center) / span) * w - (boxW / 2)
+     
+     local alpha = (i == selectedIdx) and 0.2 or 0.1
+     local r, g, b = 1.0, 1.0, 0.0 -- Yellow
+     System.drawRect(boxX, 0, boxW, h, {r, g, b, alpha})
   end
+  
+  events.registerWidget(self.id, {x=0, y=0, w=w, h=h}, self.tags)
 end
 
 return Waterfall

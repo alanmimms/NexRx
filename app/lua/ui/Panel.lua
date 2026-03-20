@@ -6,9 +6,9 @@
 
 local setbox = require("SetBox")
 local state = require("ui.State")
+local Widget = require("ui.Widget")
 
-local Panel = {}
-Panel.__index = Panel
+local Panel = Widget.mkType("Panel")
 
 -- Default rules for Panel widget (very low priority)
 setbox.rule {
@@ -24,25 +24,30 @@ setbox.rule {
     }
 }
 
-function Panel.new()
-    local self = setmetatable({}, Panel)
-    return self
+function Panel:init(def)
+    Widget.init(self, def)
 end
 
-function Panel:draw(id, x, y, w, h, parentLWC)
-    local lwc = setbox.newContext({"widget.Panel", "id." .. id}, parentLWC)
+function Panel:calcMetrics()
+    if self.metrics.prefW == 0 then self.metrics.prefW = 10 end
+    if self.metrics.prefH == 0 then self.metrics.prefH = 10 end
+end
+
+function Panel:drawSelf()
+    local w, h = self.props.w, self.props.h
+    local lwc = self.lwc
     
     -- Style resolution from rules
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
-    local bWidth = lwc:getNumber("borderWidth")
-    local radius = lwc:getNumber("borderRadius")
-    local alpha = lwc:getNumber("opacity")
+    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#0f172a"))
+    local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#1e293b"))
+    local bWidth = lwc:optNumber("borderWidth", 0)
+    local radius = lwc:optNumber("borderRadius", 0)
+    local alpha = lwc:optNumber("opacity", 1.0)
     
-    -- Draw
-    drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
+    -- Draw at local 0,0
+    System.drawRoundedRect(0, 0, w, h, radius, {bgR, bgG, bgB, alpha})
     if bWidth > 0 then
-        drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
+        System.drawRectLines(0, 0, w, h, bWidth, {bR, bG, bB, alpha})
     end
 end
 

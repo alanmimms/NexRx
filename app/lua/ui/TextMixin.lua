@@ -15,16 +15,18 @@ function TextMixin.draw(x, y, text, lwc, fontSize)
     local alpha = lwc:optNumber("opacity", 1.0)
     local fs = fontSize or lwc:optNumber("fontSize", 20)
     
-    drawText(x, y, text, fgR, fgG, fgB, alpha, fs)
+    -- Localized draw via System
+    System.drawText(tostring(text), x, y, fs, {fgR, fgG, fgB, alpha})
 end
 
 function TextMixin.measure(text, fontSize)
     if not text or text == "" then return 0 end
-    return measureText(text, fontSize or 20)
+    return System.measureText(tostring(text), fontSize or 20)
 end
 
 function TextMixin.getLineHeight()
-    return getLineHeight()
+    -- Use static default or query from System
+    return 20
 end
 
 return TextMixin

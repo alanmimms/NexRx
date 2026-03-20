@@ -1,6 +1,7 @@
 local Color = require("ui.Color")
 local Layout = require("ui.Layout")
 local Stick = require("ui.Stick")
+local state = require("ui.State")
 
 local Widget = { typeName = "Widget" }
 Widget.__index = Widget
@@ -9,6 +10,77 @@ local widgetN = 0
 local focusedWidget = nil
 local hoveredWidget = nil
 local DEFAULT_HIGHLIGHT_COLOR = Color("#FFF")
+
+-- Captured original tables if they exist
+local RealSystem = _G.__RealSystem or _G.System
+local RealWaterfall = _G.__RealWaterfall or _G.waterfall
+
+if not _G.__RealSystem and RealSystem then
+    _G.__RealSystem = RealSystem
+end
+if not _G.__RealWaterfall and RealWaterfall then
+    _G.__RealWaterfall = RealWaterfall
+end
+
+-- System Wrapper to handle localized drawing
+local SystemWrapper = {}
+local sysMT = {
+    __index = function(_, key)
+        local orig = RealSystem and RealSystem[key]
+        
+        -- If missing, return a no-op function to prevent crashes
+        if type(orig) ~= "function" then 
+            return function() end 
+        end
+        
+        return function(...)
+            local args = {...}
+            -- Use state's current accumulated offset
+            local ox, oy = state.getOffset()
+            
+            if key == "drawText" then
+                if args[2] then args[2] = args[2] + ox end
+                if args[3] then args[3] = args[3] + oy end
+            elseif key == "drawLine" then
+                if args[1] then args[1] = args[1] + ox end
+                if args[2] then args[2] = args[2] + oy end
+                if args[3] then args[3] = args[3] + ox end
+                if args[4] then args[4] = args[4] + oy end
+            elseif key == "drawRect" or key == "drawRectLines" or key == "drawRoundedRect" or key == "drawCircle" or key == "drawCircleOutline" then
+                if args[1] then args[1] = args[1] + ox end
+                if args[2] then args[2] = args[2] + oy end
+            end
+            return orig(table.unpack(args))
+        end
+    end
+}
+setmetatable(SystemWrapper, sysMT)
+_G.System = SystemWrapper
+
+-- Waterfall Wrapper
+local WaterfallWrapper = {}
+local wfMT = {
+    __index = function(_, key)
+        local orig = RealWaterfall and RealWaterfall[key]
+        if type(orig) ~= "function" then 
+            return function() end 
+        end
+        return function(...)
+            local args = {...}
+            local ox, oy = state.getOffset()
+            if key == "renderSpectrum" then
+                if args[2] then args[2] = args[2] + ox end
+                if args[3] then args[3] = args[3] + oy end
+            elseif key == "render" then
+                if args[1] then args[1] = args[1] + ox end
+                if args[2] then args[2] = args[2] + oy end
+            end
+            return orig(table.unpack(args))
+        end
+    end
+}
+setmetatable(WaterfallWrapper, wfMT)
+_G.waterfall = WaterfallWrapper
 
 function Widget.newID()
   widgetN = widgetN + 1
@@ -31,6 +103,8 @@ function Widget:init(def)
 
   self.kids = def.kids or {}
   self.layoutFunc = def.layoutFunc
+  self.mouseAction = def.mouseAction
+  self.keyAction = def.keyAction
   
   -- LWC (Local Widget Context) for SetBox
   self.lwc = setbox.newContext(def.tags, def.parent and def.parent.lwc)
@@ -46,13 +120,23 @@ function Widget:init(def)
 
   self.metrics = def.metrics or {}
   local m = self.metrics
-  m.margin = m.margin or {}
-  m.margin.left = m.margin.left or 0
-  m.margin.right = m.margin.right or 0
-  m.margin.top = m.margin.top or 0
-  m.margin.bottom = m.margin.bottom or 0
+
+  if type(m.margin) == "number" then
+    local v = m.margin
+    m.margin = { left = v, right = v, top = v, bottom = v }
+  else
+    m.margin = m.margin or {}
+    m.margin.left = m.margin.left or 0
+    m.margin.right = m.margin.right or 0
+    m.margin.top = m.margin.top or 0
+    m.margin.bottom = m.margin.bottom or 0
+  end
   
-  self.metrics.stick = self.metrics.stick or (Stick.L | Stick.T)
+  if type(m.stick) == "string" then
+    m.stick = Stick.mk(m.stick)
+  else
+    m.stick = m.stick or (Stick.L | Stick.T)
+  end
   self.metrics.flexW = self.metrics.flexW or self.lwc:optNumber("flexW", 0)
   self.metrics.flexH = self.metrics.flexH or self.lwc:optNumber("flexH", 0)
   self.metrics.minW = self.metrics.minW or self.lwc:optNumber("minW", 0)
@@ -93,23 +177,39 @@ function Widget:calcMetrics()
   if self.metrics.prefH == 0 then self.metrics.prefH = 10 end
 end
 
-function Widget:draw()
+-- Base rendering logic for a widget. Subclasses should override this
+-- instead of draw() to ensure coordinate transformation is handled.
+function Widget:drawSelf()
   if self.showBackground and self.backgroundColor then
-    System.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, self.backgroundColor:toTable())
+    System.drawRect(0, 0, self.props.w or 0, self.props.h or 0, self.backgroundColor:toTable())
   end
 
   if (self.showBorder and self.borderColor) or self.isMouseOver then
     local thickness = self.isMouseOver and 3 or 1
     local color = (self.borderColor or DEFAULT_HIGHLIGHT_COLOR):toTable()
-    System.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, thickness, color)
+    System.drawRectLines(0, 0, self.props.w or 0, self.props.h or 0, thickness, color)
+  end
+end
+
+-- Template method for drawing. Handles coordinate transformation and recursion.
+function Widget:draw()
+  state.pushOffset(self.props.x or 0, self.props.y or 0)
+
+  -- 1. Draw this widget
+  local okSelf, errSelf = pcall(self.drawSelf, self)
+  if not okSelf then
+    print("Error drawing self", self.name or self, self.id, errSelf)
   end
 
+  -- 2. Draw kids
   for _, kid in ipairs(self.kids) do 
     local ok, err = pcall(kid.draw, kid)
     if not ok then
       print("Error drawing kid", kid.name or kid, kid.id, err)
     end
   end
+
+  state.popOffset()
 end
 
 function Widget:layout(x, y, w, h)
@@ -124,8 +224,9 @@ function Widget:layout(x, y, w, h)
 end
 
 function Widget:contains(x, y)
-  return x >= self.props.x and x <= self.props.x + self.props.w and
-         y >= self.props.y and y <= self.props.y + self.props.h
+  -- x, y are now LOCAL to the widget's origin
+  return x >= 0 and x < (self.props.w or 0) and
+         y >= 0 and y < (self.props.h or 0)
 end
 
 function Widget:setFocus()
@@ -136,19 +237,62 @@ end
 
 function Widget.getFocused() return focusedWidget end
 
+local function getEvents()
+  return require("Events")
+end
+
+-- New Event Handling with recursive coordinate localization
 function Widget:handleEvent(event)
+  -- Create a localized version of the event for self and dispatcher
+  local localEvent = {}
+  for k, v in pairs(event) do localEvent[k] = v end
+  
   local consumed = false
-  if self.onEvent then consumed = self.onEvent(self, event) end
-  if not consumed and self.parent then return self.parent:handleEvent(event) end
+  
+  -- Handle via new mouseAction/keyAction properties
+  if localEvent.type:match("^mouse") or localEvent.type:match("^wheel") then
+    if self.mouseAction then consumed = self:mouseAction(localEvent) end
+  elseif localEvent.type == "key" then
+    if self.keyAction then consumed = self:keyAction(localEvent) end
+  end
+
+  -- Fallback to legacy onEvent
+  if not consumed and self.onEvent then consumed = self.onEvent(self, localEvent) end
+  
+  -- Unified Dispatch
+  if not consumed then
+    local events = getEvents()
+    local et = nil
+    if localEvent.type == "mouseButton" then et = localEvent.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP
+    elseif localEvent.type == "mouseMotion" then et = events.Type.MOUSE_MOVE
+    elseif localEvent.type == "mouseWheel" then et = events.Type.MOUSE_WHEEL
+    elseif localEvent.type == "key" then et = localEvent.isDown and events.Type.KEY_DOWN or events.Type.KEY_UP end
+    
+    if et then
+      consumed = events.dispatch(events.createEvent(et, localEvent))
+    end
+  end
+
+  -- Bubble if not consumed (using ORIGINAL event coordinates for parent)
+  if not consumed and self.parent then 
+    return self.parent:handleEvent(event) 
+  end
   return consumed
 end
 
 function Widget:hitTest(x, y)
+  -- x, y are LOCAL to this widget's parent's content area
+  -- 1. Is it inside me?
   if not self:contains(x, y) then return nil end
+  
+  -- 2. Check kids (localized to ME)
+  local localX, localY = x, y -- Already localized by parent
   for i = #self.kids, 1, -1 do
-    local hit = self.kids[i]:hitTest(x, y)
+    local kid = self.kids[i]
+    local hit = kid:hitTest(localX - (kid.props.x or 0), localY - (kid.props.y or 0))
     if hit then return hit end
   end
+  
   return self
 end
 
@@ -162,6 +306,7 @@ function Widget:findByName(name)
 end
 
 function Widget.updateGlobalMouse(root, x, y)
+  -- Root starts at screen 0,0
   local hit = root:hitTest(x, y)
   if hit ~= hoveredWidget then
     if hoveredWidget then hoveredWidget.isMouseOver = false end
@@ -184,18 +329,20 @@ function Container:calcMetrics()
   for _, kid in ipairs(self.kids) do
     kid:calcMetrics()
     local m = kid:getMetrics()
-    local kw, kh = m.prefW + m.margin.left + m.margin.right, m.prefH + m.margin.top + m.margin.bottom
+    local marginW = (m.margin.left or 0) + (m.margin.right or 0)
+    local marginH = (m.margin.top or 0) + (m.margin.bottom or 0)
+    local kw, kh = (m.prefW or 0) + marginW, (m.prefH or 0) + marginH
     if kw > maxW then maxW = kw end
     if kh > maxH then maxH = kh end
     sumW, sumH = sumW + kw, sumH + kh
   end
 
-  -- XXX these comparisons on layoutFunc values are despicable, scurrilous, and evil.
+  local axis = self.layoutFunc and self.layoutFunc.axis
   if self.metrics.prefW == 0 then
-    if self.layoutFunc == Layout.hFlow then self.metrics.prefW = sumW else self.metrics.prefW = maxW end
+    if axis == "horizontal" then self.metrics.prefW = sumW else self.metrics.prefW = maxW end
   end
   if self.metrics.prefH == 0 then
-    if self.layoutFunc == Layout.vFlow then self.metrics.prefH = sumH else self.metrics.prefH = maxH end
+    if axis == "vertical" then self.metrics.prefH = sumH else self.metrics.prefH = maxH end
   end
 
   if self.metrics.prefW == 0 then self.metrics.prefW = 10 end
@@ -209,12 +356,6 @@ function Container:layout(x, y, w, h)
     local ok, err = pcall(self.layoutFunc, self)
     if not ok then
       print("Error in layoutFunc for", self.name or self, self.id, err)
-    end
-  end
-  for _, kid in ipairs(self.kids) do 
-    local ok, err = pcall(kid.layout, kid, kid.props.x, kid.props.y, kid.props.w, kid.props.h)
-    if not ok then
-      print("Error in recursive layout for kid", kid.name or kid, kid.id, err)
     end
   end
 end
@@ -242,23 +383,23 @@ function Label:init(def)
   self.fontSize = self.props.fontSize or self.lwc:optNumber("fontSize", 20)
 end
 function Label:calcMetrics()
-  local tw = System.measureText(self.text, self.fontSize)
+  local tw = System.measureText(tostring(self.text), self.fontSize)
   if self.metrics.prefW == 0 then self.metrics.prefW = tw + 10 end
   if self.metrics.prefH == 0 then self.metrics.prefH = self.fontSize + 10 end
 end
-function Label:draw()
-  Widget.draw(self)
+function Label:drawSelf()
+  Widget.drawSelf(self)
   local stick = self.metrics.stick
-  local textW = System.measureText(self.text, self.fontSize)
-  local tx, ty = self.props.x + 5, self.props.y + (self.props.h - self.fontSize) / 2
-  if (stick & Stick.R) ~= 0 and (stick & Stick.L) ~= 0 then tx = self.props.x + (self.props.w - textW) / 2
-  elseif (stick & Stick.R) ~= 0 then tx = self.props.x + self.props.w - textW - 5
-  elseif (stick & Stick.L) == 0 then tx = self.props.x + (self.props.w - textW) / 2 end
-  if (stick & Stick.B) ~= 0 and (stick & Stick.T) == 0 then ty = self.props.y + self.props.h - self.fontSize - 5
-  elseif (stick & Stick.T) ~= 0 and (stick & Stick.B) == 0 then ty = self.props.y + 5 end
+  local textW = System.measureText(tostring(self.text), self.fontSize)
+  local tx, ty = 5, ((self.props.h or 0) - self.fontSize) / 2
+  if (stick & Stick.R) ~= 0 and (stick & Stick.L) ~= 0 then tx = ((self.props.w or 0) - textW) / 2
+  elseif (stick & Stick.R) ~= 0 then tx = (self.props.w or 0) - textW - 5
+  elseif (stick & Stick.L) == 0 then tx = ((self.props.w or 0) - textW) / 2 end
+  if (stick & Stick.B) ~= 0 and (stick & Stick.T) == 0 then ty = (self.props.h or 0) - self.fontSize - 5
+  elseif (stick & Stick.T) ~= 0 and (stick & Stick.B) == 0 then ty = 5 end
   
   local textColor = self.lwc:optString("textColor", "#FFF")
-  System.drawText(self.text, tx, ty, self.fontSize, Color(textColor):toTable())
+  System.drawText(tostring(self.text), tx, ty, self.fontSize, Color(textColor):toTable())
 end
 
 -- --- Window Class ---
@@ -288,12 +429,12 @@ end
 
 function Button:calcMetrics()
   local fontSize = self.props.fontSize or 20
-  local tw = System.measureText(self.text, fontSize)
+  local tw = System.measureText(tostring(self.text), fontSize)
   if self.metrics.prefW == 0 then self.metrics.prefW = tw + 20 end
   if self.metrics.prefH == 0 then self.metrics.prefH = fontSize + 15 end
 end
 
-function Button:draw()
+function Button:drawSelf()
   local baseColor = self.backgroundColor or Color("#444")
   local selected = self.props.selected or self.selected
   
@@ -309,18 +450,18 @@ function Button:draw()
   
   local textColor = selected and Color("#000") or Color("#FFF")
   
-  System.drawRect(self.props.x, self.props.y, self.props.w, self.props.h, baseColor:toTable())
-  System.drawRectLines(self.props.x, self.props.y, self.props.w, self.props.h, 1, Color("#FFF"):toTable())
+  -- Use local 0,0
+  System.drawRect(0, 0, self.props.w or 0, self.props.h or 0, baseColor:toTable())
   
   local fontSize = self.props.fontSize or 20
-  local tw = System.measureText(self.text, fontSize)
-  local tx = self.props.x + (self.props.w - tw) / 2
-  local ty = self.props.y + (self.props.h - fontSize) / 2
-  System.drawText(self.text, tx, ty, fontSize, textColor:toTable())
+  local tw = System.measureText(tostring(self.text), fontSize)
+  local tx = ((self.props.w or 0) - tw) / 2
+  local ty = ((self.props.h or 0) - fontSize) / 2
+  System.drawText(tostring(self.text), tx, ty, fontSize, textColor:toTable())
 end
 
 function Button:handleEvent(event)
-  if event.type == "mouseButton" and event.button == 0 then
+  if event.type == "mouseButton" and event.button == "LEFT" then
     if event.isDown then
       self.isDown = true
       return true
@@ -335,21 +476,11 @@ function Button:handleEvent(event)
   return Widget.handleEvent(self, event)
 end
 
--- --- BridgeWidget Class (Wraps original app widgets) ---
-local BridgeWidget = Widget.mkType("BridgeWidget", Widget)
-function BridgeWidget:init(def)
-  Widget.init(self, def)
-  self.orig = def.orig
-  self.id = def.id or self.orig.id or Widget.newID()
-  self.tags = def.tags or self.orig.tags or {}
-  self.drawArgs = def.drawArgs or {}
-end
-function BridgeWidget:draw()
-  if self.orig and self.orig.draw then
-    local x, y, w, h = self.props.x, self.props.y, self.props.w, self.props.h
-    self.orig:draw(self.id, x, y, w, h, self.lwc, table.unpack(self.drawArgs))
-  end
-end
-
-Widget.Container, Widget.Column, Widget.Row, Widget.Label, Widget.Window, Widget.Stick, Widget.Button, Widget.BridgeWidget = Container, Column, Row, Label, Window, Stick, Button, BridgeWidget
+Widget.Container = Container
+Widget.Column = Column
+Widget.Row = Row
+Widget.Label = Label
+Widget.Window = Window
+Widget.Stick = Stick
+Widget.Button = Button
 return Widget

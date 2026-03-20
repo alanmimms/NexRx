@@ -301,12 +301,16 @@ Events.registerHandler("slider_adjust", function(event, widget, props)
     local range = max - min
     local delta = 0
     
+    -- Pick the correct step from either props (absolute) or stepFraction (relative)
+    local step = props.step
+    if not step then
+        local fraction = props.stepFraction or 0.01
+        step = range * fraction
+    end
+
     if event.type == Events.Type.MOUSE_WHEEL then
-        -- Wheel adjustment: default 1% step
-        local step = props.step or (range * 0.01)
         delta = event.delta * step
     elseif event.type == Events.Type.KEY_DOWN then
-        local step = props.step or (range * 0.01)
         if event.key == "RIGHT" or event.key == "UP" then
             delta = step
         elseif event.key == "LEFT" or event.key == "DOWN" then
@@ -334,7 +338,8 @@ Events.registerHandler("slider_adjust_log", function(event, widget, props)
     local max = data.max or props.max or 1.0
     local val = data.value or props.value or min
     
-    local factor = props.factor or 1.5
+    -- Use multiplier directly from rules
+    local factor = props.factor or props.factorMultiplier or 1.5
     local newVal = val
     
     if event.type == Events.Type.MOUSE_WHEEL then
@@ -590,17 +595,13 @@ function Events._querySetBoxProperties(tags)
     if setbox.has("property") then props.property = setbox.getString("property") end
     if setbox.has("value") then props.value = setbox.get("value") end
     
-    -- Linear step properties
+    -- Linear step properties (either absolute 'step' or 'stepFraction' of range)
     if setbox.has("step") then props.step = setbox.get("step") end
-    if setbox.has("step_ctrl") then props.step_ctrl = setbox.get("step_ctrl") end
-    if setbox.has("step_shift") then props.step_shift = setbox.get("step_shift") end
-    if setbox.has("step_ctrl_shift") then props.step_ctrl_shift = setbox.get("step_ctrl_shift") end
+    if setbox.has("stepFraction") then props.stepFraction = setbox.get("stepFraction") end
     
-    -- Logarithmic factor properties
+    -- Logarithmic factor properties (either absolute 'factor' or 'factorMultiplier')
     if setbox.has("factor") then props.factor = setbox.get("factor") end
-    if setbox.has("factor_ctrl") then props.factor_ctrl = setbox.get("factor_ctrl") end
-    if setbox.has("factor_shift") then props.factor_shift = setbox.get("factor_shift") end
-    if setbox.has("factor_ctrl_shift") then props.factor_ctrl_shift = setbox.get("factor_ctrl_shift") end
+    if setbox.has("factorMultiplier") then props.factorMultiplier = setbox.get("factorMultiplier") end
     
     -- Range limits
     if setbox.has("min") then props.min = setbox.get("min") end
@@ -663,31 +664,40 @@ function Events.createEvent(eventType, data)
     -- Copy data fields
     if data then
         for k, v in pairs(data) do
-            event[k] = v
+            if k ~= "modifiers" then
+                event[k] = v
+            end
         end
     end
 
     -- Build modifiers array (namespaced)
-    -- Prefer values passed in data, fall back to global functions
+    event.modifiers = {}
+    
+    local hasShift = (isShiftDown and isShiftDown())
+    local hasCtrl = (isCtrlDown and isCtrlDown())
+    local hasAlt = (isAltDown and isAltDown())
 
-    -- XXX this should always be done; modifiers should not come from
-    -- caller.
-    if not event.modifiers then
-        event.modifiers = {}
-        
-        local hasShift = data and data.shift ~= nil and data.shift or (isShiftDown and isShiftDown())
-        local hasCtrl = data and data.ctrl ~= nil and data.ctrl or (isCtrlDown and isCtrlDown())
-        local hasAlt = data and data.alt ~= nil and data.alt or (isAltDown and isAltDown())
+    -- If data explicitly provides overrides (e.g. for testing), use them
+    if data and data.shift ~= nil then hasShift = data.shift end
+    if data and data.ctrl ~= nil then hasCtrl = data.ctrl end
+    if data and data.alt ~= nil then hasAlt = data.alt end
 
-        if hasShift then table.insert(event.modifiers, "input.SHIFT") end
-        if hasCtrl then table.insert(event.modifiers, "input.CTRL") end
-        if hasAlt then table.insert(event.modifiers, "input.ALT") end
-        
-        -- Also check for held mouse buttons if passed in data
-        if data and data.mouseLeftHeld then table.insert(event.modifiers, "input.MouseLEFT") end
-        if data and data.mouseMiddleHeld then table.insert(event.modifiers, "input.MouseMIDDLE") end
-        if data and data.mouseRightHeld then table.insert(event.modifiers, "input.MouseRIGHT") end
-    end
+    if hasShift then table.insert(event.modifiers, "input.SHIFT") end
+    if hasCtrl then table.insert(event.modifiers, "input.CTRL") end
+    if hasAlt then table.insert(event.modifiers, "input.ALT") end
+    
+    -- Also check for held mouse buttons
+    local mLeft = (isMouseDown and isMouseDown(0))
+    local mMiddle = (isMouseDown and isMouseDown(1))
+    local mRight = (isMouseDown and isMouseDown(2))
+
+    if data and data.mouseLeftHeld ~= nil then mLeft = data.mouseLeftHeld end
+    if data and data.mouseMiddleHeld ~= nil then mMiddle = data.mouseMiddleHeld end
+    if data and data.mouseRightHeld ~= nil then mRight = data.mouseRightHeld end
+
+    if mLeft then table.insert(event.modifiers, "input.MouseLEFT") end
+    if mMiddle then table.insert(event.modifiers, "input.MouseMIDDLE") end
+    if mRight then table.insert(event.modifiers, "input.MouseRIGHT") end
 
     return event
 end

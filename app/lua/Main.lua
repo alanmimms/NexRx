@@ -23,6 +23,7 @@ local AppController = require("AppController")
 local events = require("Events")
 local animate = require("Animate")
 local keys = require("Keycodes")
+local Modes = require("Modes")
 _G.bands = require("Bands")
 _G.calibration = require("Calibration")
 
@@ -39,7 +40,9 @@ local Label = require("ui.Label")
 local Waterfall = require("ui.Waterfall")
 local Spectrum = require("ui.Spectrum")
 
-_G.sampleRate = 96000
+_G.lowestFreq = 100.0e3
+_G.highestFreq = 30.0e6
+_G.sampleRate = 96.0e3
 local spectrumData = {}
 local frameCount = 0
 local fps = 0
@@ -55,7 +58,11 @@ local function renderUI(width, height)
   if not rxTree then return end
   rxTree:layout(0, 0, width, height)
 
-  -- if frameInput.mouseClicked then print("[Main] renderUI Clicked at " .. frameInput.mouseX .. "," .. frameInput.mouseY) end
+  _G.drawOffsetX = 0
+  _G.drawOffsetY = 0
+  
+  -- Clear background
+  System.drawRect(0, 0, width, height, {0.05, 0.05, 0.1, 1.0})
 
   uiState.beginFrame(frameInput)
   rxTree:draw()
@@ -70,9 +77,29 @@ local function onResize(w, h)
   if rxTree then rxTree:onResize(w, h) end
 end
 
+local function getAbsolutePos(widget)
+  local ax, ay = widget.props.x, widget.props.y
+  local p = widget.parent
+  while p do
+    ax = ax + p.props.x
+    ay = ay + p.props.y
+    p = p.parent
+  end
+  return ax, ay
+end
+
 local function onMouseMove(x, y)
   frameInput.mouseX, frameInput.mouseY = x, y
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
+  
+  if hit and hit.handleEvent then
+    local ax, ay = getAbsolutePos(hit)
+    hit:handleEvent({
+      type = "mouseMotion",
+      x = x - ax, y = y - ay
+    })
+  end
+  
   events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, { x=x, y=y }))
 end
 
@@ -82,7 +109,6 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
     frameInput.mouseDown = isDown
     if isDown then 
         frameInput.mouseClicked = true 
-        print("[Main] MouseClicked at " .. x .. "," .. y)
     else 
         frameInput.mouseReleased = true 
     end
@@ -92,27 +118,22 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
 
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
   
-  -- 1. Dispatch to Widget hierarchy (for BridgeWidgets/etc)
+  -- Dispatch to Widget hierarchy
   local handled = false
   if hit and hit.handleEvent then
+    local ax, ay = getAbsolutePos(hit)
     handled = hit:handleEvent({
 	type = (type == "wheel") and "mouseWheel" or "mouseButton",
-	button = button,
+	button = button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT"),
 	isDown = isDown,
-	x = x, y = y,
-	delta = type == "wheel" and button or 0, -- Raylib/Bridge mapping for wheel
+	x = x - ax, y = y - ay, -- Initial localization for the hit widget
+	delta = type == "wheel" and button or 0,
 	mods = mods
     })
     if isDown then hit:setFocus() end
   end
 
-  -- 2. Dispatch to global events system if not handled (or for non-widget targets)
-  if not handled then
-    local et = events.Type.MOUSE_MOVE
-    if type == "button" then et = isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP 
-    elseif type == "wheel" then et = events.Type.MOUSE_WHEEL end
-    events.dispatch(events.createEvent(et, { x=x, y=y, button=button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT"), delta = type == "wheel" and button or 0 }))
-  end
+  -- Generic global events handled by Widget:handleEvent bubbling already
 end
 
 local function onKeyEvent(key, isDown, mods)
@@ -123,10 +144,7 @@ local function onKeyEvent(key, isDown, mods)
   end
   
   if not handled then
-    -- Map Raylib key to Events Type
     local et = isDown and events.Type.KEY_DOWN or events.Type.KEY_UP
-    -- Note: mapping raylib 'key' to SDL scancodes/names might be needed here 
-    -- for full events.lua compatibility. For now we pass it through.
     events.dispatch(events.createEvent(et, { key = key, isDown = isDown, mods = mods }))
   end
 end
@@ -171,196 +189,15 @@ function init()
       waterfall.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
    end
 
-   -- Instantiate Widgets for bridging
-   local sMeter = SMeter.new()
-   local freqDisplay = FrequencyDisplay.new({ valueObs = Model.rx.VFO.activeValue })
-   local vfoSlider = Slider.new({ valueObs = Model.rx.VFO.activeValue })
-   local volSlider = Slider.new({ valueObs = Model.rx.volume.DB })
-   local rfGainSlider = Slider.new({ valueObs = Model.rx.RF.gainDB })
-   local activeTags = ActiveTags.new()
+   local modeStops = {}
+   for _, name in ipairs(Modes.names) do
+      table.insert(modeStops, {label = name, value = name})
+   end
 
-   local modeSlider = Slider.DiscreteSlider.new({
-      valueObs = Model.rx.selectedMode,
-      stops = {
-         {label = "LSB", value = "LSB"},
-         {label = "USB", value = "USB"},
-         {label = "AM",  value = "AM"},
-         {label = "CW",  value = "CW"},
-         {label = "FM",  value = "FM"}
-      },
-      onChanged = function(v) Model.set("rx.selectedMode", v) end
-   })
-
-   local bandSlider = Slider.DiscreteSlider.new({
-      valueObs = Model.rx.selectedBand,
-      stops = {
-         {label = "160m", value = "160m"},
-         {label = "80m",  value = "80m"},
-         {label = "40m",  value = "40m"},
-         {label = "20m",  value = "20m"},
-         {label = "15m",  value = "15m"},
-         {label = "10m",  value = "10m"}
-      },
-      onChanged = function(v) Model.set("rx.selectedBand", v) end
-   })
-
-   -- Sidebar
-   local leftSidebar = Widget.Column{
-      name = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"},
-      metrics = { stick = Stick.TLB, prefW = 280, margin = {left=8, right=8, top=8, bottom=8} },
-      kids = {
-         Widget.BridgeWidget{ id = "id-rx-freq", orig = freqDisplay, metrics = { stick = Stick.TLR, prefH = 40 },
-            drawArgs = { _G.freqEntryText, _G.freqEntryCursor, {"VFOControl"} }
-         },
-         Widget.BridgeWidget{ id = "id-rx-slider", orig = vfoSlider, metrics = { stick = Stick.TLR, prefH = 20 },
-            onEvent = function(self, ev) 
-               local et = events.Type.MOUSE_MOVE
-               if ev.type == "mouseButton" then et = ev.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP 
-               elseif ev.type == "mouseWheel" then et = events.Type.MOUSE_WHEEL end
-               return events.dispatch(events.createEvent(et, { x=ev.x, y=ev.y, delta=ev.delta, button=ev.button == 0 and "LEFT" or (ev.button == 1 and "MIDDLE" or "RIGHT") })) 
-            end,
-            drawArgs = { 0.1e6, 30.0e6, 14.2e6 } 
-         },
-         Widget.Label{text = "Mode", metrics = {stick = Stick.TLR, prefH = 20, margin={top=10}}},
-         Widget.BridgeWidget{ id = "id-mode-slider", orig = modeSlider, metrics = { stick = Stick.TLR, prefH = 30 },
-            onEvent = function(self, ev) 
-               local et = events.Type.MOUSE_MOVE
-               if ev.type == "mouseButton" then et = ev.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP end
-               return events.dispatch(events.createEvent(et, { x=ev.x, y=ev.y, button=ev.button == 0 and "LEFT" or "RIGHT" })) 
-            end
-         },
-         Widget.Label{text = "Band", metrics = {stick = Stick.TLR, prefH = 20, margin={top=10}}},
-         Widget.BridgeWidget{ id = "id-band-slider", orig = bandSlider, metrics = { stick = Stick.TLR, prefH = 30 },
-            onEvent = function(self, ev) 
-               local et = events.Type.MOUSE_MOVE
-               if ev.type == "mouseButton" then et = ev.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP end
-               return events.dispatch(events.createEvent(et, { x=ev.x, y=ev.y, button=ev.button == 0 and "LEFT" or "RIGHT" })) 
-            end
-         },
-         Widget.Label{text = "Volume", metrics = {stick = Stick.TLR, prefH = 20, margin={top=10}}},
-         Widget.BridgeWidget{ id = "id-rx-vol", orig = volSlider, metrics = { stick = Stick.TLR, prefH = 20 },
-            onEvent = function(self, ev) 
-               local et = events.Type.MOUSE_MOVE
-               if ev.type == "mouseButton" then et = ev.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP 
-               elseif ev.type == "mouseWheel" then et = events.Type.MOUSE_WHEEL end
-               return events.dispatch(events.createEvent(et, { x=ev.x, y=ev.y, delta=ev.delta, button=ev.button == 0 and "LEFT" or (ev.button == 1 and "MIDDLE" or "RIGHT") })) 
-            end,
-            drawArgs = { -60, 0, 0 }
-         },
-         Widget.Label{text = "RF Gain", metrics = {stick = Stick.TLR, prefH = 20, margin={top=10}}},
-         Widget.BridgeWidget{ id = "id-rx-gain", orig = rfGainSlider, metrics = { stick = Stick.TLR, prefH = 20 },
-            onEvent = function(self, ev) 
-               local et = events.Type.MOUSE_MOVE
-               if ev.type == "mouseButton" then et = ev.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP 
-               elseif ev.type == "mouseWheel" then et = events.Type.MOUSE_WHEEL end
-               return events.dispatch(events.createEvent(et, { x=ev.x, y=ev.y, delta=ev.delta, button=ev.button == 0 and "LEFT" or (ev.button == 1 and "MIDDLE" or "RIGHT") })) 
-            end,
-            drawArgs = { -20, 60, 0 }
-         }
-      }
-   }
-
-   local centerArea = Widget.Column{
-      name = "center-area", tags = {"widget.CenterArea"},
-      metrics = { stick = Stick.TLBR, flexW = 1 },
-      kids = {
-         Widget.BridgeWidget{ 
-            id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"},
-            metrics = { stick = Stick.TLBR, flexH = 1, minH = 150 },
-            onEvent = function(self, ev) 
-               local et = events.Type.MOUSE_MOVE
-               if ev.type == "mouseButton" then et = ev.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP 
-               elseif ev.type == "mouseWheel" then et = events.Type.MOUSE_WHEEL end
-               return events.dispatch(events.createEvent(et, { x=ev.x, y=ev.y, delta=ev.delta, button=ev.button == 0 and "LEFT" or (ev.button == 1 and "MIDDLE" or "RIGHT") })) 
-            end,
-            orig = {
-               id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"},
-               gl = GraticuleLegend.new(), sb = SignalBox.new(),
-               draw = function(self, id, x, y, w, h, parentLWC)
-                  Hardware.renderSpectrum(spectrumData, x, y, w, h)
-                  
-                  local zoom = Model.waterfall.zoom:get() or 1.0
-                  local span = _G.sampleRate / zoom
-                  local center = Model.spectrumCenterFreq:peek()
-                  
-                  -- Render SignalBoxes
-                  local boxes = Model.signalBoxes:get()
-                  local selectedIdx = Model.selectedSignalBoxIndex:get()
-                  
-                  for i, box in ipairs(boxes) do
-                     local bw = box.bandwidth
-                     local freq = box.frequency
-                     local boxW = (bw / span) * w
-                     local boxX = x + (w / 2) + ((freq - center) / span) * w - (boxW / 2)
-                     
-                     local isSelected = (i == selectedIdx)
-                     local tags = {"widget.SignalBox"}
-                     if isSelected then table.insert(tags, "state.Selected") end
-                     if box.ghost then table.insert(tags, "state.Ghost") end
-                     
-                     local label = box.name or tostring(box.id)
-                     if isSelected and events.hasModeTag("state.SbNamingMode") then
-                        label = _G.sbNamingText .. "|"
-                     end
-                     
-                     self.sb:draw("sb-" .. box.id, boxX, y, boxW, h, parentLWC, label, tags, { index = i })
-                  end
-                  
-                  self.gl:draw("spec-legend", x + 10, y + 10, 100, 45, parentLWC, string.format("%.1f kHz/div", span/10000), "20 dB/div")
-                  events.registerWidget(self.id, {x=x, y=y, w=w, h=h}, self.tags)
-               end
-            }
-         },
-         Widget.BridgeWidget{
-            id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"},
-            metrics = { stick = Stick.TLBR, flexH = 1, minH = 200 },
-            onEvent = function(self, ev) 
-               local et = events.Type.MOUSE_MOVE
-               if ev.type == "mouseButton" then et = ev.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP 
-               elseif ev.type == "mouseWheel" then et = events.Type.MOUSE_WHEEL end
-               return events.dispatch(events.createEvent(et, { x=ev.x, y=ev.y, delta=ev.delta, button=ev.button == 0 and "LEFT" or (ev.button == 1 and "MIDDLE" or "RIGHT") })) 
-            end,
-            orig = {
-               id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"},
-               draw = function(self, id, x, y, w, h, parentLWC)
-                  Hardware.renderWaterfall(x, y, w, h, Model.waterfall.zoom:get(), 0.5)
-                  
-                  -- Render SignalBox highlights on waterfall too
-                  local boxes = Model.signalBoxes:get()
-                  local selectedIdx = Model.selectedSignalBoxIndex:get()
-                  local zoom = Model.waterfall.zoom:get() or 1.0
-                  local span = _G.sampleRate / zoom
-                  local center = Model.spectrumCenterFreq:peek()
-
-                  for i, box in ipairs(boxes) do
-                     local bw = box.bandwidth
-                     local freq = box.frequency
-                     local boxW = (bw / span) * w
-                     local boxX = x + (w / 2) + ((freq - center) / span) * w - (boxW / 2)
-                     
-                     local alpha = (i == selectedIdx) and 0.2 or 0.1
-                     local r, g, b = 1.0, 1.0, 0.0 -- Yellow
-                     drawRect(boxX, y, boxW, h, r, g, b, alpha)
-                  end
-                  
-                  events.registerWidget(self.id, {x=x, y=y, w=w, h=h}, self.tags)
-               end
-            }
-         }
-      }
-   }
-
-   local activeTagsSidebar = Widget.Column{
-      name = "active-tags-sidebar", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"},
-      metrics = { stick = Stick.TRB, prefW = 180, margin = {left=8, right=8, top=8, bottom=8} },
-      kids = {
-         Widget.BridgeWidget{ id = "id-smeter", orig = sMeter, metrics = { stick = Stick.TLR, prefH = 66 }, 
-            onEvent = function(self, ev) return false end,
-            drawArgs = {} 
-         },
-         Widget.BridgeWidget{ id = "id-active-tags", orig = activeTags, metrics = { flexH = 1 } }
-      }
-   }
+   local bandStops = {}
+   for _, name in ipairs(_G.bands.getAllNames()) do
+      table.insert(bandStops, {label = name, value = name})
+   end
 
    rxTree = Widget.Window{
       name = "id-root-window",
@@ -379,7 +216,40 @@ function init()
                },
                Widget.Row{
                   name = "main-area", metrics = { stick = Stick.TLBR, flexW = 1, flexH = 1 },
-                  kids = { leftSidebar, centerArea, activeTagsSidebar }
+                  kids = {
+                     Widget.Column{
+                        name = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"},
+                        metrics = { stick = "TLB", prefW = 280, margin = 8 },
+                        kids = {
+                           FrequencyDisplay{ id = "id-rx-freq", valueObs = Model.rx.VFO.activeValue, tags = {"widget.VFOControl"}, metrics = { stick = "TLR", prefH = 40 } },
+                           Slider{ id = "id-rx-slider", valueObs = Model.rx.VFO.activeValue, minVal = _G.lowestFreq, maxVal = _G.highestFreq, metrics = { stick = "TLR", prefH = 20 } },
+                           Widget.Label{text = "Mode", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
+                           Slider.DiscreteSlider{ id = "id-mode-slider", valueObs = Model.rx.selectedMode, stops = modeStops, metrics = { stick = "TLR", prefH = 30 } },
+                           Widget.Label{text = "Band", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
+                           Slider.DiscreteSlider{ id = "id-band-slider", valueObs = Model.rx.selectedBand, stops = bandStops, metrics = { stick = "TLR", prefH = 30 } },
+                           Widget.Label{text = "Volume", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
+                           Slider{ id = "id-rx-vol", valueObs = Model.rx.volume.DB, minVal = -60, maxVal = 0, metrics = { stick = "TLR", prefH = 20 } },
+                           Widget.Label{text = "RF Gain", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
+                           Slider{ id = "id-rx-gain", valueObs = Model.rx.RF.gainDB, minVal = -20, maxVal = 60, metrics = { stick = "TLR", prefH = 20 } }
+                        }
+                     },
+                     Widget.Column{
+                        name = "center-area", tags = {"widget.CenterArea"},
+                        metrics = { stick = "TLBR", flexW = 1 },
+                        kids = {
+                           Spectrum{ id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 150 } },
+                           Waterfall{ id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 200 } }
+                        }
+                     },
+                     Widget.Column{
+                        name = "active-tags-sidebar", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"},
+                        metrics = { stick = "TRB", prefW = 180, margin = 8 },
+                        kids = {
+                           SMeter{ id = "id-smeter", metrics = { stick = "TLR", prefH = 66 } },
+                           ActiveTags{ id = "id-active-tags", metrics = { flexH = 1 } }
+                        }
+                     }
+                  }
                }
             }
          }
@@ -425,20 +295,4 @@ function update(dt)
          Hardware.updateWaterfall(spectrumData)
       end
    end
-
-   -- Update BridgeWidget drawArgs for dynamic components
-   local smW = rxTree:findByName("id-smeter")
-   if smW then smW.drawArgs = { SMeter.getReading() } end
-
-   local freqW = rxTree:findByName("id-rx-freq")
-   if freqW then freqW.drawArgs = { _G.freqEntryText, _G.freqEntryCursor, {"VFOControl"} } end
-
-   local sliderW = rxTree:findByName("id-rx-slider")
-   if sliderW then sliderW.drawArgs = { 0.1e6, 30.0e6, Model.rx.VFO.activeValue:peek() } end
-
-   local volW = rxTree:findByName("id-rx-vol")
-   if volW then volW.drawArgs = { -60, 0, Model.rx.volume.DB:peek() } end
-
-   local gainW = rxTree:findByName("id-rx-gain")
-   if gainW then gainW.drawArgs = { -20, 60, Model.rx.RF.gainDB:peek() } end
 end

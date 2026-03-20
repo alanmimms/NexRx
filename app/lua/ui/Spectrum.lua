@@ -1,14 +1,17 @@
 local Widget = require("ui.Widget")
 local Color = require("ui.Color")
+local Model = require("Model")
+local Hardware = require("Hardware")
+local GraticuleLegend = require("ui.GraticuleLegend")
+local SignalBox = require("ui.SignalBox")
+local events = require("Events")
 
 local Spectrum = Widget.mkType("Spectrum", Widget)
 
 function Spectrum:init(def)
   Widget.init(self, def)
-  self.borderColor = def.borderColor or Color("#0F0")
-  self.backgroundColor = def.backgroundColor or Color("#111")
-  self.showBackground = true
-  self.showBorder = true
+  self.gl = GraticuleLegend.new()
+  self.sb = SignalBox.new()
 end
 
 function Spectrum:calcMetrics()
@@ -16,28 +19,43 @@ function Spectrum:calcMetrics()
   if self.metrics.prefH == 0 then self.metrics.prefH = 200 end
 end
 
-function Spectrum:draw()
-  Widget.draw(self)
+function Spectrum:drawSelf(spectrumData)
+  local w, h = self.props.w, self.props.h
+  local id = self.id
+  local parentLWC = self.lwc
   
-  local x, y, w, h = self.props.x, self.props.y, self.props.w, self.props.h
-  local startX = x + 5
-  local startY = y + h - 5
-  local endX = x + w - 5
+  -- Local 0,0
+  Hardware.renderSpectrum(spectrumData or {}, 0, 0, w, h)
   
-  -- Draw some fake spectrum peaks
-  local points = {}
-  local nPoints = 80
-  for i = 0, nPoints do
-    local px = startX + (endX - startX) * (i / nPoints)
-    -- Ensure random range is valid (upper bound >= lower bound)
-    local maxPeak = math.floor(math.max(5, h - 10))
-    local py = startY - math.random(5, maxPeak)
-    table.insert(points, {px, py})
+  local zoom = Model.waterfall.zoom:get() or 1.0
+  local span = _G.sampleRate / zoom
+  local center = Model.spectrumCenterFreq:peek()
+  
+  -- Render SignalBoxes
+  local boxes = Model.signalBoxes:get()
+  local selectedIdx = Model.selectedSignalBoxIndex:get()
+  
+  for i, box in ipairs(boxes) do
+     local bw = box.bandwidth
+     local freq = box.frequency
+     local boxW = (bw / span) * w
+     local boxX = (w / 2) + ((freq - center) / span) * w - (boxW / 2)
+     
+     local isSelected = (i == selectedIdx)
+     local tags = {"widget.SignalBox"}
+     if isSelected then table.insert(tags, "state.Selected") end
+     if box.ghost then table.insert(tags, "state.Ghost") end
+     
+     local label = box.name or tostring(box.id)
+     if isSelected and events.hasModeTag("state.SbNamingMode") then
+        label = _G.sbNamingText .. "|"
+     end
+     
+     self.sb:draw("sb-" .. box.id, boxX, 0, boxW, h, parentLWC, label, tags, { index = i })
   end
   
-  for i = 1, #points - 1 do
-    System.drawLine(points[i][1], points[i][2], points[i+1][1], points[i+1][2], 2, self.borderColor:toTable())
-  end
+  self.gl:draw("spec-legend", 10, 10, 100, 45, parentLWC, string.format("%.1f kHz/div", span/10000), "20 dB/div")
+  events.registerWidget(self.id, {x=0, y=0, w=w, h=h}, self.tags)
 end
 
 return Spectrum

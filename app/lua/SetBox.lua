@@ -278,6 +278,8 @@ function Context:optBool(name, default)
 end
 
 local cacheValid = false
+local globalCtx = nil -- Forward declaration
+
 local function _invalidateCache(propertyName)
     cacheValid = false
     
@@ -289,7 +291,7 @@ local function _invalidateCache(propertyName)
         globalRulesVersion:set(globalRulesVersion:peek() + 1)
     end
 
-    if #changeCallbacks == 0 then return end
+    if #changeCallbacks == 0 or not globalCtx then return end
     
     cachedProperties = globalCtx:resolve()
     cacheValid = true
@@ -308,7 +310,7 @@ function Context:addTag(tag)
     _invalidateCache()
 end
 
-local globalCtx = setmetatable({localTags = {}}, Context)
+globalCtx = setmetatable({localTags = {}}, Context)
 
 -- =============================================================================
 -- Public API - Tag Management
