@@ -509,16 +509,16 @@ end
 function Events._buildEventTags(event, widget)
     local tags = {}
 
-    -- Build event tag: event.MouseDown-LEFT, event.KeyDown-H, event.MouseWheel, etc.
-    local eventTag = "event." .. event.type
+    -- Build event tags: add both general and specific versions
+    -- Examples: event.MouseDown AND event.MouseDown-LEFT
+    local baseTag = "event." .. event.type
+    table.insert(tags, baseTag)
+
     if event.button then
-        -- Mouse button events: event.MouseDown-LEFT, event.MouseUp-RIGHT, etc.
-        eventTag = eventTag .. "-" .. event.button
+        table.insert(tags, baseTag .. "-" .. event.button)
     elseif event.key then
-        -- Keyboard events: event.KeyDown-H, event.KeyUp-ESC, etc.
-        eventTag = eventTag .. "-" .. event.key
+        table.insert(tags, baseTag .. "-" .. event.key)
     end
-    table.insert(tags, eventTag)
 
     -- Add widget tags (already namespaced from widgets.lua)
     if widget and widget.tags then

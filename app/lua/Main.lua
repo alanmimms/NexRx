@@ -129,12 +129,15 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
   
   local eventData = {
     type = (type == "wheel") and "mouseWheel" or "mouseButton",
-    button = button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT"),
     isDown = isDown,
     x = x, y = y,
-    delta = type == "wheel" and button or 0,
+    delta = (type == "wheel") and button or 0,
     modifiers = translateMods(mods)
   }
+  
+  if type == "button" then
+    eventData.button = button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT")
+  end
 
   -- Dispatch to Widget hierarchy (using GLOBAL coordinates)
   local handled = false
@@ -148,6 +151,23 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
     local et = (type == "wheel") and events.Type.MOUSE_WHEEL or 
                (isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP)
     events.dispatch(events.createEvent(et, eventData))
+  end
+end
+
+local function onTextInput(text)
+  local focused = Widget.getFocused()
+  local handled = false
+  local eventData = {
+    type = "textInput",
+    text = text
+  }
+
+  if focused and focused.handleEvent then
+    handled = focused:handleEvent(eventData)
+  end
+  
+  if not handled then
+    events.dispatch(events.createEvent(events.Type.TEXT_INPUT, eventData))
   end
 end
 
@@ -176,7 +196,8 @@ _G.UI = {
   onResize = onResize,
   onMouseMove = onMouseMove,
   onMouseEvent = onMouseEvent,
-  onKeyEvent = onKeyEvent
+  onKeyEvent = onKeyEvent,
+  onTextInput = onTextInput
 }
 
 function init()

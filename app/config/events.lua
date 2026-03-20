@@ -227,28 +227,28 @@ rule {
     id = "vfo-step-default",
     tags = {"widget.VFOControl"},
     priority = 1,
-    apply = { step = 100 }
+    apply = { step = 1000 } -- 1 kHz
 }
 
 rule {
     id = "vfo-step-ctrl",
     tags = {"widget.VFOControl", "input.CTRL"},
     priority = 2,
-    apply = { step = 10000 }
+    apply = { step = 10000 } -- 10 kHz
 }
 
 rule {
     id = "vfo-step-shift",
     tags = {"widget.VFOControl", "input.SHIFT"},
     priority = 2,
-    apply = { step = 100000 }
+    apply = { step = 100000 } -- 100 kHz
 }
 
 rule {
     id = "vfo-step-ctrl-shift",
     tags = {"widget.VFOControl", "input.CTRL", "input.SHIFT"},
     priority = 3,
-    apply = { step = 1000 }
+    apply = { step = 1000000 } -- 1 MHz
 }
 
 rule {
