@@ -83,8 +83,20 @@ function Slider:handleEvent(event)
     if event.type == "mouseButton" and event.button == "LEFT" then
         if event.isDown then
             state.setActive(self.id)
+            -- Click to jump
+            local nt = clamp(event.x / self.props.w, 0, 1)
+            local newValue = minVal + nt * (maxVal - minVal)
+            if self.valueObs and self.valueObs.set then self.valueObs:set(newValue) end
+            return true
+        else
+            state.setActive(nil)
             return true
         end
+    elseif event.type == "mouseMotion" and state.isActive(self.id) then
+        local nt = clamp(event.x / self.props.w, 0, 1)
+        local newValue = minVal + nt * (maxVal - minVal)
+        if self.valueObs and self.valueObs.set then self.valueObs:set(newValue) end
+        return true
     end
     
     return Widget.handleEvent(self, event)

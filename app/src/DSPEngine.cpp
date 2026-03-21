@@ -44,7 +44,7 @@ void DSPEngine::setModeId(int id) {
     basebandFilter.setBandpassWidth(500.0f);
   } else if (mode == Demodulator::Mode::AM) {
     basebandFilter.setBandpassCenter(0.0f);
-    basebandFilter.setBandpassWidth(6000.0f);
+    basebandFilter.setBandpassWidth(10000.0f);
   }
   basebandFilter.recompute();
 }
@@ -265,6 +265,13 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   iF = iT; qF = qT;
 
   basebandFilter.process(iF, qF);
+
+  // DC Block I/Q (prevents carrier leakage from causing distortion in AM/SSB)
+  constexpr float iqDcAlpha = 0.999f;
+  dcBlockI = dcBlockI * iqDcAlpha + iF * (1.0f - iqDcAlpha);
+  dcBlockQ = dcBlockQ * iqDcAlpha + qF * (1.0f - iqDcAlpha);
+  iF -= dcBlockI;
+  qF -= dcBlockQ;
 
   // Advance phasors for next sample
   double nextCos = shiftCos * shiftCos_d - shiftSin * shiftSin_d;

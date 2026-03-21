@@ -9,6 +9,7 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 #include <string>
+#include <map>
 #include <queue>
 #include <mutex>
 #include <thread>
@@ -40,7 +41,7 @@ public:
   bool isTwinConnected() const { return twinConnected.load(); }
   sol::object getTwinState(sol::this_state s);
   
-  void postTwinCommand(std::function<void()> cmd);
+  void postTwinCommand(const std::string& name, std::function<void()> cmd);
   double getLastVFOHz() const { return lastVFOHz; }
   void setLastVFOHz(double f) { lastVFOHz = f; }
 
@@ -66,7 +67,8 @@ private:
   std::chrono::steady_clock::time_point lastStatePollTime;
   std::atomic<bool> twinConnected{false};
 
-  std::queue<std::function<void()>> commandQueue;
+  // Coalescing Command Queue
+  std::map<std::string, std::function<void()>> pendingCommands;
   std::mutex cmdMutex;
   std::thread commandThread;
   std::atomic<bool> commandThreadRunning{false};

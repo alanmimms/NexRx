@@ -104,23 +104,27 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   
   // Setters
-  hwTable["setVFO"] = [engine](double f, double k) { engine->postTwinCommand([engine, f, k]() { engine->getTwinConn().setVFO(f, k); }); };
-  hwTable["setAttenuation"] = [engine](int db) { engine->postTwinCommand([engine, db]() { engine->getTwinConn().setAtten(db); }); };
-  hwTable["setAGCMode"] = [engine](int m) { engine->postTwinCommand([engine, m]() { engine->getTwinConn().setAGCMode(m); }); };
-  hwTable["setIsgFreq"] = [engine](double f) { engine->postTwinCommand([engine, f]() { engine->getTwinConn().setISGFreq(f); }); };
-  hwTable["setIsgEnable"] = [engine](bool en) { engine->postTwinCommand([engine, en]() { engine->getTwinConn().setISGEnable(en); }); };
-  hwTable["setPreselectorInd"] = [engine](uint32_t mask) { engine->postTwinCommand([engine, mask]() { engine->getTwinConn().setPreselectorL(mask); }); };
-  hwTable["setPreselectorCap"] = [engine](uint32_t m) { engine->postTwinCommand([engine, m]() { engine->getTwinConn().setPreselectorCap(m); }); };
-  hwTable["setPreselectorAuto"] = [engine](bool en) { engine->postTwinCommand([engine, en]() { engine->getTwinConn().setPreselectorAuto(en); }); };
-  hwTable["setPreselectorEnabled"] = [engine](bool en) { engine->postTwinCommand([engine, en]() { engine->getTwinConn().setPreselectorEnabled(en); }); };
+  hwTable["setVFO"] = [engine](double f, double k) { engine->postTwinCommand("VFO", [engine, f, k]() { engine->getTwinConn().setVFO(f, k); }); };
+  hwTable["setAttenuation"] = [engine](int db) { engine->postTwinCommand("ATTEN", [engine, db]() { engine->getTwinConn().setAtten(db); }); };
+  hwTable["setAGCMode"] = [engine](int m) { engine->postTwinCommand("AGC", [engine, m]() { engine->getTwinConn().setAGCMode(m); }); };
+  hwTable["setIsgFreq"] = [engine](double f) { engine->postTwinCommand("ISG_FREQ", [engine, f]() { engine->getTwinConn().setISGFreq(f); }); };
+  hwTable["setIsgEnable"] = [engine](bool en) { engine->postTwinCommand("ISG_EN", [engine, en]() { engine->getTwinConn().setISGEnable(en); }); };
+  hwTable["setPreselectorInd"] = [engine](uint32_t mask) { engine->postTwinCommand("PS_L", [engine, mask]() { engine->getTwinConn().setPreselectorL(mask); }); };
+  hwTable["setPreselectorCap"] = [engine](uint32_t m) { engine->postTwinCommand("PS_C", [engine, m]() { engine->getTwinConn().setPreselectorCap(m); }); };
+  hwTable["setPreselectorAuto"] = [engine](bool en) { engine->postTwinCommand("PS_AUTO", [engine, en]() { engine->getTwinConn().setPreselectorAuto(en); }); };
+  hwTable["setPreselectorEnabled"] = [engine](bool en) { engine->postTwinCommand("PS_EN", [engine, en]() { engine->getTwinConn().setPreselectorEnabled(en); }); };
   
   hwTable["setRFGain"] = [engine](double db) {
     engine->getDSP().setRfGain((float)db);
-    engine->postTwinCommand([engine, db]() { engine->getTwinConn().setPGAGain((int)(db / 6.0)); }); 
+    engine->postTwinCommand("RF_GAIN", [engine, db]() { 
+        int code = (int)(db / 6.0);
+        if (code < 0) code = 0;
+        engine->getTwinConn().setPGAGain(code); 
+    }); 
   };
   hwTable["setQSDOffset"] = [engine](double k) { 
     engine->getDSP().setQsdOffset(k); 
-    engine->postTwinCommand([engine, k]() { engine->getTwinConn().setVFO(engine->getLastVFOHz(), k * 1000.0); }); 
+    engine->postTwinCommand("VFO", [engine, k]() { engine->getTwinConn().setVFO(engine->getLastVFOHz(), k * 1000.0); }); 
   };
   
   lua["hw"] = hwTable;
@@ -137,7 +141,7 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   rxTable["setVFO"] = [engine](double f) {
     engine->setLastVFOHz(f);
     engine->getDSP().setVfo(f);
-    engine->postTwinCommand([engine, f]() { engine->getTwinConn().setVFO(f, engine->getDSP().getQsdOffset() * 1000.0); });
+    engine->postTwinCommand("VFO", [engine, f]() { engine->getTwinConn().setVFO(f, engine->getDSP().getQsdOffset() * 1000.0); });
   };
   rxTable["getStats"] = [engine](sol::this_state s) {
     auto& d = engine->getDSP().getDiagnostics();

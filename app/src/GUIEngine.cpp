@@ -202,7 +202,7 @@ bool GUIEngine::connectTwin(const std::string& host, int cp, int sp) {
 
 void GUIEngine::disconnectTwin() {
   if (twinConnected.load()) {
-    postTwinCommand([this]() { twinHost.stopReceiving(); twinHost.shutdown(); });
+    postTwinCommand("SHUTDOWN", [this]() { twinHost.stopReceiving(); twinHost.shutdown(); });
     twinConnected.store(false);
   }
 }
@@ -213,7 +213,7 @@ sol::object GUIEngine::getTwinState(sol::this_state s) {
   auto now = std::chrono::steady_clock::now();
   if (now - lastStatePollTime > std::chrono::milliseconds(100)) {
     lastStatePollTime = now;
-    postTwinCommand([this](){ twinHost.pollStateAsync(); });
+    postTwinCommand("POLL_STATE", [this](){ twinHost.pollStateAsync(); });
   }
 
   auto stateCBOR = twinHost.getState();
@@ -251,11 +251,26 @@ void GUIEngine::startCommandThread() {
   commandThread = std::thread([this]() {
     while (commandThreadRunning) {
       std::function<void()> cmd;
-      { std::lock_guard<std::mutex> l(cmdMutex); if (!commandQueue.empty()) { cmd = commandQueue.front(); commandQueue.pop(); } }
-      if (cmd) cmd(); else std::this_thread::sleep_for(std::chrono::milliseconds(5));
+      {
+        std::lock_guard<std::mutex> l(cmdMutex);
+        if (!pendingCommands.empty()) {
+          auto it = pendingCommands.begin();
+          cmd = it->second;
+          pendingCommands.erase(it);
+        }
+      }
+      if (cmd) {
+        cmd();
+      } else {
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+      }
     }
   });
 }
 
 void GUIEngine::stopCommandThread() { commandThreadRunning = false; if (commandThread.joinable()) commandThread.join(); }
-void GUIEngine::postTwinCommand(std::function<void()> cmd) { std::lock_guard<std::mutex> l(cmdMutex); commandQueue.push(cmd); }
+
+void GUIEngine::postTwinCommand(const std::string& name, std::function<void()> cmd) {
+  std::lock_guard<std::mutex> l(cmdMutex);
+  pendingCommands[name] = cmd;
+}

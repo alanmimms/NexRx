@@ -67,11 +67,18 @@ public:
         break;
       }
       case Mode::AM: {
-        audio = std::sqrt(magSq);
-        // DC blocker
-        audio -= amDcOffset;
-        amDcOffset = amDcOffset * 0.99f + audio * 0.01f;
-        audio *= 16.0f;
+        float rawEnv = std::sqrt(magSq);
+        // Robust AM Demodulator (Envelope + DC Block)
+        // Tau ~ 100ms for carrier tracking
+        amDcOffset = amDcOffset * 0.9999f + rawEnv * 0.0001f;
+        
+        // Remove carrier to get audio
+        audio = rawEnv - amDcOffset;
+        
+        // Scale to safe range. 16.0 was too much, but AM envelope 
+        // values are smaller than SSB sidebands if carrier is large.
+        // Let's use a more moderate gain.
+        audio *= 4.0f; 
         break;
       }
       case Mode::CW: {
@@ -188,7 +195,7 @@ private:
                     -2.0f * csHP / a0HP, 
                     (1.0f - alphaHP) / a0HP };
 
-    float omegaLP = 2.0f * pi * 3000.0f / sampleRate;
+    float omegaLP = 2.0f * pi * 5000.0f / sampleRate;
     float snLP = std::sin(omegaLP), csLP = std::cos(omegaLP);
     float q[2] = {0.5412f, 1.3065f};
     for (int i=0; i<2; i++) {
