@@ -87,6 +87,13 @@ function Widget.newID()
   return "id-" .. widgetN
 end
 
+function Widget:add(kid)
+  if not kid then return end
+  table.insert(self.kids, kid)
+  kid.parent = self
+  return kid
+end
+
 function Widget:init(def)
   def = def or {}
   self.id = def.id or def.props and def.props.id or Widget.newID()
@@ -256,7 +263,7 @@ function Widget:getAbsolutePos()
   return ax, ay
 end
 
--- New Event Handling with recursive coordinate localization
+-- Hierarchical Event Handling (Bubbling model)
 function Widget:handleEvent(event)
   -- 0. Check for redirection
   if self.eventRedirect and self.eventRedirect ~= self then

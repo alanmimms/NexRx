@@ -1,13 +1,15 @@
 --[[
   SignalBox Widget
   Visual representation of a selected frequency range in the spectrum.
+  A proper Widget that handles its own dragging and rendering.
 ]]
 
 local setbox = require("SetBox")
 local state = require("ui.State")
+local Widget = require("ui.Widget")
+local Model = require("Model")
 
-local SignalBox = {}
-SignalBox.__index = SignalBox
+local SignalBox = Widget.mkType("SignalBox", Widget)
 
 -- Default rules for SignalBox widget
 setbox.rule {
@@ -24,40 +26,66 @@ setbox.rule {
         selectedBorderWidth = 3,
         ghostOpacity = 0.2,
         tagHeight = 20,
-        tagWidth = 30,
+        tagWidth = 40,
     }
 }
 
-function SignalBox.new()
-    local self = setmetatable({}, SignalBox)
-    return self
+function SignalBox:init(def)
+    Widget.init(self, def)
+    self.boxIndex = def.index or 1
+    self.dragging = false
+    -- Capture start state for stable dragging
+    self.dragStartFreq = 0
+    self.dragStartMouseX = 0
 end
 
-function SignalBox:draw(id, x, y, w, h, parentLWC, label, extraTags, data)
-    local tags = {"widget.SignalBox", "id." .. id}
-    if extraTags then
-        if type(extraTags) == "table" then
-            for _, t in ipairs(extraTags) do table.insert(tags, t) end
+function SignalBox:handleEvent(event)
+    local box = Model.signalBoxes:peek()[self.boxIndex]
+    if not box then return false end
+
+    if event.type == "mouseButton" and event.button == "LEFT" then
+        if event.isDown then
+            self.dragging = true
+            -- Capture global mouse X and current box freq
+            local ax, ay = self:getAbsolutePos()
+            self.dragStartMouseX = event.x + ax
+            self.dragStartFreq = box.frequency
+            
+            state.setActive(self.id)
+            Model.selectedSignalBoxIndex:set(self.boxIndex)
+            return true
+        else
+            self.dragging = false
+            state.setActive(nil)
+            return true
         end
+    elseif event.type == "mouseMotion" and self.dragging then
+        local ax, ay = self:getAbsolutePos()
+        local currentMouseX = event.x + ax
+        local totalDeltaPx = currentMouseX - self.dragStartMouseX
+        
+        -- Update model from displacement
+        if self.parent and self.parent.getHzPerPx then
+            local hzPerPx = self.parent:getHzPerPx()
+            local totalDeltaHz = totalDeltaPx * hzPerPx
+            local newFreq = self.dragStartFreq + totalDeltaHz
+            
+            if math.abs(box.frequency - newFreq) > 0.1 then
+                box.frequency = newFreq
+            end
+        end
+        return true
     end
-    
-    -- Interaction tags (state namespaces)
-    if state.isActive(id) then table.insert(tags, "state.Active")
-    elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
 
-    local lwc = setbox.newContext(tags, parentLWC)
-    
-    -- Register widget for event system (local bounds)
-    state.registerWidget(id, {x=x, y=y, w=w, h=h}, tags, data)
-    
-    -- Hit testing (Relative to parent origin)
-    if state.pointInRect(state.mouseX, state.mouseY, x, y, w, h) then
-        state.setHot(id)
-        if state.mouseClicked then state.setActive(id) end
-    end
+    return Widget.handleEvent(self, event)
+end
 
+function SignalBox:drawSelf()
+    local w, h = self.props.w, self.props.h
+    local lwc = self.lwc
+    
     local isGhost = lwc:hasTag("state.Ghost")
-    local isSelected = lwc:hasTag("state.Selected")
+    local isSelected = (Model.selectedSignalBoxIndex:get() == self.boxIndex)
     
     -- Style resolution
     local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#facc15"))
@@ -74,21 +102,24 @@ function SignalBox:draw(id, x, y, w, h, parentLWC, label, extraTags, data)
         alpha = lwc:optNumber("ghostOpacity", 0.2)
     end
     
-    -- 1. Draw the translucent box (the signal area)
-    System.drawRect(x, y, w, h, {bgR, bgG, bgB, alpha})
+    -- 1. Draw the translucent box
+    System.drawRect(0, 0, w, h, {bgR, bgG, bgB, alpha})
     
     -- 2. Draw border
     if bWidth > 0 then
-        System.drawLine(x, y, x, y + h, bWidth, {bR, bG, bB, alpha})
-        System.drawLine(x + w, y, x + w, y + h, bWidth, {bR, bG, bB, alpha})
-        System.drawLine(x, y, x + w, y, bWidth, {bR, bG, bB, alpha})
+        System.drawLine(0, 0, 0, h, bWidth, {bR, bG, bB, alpha})
+        System.drawLine(w, 0, w, h, bWidth, {bR, bG, bB, alpha})
+        System.drawLine(0, 0, w, 0, bWidth, {bR, bG, bB, alpha})
     end
     
-    -- 3. Draw the numeric tag above the box
+    -- 3. Draw the numeric tag at the bottom
+    local box = Model.signalBoxes:peek()[self.boxIndex]
+    local label = box and (box.name or tostring(box.mode)) or "?"
+    
     local tagH = lwc:optNumber("tagHeight", 20)
-    local tagW = lwc:optNumber("tagWidth", 30)
-    local tx = x + (w - tagW) / 2
-    local ty = y - tagH - 2
+    local tagW = lwc:optNumber("tagWidth", 40)
+    local tx = (w - tagW) / 2
+    local ty = h - tagH
     
     System.drawRoundedRect(tx, ty, tagW, tagH, 4, {bgR, bgG, bgB, 1.0})
     

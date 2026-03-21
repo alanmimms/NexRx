@@ -31,7 +31,6 @@ _G.calibration = require("Calibration")
 local Panel = require("ui.Panel")
 local SMeter = require("ui.SMeter")
 local ActiveTags = require("ui.ActiveTags")
-local GraticuleLegend = require("ui.GraticuleLegend")
 local SignalBox = require("ui.SignalBox")
 local Button = require("ui.Button")
 local Slider = require("ui.Slider")
@@ -94,10 +93,11 @@ local function onMouseMove(x, y)
   }
   
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
+  -- Bottom-up dispatch: try hit first, it will bubble to parents
   if hit then
     hit:handleEvent(eventData)
   else
-    events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, { x=x, y=y }))
+    rxTree:handleEvent(eventData)
   end
 end
 
@@ -139,7 +139,6 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
   end
 
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
-
   local handled = false
   if hit then
     handled = hit:handleEvent(eventData)
@@ -148,10 +147,12 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
     end
   end
 
+  if type == "button" and not isDown then
+    state.setActive(nil)
+  end
+
   if not handled then
-    local et = (type == "wheel") and events.Type.MOUSE_WHEEL or 
-               (isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP)
-    events.dispatch(events.createEvent(et, eventData))
+    rxTree:handleEvent(eventData)
   end
 end
 
