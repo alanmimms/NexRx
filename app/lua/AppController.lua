@@ -77,9 +77,9 @@ function AppController.registerHandlers()
         end
         
         local delta = 0
-        if event.type == events.Type.MOUSE_WHEEL then
+        if event.type == "mouseWheel" then
             delta = event.delta * step
-        elseif event.type == events.Type.KEY_DOWN then
+        elseif event.type == "key" then
             if event.key == "RIGHT" or event.key == "UP" then delta = step
             elseif event.key == "LEFT" or event.key == "DOWN" then delta = -step end
         end

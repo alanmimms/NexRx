@@ -39,8 +39,6 @@ function Waterfall:drawSelf()
      local r, g, b = 1.0, 1.0, 0.0 -- Yellow
      System.drawRect(boxX, 0, boxW, h, {r, g, b, alpha})
   end
-  
-  state.registerWidget(self.id, {x=0, y=0, w=w, h=h}, self.tags)
 end
 
 return Waterfall

@@ -80,24 +80,23 @@ local function onResize(w, h)
   if rxTree then rxTree:onResize(w, h) end
 end
 
-local lastHitName = nil
+local function onResize(w, h)
+  if rxTree then rxTree:onResize(w, h) end
+end
+
 local function onMouseMove(x, y)
   frameInput.mouseX, frameInput.mouseY = x, y
-
   if not rxTree then return end
 
-  local hit = Widget.updateGlobalMouse(rxTree, x, y)
-
-  local handled = false
-
-  if hit and hit.handleEvent then
-    handled = hit:handleEvent({
-      type = "mouseMotion",
-      x = x, y = y
-    })
-  end
+  local eventData = {
+    type = "mouseMotion",
+    x = x, y = y
+  }
   
-  if not handled then
+  local hit = Widget.updateGlobalMouse(rxTree, x, y)
+  if hit then
+    hit:handleEvent(eventData)
+  else
     events.dispatch(events.createEvent(events.Type.MOUSE_MOVE, { x=x, y=y }))
   end
 end
@@ -125,10 +124,10 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
     frameInput.mouseWheel = button -- delta
   end
 
-  local hit = Widget.updateGlobalMouse(rxTree, x, y)
+  if not rxTree then return end
   
   local eventData = {
-    type = (type == "wheel") and "mouseWheel" or "mouseButton",
+    type = (type == "wheel") and "mouseWheel" or (type == "motion" and "mouseMotion" or "mouseButton"),
     isDown = isDown,
     x = x, y = y,
     delta = (type == "wheel") and button or 0,
@@ -139,14 +138,16 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
     eventData.button = button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT")
   end
 
-  -- Dispatch to Widget hierarchy (using GLOBAL coordinates)
+  local hit = Widget.updateGlobalMouse(rxTree, x, y)
+
   local handled = false
-  if hit and hit.handleEvent then
+  if hit then
     handled = hit:handleEvent(eventData)
-    if isDown then hit:setFocus() end
+    if isDown and type == "button" then 
+        hit:setFocus() 
+    end
   end
 
-  -- If not handled by widget tree, try global rules
   if not handled then
     local et = (type == "wheel") and events.Type.MOUSE_WHEEL or 
                (isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP)
@@ -155,36 +156,44 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
 end
 
 local function onTextInput(text)
-  local focused = Widget.getFocused()
-  local handled = false
+  if not rxTree then return end
   local eventData = {
     type = "textInput",
     text = text
   }
 
-  if focused and focused.handleEvent then
-    handled = focused:handleEvent(eventData)
+  local target = Widget.getFocused() or Widget.getHovered() or rxTree
+  local handled = false
+  if target then
+    handled = target:handleEvent(eventData)
   end
   
-  if not handled then
-    events.dispatch(events.createEvent(events.Type.TEXT_INPUT, eventData))
+  if not handled and target ~= rxTree then
+    rxTree:handleEvent(eventData)
   end
 end
 
 local function onKeyEvent(key, isDown, mods)
-  local focused = Widget.getFocused()
-  local handled = false
+  if not rxTree then return end
+  local keyName = keys.getName(key) or tostring(key)
+
   local eventData = {
     type = "key",
-    key = keys.getName(key) or tostring(key),
+    key = keyName,
     isDown = isDown,
     modifiers = translateMods(mods)
   }
 
-  if focused and focused.handleEvent then
-    handled = focused:handleEvent(eventData)
+  local target = Widget.getFocused() or Widget.getHovered() or rxTree
+  local handled = false
+  if target then
+    handled = target:handleEvent(eventData)
   end
   
+  if not handled and target ~= rxTree then
+    handled = rxTree:handleEvent(eventData)
+  end
+
   if not handled then
     local et = isDown and events.Type.KEY_DOWN or events.Type.KEY_UP
     events.dispatch(events.createEvent(et, eventData))
@@ -245,6 +254,10 @@ function init()
       table.insert(bandStops, {label = name, value = name})
    end
 
+   local vfoDisp = FrequencyDisplay{ id = "id-rx-freq", valueObs = Model.rx.VFO.activeValue, tags = {"widget.VFOControl"}, metrics = { stick = "TLR", prefH = 40 } }
+   local spec = Spectrum{ id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 150 }, eventRedirect = vfoDisp }
+   local wf = Waterfall{ id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 200 }, eventRedirect = vfoDisp }
+
    rxTree = Widget.Window{
       name = "id-root-window",
       kids = {
@@ -267,7 +280,7 @@ function init()
                         name = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"},
                         metrics = { stick = "TLB", prefW = 280, margin = 8 },
                         kids = {
-                           FrequencyDisplay{ id = "id-rx-freq", valueObs = Model.rx.VFO.activeValue, tags = {"widget.VFOControl"}, metrics = { stick = "TLR", prefH = 40 } },
+                           vfoDisp,
                            Slider{ id = "id-rx-slider", valueObs = Model.rx.VFO.activeValue, minVal = _G.lowestFreq, maxVal = _G.highestFreq, metrics = { stick = "TLR", prefH = 20 } },
                            Widget.Label{text = "Mode", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
                            Slider.DiscreteSlider{ id = "id-mode-slider", valueObs = Model.rx.selectedMode, stops = modeStops, metrics = { stick = "TLR", prefH = 30 } },
@@ -283,8 +296,8 @@ function init()
                         name = "center-area", tags = {"widget.CenterArea"},
                         metrics = { stick = "TLBR", flexW = 1 },
                         kids = {
-                           Spectrum{ id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 150 } },
-                           Waterfall{ id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 200 } }
+                           spec,
+                           wf
                         }
                      },
                      Widget.Column{
@@ -308,7 +321,6 @@ end
 function update(dt)
    _G.frameCount = (_G.frameCount or 0) + 1
    animate.update(dt)
-   events.clearWidgets()
    
    -- FPS calculation
    fps = 1.0 / dt

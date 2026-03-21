@@ -115,6 +115,8 @@ Model.rx = {
             return box and tostring(box.id) or "1"
         end),
         activeValue = R.computed(function()
+            -- Track revision
+            getPropertyVersion("rx.VFO.activeValue"):get()
             local box = Model.getSelectedSignalBox()
             return box and box.frequency or 14.2e6
         end)
@@ -122,6 +124,7 @@ Model.rx = {
     
     -- Mode now proxies the selected SignalBox
     selectedMode = R.computed(function()
+        getPropertyVersion("rx.selectedMode"):get()
         local box = Model.getSelectedSignalBox()
         return box and box.mode or "USB"
     end),

@@ -185,6 +185,30 @@ rule {
     apply = { handler = "vfo_control" }
 }
 
+rule {
+    id = "event-vfo-arrow-right",
+    tags = {"event.KeyDown-RIGHT", "widget.VFOControl"},
+    apply = { handler = "vfo_control" }
+}
+
+rule {
+    id = "event-vfo-arrow-left",
+    tags = {"event.KeyDown-LEFT", "widget.VFOControl"},
+    apply = { handler = "vfo_control" }
+}
+
+rule {
+    id = "event-vfo-arrow-up",
+    tags = {"event.KeyDown-UP", "widget.VFOControl"},
+    apply = { handler = "vfo_control" }
+}
+
+rule {
+    id = "event-vfo-arrow-down",
+    tags = {"event.KeyDown-DOWN", "widget.VFOControl"},
+    apply = { handler = "vfo_control" }
+}
+
 -- Global fallback for wheel (tunes VFO if nothing else handles it)
 rule {
     id = "event-vfo-wheel-global",

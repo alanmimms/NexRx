@@ -52,17 +52,46 @@ function Slider:calcMetrics()
     if self.metrics.prefH == 0 then self.metrics.prefH = trackH + labelH end
 end
 
-function Slider:drawSelf()
-    local id, w, h = self.id, self.props.w, self.props.h
-    local tags = {"widget.Slider", "id." .. id}
-    if self.tags then
-        for _, t in ipairs(self.tags) do table.insert(tags, t) end
+function Slider:handleEvent(event)
+    local minVal = self.minVal or 0
+    local maxVal = self.maxVal or 100
+    local range = maxVal - minVal
+    local current = self.valueObs and self.valueObs:get() or minVal
+
+    if event.type == "mouseWheel" or event.type == "key" then
+        local delta = 0
+        local stepFraction = 0.01
+        if isCtrlDown and isCtrlDown() then stepFraction = 0.001
+        elseif isShiftDown and isShiftDown() then stepFraction = 0.1 end
+        
+        local step = range * stepFraction
+
+        if event.type == "mouseWheel" then
+            delta = event.delta * step
+        elseif event.isDown then
+            if event.key == "RIGHT" or event.key == "UP" then delta = step
+            elseif event.key == "LEFT" or event.key == "DOWN" then delta = -step end
+        end
+
+        if delta ~= 0 then
+            local newVal = math.max(minVal, math.min(maxVal, current + delta))
+            if self.valueObs and self.valueObs.set then self.valueObs:set(newVal) end
+            return true
+        end
+    end
+
+    if event.type == "mouseButton" and event.button == "LEFT" then
+        if event.isDown then
+            state.setActive(self.id)
+            return true
+        end
     end
     
-    -- Interaction tags
-    if state.isActive(id) then table.insert(tags, "state.Active")
-    elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
-    
+    return Widget.handleEvent(self, event)
+end
+
+function Slider:drawSelf()
+    local id, w, h = self.id, self.props.w, self.props.h
     local lwc = self.lwc
     
     -- Resolved properties
@@ -93,43 +122,12 @@ function Slider:drawSelf()
     local maxVal = self.maxVal or 100
     if currentValue == nil then currentValue = minVal end
 
-    -- Register with local bounds
-    state.registerWidget(id, {x=-handleR, y=0, w=w + handleR*2, h=h}, tags, {
-        min = minVal,
-        max = maxVal,
-        property = self.propertyName,
-        value = currentValue
-    })
-    
-    -- Hit testing (Relative to local 0,0)
-    if state.pointInRect(state.mouseX, state.mouseY, -handleR, 0, w + handleR*2, h) then
-        state.setHot(id)
-        if state.mouseClicked and state.active == nil then 
-            state.setActive(id) 
-        end
-    end
-    
     -- Styling resolution
     local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#1e293b"))
     local aR, aG, aB = state.hexToRgb(lwc:optString("accent", "#3b82f6"))
     local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#475569"))
     local bWidth = lwc:optNumber("borderWidth", 1)
     local alpha = lwc:optNumber("opacity", 1.0)
-
-    -- Dragging logic
-    if state.isActive(id) and (state.mouseDown or state.mouseClicked or state.mouseReleased) then
-        local nt = clamp(state.mouseX / w, 0, 1)
-        local newValue = minVal + nt * (maxVal - minVal)
-        
-        if newValue ~= currentValue then
-            if self.propertyName then
-                Model.set(self.propertyName, newValue)
-            elseif self.valueObs and self.valueObs.set then
-                self.valueObs:set(newValue)
-            end
-            currentValue = newValue -- Immediate local feedback
-        end
-    end
 
     -- 1. Draw Label at the very top (Local 0,0)
     if label ~= "" then
@@ -178,49 +176,46 @@ function DiscreteSlider:calcMetrics()
     if self.metrics.prefH == 0 then self.metrics.prefH = 30 end
 end
 
-function DiscreteSlider:drawSelf()
-    local id, w, h = self.id, self.props.w, self.props.h
-    local tags = {"widget.Slider", "widget.DiscreteSlider", "id." .. id}
-    if self.tags then
-        for _, t in ipairs(self.tags) do table.insert(tags, t) end
+function DiscreteSlider:handleEvent(event)
+    local nStops = #self.stops
+    if nStops == 0 then return false end
+    
+    local w = self.props.w
+    local currentValue = self.valueObs and self.valueObs:get() or nil
+
+    if event.type == "mouseButton" and event.button == "LEFT" then
+        if event.isDown then
+            state.setActive(self.id)
+            -- Immediate update on click
+            local nt = math.max(0, math.min(0.999, event.x / w))
+            local stopIdx = math.floor(nt * nStops) + 1
+            local stop = self.stops[stopIdx]
+            if stop and stop.value ~= currentValue then
+                if self.valueObs and self.valueObs.set then self.valueObs:set(stop.value) end
+                if self.onChanged then self.onChanged(stop.value) end
+            end
+            return true
+        end
+    elseif event.type == "mouseMotion" and state.isActive(self.id) then
+        local nt = math.max(0, math.min(0.999, event.x / w))
+        local stopIdx = math.floor(nt * nStops) + 1
+        local stop = self.stops[stopIdx]
+        if stop and stop.value ~= currentValue then
+            if self.valueObs and self.valueObs.set then self.valueObs:set(stop.value) end
+            if self.onChanged then self.onChanged(stop.value) end
+        end
+        return true
     end
     
-    -- Interaction tags for SetBox resolution
-    if state.isActive(id) then table.insert(tags, "state.Active")
-    elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
-    
+    return Widget.handleEvent(self, event)
+end
+
+function DiscreteSlider:drawSelf()
+    local id, w, h = self.id, self.props.w, self.props.h
     local lwc = self.lwc
     
     local currentValue = self.valueObs and self.valueObs:get() or nil
     local nStops = #self.stops
-
-    -- Register with local bounds
-    state.registerWidget(id, {x=0, y=0, w=w, h=h}, tags, {
-        property = self.propertyName,
-        value = currentValue
-    })
-    
-    -- Hit testing & Activation (Relative to local 0,0)
-    if state.pointInRect(state.mouseX, state.mouseY, 0, 0, w, h) then
-        state.setHot(id)
-        if state.mouseClicked and state.active == nil then 
-            state.setActive(id) 
-        end
-    end
-
-    -- Dragging/Interaction Logic: Use horizontal position to select stop
-    if nStops > 0 and state.isActive(id) and (state.mouseDown or state.mouseClicked or state.mouseReleased) then
-        local nt = clamp(state.mouseX / w, 0, 0.999)
-        local stopIdx = math.floor(nt * nStops) + 1
-        local stop = self.stops[stopIdx]
-        
-        if stop and stop.value ~= currentValue then
-            if self.propertyName then Model.set(self.propertyName, stop.value)
-            elseif self.valueObs and self.valueObs.set then self.valueObs:set(stop.value) end
-            if self.onChanged then self.onChanged(stop.value) end
-            currentValue = stop.value -- Immediate local feedback for drawing
-        end
-    end
 
     -- Draw outer border
     local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#475569"))

@@ -147,6 +147,8 @@ function Widget:init(def)
   self.metrics.maxW = self.metrics.maxW or self.lwc:optNumber("maxW", 10000)
   self.metrics.maxH = self.metrics.maxH or self.lwc:optNumber("maxH", 10000)
 
+  self.eventRedirect = def.eventRedirect -- Target widget to redirect events to
+
   self.props.x = self.props.x or 0
   self.props.y = self.props.y or 0
   self.props.w = self.props.w or 0
@@ -237,6 +239,7 @@ function Widget:setFocus()
 end
 
 function Widget.getFocused() return focusedWidget end
+function Widget.getHovered() return hoveredWidget end
 
 local function getEvents()
   return require("Events")
@@ -255,6 +258,11 @@ end
 
 -- New Event Handling with recursive coordinate localization
 function Widget:handleEvent(event)
+  -- 0. Check for redirection
+  if self.eventRedirect and self.eventRedirect ~= self then
+    return self.eventRedirect:handleEvent(event)
+  end
+
   -- Create a localized version of the event for self actions
   local localEvent = {}
   for k, v in pairs(event) do localEvent[k] = v end
@@ -267,35 +275,16 @@ function Widget:handleEvent(event)
 
   local consumed = false
   
-  -- Handle via new mouseAction/keyAction properties (using localized coordinates)
+  -- 1. Handle via direct action properties
   if localEvent.type:match("^mouse") or localEvent.type:match("^wheel") then
     if self.mouseAction then consumed = self:mouseAction(localEvent) end
   elseif localEvent.type == "key" then
     if self.keyAction then consumed = self:keyAction(localEvent) end
+  elseif localEvent.type == "textInput" then
+    if self.textAction then consumed = self:textAction(localEvent) end
   end
 
-  -- Fallback to legacy onEvent
-  if not consumed and self.onEvent then consumed = self.onEvent(self, localEvent) end
-  
-  -- Unified Dispatch to rule-based system (for THIS widget only)
-  -- Note: We use ORIGINAL event (global coords) for dispatch hit testing if needed,
-  -- but we pass 'self' to Events.dispatch to ensure it starts from HERE.
-  if not consumed then
-    local events = getEvents()
-    local et = nil
-    if localEvent.type == "mouseButton" then et = localEvent.isDown and events.Type.MOUSE_DOWN or events.Type.MOUSE_UP
-    elseif localEvent.type == "mouseMotion" then et = events.Type.MOUSE_MOVE
-    elseif localEvent.type == "mouseWheel" then et = events.Type.MOUSE_WHEEL
-    elseif localEvent.type == "key" then et = localEvent.isDown and events.Type.KEY_DOWN or events.Type.KEY_UP end
-    
-    if et then
-      -- Dispatch rules for THIS widget ONLY. 
-      -- Bubbling is handled by Widget:handleEvent itself.
-      consumed = events.resolve(events.createEvent(et, event), self)
-    end
-  end
-
-  -- Bubble if not consumed (using ORIGINAL event coordinates for parent)
+  -- 2. Bubble if not consumed (using ORIGINAL event coordinates for parent)
   if not consumed and self.parent then 
     return self.parent:handleEvent(event) 
   end

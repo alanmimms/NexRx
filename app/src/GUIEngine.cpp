@@ -98,21 +98,16 @@ void GUIEngine::update(float dt) {
   if (uiModule != sol::nil) {
     Vector2 mousePos = GetMousePosition();
     
-    // Mouse Motion
-    sol::function onMouseMove = uiModule["onMouseMove"];
-    if (onMouseMove.valid()) {
-        static int moveCount = 0;
-        // if (++moveCount % 60 == 0) std::cout << "[C++] Mouse move to " << mousePos.x << ", " << mousePos.y << std::endl;
-        onMouseMove(mousePos.x, mousePos.y);
-    }
-
-    // Mouse Buttons
+    // Mouse Buttons & Wheel
     sol::function onMouseEvent = uiModule["onMouseEvent"];
     if (onMouseEvent.valid()) {
         int mods = 0;
         if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) mods |= 1;
         if (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) mods |= 2;
         if (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) mods |= 4;
+
+        // Motion dispatch (ensure mouse coordinates are updated)
+        onMouseEvent("motion", mousePos.x, mousePos.y, 0, false, mods);
 
         for (int b = 0; b < 3; b++) {
             if (IsMouseButtonPressed(b)) onMouseEvent("button", mousePos.x, mousePos.y, b, true, mods);
@@ -124,13 +119,30 @@ void GUIEngine::update(float dt) {
         if (wheel != 0) onMouseEvent("wheel", mousePos.x, mousePos.y, (int)wheel, false, mods);
     }
 
-    // Keys
+    // Keys (Simplified: Raylib doesn't have a clean event queue for releases/repeats without more work)
     sol::function onKeyEvent = uiModule["onKeyEvent"];
     if (onKeyEvent.valid()) {
-        int key = GetKeyPressed();
-        while (key > 0) {
-            onKeyEvent(key, true, 0); // Modifiers could be improved here
-            key = GetKeyPressed();
+        // Handle character input (digits, letters, etc)
+        int charCode = GetCharPressed();
+        while (charCode > 0) {
+            sol::function onTextInput = uiModule["onTextInput"];
+            if (onTextInput.valid()) {
+                char text[2] = {(char)charCode, 0};
+                onTextInput(text);
+            }
+            charCode = GetCharPressed();
+        }
+
+        // Handle special keys (Arrow keys, ENTER, BACKSPACE, ESC)
+        int keys[] = {KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN, KEY_ENTER, KEY_BACKSPACE, KEY_ESCAPE, KEY_F};
+        for (int k : keys) {
+            if (IsKeyPressed(k)) {
+                // std::cout << "[C++] Key Pressed: " << k << std::endl;
+                onKeyEvent(k, true, 0);
+            }
+            else if (IsKeyReleased(k)) {
+                onKeyEvent(k, false, 0);
+            }
         }
     }
   }
