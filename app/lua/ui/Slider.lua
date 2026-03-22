@@ -52,7 +52,7 @@ function Slider:calcMetrics()
     if self.metrics.prefH == 0 then self.metrics.prefH = trackH + labelH end
 end
 
-function Slider:handleEvent(event)
+function Slider:onEvent(event)
     local minVal = self.minVal or 0
     local maxVal = self.maxVal or 100
     local range = maxVal - minVal
@@ -95,11 +95,12 @@ function Slider:handleEvent(event)
     elseif event.type == "mouseMotion" and state.isActive(self.id) then
         local nt = clamp(event.x / self.props.w, 0, 1)
         local newValue = minVal + nt * (maxVal - minVal)
+        -- print(string.format("[Slider:%s] dragging nt=%f val=%f", self.id, nt, newValue))
         if self.valueObs and self.valueObs.set then self.valueObs:set(newValue) end
         return true
     end
     
-    return Widget.handleEvent(self, event)
+    return Widget.onEvent(self, event)
 end
 
 function Slider:drawSelf()
@@ -188,7 +189,7 @@ function DiscreteSlider:calcMetrics()
     if self.metrics.prefH == 0 then self.metrics.prefH = 30 end
 end
 
-function DiscreteSlider:handleEvent(event)
+function DiscreteSlider:onEvent(event)
     local nStops = #self.stops
     if nStops == 0 then return false end
     
@@ -219,7 +220,7 @@ function DiscreteSlider:handleEvent(event)
         return true
     end
     
-    return Widget.handleEvent(self, event)
+    return Widget.onEvent(self, event)
 end
 
 function DiscreteSlider:drawSelf()

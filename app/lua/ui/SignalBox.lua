@@ -35,21 +35,20 @@ function SignalBox:init(def)
     self.boxIndex = def.index or 1
     self.dragging = false
     -- Capture start state for stable dragging
-    self.dragStartFreq = 0
     self.dragStartMouseX = 0
+    self.dragStartBoxX = 0
 end
 
-function SignalBox:handleEvent(event)
+function SignalBox:onEvent(event)
     local box = Model.signalBoxes:peek()[self.boxIndex]
     if not box then return false end
 
     if event.type == "mouseButton" and event.button == "LEFT" then
         if event.isDown then
             self.dragging = true
-            -- Capture global mouse X and current box freq
-            local ax, ay = self:getAbsolutePos()
-            self.dragStartMouseX = event.x + ax
-            self.dragStartFreq = box.frequency
+            -- Use global gx for stable dragging
+            self.dragStartMouseX = event.gx
+            self.dragStartBoxX = self.props.x
             
             state.setActive(self.id)
             Model.selectedSignalBoxIndex:set(self.boxIndex)
@@ -60,24 +59,25 @@ function SignalBox:handleEvent(event)
             return true
         end
     elseif event.type == "mouseMotion" and self.dragging then
-        local ax, ay = self:getAbsolutePos()
-        local currentMouseX = event.x + ax
-        local totalDeltaPx = currentMouseX - self.dragStartMouseX
+        local totalDeltaPx = event.gx - self.dragStartMouseX
+        local newBoxX = self.dragStartBoxX + totalDeltaPx
         
-        -- Update model from displacement
-        if self.parent and self.parent.getHzPerPx then
-            local hzPerPx = self.parent:getHzPerPx()
-            local totalDeltaHz = totalDeltaPx * hzPerPx
-            local newFreq = self.dragStartFreq + totalDeltaHz
-            
+        -- Update pixel position immediately for the 'stuck' feel
+        self.props.x = newBoxX
+        
+        -- Update model from the new pixel position
+        if self.parent and self.parent.getFreqAtPx then
+            -- SignalBox frequency is its center
+            local newFreq = self.parent:getFreqAtPx(newBoxX + self.props.w / 2)
             if math.abs(box.frequency - newFreq) > 0.1 then
                 box.frequency = newFreq
+                -- Note: AppController watches box.frequency and will sync to HW
             end
         end
         return true
     end
 
-    return Widget.handleEvent(self, event)
+    return Widget.onEvent(self, event)
 end
 
 function SignalBox:drawSelf()

@@ -56,50 +56,64 @@ local frameInput = {
    mouseWheel = 0
 }
 
+local function safeCall(fn, ...)
+    local ok, err = xpcall(fn, debug.traceback, ...)
+    if not ok then
+        print("\n[LUA ERROR] " .. tostring(err) .. "\n")
+    end
+    return ok, err
+end
+
 print("[Main] Script loaded.")
 
--- Export UI module for C++ hooks (MUST BE DECLARED BEFORE init() IS CALLED)
-local function renderUI(width, height)
+-- Export UI module for C++ hooks
+local function renderUI_inner(width, height)
   if not rxTree then return end
   rxTree:layout(0, 0, width, height)
 
-  -- Clear background
   System.drawRect(0, 0, width, height, {0.05, 0.05, 0.1, 1.0})
 
   uiState.beginFrame(frameInput)
   rxTree:draw()
   uiState.endFrame()
 
-  -- Clear transient input state for next frame
   frameInput.mouseClicked = false
   frameInput.mouseReleased = false
   frameInput.mouseWheel = 0
 end
-local function onResize(w, h)
-  if rxTree then rxTree:onResize(w, h) end
-end
+
+local function renderUI(w, h) safeCall(renderUI_inner, w, h) end
 
 local function onResize(w, h)
-  if rxTree then rxTree:onResize(w, h) end
+  if rxTree then safeCall(rxTree.onResize, rxTree, w, h) end
 end
 
-local function onMouseMove(x, y)
+local currentMods = 0
+_G.isShiftDown = function() return (currentMods & 1) ~= 0 end
+_G.isCtrlDown = function() return (currentMods & 2) ~= 0 end
+_G.isAltDown = function() return (currentMods & 4) ~= 0 end
+
+local function onMouseMove_inner(x, y)
   frameInput.mouseX, frameInput.mouseY = x, y
   if not rxTree then return end
+  
+  -- SDL2/raylib usually don't send mods in mouse move, so we keep what we have
+  -- but if we want to be safe we can use a C++ hook or just rely on last known.
 
   local eventData = {
     type = "mouseMotion",
-    x = x, y = y
+    x = x, y = y,
+    modifiers = translateMods(currentMods)
   }
   
+  local activeId = uiState.getActive()
+  local activeWidget = activeId and rxTree:findByID(activeId)
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
-  -- Bottom-up dispatch: try hit first, it will bubble to parents
-  if hit then
-    hit:handleEvent(eventData)
-  else
-    rxTree:handleEvent(eventData)
-  end
+  local target = activeWidget or hit or rxTree
+  target:handleEvent(eventData)
 end
+
+local function onMouseMove(x, y) safeCall(onMouseMove_inner, x, y) end
 
 local function translateMods(mods)
   local t = {}
@@ -111,7 +125,8 @@ local function translateMods(mods)
   return t
 end
 
-local function onMouseEvent(type, x, y, button, isDown, mods)
+local function onMouseEvent_inner(type, x, y, button, isDown, mods)
+  currentMods = mods or currentMods
   frameInput.mouseX, frameInput.mouseY = x, y
   if type == "button" then
     frameInput.mouseDown = isDown
@@ -121,7 +136,7 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
         frameInput.mouseReleased = true 
     end
   elseif type == "wheel" then
-    frameInput.mouseWheel = button -- delta
+    frameInput.mouseWheel = button
   end
 
   if not rxTree then return end
@@ -138,25 +153,35 @@ local function onMouseEvent(type, x, y, button, isDown, mods)
     eventData.button = button == 0 and "LEFT" or (button == 1 and "MIDDLE" or "RIGHT")
   end
 
+  local activeId = uiState.getActive()
+  local activeWidget = activeId and rxTree:findByID(activeId)
+  
   local hit = Widget.updateGlobalMouse(rxTree, x, y)
-  local handled = false
-  if hit then
-    handled = hit:handleEvent(eventData)
-    if isDown and type == "button" then 
-        hit:setFocus() 
-    end
+  local target = (type ~= "wheel" and activeWidget) or hit or rxTree
+  
+  local handled = target:handleEvent(eventData)
+  if handled and isDown and type == "button" then 
+    target:setFocus() 
   end
 
   if type == "button" and not isDown then
-    state.setActive(nil)
+    uiState.setActive(nil)
   end
 
   if not handled then
-    rxTree:handleEvent(eventData)
+    handled = rxTree:handleEvent(eventData)
+  end
+  
+  if not handled then
+    events.dispatch(eventData, hit or rxTree)
   end
 end
 
-local function onTextInput(text)
+local function onMouseEvent(type, x, y, button, isDown, mods)
+    safeCall(onMouseEvent_inner, type, x, y, button, isDown, mods)
+end
+
+local function onTextInput_inner(text)
   if not rxTree then return end
   local eventData = {
     type = "textInput",
@@ -170,11 +195,18 @@ local function onTextInput(text)
   end
   
   if not handled and target ~= rxTree then
-    rxTree:handleEvent(eventData)
+    handled = rxTree:handleEvent(eventData)
+  end
+  
+  if not handled then
+    events.dispatch(eventData, target)
   end
 end
 
-local function onKeyEvent(key, isDown, mods)
+local function onTextInput(text) safeCall(onTextInput_inner, text) end
+
+local function onKeyEvent_inner(key, isDown, mods)
+  currentMods = mods or currentMods
   if not rxTree then return end
   local keyName = keys.getName(key) or tostring(key)
 
@@ -196,10 +228,11 @@ local function onKeyEvent(key, isDown, mods)
   end
 
   if not handled then
-    local et = isDown and events.Type.KEY_DOWN or events.Type.KEY_UP
-    events.dispatch(events.createEvent(et, eventData))
+    events.dispatch(eventData, target)
   end
 end
+
+local function onKeyEvent(key, isDown, mods) safeCall(onKeyEvent_inner, key, isDown, mods) end
 
 _G.UI = {
   render = renderUI,
@@ -213,10 +246,8 @@ _G.UI = {
 function init()
    print("[Main] init() starting...")
    
-   -- Link state and events modules explicitly
    uiState.setEventsModule(events)
    
-   -- Load configurations
    local configFiles = {
       "config/default.lua",
       "config/settings.lua",
@@ -224,15 +255,15 @@ function init()
       "config/colormaps.lua",
       "config/events.lua"
    }
-   for _, file in ipairs(configFiles) do setbox.loadFile(file) end
+   for _, file in ipairs(configFiles) do 
+      setbox.loadFile(file) 
+   end
 
    AppController.init()
    _G.calibration.init()
    _G.bands.init()
    events.init()
-   uiState.setEventsModule(events)
    
-   -- Hardware
    if hw.connect("127.0.0.1", 5000, 5001) then 
       Hardware.enableHardware() 
       Hardware.enableWaterfall()
@@ -315,6 +346,13 @@ function init()
          }
       }
    }
+   
+   local sw, sh = 1280, 720
+   if System.getWindowSize then
+       local w, h = System.getWindowSize()
+       if w and h then sw, sh = w, h end
+   end
+   rxTree:layout(0, 0, sw, sh)
 
    print("[Main] init() complete.")
 end
@@ -323,7 +361,6 @@ function update(dt)
    _G.frameCount = (_G.frameCount or 0) + 1
    animate.update(dt)
    
-   -- FPS calculation
    fps = 1.0 / dt
    local fpsLabel = rxTree:findByName("fpsLabel")
    if fpsLabel then
@@ -340,7 +377,6 @@ function update(dt)
          Hardware.updateWaterfall(_G.lastSpectrumData) 
       end
    else
-      -- Dummy data for UI testing
       if _G.frameCount % 2 == 0 then
          local dummy = {}
          for i = 1, 1024 do dummy[i] = -100 + 20 * math.sin(i / 50 + _G.frameCount/10) + 5 * math.random() end
@@ -349,3 +385,4 @@ function update(dt)
       end
    end
 end
+return UI

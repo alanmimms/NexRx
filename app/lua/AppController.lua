@@ -248,9 +248,13 @@ function AppController.init()
         local zoom = Model.waterfall.zoom:peek() or 1.0
         local span = _G.sampleRate / zoom
         local center = Model.spectrumCenterFreq:peek()
-        local margin = span * 0.1 -- 10% margin
+        local margin = span * 0.02 -- 2% margin (less aggressive)
         
-        if math.abs(freq - center) > (span / 2 - margin) then
+        -- Don't auto-center if the user is currently dragging a signal box
+        local activeId = require("ui.State").getActive()
+        local isDragging = activeId and activeId:match("^sb%-")
+        
+        if not isDragging and math.abs(freq - center) > (span / 2 - margin) then
             Model.spectrumCenterFreq:set(freq)
         end
         
@@ -351,6 +355,18 @@ function AppController.pollState()
     
     local state = Hardware.getState()
     if not state then return end
+
+    -- Update AGC/RF from hardware IF they changed elsewhere (e.g. twin auto-agc)
+    if state.agcEnabled ~= nil then
+        if state.agcEnabled ~= Model.rx.AGC.enabled:peek() then
+            Model.rx.AGC.enabled:set(state.agcEnabled)
+        end
+    end
+    if state.rfGainDB ~= nil then
+        if math.abs(state.rfGainDB - Model.rx.RF.gainDB:peek()) > 0.5 then
+            Model.rx.RF.gainDB:set(state.rfGainDB)
+        end
+    end
 
     -- Update Preselector L/C from hardware IF auto-tune is ON
     if Model.preselector.auto:peek() then

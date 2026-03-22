@@ -270,32 +270,41 @@ function Widget:handleEvent(event)
     return self.eventRedirect:handleEvent(event)
   end
 
-  -- Create a localized version of the event for self actions
+  -- 1. Create a localized version of the event
   local localEvent = {}
   for k, v in pairs(event) do localEvent[k] = v end
   
+  -- Store global coordinates
+  localEvent.gx = event.x
+  localEvent.gy = event.y
+
   if localEvent.x and localEvent.y then
     local ax, ay = self:getAbsolutePos()
     localEvent.x = localEvent.x - ax
     localEvent.y = localEvent.y - ay
   end
 
-  local consumed = false
-  
-  -- 1. Handle via direct action properties
-  if localEvent.type:match("^mouse") or localEvent.type:match("^wheel") then
-    if self.mouseAction then consumed = self:mouseAction(localEvent) end
-  elseif localEvent.type == "key" then
-    if self.keyAction then consumed = self:keyAction(localEvent) end
-  elseif localEvent.type == "textInput" then
-    if self.textAction then consumed = self:textAction(localEvent) end
-  end
+  -- 2. Call specialized handler (localized)
+  local consumed = self:onEvent(localEvent)
 
-  -- 2. Bubble if not consumed (using ORIGINAL event coordinates for parent)
+  -- 3. Bubble if not consumed (using ORIGINAL global event coordinates for parent)
   if not consumed and self.parent then 
     return self.parent:handleEvent(event) 
   end
   return consumed
+end
+
+-- Subclasses should override this!
+-- Receives event with LOCAL x, y and GLOBAL gx, gy
+function Widget:onEvent(event)
+  if event.type:match("^mouse") or event.type:match("^wheel") then
+    if self.mouseAction then return self:mouseAction(event) end
+  elseif event.type == "key" then
+    if self.keyAction then return self:keyAction(event) end
+  elseif event.type == "textInput" then
+    if self.textAction then return self:textAction(event) end
+  end
+  return false
 end
 
 function Widget:hitTest(x, y)
@@ -311,8 +320,16 @@ function Widget:hitTest(x, y)
     if hit then return hit end
   end
   
-  -- if self.name ~= "Main Window" then print("[Widget] hitTest SUCCESS:", self.name) end
   return self
+end
+
+function Widget:findByID(id)
+  if self.id == id then return self end
+  for _, kid in ipairs(self.kids) do
+    local found = kid:findByID(id)
+    if found then return found end
+  end
+  return nil
 end
 
 function Widget:findByName(name)
@@ -479,7 +496,7 @@ function Button:drawSelf()
   System.drawText(tostring(self.text), tx, ty, fontSize, textColor:toTable())
 end
 
-function Button:handleEvent(event)
+function Button:onEvent(event)
   if event.type == "mouseButton" and event.button == "LEFT" then
     if event.isDown then
       self.isDown = true
@@ -492,7 +509,7 @@ function Button:handleEvent(event)
       return true
     end
   end
-  return Widget.handleEvent(self, event)
+  return Widget.onEvent(self, event)
 end
 
 Widget.Container = Container

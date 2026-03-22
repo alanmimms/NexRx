@@ -266,13 +266,6 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
 
   basebandFilter.process(iF, qF);
 
-  // DC Block I/Q (prevents carrier leakage from causing distortion in AM/SSB)
-  constexpr float iqDcAlpha = 0.999f;
-  dcBlockI = dcBlockI * iqDcAlpha + iF * (1.0f - iqDcAlpha);
-  dcBlockQ = dcBlockQ * iqDcAlpha + qF * (1.0f - iqDcAlpha);
-  iF -= dcBlockI;
-  qF -= dcBlockQ;
-
   // Advance phasors for next sample
   double nextCos = shiftCos * shiftCos_d - shiftSin * shiftSin_d;
   double nextSin = shiftSin * shiftCos_d + shiftCos * shiftSin_d;

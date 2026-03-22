@@ -152,6 +152,11 @@ function state.setHot(id)
     end
 end
 
+-- Get active widget ID
+function state.getActive()
+    return state.active
+end
+
 -- Set active widget (called when widget is clicked)
 function state.setActive(id)
     state.active = id

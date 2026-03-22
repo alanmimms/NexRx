@@ -120,7 +120,6 @@ private:
   float dc0_i = 0.0f, dc0_q = 0.0f;
   float dc1_i = 0.0f, dc1_q = 0.0f;
   float dc2_i = 0.0f, dc2_q = 0.0f;
-  float dcBlockI = 0.0f, dcBlockQ = 0.0f;
 
   bool audioDecimateSkip = false;
 

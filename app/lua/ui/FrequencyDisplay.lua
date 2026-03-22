@@ -61,7 +61,7 @@ local function formatFreq(f_hz, lwc)
     return res .. " Hz"
 end
 
-function FrequencyDisplay:handleEvent(event)
+function FrequencyDisplay:onEvent(event)
     if event.type == "mouseWheel" then
         local step = 100 -- Default 100 Hz
         if isCtrlDown and isCtrlDown() then step = 10000
@@ -182,7 +182,7 @@ function FrequencyDisplay:handleEvent(event)
     end
 
     -- Fallback to rules (like vfo_control for wheel)
-    return Widget.handleEvent(self, event)
+    return Widget.onEvent(self, event)
 end
 
 function FrequencyDisplay:confirmEdit()
