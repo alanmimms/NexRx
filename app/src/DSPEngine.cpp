@@ -101,15 +101,22 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   frame.qsd[1].toFloat(i1, q1); 
   frame.qsd[2].toFloat(i2, q2);
   
-  // DC Offset Correction (Always run during normal operation too)
-  constexpr float dcAlpha = 0.0005f;
+  // DC Offset Correction
+  // Use a very slow time constant (tau ~ 5-10s at 96kHz) to avoid eating the carrier.
+  // 1e-6 at 96kHz is ~10s. For the center QSD (s2), if we are in AM mode,
+  // we FREEZE the DC tracker because the carrier itself is at DC and 
+  // we must preserve it for envelope detection.
+  constexpr float dcAlpha = 1e-6f;
   dc0_i = (1.0f - dcAlpha) * dc0_i + dcAlpha * i0;
   dc0_q = (1.0f - dcAlpha) * dc0_q + dcAlpha * q0;
   dc1_i = (1.0f - dcAlpha) * dc1_i + dcAlpha * i1;
   dc1_q = (1.0f - dcAlpha) * dc1_q + dcAlpha * q1;
-  dc2_i = (1.0f - dcAlpha) * dc2_i + dcAlpha * i2;
-  dc2_q = (1.0f - dcAlpha) * dc2_q + dcAlpha * q2;
   
+  if (getModeId() != static_cast<int>(Demodulator::Mode::AM)) {
+    dc2_i = (1.0f - dcAlpha) * dc2_i + dcAlpha * i2;
+    dc2_q = (1.0f - dcAlpha) * dc2_q + dcAlpha * q2;
+  }
+
   i0 -= dc0_i; q0 -= dc0_q;
   i1 -= dc1_i; q1 -= dc1_q;
   i2 -= dc2_i; q2 -= dc2_q;
@@ -135,38 +142,28 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     lastK_hz = k_hz;
   }
 
-  // Shift QSD0 DOWN by k: (i + j*q) * (cos - j*sin)
-  Complex s0_s(s0_c.real() * shiftCos + s0_c.imag() * shiftSin, s0_c.imag() * shiftCos - s0_c.real() * shiftSin);
-  // Shift QSD1 UP by k: (i + j*q) * (cos + j*sin)
-  Complex s1_s(s1_c.real() * shiftCos - s1_c.imag() * shiftSin, s1_c.imag() * shiftCos + s1_c.real() * shiftSin);
+  // Shift QSD0 UP by k: (i + j*q) * (cos + j*sin)
+  Complex s0_s(s0_c.real() * shiftCos - s0_c.imag() * shiftSin, s0_c.imag() * shiftCos + s0_c.real() * shiftSin);
+  // Shift QSD1 DOWN by k: (i + j*q) * (cos - j*sin)
+  Complex s1_s(s1_c.real() * shiftCos + s1_c.imag() * shiftSin, s1_c.imag() * shiftCos - s1_c.real() * shiftSin);
 
 
-  // 3. Triple-QSD Image Rejection (Mathematical Nulling)
-  // S0' and S1' both contain the fundamental signal at frequency delta.
-  // However, their images land at different baseband frequencies:
-  //   Image in S0' is at -delta - 2k
-  //   Image in S1' is at -delta + 2k
-  // QSD2 (s2_c) is our reference centered at VFO, with image at -delta.
+  // 3. Triple-QSD Image Rejection (Averaging Matrix)
+  // By aligning fundamentals and averaging all three mixers, we achieve:
+  // 1. Signal coherent summing (better SNR)
+  // 2. Image components are modulated to +/- 2k (24kHz)
+  // 3. Baseband filter (10kHz) naturally rejects these image components.
+  // We use a 1-2-1 weighting to favor the high-performance 6f-QSD (s2).
   
   Complex wA0(wA0_r, wA0_i), wA1(wA1_r, wA1_i);
   
-  // The weighted difference isolates the phase-shifted image components
-  // while the fundamental signal cancels out perfectly.
-  Complex weighted_diff = wA0 * s0_s - wA1 * s1_s;
-
-  // Use the known phase offset k to derive the cancellation term.
-  // Image(S2) = weighted_diff / (-2j * sin(2*phi_k))
-  double phi_k = 2.0 * M_PI * (qsdOffsetKhz * 1000.0) / 96000.0;
-  float sin2k = std::sin(2.0 * phi_k);
+  // The matrix nulling is now a robust weighted average.
+  // Normalized for unity signal gain: (0.25*s0 + 0.5*s2 + 0.25*s1) * 2 = (0.5*s0 + s2 + 0.5*s1) / 2
+  // We use wA0 and wA1 to match s0 and s1 to the s2 reference.
+  Complex combined = (wA0 * s0_s + wA1 * s1_s + s2_c) * 0.5f;
   
-  Complex image_component(0, 0);
-  if (std::abs(sin2k) > 1e-3f) {
-      // Rotate and scale the difference to match the image in S2 reference
-      image_component = weighted_diff * Complex(0.0f, 0.5f / sin2k);
-  }
-  
-  // Final combined signal with primary image nulled
-  Complex err = matrixBypass.load() ? s2_c : (s2_c - image_component);
+  // Final combined signal
+  Complex err = matrixBypass.load() ? s2_c : combined;
 
   // Update diagnostics for UI
   dspDiag.lmsWeightR.store(std::abs(Complex(wA0_r, wA0_i)));
@@ -189,9 +186,11 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
         Complex u = ref * std::conj(s_s); ar += u.real(); ai += u.imag(); p += std::norm(s_s);
     };
     // Frequency shifts WITHOUT current weights for discovery
-    // Use the same phasors as the main DSP path
-    Complex s0_raw_s(s0.real() * shiftCos + s0.imag() * shiftSin, s0.imag() * shiftCos - s0.real() * shiftSin);
-    Complex s1_raw_s(s1.real() * shiftCos - s1.imag() * shiftSin, s1.imag() * shiftCos + s1.real() * shiftSin);
+    // Use the same phasors as the main DSP path (Fundamentals-aligned)
+    // S0 shifted UP by k
+    Complex s0_raw_s(s0.real() * shiftCos - s0.imag() * shiftSin, s0.imag() * shiftCos + s0.real() * shiftSin);
+    // S1 shifted DOWN by k
+    Complex s1_raw_s(s1.real() * shiftCos + s1.imag() * shiftSin, s1.imag() * shiftCos - s1.real() * shiftSin);
     accA(s2, s0_raw_s, accA0_r, accA0_i, pA0);
     accA(s2, s1_raw_s, accA1_r, accA1_i, pA1);
 
@@ -243,11 +242,10 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   iqBuffer[pos*2] = err.real(); iqBuffer[pos*2+1] = err.imag();
   iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
 
-  // 2. Apply digital gain and filtering
+  // 2. Apply digital gain and RF metering
   float iF = err.real();
   float qF = err.imag();
   
-  // 3. Apply digital gain and filtering
   float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
   iF *= rfGain; qF *= rfGain;
   float maxR = std::max(std::abs(iF), std::abs(qF));
