@@ -102,24 +102,30 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   frame.qsd[2].toFloat(i2, q2);
   
   // DC Offset Correction
-  // Use a very slow time constant (tau ~ 5-10s at 96kHz) to avoid eating the carrier.
-  // 1e-6 at 96kHz is ~10s. For the center QSD (s2), if we are in AM mode,
-  // we FREEZE the DC tracker because the carrier itself is at DC and 
-  // we must preserve it for envelope detection.
-  constexpr float dcAlpha = 1e-6f;
-  dc0_i = (1.0f - dcAlpha) * dc0_i + dcAlpha * i0;
-  dc0_q = (1.0f - dcAlpha) * dc0_q + dcAlpha * q0;
-  dc1_i = (1.0f - dcAlpha) * dc1_i + dcAlpha * i1;
-  dc1_q = (1.0f - dcAlpha) * dc1_q + dcAlpha * q1;
+  // Side channels (S0, S1) always track fast. Their carriers are at 12kHz, so DC is hardware-only.
+  constexpr float dcAlphaFast = 0.001f; // ~15Hz cutoff at 96kHz
+  constexpr float dcAlphaSlow = 1e-6f;  // Very slow for AM carrier preservation
   
-  if (getModeId() != static_cast<int>(Demodulator::Mode::AM)) {
-    dc2_i = (1.0f - dcAlpha) * dc2_i + dcAlpha * i2;
-    dc2_q = (1.0f - dcAlpha) * dc2_q + dcAlpha * q2;
-  }
+  dc0_i = (1.0f - dcAlphaFast) * dc0_i + dcAlphaFast * i0;
+  dc0_q = (1.0f - dcAlphaFast) * dc0_q + dcAlphaFast * q0;
+  dc1_i = (1.0f - dcAlphaFast) * dc1_i + dcAlphaFast * i1;
+  dc1_q = (1.0f - dcAlphaFast) * dc1_q + dcAlphaFast * q1;
 
   i0 -= dc0_i; q0 -= dc0_q;
   i1 -= dc1_i; q1 -= dc1_q;
-  i2 -= dc2_i; q2 -= dc2_q;
+
+  if (getModeId() == static_cast<int>(Demodulator::Mode::AM)) {
+    // In AM, preserve the carrier at DC in the center channel.
+    // We update the estimate slowly in the background but do NOT subtract it.
+    dc2_i = (1.0f - dcAlphaSlow) * dc2_i + dcAlphaSlow * i2;
+    dc2_q = (1.0f - dcAlphaSlow) * dc2_q + dcAlphaSlow * q2;
+    // s2_c = s2; (No subtraction)
+  } else {
+    // In SSB/CW/BYPASS, track and subtract fast to kill DC leakage and carrier tones.
+    dc2_i = (1.0f - dcAlphaFast) * dc2_i + dcAlphaFast * i2;
+    dc2_q = (1.0f - dcAlphaFast) * dc2_q + dcAlphaFast * q2;
+    i2 -= dc2_i; q2 -= dc2_q;
+  }
 
   // 1. Independent Blind I/Q Correction for all 3 mixers
   // S_corr = S - w*conj(S)
@@ -256,6 +262,8 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     double phaseInc = -2.0 * M_PI * tuningOffsetHz / 96000.0;
     tuneCos_d = std::cos(phaseInc);
     tuneSin_d = std::sin(phaseInc);
+    tuneCos = 1.0;
+    tuneSin = 0.0;
     lastTune_hz = tuningOffsetHz;
   }
   float iT = iF * (float)tuneCos - qF * (float)tuneSin;

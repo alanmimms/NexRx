@@ -132,7 +132,9 @@ private:
   int sampleAccum = 0;
 
   // Hilbert for phasing
-  static constexpr int hilbertTaps = 31;
+  // 31 was too short for 96kHz (transition width ~12kHz). 
+  // 255 at 96kHz gives transition width ~1.5kHz, enabling SSB audio.
+  static constexpr int hilbertTaps = 255;
   std::vector<float> hilbertHistoryI;
   std::vector<float> hilbertHistoryQ;
   std::vector<float> hilbertCoeffs;
