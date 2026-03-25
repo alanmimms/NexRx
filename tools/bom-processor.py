@@ -68,14 +68,14 @@ def process_bom():
         "--fields", ",".join(fields),
         "--labels", ",".join(labels),
         "--group-by", "Value,Footprint",
-        "--output", "production/temp-bom.csv",
+        "--output", "hw/production/temp-bom.csv",
         "hw/NexRx.kicad_sch"
     ]
     
     subprocess.run(cmd, check=True)
 
     # 2. Process
-    with open("production/temp-bom.csv", "r", encoding="utf-8") as f:
+    with open("hw/production/temp-bom.csv", "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
 
@@ -121,7 +121,7 @@ def process_bom():
 
     # 3. Save Unified BOM
     out_fields = ['Refs', 'Qty', 'Value', 'Footprint', 'Manufacturer', 'MPN', 'LCSC_PN', 'Mouser_PN', 'Description']
-    with open("production/nexrx-bom.csv", "w", newline="", encoding="utf-8") as f:
+    with open("hw/production/nexrx-bom.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=out_fields)
         writer.writeheader()
         writer.writerows(unified_rows)

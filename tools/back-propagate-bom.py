@@ -93,7 +93,7 @@ def get_symbols_from_content(content):
 
 def main():
     bom_map = {}
-    with open('production/nexrx-bom.csv', 'r', encoding='utf-8') as f:
+    with open('hw/production/nexrx-bom.csv', 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             for r in expand_refs(row['Refs']): bom_map[r] = row
