@@ -11615,7 +11615,7 @@
 				)
 			)
 		)
-		(property "Value" "33"
+		(property "Value" "33.4"
 			(at 89.916 150.368 90)
 			(effects
 				(font
@@ -21402,7 +21402,7 @@
 				)
 			)
 		)
-		(property "Value" "33"
+		(property "Value" "33.4"
 			(at 89.916 184.658 90)
 			(effects
 				(font

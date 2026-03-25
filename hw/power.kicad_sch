@@ -18898,7 +18898,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 244.1448 82.55 0)
 			(effects
 				(font
@@ -18961,7 +18961,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X5R"
+		(property "cap-type" "NP0"
 			(at 247.142 81.026 0)
 			(effects
 				(font
@@ -19157,7 +19157,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "50V"
 			(at 245.11 78.74 0)
 			(effects
 				(font

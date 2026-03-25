@@ -226,7 +226,7 @@
           ""
         ],
         [
-          "silk_over_copper|-40099584|-342553657|92b21e73-39ab-4031-92c0-c2791ed8502b|00000000-0000-0000-0000-000000000000",
+          "silk_over_copper|-38572275|-343721624|92b21e73-39ab-4031-92c0-c2791ed8502b|00000000-0000-0000-0000-000000000000",
           ""
         ],
         [
@@ -267,10 +267,6 @@
         ],
         [
           "silk_overlap|287820|-352014340|5719b173-ed27-4097-9b53-889f20296a22|6e0ab1f4-0a5b-47b0-923b-46be05308526",
-          ""
-        ],
-        [
-          "silk_overlap|5946296|-334953318|64098342-ac56-4122-8208-efd9cedbb0f2|d8b50aab-5b22-4bd2-95b7-a6eba964f075",
           ""
         ],
         [
@@ -364,7 +360,7 @@
         "min_microvia_drill": 0.0,
         "min_resolved_spokes": 2,
         "min_silk_clearance": 0.15,
-        "min_text_height": 1.0,
+        "min_text_height": 0.8,
         "min_text_thickness": 0.15,
         "min_through_hole_diameter": 0.25,
         "min_track_width": 0.1,

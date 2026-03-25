@@ -2858,7 +2858,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "50V"
 			(at 180.34 73.66 0)
 			(effects
 				(font
@@ -4135,7 +4135,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "50V"
 			(at 180.34 106.68 0)
 			(effects
 				(font
