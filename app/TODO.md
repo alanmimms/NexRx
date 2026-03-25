@@ -1,64 +1,10 @@
 # NOTES to do
 
-* Lose `local bandFreqs` in `main.lua` and use the globally defined
-  full band table.
-
-* Use SetBox animation/easing mechanism to implement all crossfades in
-  audio and demodulator chain. This allows these to be controlled in a
-  common way, lets SetBox control speed/type of easing, etc. We
-  already have a mechanism to do this sort of thing, so adding another
-  one for crossfading _ad hoc_ each time we need to do something like
-  that is a waste and complicates the system.
-
-* Reimplement `if freqEntryMode then` code in `update()` in `main.lua`
-  to use setbox tags for frequency entry mode and steering keystrokes
-  to the freq entry processing code.
-  * Define many/most SDL scan codes for key strokes in a separate lua
-    file.
-* Change mouse wheel tuning actions to be setbox based dispatched with
-  modifiers.
-* Remove ESC handling and switch to control-Q.
-  * Allow this anywhere.
-
-* Distribute `fonts/DejaVuSans.ttf` if possible according to license.
-  * Fix fonts so they don't create a mess of complaints at start.
-
 * Add tag for platform the app is running on so we can conditionalize
   things like font path using proper rules.
 
 # UI
 * Parameterize spectrum/waterfall rendering (grid, center lines, colors) via Lua and SetBox rules/tags instead of hard-coded C++ values.
-* Make mode reflected in selector for mode and remove it from status bar.
-* Make band reflected in selector for band and remove it from status bar.
-* Eliminate status bar and/or move some status to title bar.
-
-* Create named widgets for:
-  * Current VFO freq, including draggable to change it with delta buttons
-	* +100,+1k,+10k,+100k,+1M and negate by using shift key or control key.
-	* Need obvious way to type in a frequency to tune to.
-  * VFO selector
-    * Use drag/drop to drag freq to a "VFO" storage cell and/or create a new one.
-  * S meter
-	* Needs to support vertical and horizontal orientation.
-	* Could be docked onto side(s) of waterfall.
-  * Waterfall
-  * Current spectrum
-  * Band
-  * Filters
-  * AGC
-  * Noise reduction controls
-  * Volume
-    * Includes MUTE somehow.
-  * Squelch
-  * RF gain/attenuation
-  * Color scheme editor
-    * Generic, not just for waterfall, but with SetBox applicability tags
-  * FPS meter
-  * Any text
-    * Needs "NexRx" as title
-  * Recording controls
-  * Logging controls
-  * App needs a real icon
 
 ## How to do each use scenario
 * Show and change bandpass and notch filters on spectrum/waterfall.
@@ -103,7 +49,7 @@ The design philosophy is:
 
 # Hardware Calibration & Verification (ISG)
 * Implement FPGA ISG Stimulus:
-  * Add command to FPGA to generate a square wave on IOB_22a at a requested frequency.
+  * Add command to FPGA to generate PDM "sine" on IOB_22a at a requested frequency.
   * Filtered through 130pf + 100k resistor, fed to rx preselector in 200 ohm domain.
   * Consider if FPGA can generate a better signal than square wave (e.g., simple DDS or PWM filtering).
   * Add commands to Twin/HW to tune and toggle this ISG signal.
