@@ -5870,7 +5870,7 @@
 			(uuid "edca0e87-2aee-40b1-878c-1c1560793717")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874/32c670c7-05fb-4d6f-b587-f687839b2e31"
 					(reference "C1704")
 					(unit 1)

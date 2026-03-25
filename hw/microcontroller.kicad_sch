@@ -5017,7 +5017,10 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Switch:SW_Push_Dual"
+		(symbol "Switch:SW_Push"
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -5026,15 +5029,16 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "SW"
-				(at 0 7.62 0)
+				(at 1.27 2.54 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
-			(property "Value" "SW_Push_Dual"
-				(at 0 -6.35 0)
+			(property "Value" "SW_Push"
+				(at 0 -1.524 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -5042,7 +5046,7 @@
 				)
 			)
 			(property "Footprint" ""
-				(at 0 7.62 0)
+				(at 0 5.08 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -5051,7 +5055,7 @@
 				)
 			)
 			(property "Datasheet" "~"
-				(at 0 0 0)
+				(at 0 5.08 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -5059,7 +5063,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Push button switch, generic, symbol, four pins"
+			(property "Description" "Push button switch, generic, two pins"
 				(at 0 0 0)
 				(effects
 					(font
@@ -5077,20 +5081,9 @@
 					(hide yes)
 				)
 			)
-			(symbol "SW_Push_Dual_0_1"
+			(symbol "SW_Push_0_1"
 				(circle
-					(center -2.032 2.54)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.032 -2.54)
+					(center -2.032 0)
 					(radius 0.508)
 					(stroke
 						(width 0)
@@ -5102,67 +5095,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 3.81) (xy 0 5.588)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 3.048) (xy 0 3.556)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.032) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 1.016) (xy 0 1.524)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0.508) (xy 0 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -0.508) (xy 0 -1.016)
+						(xy 0 1.27) (xy 0 3.048)
 					)
 					(stroke
 						(width 0)
@@ -5173,18 +5106,7 @@
 					)
 				)
 				(circle
-					(center 2.032 2.54)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 -2.54)
+					(center 2.032 0)
 					(radius 0.508)
 					(stroke
 						(width 0)
@@ -5196,19 +5118,7 @@
 				)
 				(polyline
 					(pts
-						(xy 2.54 3.81) (xy -2.54 3.81)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 -1.27) (xy -2.54 -1.27)
+						(xy 2.54 1.27) (xy -2.54 1.27)
 					)
 					(stroke
 						(width 0)
@@ -5219,7 +5129,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 2.54 0)
+					(at -5.08 0 0)
 					(length 2.54)
 					(name "1"
 						(effects
@@ -5237,25 +5147,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 2.54)
-					(name "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 2.54 180)
+					(at 5.08 0 180)
 					(length 2.54)
 					(name "2"
 						(effects
@@ -5270,37 +5162,6 @@
 								(size 1.27 1.27)
 							)
 						)
-					)
-				)
-				(pin passive line
-					(at 5.08 -2.54 180)
-					(length 2.54)
-					(name "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "SW_Push_Dual_1_1"
-				(rectangle
-					(start -3.175 5.715)
-					(end 3.175 -4.445)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
 					)
 				)
 			)
@@ -5974,12 +5835,6 @@
 		(uuid "bd2be5a3-2ecd-4b1b-9123-fb1a926ae6b1")
 	)
 	(junction
-		(at 43.18 185.42)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "c0a5d212-534d-4e4e-858c-18664db01037")
-	)
-	(junction
 		(at 82.55 21.59)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6020,12 +5875,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fcb66f16-4d37-4af6-b116-c887f27a1995")
-	)
-	(junction
-		(at 38.1 172.72)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "ffa376f3-ff05-49fc-8866-eb230efab46c")
 	)
 	(no_connect
 		(at 241.3 46.99)
@@ -6218,16 +6067,6 @@
 			(type default)
 		)
 		(uuid "03bf3692-c936-4e9b-9fb9-8008af3510ad")
-	)
-	(wire
-		(pts
-			(xy 43.18 185.42) (xy 38.1 185.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "03d66986-75c5-4e2a-9a2d-eab96540ee14")
 	)
 	(wire
 		(pts
@@ -6791,7 +6630,7 @@
 	)
 	(wire
 		(pts
-			(xy 38.1 172.72) (xy 38.1 173.99)
+			(xy 38.1 171.45) (xy 38.1 173.99)
 		)
 		(stroke
 			(width 0)
@@ -7241,16 +7080,6 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 173.99) (xy 43.18 172.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5027b53e-765a-49ed-ab9f-49ee5f1a9be7")
-	)
-	(wire
-		(pts
 			(xy 36.83 49.53) (xy 57.15 49.53)
 		)
 		(stroke
@@ -7271,7 +7100,7 @@
 	)
 	(wire
 		(pts
-			(xy 48.26 185.42) (xy 43.18 185.42)
+			(xy 38.1 185.42) (xy 48.26 185.42)
 		)
 		(stroke
 			(width 0)
@@ -7308,16 +7137,6 @@
 			(type default)
 		)
 		(uuid "55d1c9b9-a66a-46ff-8c48-b4a61f7e0808")
-	)
-	(wire
-		(pts
-			(xy 43.18 184.15) (xy 43.18 185.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "56f56841-7e2a-4211-986e-25b116dd55a5")
 	)
 	(wire
 		(pts
@@ -7938,16 +7757,6 @@
 			(type default)
 		)
 		(uuid "80663974-8f58-44b3-b9d6-0d05e70f63b6")
-	)
-	(wire
-		(pts
-			(xy 38.1 171.45) (xy 38.1 172.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "80eeb7a6-69b3-4f4e-ab79-f8ae7df57b93")
 	)
 	(wire
 		(pts
@@ -9138,16 +8947,6 @@
 			(type default)
 		)
 		(uuid "fcf8102a-0137-4c17-9d1d-afe39012efcf")
-	)
-	(wire
-		(pts
-			(xy 38.1 172.72) (xy 43.18 172.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fd0fc8e7-7bbf-493a-bfc8-bf14e0f75df7")
 	)
 	(wire
 		(pts
@@ -10619,7 +10418,7 @@
 			(uuid "cda6a555-8d26-4e88-9214-5249a47b490e")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0234")
 					(unit 1)
@@ -10687,7 +10486,7 @@
 			(uuid "12496019-7007-4fe2-b160-39299ff566c1")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0240")
 					(unit 1)
@@ -10755,7 +10554,7 @@
 			(uuid "a85c1fae-f0ae-4503-8f95-3aaa65558707")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0229")
 					(unit 1)
@@ -11382,7 +11181,7 @@
 			(uuid "4d2941c0-2188-43b9-9f26-37a012ce75bd")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "J201")
 					(unit 1)
@@ -11519,7 +11318,7 @@
 			(uuid "07d4d331-96f8-4ea0-97b0-c523c2cd6162")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0233")
 					(unit 1)
@@ -11883,7 +11682,7 @@
 			(uuid "ee0a2425-c017-4462-be43-f87ac55b0b68")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C230")
 					(unit 1)
@@ -14102,6 +13901,101 @@
 		)
 	)
 	(symbol
+		(lib_id "Switch:SW_Push")
+		(at 38.1 179.07 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2ac386c7-0305-41f4-b473-9e926bb46e2a")
+		(property "Reference" "SW201"
+			(at 38.354 182.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Push button switch"
+			(at 39.37 177.8001 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Library:Panasonic_EVQPUK_EVQPUB"
+			(at 33.02 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://4donline.ihs.com/images/VipMasterIC/IC/PANA/PANAS38693/PANAS38693-1.pdf?hkey=CECEF36DEECDED6468708AAF2E19C0C6"
+			(at 33.02 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Push button, side operated, SMD SPST NO"
+			(at 38.1 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 38.1 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 38.1 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" "RECOVER"
+			(at 33.528 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "35cb8cd4-fb12-4bad-8f63-26a4fd33927e")
+		)
+		(pin "1"
+			(uuid "35efeb9b-f12e-4ad3-b5ff-5e74e07c21d4")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
+					(reference "SW201")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_Small_US")
 		(at 48.26 67.31 270)
 		(mirror x)
@@ -14870,7 +14764,7 @@
 			(uuid "7a2a703f-2192-4aa6-90ee-0bd06a9f10f9")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "R202")
 					(unit 1)
@@ -15189,7 +15083,7 @@
 			(uuid "7ce8741c-6f21-47f8-bbd4-b66752ab253a")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C206")
 					(unit 1)
@@ -15621,7 +15515,7 @@
 			(uuid "9511f658-7314-48c8-9aef-93de35c80719")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0210")
 					(unit 1)
@@ -15798,7 +15692,7 @@
 			(uuid "e5588104-f419-4328-af48-3116a8fc8481")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0230")
 					(unit 1)
@@ -16545,7 +16439,7 @@
 			(uuid "a3b1fd41-c829-41cb-b2b5-4e2e571de1fc")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C226")
 					(unit 1)
@@ -16613,7 +16507,7 @@
 			(uuid "e9a41540-f051-45bf-8a54-850f24e47db5")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0215")
 					(unit 1)
@@ -17460,7 +17354,7 @@
 			(uuid "af1834d7-05c0-41ab-9d30-156cb8d68057")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C229")
 					(unit 1)
@@ -18195,7 +18089,7 @@
 			(uuid "2e3f6643-f099-4feb-a50a-b1d152c909a2")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C218")
 					(unit 1)
@@ -18343,7 +18237,7 @@
 			(uuid "ae476511-e325-4142-8ae9-b0e21d21193a")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0248")
 					(unit 1)
@@ -18589,7 +18483,7 @@
 			(uuid "b431dd98-957d-421f-8b9e-fe9a10199282")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0238")
 					(unit 1)
@@ -18670,7 +18564,7 @@
 			(uuid "2ffd9c2e-3386-4d6f-b19a-b9241aafb7e9")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0212")
 					(unit 1)
@@ -19054,7 +18948,7 @@
 			(uuid "486c16f2-5bf9-45af-8b2a-d51c5160f7e7")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C221")
 					(unit 1)
@@ -19466,7 +19360,7 @@
 			(uuid "500cf818-ef7d-47d6-9e2c-d889004171c6")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "R218")
 					(unit 1)
@@ -19786,7 +19680,7 @@
 			(uuid "886fb570-3443-4d65-a92a-3b394f6300d4")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C205")
 					(unit 1)
@@ -20055,7 +19949,7 @@
 			(uuid "be9dc5a1-e6b7-414b-9d37-51bea9119598")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0243")
 					(unit 1)
@@ -20710,115 +20604,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Switch:SW_Push_Dual")
-		(at 40.64 179.07 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "7f2d912a-758c-469f-9b35-09c9e9182931")
-		(property "Reference" "SW201"
-			(at 45.72 177.7999 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "RECOVER"
-			(at 45.72 180.3399 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Button_Switch_SMD:Panasonic_EVQPUK_EVQPUB"
-			(at 33.02 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://4donline.ihs.com/images/VipMasterIC/IC/PANA/PANAS38693/PANAS38693-1.pdf?hkey=CECEF36DEECDED6468708AAF2E19C0C6"
-			(at 40.64 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Push button, side operated, SMD SPST NO"
-			(at 40.64 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "cap-type" ""
-			(at 40.64 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "r-power" ""
-			(at 40.64 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "label" ""
-			(at 40.64 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "JLCPCBpn" "C2915192"
-			(at 40.64 179.07 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "6765538e-8eb6-4c67-8bb8-01b2e936df87")
-		)
-		(pin "3"
-			(uuid "2603983e-71cb-473c-8e42-2a3c66138d67")
-		)
-		(pin "1"
-			(uuid "50b3302a-3964-4ac3-b7ea-4b869122d4c3")
-		)
-		(pin "2"
-			(uuid "c3cbbbe6-0910-4f20-b128-127f73c20e10")
-		)
-		(instances
-			(project ""
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
-					(reference "SW201")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Library:STM32H753VITx")
 		(at 80.01 97.79 0)
 		(unit 1)
@@ -21236,7 +21021,7 @@
 			(uuid "89ab5af4-e55c-4dfc-8e77-539b4943cf84")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "U201")
 					(unit 1)
@@ -21669,7 +21454,7 @@
 			(uuid "8455c4ba-3ae0-4fab-adbf-8044faa29c8b")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C220")
 					(unit 1)
@@ -22039,7 +21824,7 @@
 			(uuid "5473c111-1c53-4b7b-bebc-8e17cc884713")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "U202")
 					(unit 1)
@@ -22427,7 +22212,7 @@
 			(uuid "bb6e9c36-beb3-4d38-b69e-08df745e6e6a")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C231")
 					(unit 1)
@@ -22728,7 +22513,7 @@
 			(uuid "98b8ac8c-625c-4ae1-a002-53ae0f3de4a7")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "R214")
 					(unit 1)
@@ -22862,7 +22647,7 @@
 			(uuid "039c1c82-f05f-4e2c-a7b6-427a97e209be")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0207")
 					(unit 1)
@@ -23181,7 +22966,7 @@
 			(uuid "fd3fc8a1-fa47-465e-aa3b-f2162ca990e9")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C223")
 					(unit 1)
@@ -24253,7 +24038,7 @@
 			(uuid "2c179112-a728-4342-bd5b-a9f9f79816a6")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C228")
 					(unit 1)
@@ -24335,7 +24120,7 @@
 			(uuid "db547efc-0135-48a9-a3e6-da40a8a7b64c")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0239")
 					(unit 1)
@@ -24788,7 +24573,7 @@
 			(uuid "1a673cb3-6c45-4b30-8486-f26d7a67b0b4")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0209")
 					(unit 1)
@@ -25086,7 +24871,7 @@
 			(uuid "0a87dd60-2119-41f5-b873-e5186bae30c9")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "J202")
 					(unit 1)
@@ -25644,7 +25429,7 @@
 			(uuid "90f9195b-596a-4b71-99f4-f04c35cdb943")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "R215")
 					(unit 1)
@@ -26299,7 +26084,7 @@
 			(uuid "687bdfb3-7ed7-47e7-8eb2-80fd3d316d21")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C224")
 					(unit 1)
@@ -26871,7 +26656,7 @@
 			(uuid "31c9e5fd-bb36-4ebd-818b-e4e297499784")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "Y201")
 					(unit 1)
@@ -27329,7 +27114,7 @@
 			(uuid "4f30ee79-b3be-4bb3-9d1e-b67aaa9d98d6")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C213")
 					(unit 1)
@@ -27804,7 +27589,7 @@
 			(uuid "a56f95a0-2c4c-423d-91ea-f2f5e636548c")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C217")
 					(unit 1)
@@ -27886,7 +27671,7 @@
 			(uuid "901b3e3a-347d-4286-9758-519b4c127d77")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0247")
 					(unit 1)
@@ -27954,7 +27739,7 @@
 			(uuid "4c5cd9d8-dd78-4a84-8a6c-ca3b9dd0d5b6")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "#PWR0222")
 					(unit 1)
@@ -28393,7 +28178,7 @@
 			(uuid "cea69a6c-510e-4392-85f6-182771429a8d")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "R217")
 					(unit 1)
@@ -28531,7 +28316,7 @@
 			(uuid "77076ee2-4175-4615-85b1-769dacddbc2e")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
 					(reference "C202")
 					(unit 1)

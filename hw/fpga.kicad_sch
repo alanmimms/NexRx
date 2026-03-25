@@ -3734,7 +3734,7 @@
 			(uuid "47ebaa29-79da-4fa7-86b2-4985543273fb")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01304")
 					(unit 1)
@@ -4054,7 +4054,7 @@
 			(uuid "3ca83799-c997-433e-83f2-fc724c8c9d49")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1302")
 					(unit 1)
@@ -4924,7 +4924,7 @@
 			(uuid "1f2cbdd5-e440-429b-9790-1f9e67cad14f")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "U1301")
 					(unit 4)
@@ -4991,7 +4991,7 @@
 			(uuid "2b1d6b64-d45f-45d4-92ad-e95995cb7f2d")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01306")
 					(unit 1)
@@ -6241,7 +6241,7 @@
 			(uuid "1f2cbdd5-e440-429b-9790-1f9e67cad150")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "U1301")
 					(unit 2)
@@ -6905,7 +6905,7 @@
 			(uuid "f76a3889-40f1-463a-8d29-27f53882af19")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "Y1301")
 					(unit 1)
@@ -7297,7 +7297,7 @@
 			(uuid "8b494b0b-fb6d-4bc6-a903-3f7098be8d34")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1311")
 					(unit 1)
@@ -8081,7 +8081,7 @@
 			(uuid "cd5cd4fe-700a-47b0-abf3-502b2eb2787c")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1314")
 					(unit 1)
@@ -8421,7 +8421,7 @@
 			(uuid "c80828e6-9e8f-4e38-9333-ee54259f6e62")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01318")
 					(unit 1)
@@ -8742,7 +8742,7 @@
 			(uuid "14510db9-789c-4c3e-bf1b-47389f290cdf")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1303")
 					(unit 1)
@@ -9013,7 +9013,7 @@
 			(uuid "1f2cbdd5-e440-429b-9790-1f9e67cad151")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "U1301")
 					(unit 1)
@@ -9094,7 +9094,7 @@
 			(uuid "b2916f4e-89ab-470e-9c6b-ecf9744f0fd3")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01305")
 					(unit 1)
@@ -9242,7 +9242,7 @@
 			(uuid "87e5ba52-749e-4a00-b405-846cf4e20d60")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01301")
 					(unit 1)
@@ -9309,7 +9309,7 @@
 			(uuid "c500912e-e6d1-4e1b-b0ad-39b05da7f20c")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01319")
 					(unit 1)
@@ -9708,7 +9708,7 @@
 			(uuid "75851c26-019b-4bb6-a060-3efb7d69e542")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1301")
 					(unit 1)
@@ -9774,7 +9774,7 @@
 			(uuid "dbea4cb7-1ad5-476e-a044-4a236de51591")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01309")
 					(unit 1)
@@ -11187,7 +11187,7 @@
 			(uuid "f7ea3ccf-91ca-453c-bcfc-d96d83f5687b")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01303")
 					(unit 1)
@@ -11458,7 +11458,7 @@
 			(uuid "1f2cbdd5-e440-429b-9790-1f9e67cad152")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "U1301")
 					(unit 3)
@@ -12238,7 +12238,7 @@
 			(uuid "36f20c5c-51a4-4d27-ae0b-97e400eb086a")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01317")
 					(unit 1)
@@ -12564,7 +12564,7 @@
 			(uuid "04e648a8-8c9d-40f3-9ef5-4af2b81e49e1")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "#PWR01302")
 					(unit 1)
@@ -13087,7 +13087,7 @@
 			(uuid "b9a9220c-de16-4f13-8907-5200729fbd37")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1304")
 					(unit 1)
@@ -13273,7 +13273,7 @@
 			(uuid "593a7fa1-a27d-44f4-b82a-3503b93adc33")
 		)
 		(instances
-			(project ""
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "R1305")
 					(unit 1)
@@ -13917,7 +13917,7 @@
 			(uuid "e94d98c7-036a-497a-b2aa-40ba59c74d33")
 		)
 		(instances
-			(project "NexRig"
+			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
 					(reference "C1315")
 					(unit 1)

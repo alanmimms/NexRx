@@ -1,4 +1,4 @@
-27323892863457821
+27426128397898473
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71595,6 +71595,13 @@ SN74LVC04APW
 0
 14
 14
+Library
+Panasonic_EVQPUK_EVQPUB
+http://industrial.panasonic.com/cdbs/www-data/pdf/ATV0000/ATV0000CE5.pdf
+SMD SMT SPST EVQPUK EVQPUB
+0
+4
+2
 Library
 QFN50P300X300X60-20N-D
 UFQFPN203*3
