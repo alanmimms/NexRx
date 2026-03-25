@@ -1,6 +1,6 @@
 # NexBus Protocol & Distributed I/O Specification
 
-## 1. Project Overview
+## Project Overview
 
 The **NexBus** is a minimalist, high-reliability, single-wire
 distributed control system designed for the **NexRig SDR**. It
@@ -12,7 +12,7 @@ precision and low EMI.
 
 ---
 
-## 2. Hardware: The STM32C011F Target
+## Hardware: The STM32C011F Target
 
 The **STM32C011F** (UFQFN20 package) was selected for its ultra-low
 cost, internal 48MHz oscillator, and robust "System Memory"
@@ -37,7 +37,7 @@ bootloader.
 
 ---
 
-## 3. Communication Protocols
+## Communication Protocols
 
 The NexBus operates in two distinct modes over the same physical wire.
 
@@ -81,7 +81,19 @@ flashing and field updates.
 
 ---
 
-## 4. Identity & Addressing
+## Telemetry Extension
+
+To support sensor data, NexBus utilizes **Slotted Response Windows**.
+1. **Master Request:** Master sends a standard frame with a specific
+   Mode Nybble (0xC-0xE).
+2. **Turnaround:** Master floats the bus for $500\mu s$.
+3. **Target Response:** Targets respond sequentially based on ID.
+4. **Encoding:** Targets use the same Ratio-Based Symbols
+   (25%/50%/75%) to maintain protocol symmetry and simplify Host
+   decoding.
+
+
+## Identity & Addressing
 
 Each target identifies itself at Power-On Reset (PoR) by probing three
 pins (**PB7, PC14, PC15**).
@@ -101,7 +113,7 @@ resistors:
 
 ---
 
-## 5. Recovery & Reliability
+## Recovery & Reliability
 
 Because `nRESET` is not routed, the system uses "Software-Defined
 Hardness":
@@ -124,7 +136,7 @@ traffic intended for other nodes.
 
 ---
 
-## 6. Update Workflow (Factory & Field)
+## Update Workflow (Factory & Field)
 
 ### Initial Factory Flash
 
@@ -151,7 +163,7 @@ traffic intended for other nodes.
 
 ---
 
-## 7. Electrical Best Practices
+## Electrical Best Practices
 
 * **Slew Rate:** Targets must be configured for **Low Speed** GPIO
   drive (`OSPEEDR`) to minimize RF interference.
