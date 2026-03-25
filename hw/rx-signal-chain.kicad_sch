@@ -9002,7 +9002,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 246.38 158.75 0)
 			(effects
 				(font
@@ -9694,7 +9694,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2c15b6d1-feb4-41fd-9cb7-78f1c9d5840c")
-		(property "Reference" "#PWR0332"
+		(property "Reference" "#PWR0331"
 			(at 236.22 119.38 0)
 			(effects
 				(font
@@ -9744,7 +9744,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0332")
+					(reference "#PWR0331")
 					(unit 1)
 				)
 			)
@@ -11540,7 +11540,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "571bd55d-f09e-49a2-bc76-5c1b0e539802")
-		(property "Reference" "#PWR0331"
+		(property "Reference" "#PWR0330"
 			(at 232.41 33.02 0)
 			(effects
 				(font
@@ -11591,7 +11591,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0331")
+					(reference "#PWR0330")
 					(unit 1)
 				)
 			)
@@ -12277,7 +12277,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 51.1048 193.04 0)
 			(effects
 				(font
@@ -12536,7 +12536,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 52.07 189.23 0)
 			(effects
 				(font
@@ -12588,7 +12588,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5bb8010f-1ea7-400e-8315-ca92b76b9acc")
-		(property "Reference" "#PWR0329"
+		(property "Reference" "#PWR0332"
 			(at 236.22 135.89 0)
 			(effects
 				(font
@@ -12639,7 +12639,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0329")
+					(reference "#PWR0332")
 					(unit 1)
 				)
 			)
@@ -14227,7 +14227,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 229.87 158.75 0)
 			(effects
 				(font
@@ -15091,7 +15091,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "85f8fd4b-a4f1-4902-873a-678e17176861")
-		(property "Reference" "#PWR0330"
+		(property "Reference" "#PWR0329"
 			(at 229.87 171.45 0)
 			(effects
 				(font
@@ -15142,7 +15142,7 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f"
-					(reference "#PWR0330")
+					(reference "#PWR0329")
 					(unit 1)
 				)
 			)
@@ -15587,7 +15587,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 196.85 158.75 0)
 			(effects
 				(font
@@ -17402,7 +17402,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 118.4148 195.58 0)
 			(effects
 				(font
@@ -17661,7 +17661,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 119.38 191.77 0)
 			(effects
 				(font
@@ -18504,7 +18504,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 213.36 158.75 0)
 			(effects
 				(font
@@ -19354,7 +19354,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 118.4148 161.29 0)
 			(effects
 				(font
@@ -19613,7 +19613,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 119.38 157.48 0)
 			(effects
 				(font
@@ -20554,7 +20554,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3528-21_Kemet-B"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 51.1048 158.75 0)
 			(effects
 				(font
@@ -20813,7 +20813,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "10V"
 			(at 52.07 154.94 0)
 			(effects
 				(font
