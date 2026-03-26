@@ -4130,6 +4130,12 @@
 		(uuid "4d043aed-4b28-4c41-8fca-3b1aec915e7c")
 	)
 	(junction
+		(at 88.9 165.1)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4dd106dc-5f5c-4f54-9643-0dfbd706a1e2")
+	)
+	(junction
 		(at 63.5 97.79)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4272,6 +4278,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "dc486f4e-3c65-4b4e-ad31-449d68a04cb2")
+	)
+	(junction
+		(at 88.9 157.48)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dd5b775a-1dbe-40eb-869a-ffc7fc33a269")
 	)
 	(junction
 		(at 106.68 41.91)
@@ -4516,6 +4528,16 @@
 			(type default)
 		)
 		(uuid "14b66e2b-6d30-48ed-b010-e0477c7beab5")
+	)
+	(wire
+		(pts
+			(xy 88.9 165.1) (xy 90.17 165.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "151ed2f1-3925-4b40-8551-a8daa4822d49")
 	)
 	(wire
 		(pts
@@ -5139,6 +5161,16 @@
 	)
 	(wire
 		(pts
+			(xy 88.9 157.48) (xy 88.9 160.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "595346a7-1be7-4ef4-bd24-5b8012a3316c")
+	)
+	(wire
+		(pts
 			(xy 247.65 33.02) (xy 255.27 33.02)
 		)
 		(stroke
@@ -5326,6 +5358,16 @@
 			(type default)
 		)
 		(uuid "6cf4e984-eb3e-4317-a793-6a752db83e7c")
+	)
+	(wire
+		(pts
+			(xy 88.9 157.48) (xy 90.17 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6d62eb14-4179-4541-a78a-a17b71902b7e")
 	)
 	(wire
 		(pts
@@ -5656,6 +5698,16 @@
 			(type default)
 		)
 		(uuid "9d49cca8-09b6-477e-96e0-132db210fae3")
+	)
+	(wire
+		(pts
+			(xy 88.9 162.56) (xy 88.9 165.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9d661b83-e08b-4626-96c7-9401b1ed128f")
 	)
 	(wire
 		(pts
@@ -6399,7 +6451,7 @@
 	)
 	(hierarchical_label "usbDN"
 		(shape bidirectional)
-		(at 88.9 157.48 0)
+		(at 90.17 157.48 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6419,31 +6471,9 @@
 		)
 		(uuid "4fa5fc91-3918-4451-881b-bf3857a596d4")
 	)
-	(hierarchical_label "usbDN"
-		(shape bidirectional)
-		(at 88.9 160.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "888f6e34-b1ae-4afb-8d51-2ba34a6655d1")
-	)
 	(hierarchical_label "usbDP"
 		(shape bidirectional)
-		(at 88.9 162.56 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "96f44aa8-d8a2-4065-9fda-7d852fe2a756")
-	)
-	(hierarchical_label "usbDP"
-		(shape bidirectional)
-		(at 88.9 165.1 0)
+		(at 90.17 165.1 0)
 		(effects
 			(font
 				(size 1.27 1.27)
