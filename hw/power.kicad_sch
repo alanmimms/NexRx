@@ -1259,7 +1259,7 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at 0 2.54 0)
+				(at 17.78 8.89 0)
 				(effects
 					(font
 						(size 1.524 1.524)
@@ -1267,7 +1267,7 @@
 				)
 			)
 			(property "Value" "PTPS7A2012PDBVR"
-				(at 0 0 0)
+				(at 15.24 6.35 0)
 				(effects
 					(font
 						(size 1.524 1.524)
@@ -1275,7 +1275,7 @@
 				)
 			)
 			(property "Footprint" "DBV0005A-IPC_A"
-				(at 0 0 0)
+				(at 20.32 13.97 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1285,7 +1285,7 @@
 				)
 			)
 			(property "Datasheet" "https://www.ti.com/lit/gpn/tps7a20"
-				(at 0 0 0)
+				(at 15.24 11.43 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1432,24 +1432,6 @@
 						)
 					)
 				)
-				(pin unspecified line
-					(at 30.48 0 180)
-					(length 5.08)
-					(name "OUT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 				(pin power_in line
 					(at 30.48 -10.16 180)
 					(length 5.08)
@@ -1461,6 +1443,26 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PTPS7A2012PDBVR_1_1"
+				(pin power_out line
+					(at 30.48 0 180)
+					(length 5.08)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1584,7 +1586,7 @@
 						(type background)
 					)
 				)
-				(pin passive line
+				(pin power_in line
 					(at -12.7 1.27 0)
 					(length 5.08)
 					(name "VIN"
@@ -1638,7 +1640,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin power_out line
 					(at 15.24 1.27 180)
 					(length 5.08)
 					(name "VOUT"
@@ -2786,6 +2788,228 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "PTPS7A2012PDBVR_1"
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 17.78 8.89 0)
+				(effects
+					(font
+						(size 1.524 1.524)
+					)
+				)
+			)
+			(property "Value" "PTPS7A2012PDBVR"
+				(at 15.24 6.35 0)
+				(effects
+					(font
+						(size 1.524 1.524)
+					)
+				)
+			)
+			(property "Footprint" "DBV0005A-IPC_A"
+				(at 20.32 13.97 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.ti.com/lit/gpn/tps7a20"
+				(at 15.24 11.43 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "PTPS7A2012PDBVR"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "DBV0005A-IPC_A DBV0005A-IPC_B DBV0005A-IPC_C DBV0005A-MFG"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PTPS7A2012PDBVR_1_0_1"
+				(polyline
+					(pts
+						(xy 5.08 5.08) (xy 5.08 -12.7)
+					)
+					(stroke
+						(width 0.2032)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 5.08 -12.7) (xy 25.4 -12.7)
+					)
+					(stroke
+						(width 0.2032)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 25.4 5.08) (xy 5.08 5.08)
+					)
+					(stroke
+						(width 0.2032)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 25.4 -12.7) (xy 25.4 5.08)
+					)
+					(stroke
+						(width 0.2032)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin power_in line
+					(at 0 0 0)
+					(length 5.08)
+					(name "IN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 0 -5.08 0)
+					(length 5.08)
+					(name "EN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 0 -10.16 0)
+					(length 5.08)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 30.48 -10.16 180)
+					(length 5.08)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PTPS7A2012PDBVR_1_1_1"
+				(pin power_out line
+					(at 30.48 0 180)
+					(length 5.08)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Regulator_Switching:LMR51430"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -2963,6 +3187,230 @@
 					(at 10.16 -2.54 180)
 					(length 2.54)
 					(name "FB"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "TPS22918DBVR_1"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at -5.588 8.128 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Value" "TPS22918DBVR"
+				(at -5.588 5.588 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Footprint" "SOT95P280X145-6N"
+				(at 24.13 -94.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "http://www.ti.com/lit/gpn/TPS22918"
+				(at 24.13 -194.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Description" "5.5V, 2A, 52m load switch with adjustable rise time and adjustable quick output discharge"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Height" "1.45"
+				(at 24.13 -394.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Part Number" "595-TPS22918DBVR"
+				(at 24.13 -494.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS22918DBVR?qs=f4l5qYp%2Fy%252B5F7w5ZAgmi7A%3D%3D"
+				(at 24.13 -594.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Name" "Texas Instruments"
+				(at 24.13 -694.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Part_Number" "TPS22918DBVR"
+				(at 24.13 -794.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(symbol "TPS22918DBVR_1_1_1"
+				(rectangle
+					(start -7.62 3.81)
+					(end 10.16 -6.35)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin power_in line
+					(at -12.7 1.27 0)
+					(length 5.08)
+					(name "VIN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -12.7 -1.27 0)
+					(length 5.08)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -12.7 -3.81 0)
+					(length 5.08)
+					(name "ON"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 15.24 1.27 180)
+					(length 5.08)
+					(name "VOUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 15.24 -1.27 180)
+					(length 5.08)
+					(name "QOD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 15.24 -3.81 180)
+					(length 5.08)
+					(name "CT"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4010,12 +4458,6 @@
 		(uuid "07c61f52-a981-4402-9bf1-414e39c8d870")
 	)
 	(junction
-		(at 187.96 33.02)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "0e2f2d5d-dad6-486f-b422-ecbab248a3da")
-	)
-	(junction
 		(at 134.62 102.87)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4321,6 +4763,12 @@
 		(color 0 0 0 0)
 		(uuid "f1d00b5a-0293-45fa-b200-fc5eb5d75595")
 	)
+	(junction
+		(at 140.97 102.87)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f2684fbc-8b23-4cce-89b0-d5d1654f7c83")
+	)
 	(no_connect
 		(at 247.65 35.56)
 		(uuid "19ab922e-6f41-4c38-a774-d684bba03d7e")
@@ -4521,7 +4969,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 102.87) (xy 144.78 102.87)
+			(xy 138.43 102.87) (xy 140.97 102.87)
 		)
 		(stroke
 			(width 0)
@@ -4731,7 +5179,7 @@
 	)
 	(wire
 		(pts
-			(xy 201.93 107.95) (xy 205.74 107.95)
+			(xy 203.2 107.95) (xy 205.74 107.95)
 		)
 		(stroke
 			(width 0)
@@ -5281,7 +5729,7 @@
 	)
 	(wire
 		(pts
-			(xy 201.93 107.95) (xy 201.93 120.65)
+			(xy 203.2 107.95) (xy 203.2 120.65)
 		)
 		(stroke
 			(width 0)
@@ -5431,7 +5879,7 @@
 	)
 	(wire
 		(pts
-			(xy 187.96 33.02) (xy 194.31 33.02)
+			(xy 184.15 33.02) (xy 194.31 33.02)
 		)
 		(stroke
 			(width 0)
@@ -5458,6 +5906,16 @@
 			(type default)
 		)
 		(uuid "7995aaeb-a766-4269-9b2f-84dbf9dfbf53")
+	)
+	(wire
+		(pts
+			(xy 140.97 102.87) (xy 144.78 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7b4c4574-ef8c-430b-8c0d-027738b4234f")
 	)
 	(wire
 		(pts
@@ -5488,16 +5946,6 @@
 			(type default)
 		)
 		(uuid "7e4e81e1-18bf-4c26-a738-d337ae02ea94")
-	)
-	(wire
-		(pts
-			(xy 184.15 33.02) (xy 187.96 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "807e87da-7a9e-414e-9cbc-8d69606263d7")
 	)
 	(wire
 		(pts
@@ -6071,7 +6519,7 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 120.65) (xy 201.93 120.65)
+			(xy 199.39 120.65) (xy 203.2 120.65)
 		)
 		(stroke
 			(width 0)
@@ -7781,6 +8229,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 140.97 102.87 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "290983cf-c54d-492d-8ca5-263415c4654d")
+		(property "Reference" "#FLG01304"
+			(at 140.97 100.965 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 140.97 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 140.97 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 140.97 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 140.97 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fd6d31e7-7ea5-46ee-a58e-64cb33680ec6")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
+					(reference "#FLG01304")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 234.95 54.61 0)
 		(mirror y)
@@ -8673,72 +9187,6 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
 					(reference "C1312")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 187.96 33.02 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "31d9c5dc-1b07-4948-87d0-08b0a789c58a")
-		(property "Reference" "#FLG01304"
-			(at 187.96 31.115 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 187.96 27.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 187.96 33.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 187.96 33.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 187.96 33.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "bc7a2999-5e88-416c-9fb3-44f30f88e194")
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
-					(reference "#FLG01304")
 					(unit 1)
 				)
 			)
@@ -14510,6 +14958,7 @@
 		)
 	)
 	(symbol
+		(lib_name "PTPS7A2012PDBVR_1")
 		(lib_id "Library:PTPS7A2012PDBVR")
 		(at 205.74 102.87 0)
 		(unit 1)
@@ -16405,7 +16854,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
+		(property "Footprint" "Library:SOT95P280X145-6N"
 			(at 191.77 129.21 0)
 			(effects
 				(font
@@ -16524,6 +16973,36 @@
 				(hide yes)
 			)
 		)
+		(property "Mouser Part Number" "595-TPS22918DBVR"
+			(at 191.77 529.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "Texas Instruments"
+			(at 191.77 729.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "TPS22918DBVR"
+			(at 191.77 829.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
 		(pin "5"
 			(uuid "28673f86-36e1-4707-9357-b6347fafbeca")
 		)
@@ -16552,6 +17031,7 @@
 		)
 	)
 	(symbol
+		(lib_name "TPS22918DBVR_1")
 		(lib_id "Library:TPS22918DBVR")
 		(at 227.33 69.85 0)
 		(unit 1)
@@ -16577,7 +17057,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
+		(property "Footprint" "Library:SOT95P280X145-6N"
 			(at 251.46 164.77 0)
 			(effects
 				(font
@@ -16654,6 +17134,36 @@
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS22918DBVR?qs=f4l5qYp%2Fy%252B5F7w5ZAgmi7A%3D%3D"
 			(at 251.46 664.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "595-TPS22918DBVR"
+			(at 251.46 564.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "Texas Instruments"
+			(at 251.46 764.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "TPS22918DBVR"
+			(at 251.46 864.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)

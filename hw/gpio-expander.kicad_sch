@@ -151,7 +151,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "MCU_ST_STM32C0:STM32C011F_4-6_Ux"
+		(symbol "Library:STM32C011F_4-6_Ux-NexBus"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -164,7 +164,7 @@
 					(justify left)
 				)
 			)
-			(property "Value" "STM32C011F_4-6_Ux"
+			(property "Value" "STM32C011F_4-6_Ux-NexBus"
 				(at 2.54 21.59 0)
 				(effects
 					(font
@@ -219,7 +219,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "STM32C011F_4-6_Ux_0_1"
+			(symbol "STM32C011F_4-6_Ux-NexBus_0_1"
 				(rectangle
 					(start -15.24 -20.32)
 					(end 15.24 20.32)
@@ -232,7 +232,7 @@
 					)
 				)
 			)
-			(symbol "STM32C011F_4-6_Ux_1_1"
+			(symbol "STM32C011F_4-6_Ux-NexBus_1_1"
 				(pin bidirectional line
 					(at -17.78 15.24 0)
 					(length 2.54)
@@ -253,7 +253,7 @@
 					(alternate "RCC_MCO" bidirectional line)
 					(alternate "TIM1_CH4" bidirectional line)
 				)
-				(pin bidirectional line
+				(pin passive line
 					(at -17.78 10.16 0)
 					(length 2.54)
 					(name "PC14"
@@ -282,7 +282,7 @@
 					(alternate "USART2_DE" bidirectional line)
 					(alternate "USART2_RTS" bidirectional line)
 				)
-				(pin bidirectional line
+				(pin passive line
 					(at -17.78 7.62 0)
 					(length 2.54)
 					(name "PC15"
@@ -305,7 +305,7 @@
 					(alternate "TIM1_ETR" bidirectional line)
 					(alternate "TIM3_CH3" bidirectional line)
 				)
-				(pin bidirectional line
+				(pin passive line
 					(at -17.78 2.54 0)
 					(length 2.54)
 					(name "PB6"
@@ -346,7 +346,7 @@
 					(alternate "USART1_RTS" bidirectional line)
 					(alternate "USART1_TX" bidirectional line)
 				)
-				(pin bidirectional line
+				(pin passive line
 					(at -17.78 0 0)
 					(length 2.54)
 					(name "PB7"
@@ -645,7 +645,7 @@
 					(alternate "USART1_RX" bidirectional line)
 					(alternate "USART2_TX" bidirectional line)
 				)
-				(pin bidirectional line
+				(pin output line
 					(at 17.78 -7.62 180)
 					(length 2.54)
 					(name "PA9/PA11"
@@ -678,7 +678,7 @@
 					(alternate "USART1_NSS (PA11)" bidirectional line)
 					(alternate "USART1_TX (PA9)" bidirectional line)
 				)
-				(pin bidirectional line
+				(pin input line
 					(at 17.78 -10.16 180)
 					(length 2.54)
 					(name "PA10/PA12"
@@ -1558,16 +1558,6 @@
 			(type default)
 		)
 		(uuid "5337826c-9404-49a7-8654-26999bd7638f")
-	)
-	(wire
-		(pts
-			(xy 154.94 167.64) (xy 154.94 168.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5869fdcc-9376-4eb3-b2c7-7b91455cf03a")
 	)
 	(wire
 		(pts
@@ -2869,7 +2859,7 @@
 		(uuid "b7ffa868-497d-445b-9b11-9fcef1ffbc73")
 	)
 	(symbol
-		(lib_id "MCU_ST_STM32C0:STM32C011F_4-6_Ux")
+		(lib_id "Library:STM32C011F_4-6_Ux-NexBus")
 		(at 90.17 64.77 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -2896,7 +2886,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Library:QFN50P300X300X60-20N-D"
+		(property "Footprint" "Package_DFN_QFN:ST_UFQFPN-20_3x3mm_P0.5mm"
 			(at 74.93 85.09 0)
 			(effects
 				(font
@@ -3179,7 +3169,7 @@
 		)
 	)
 	(symbol
-		(lib_id "MCU_ST_STM32C0:STM32C011F_4-6_Ux")
+		(lib_id "Library:STM32C011F_4-6_Ux-NexBus")
 		(at 153.67 140.97 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -3206,7 +3196,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Library:QFN50P300X300X60-20N-D"
+		(property "Footprint" "Package_DFN_QFN:ST_UFQFPN-20_3x3mm_P0.5mm"
 			(at 138.43 161.29 0)
 			(effects
 				(font
@@ -3422,7 +3412,7 @@
 		)
 	)
 	(symbol
-		(lib_id "MCU_ST_STM32C0:STM32C011F_4-6_Ux")
+		(lib_id "Library:STM32C011F_4-6_Ux-NexBus")
 		(at 91.44 142.24 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -3449,7 +3439,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Library:QFN50P300X300X60-20N-D"
+		(property "Footprint" "Package_DFN_QFN:ST_UFQFPN-20_3x3mm_P0.5mm"
 			(at 76.2 162.56 0)
 			(effects
 				(font
@@ -3664,7 +3654,7 @@
 		)
 	)
 	(symbol
-		(lib_id "MCU_ST_STM32C0:STM32C011F_4-6_Ux")
+		(lib_id "Library:STM32C011F_4-6_Ux-NexBus")
 		(at 154.94 64.77 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -3691,7 +3681,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Library:QFN50P300X300X60-20N-D"
+		(property "Footprint" "Package_DFN_QFN:ST_UFQFPN-20_3x3mm_P0.5mm"
 			(at 139.7 85.09 0)
 			(effects
 				(font

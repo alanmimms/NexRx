@@ -1888,37 +1888,6 @@
 		)
 		(uuid "f270e6cc-9ac8-4521-aa51-a5273d774ccf")
 	)
-	(netclass_flag ""
-		(length 2.54)
-		(shape round)
-		(at 60.96 82.55 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "fea191f6-2fe2-453d-a468-c2e5f5ade06c")
-		(property "Netclass" "rf50"
-			(at 61.6585 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Component Class" ""
-			(at 15.24 -83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-			)
-		)
-	)
 	(symbol
 		(lib_id "Device:C")
 		(at 63.5 107.95 0)

@@ -476,6 +476,273 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Crystal-small-GND24_1"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "Y202"
+				(at 5.334 3.81 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "26MHz"
+				(at 2.794 3.81 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm"
+				(at 13.97 -12.065 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.eaton.com/content/dam/eaton/products/electronic-components/resources/data-sheet/eaton-e2x-crystal-resonator-mhz-data-sheet-elx1386-en.pdf"
+				(at 13.97 -12.065 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "26MHz 18pF 10PPM"
+				(at 13.97 -12.065 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "cap-type" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "r-power" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer_Name" "EATON"
+				(at 10.795 -8.255 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Part_Number" "E2X260181G01"
+				(at 13.97 -12.065 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Mouser Part Number" "504-E2X260181G01"
+				(at 13.97 -12.065 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Core" ""
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "label" ""
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "quartz ceramic resonator oscillator"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Crystal*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Crystal-small-GND24_1_0_1"
+				(polyline
+					(pts
+						(xy -1.27 1.27) (xy -1.27 1.905) (xy 1.27 1.905) (xy 1.27 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -0.762) (xy -1.27 0.762)
+					)
+					(stroke
+						(width 0.381)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 -1.905) (xy 1.27 -1.905) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -0.762 -1.524)
+					(end 0.762 1.524)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -0.762) (xy 1.27 0.762)
+					)
+					(stroke
+						(width 0.381)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Crystal-small-GND24_1_1_1"
+				(pin passive line
+					(at -2.54 0 0)
+					(length 1.27)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 0.762 0.762)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 2.54 270)
+					(length 0.635)
+					(name "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 0.762 0.762)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 90)
+					(length 0.635)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 0.762 0.762)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 0 180)
+					(length 1.27)
+					(name "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 0.762 0.762)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:C"
 			(pin_numbers
 				(hide yes)
@@ -2565,7 +2832,7 @@
 				)
 			)
 			(property "Value" "26MHz"
-				(at 138.176 127.762 0)
+				(at 2.794 3.81 90)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2591,43 +2858,7 @@
 				)
 			)
 			(property "Description" "26MHz 18pF 10PPM"
-				(at 148.59 142.875 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer" "EATON"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "E2X260181G01"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "LCSC_PN" "C712894"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Mouser_PN" "504-E2X260181G01"
-				(at 0 0 0)
+				(at 13.97 -12.065 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2649,6 +2880,33 @@
 					(font
 						(size 1.27 1.27)
 					)
+				)
+			)
+			(property "Manufacturer_Name" "EATON"
+				(at 10.795 -8.255 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Part_Number" "E2X260181G01"
+				(at 13.97 -12.065 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Mouser Part Number" "504-E2X260181G01"
+				(at 13.97 -12.065 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
 				)
 			)
 			(property "Core" ""
@@ -5896,6 +6154,107 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "power:PWR_FLAG"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:VBUS"
 			(power)
 			(pin_numbers
@@ -6318,6 +6677,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "9eb83bef-c70a-4860-9305-6ca02e445522")
+	)
+	(junction
+		(at 232.41 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a0860bc7-396b-4c5f-88f4-e0ba34901247")
 	)
 	(junction
 		(at 224.79 91.44)
@@ -8691,7 +9056,7 @@
 	)
 	(wire
 		(pts
-			(xy 232.41 87.63) (xy 232.41 91.44)
+			(xy 232.41 87.63) (xy 232.41 88.9)
 		)
 		(stroke
 			(width 0)
@@ -9238,6 +9603,16 @@
 			(type default)
 		)
 		(uuid "deb9783a-d288-49a4-beb3-6555d8ec435c")
+	)
+	(wire
+		(pts
+			(xy 232.41 88.9) (xy 232.41 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e0faca91-1cd0-462d-8d4b-d142db313d08")
 	)
 	(wire
 		(pts
@@ -16823,6 +17198,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 232.41 88.9 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3df35cf0-d594-4efd-ad79-b80924a8bbc8")
+		(property "Reference" "#FLG0201"
+			(at 234.315 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 236.22 88.8999 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 232.41 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 232.41 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 232.41 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "32644102-ff76-44c3-a737-75f6fadca529")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543"
+					(reference "#FLG0201")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_Small_US")
 		(at 114.3 123.19 90)
 		(unit 1)
@@ -24348,6 +24790,33 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" "EATON"
+			(at 145.415 139.065 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "E2X260181G01"
+			(at 148.59 142.875 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "504-E2X260181G01"
+			(at 148.59 142.875 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "c1780a87-674d-4d69-b167-e614cdc33ae6")
 		)
@@ -27774,6 +28243,7 @@
 		)
 	)
 	(symbol
+		(lib_name "Crystal-small-GND24_1")
 		(lib_id "Library:Crystal-small-GND24")
 		(at 24.13 45.72 0)
 		(unit 1)
@@ -27888,6 +28358,33 @@
 		)
 		(property "label" ""
 			(at 24.13 45.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "EATON"
+			(at 34.925 53.975 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "E2X260181G01"
+			(at 38.1 57.785 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "504-E2X260181G01"
+			(at 38.1 57.785 90)
 			(effects
 				(font
 					(size 1.27 1.27)
