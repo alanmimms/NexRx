@@ -1,25 +1,12 @@
 {
   "board": {
-    "active_layer": 0,
+    "active_layer": 4,
     "active_layer_preset": "",
-    "auto_track_width": false,
-    "hidden_netclasses": [
-      "GND",
-      "Power"
-    ],
-    "hidden_nets": [
-      "",
-      "+3.3V-ON",
-      "+3.3VA",
-      "+5VA",
-      "+3.3V",
-      "+3.3VFPGAIO",
-      "+5.4V",
-      "GND",
-      "+VFPGACORE"
-    ],
+    "auto_track_width": true,
+    "hidden_netclasses": [],
+    "hidden_nets": [],
     "high_contrast_mode": 0,
-    "net_color_mode": 2,
+    "net_color_mode": 1,
     "opacity": {
       "images": 0.6,
       "pads": 1.0,
@@ -32,8 +19,8 @@
       "dimensions": true,
       "footprints": true,
       "graphics": true,
-      "keepouts": true,
-      "lockedItems": true,
+      "keepouts": false,
+      "lockedItems": false,
       "otherItems": true,
       "pads": true,
       "text": true,
@@ -58,12 +45,13 @@
       "pads",
       "zones",
       "drc_warnings",
+      "drc_exclusions",
       "locked_item_shadows",
       "conflict_shadows",
       "shapes"
     ],
-    "visible_layers": "ffffffff_ffffffff_fffffff5_dfff50e5",
-    "zone_display_mode": 1
+    "visible_layers": "ffffffff_ffffffff_fffffff5_ffffffff",
+    "zone_display_mode": 0
   },
   "git": {
     "integration_disabled": false,
@@ -72,7 +60,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "NexRx.kicad_prl",
+    "filename": "filter-tester.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {
@@ -136,9 +124,7 @@
     "sort_ascending": true,
     "sorting_column": 0
   },
-  "open_jobsets": [
-    "NexRx.kicad_jobset"
-  ],
+  "open_jobsets": [],
   "project": {
     "files": []
   },

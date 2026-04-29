@@ -38,8 +38,8 @@
         "other_text_upright": false,
         "pads": {
           "drill": 0.0,
-          "height": 0.64,
-          "width": 0.54
+          "height": 0.65,
+          "width": 0.35
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -167,22 +167,6 @@
         ],
         [
           "silk_edge_clearance|30230000|-334940000|687bbc47-0938-4ea5-8ff4-8a29830269ab|7d71532b-5da0-40eb-9498-642fc8882ac4",
-          ""
-        ],
-        [
-          "silk_over_copper|-38572275|-343721624|92b21e73-39ab-4031-92c0-c2791ed8502b|00000000-0000-0000-0000-000000000000",
-          "this is inherent and unavoidable"
-        ],
-        [
-          "silk_over_copper|-45126842|-342257982|5a8d5e7c-3f8c-48bc-a6f8-54b6a6ccf57a|00000000-0000-0000-0000-000000000000",
-          ""
-        ],
-        [
-          "silk_over_copper|-45597973|-349857982|78e7a9b9-9304-493f-9f2a-4dbe67e3c6a5|00000000-0000-0000-0000-000000000000",
-          "this is inherent and unavoidable"
-        ],
-        [
-          "silk_over_copper|-47514936|-342265937|186360fb-3af6-452c-ad8e-2ab5cd33f7bf|00000000-0000-0000-0000-000000000000",
           ""
         ],
         [
@@ -932,25 +916,17 @@
         "track_width": 0.2
       },
       {
-        "name": "rf200",
+        "name": "rf50",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 0,
-        "schematic_color": "rgb(81, 137, 25)",
-        "track_width": 0.127
+        "schematic_color": "rgb(255, 90, 35)",
+        "track_width": 0.156464
       }
     ],
     "meta": {
       "version": 4
     },
-    "net_colors": {
-      "+3.3V": "rgb(0, 194, 0)",
-      "+3.3V-ON": "rgb(194, 0, 194)",
-      "+3.3VA": "rgb(132, 132, 0)",
-      "+3.3VFPGAIO": "rgb(0, 72, 72)",
-      "+5VA": "rgb(0, 132, 132)",
-      "+VFPGAAUX": "rgb(0, 194, 194)",
-      "+VFPGACORE": "rgb(255, 0, 0)"
-    },
+    "net_colors": null,
     "netclass_assignments": {
       "+12V": [
         "Power"
@@ -1095,7 +1071,7 @@
         "rf50"
       ],
       "/FPGA/intSigGen": [
-        "rf200"
+        "rf50"
       ],
       "/FPGA/preselIn": [
         "rf200"
@@ -1146,6 +1122,15 @@
         "rf800"
       ],
       "/Rx Front End/Ctrl.breune": [
+        "rf50"
+      ],
+      "/Rx Front End/Filters/filter-tester/in": [
+        "rf50"
+      ],
+      "/Rx Front End/Filters/filter-tester/out": [
+        "rf50"
+      ],
+      "/Rx Front End/Filters/out": [
         "rf50"
       ],
       "/Rx Front End/QSD0/rfIn": [
@@ -1200,10 +1185,10 @@
         "rf200"
       ],
       "/Rx Front End/Tpad 12/a": [
-        "rf200"
+        "rf50"
       ],
       "/Rx Front End/Tpad 12/b": [
-        "rf200"
+        "rf50"
       ],
       "/Rx Front End/Tpad 12/in": [
         "rf200"
@@ -1215,7 +1200,7 @@
         "rf200"
       ],
       "/Rx Front End/Tpad 3/a": [
-        "rf200"
+        "rf50"
       ],
       "/Rx Front End/Tpad 3/in": [
         "rf200"
@@ -1237,6 +1222,9 @@
       ],
       "/Rx Front End/rf200atten": [
         "rf200"
+      ],
+      "/Rx Front End/rxIn": [
+        "rf50"
       ],
       "/Rx Front End/rxPreselOut": [
         "rf800"
@@ -1337,6 +1325,66 @@
         "rf50"
       ],
       "Net-(C101-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1301-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1302-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1304-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1307-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1308-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1309-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1310-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1313-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1315-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1316-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1322-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1323-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1329-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1330-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1336-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1337-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1338-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1340-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1341-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C1342-Pad2)": [
         "rf50"
       ],
       "Net-(C1401-Pad1)": [
@@ -1525,17 +1573,26 @@
       "Net-(C2036-Pad2)": [
         "PowerRF"
       ],
+      "Net-(C2101-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C2104-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C2107-Pad2)": [
+        "rf50"
+      ],
       "Net-(C2110-Pad1)": [
         "pwr200"
       ],
       "Net-(C2110-Pad2)": [
-        "pwr200"
+        "rf50"
       ],
       "Net-(C2113-Pad1)": [
         "pwr200"
       ],
       "Net-(C2113-Pad2)": [
-        "pwr200"
+        "rf50"
       ],
       "Net-(C2114-Pad1)": [
         "pwr200"
@@ -1547,7 +1604,7 @@
         "pwr200"
       ],
       "Net-(C2116-Pad2)": [
-        "pwr200"
+        "rf50"
       ],
       "Net-(C2117-Pad1)": [
         "pwr200"
@@ -2483,7 +2540,7 @@
         "PowerH"
       ],
       "Net-(R1001-Pad1)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(R1002-Pad1)": [
         "rf50"
@@ -2492,7 +2549,7 @@
         "rf200"
       ],
       "Net-(R1101-Pad1)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(R1102-Pad1)": [
         "rf50"
@@ -2606,7 +2663,7 @@
         "rf200"
       ],
       "Net-(R801-Pad1)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(R802-Pad1)": [
         "rf50"
@@ -2615,7 +2672,7 @@
         "rf200"
       ],
       "Net-(R901-Pad1)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(R902-Pad1)": [
         "rf50"
@@ -2642,10 +2699,10 @@
         "rf50"
       ],
       "Net-(U1001-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U1001-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U1001-SW)": [
         "Power"
@@ -2654,7 +2711,7 @@
         "rf200"
       ],
       "Net-(U1002-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U1004-SW)": [
         "Power"
@@ -2663,16 +2720,16 @@
         "Power"
       ],
       "Net-(U1101-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U1101-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U1102-J2)": [
         "rf200"
       ],
       "Net-(U1102-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U1104-SW)": [
         "Power"
@@ -2710,6 +2767,15 @@
       "Net-(U1301-4-VCCPLL)": [
         "Power"
       ],
+      "Net-(U1301-J1)": [
+        "rf50"
+      ],
+      "Net-(U1301-J2)": [
+        "rf50"
+      ],
+      "Net-(U1301-J3)": [
+        "rf50"
+      ],
       "Net-(U1301-SW)": [
         "Power"
       ],
@@ -2725,11 +2791,62 @@
       "Net-(U1302-COM4)": [
         "fine"
       ],
+      "Net-(U1302-J1)": [
+        "rf50"
+      ],
+      "Net-(U1302-J2)": [
+        "rf50"
+      ],
+      "Net-(U1302-J3)": [
+        "rf50"
+      ],
       "Net-(U1302-NO1)": [
         "rf50"
       ],
       "Net-(U1302-SW)": [
         "Power"
+      ],
+      "Net-(U1303-J1)": [
+        "rf50"
+      ],
+      "Net-(U1303-J2)": [
+        "rf50"
+      ],
+      "Net-(U1304-J1)": [
+        "rf50"
+      ],
+      "Net-(U1304-J2)": [
+        "rf50"
+      ],
+      "Net-(U1305-J2)": [
+        "rf50"
+      ],
+      "Net-(U1305-J3)": [
+        "rf50"
+      ],
+      "Net-(U1306-J2)": [
+        "rf50"
+      ],
+      "Net-(U1306-J3)": [
+        "rf50"
+      ],
+      "Net-(U1307-J1)": [
+        "rf50"
+      ],
+      "Net-(U1307-J2)": [
+        "rf50"
+      ],
+      "Net-(U1308-J2)": [
+        "rf50"
+      ],
+      "Net-(U1309-J2)": [
+        "rf50"
+      ],
+      "Net-(U1309-J3)": [
+        "rf50"
+      ],
+      "Net-(U1310-J3)": [
+        "rf50"
       ],
       "Net-(U1402-COM1)": [
         "fine"
@@ -2749,6 +2866,9 @@
       "Net-(U1501-OUT)": [
         "Power"
       ],
+      "Net-(U1502-SW)": [
+        "Power"
+      ],
       "Net-(U1503-J1)": [
         "rf200"
       ],
@@ -2766,6 +2886,9 @@
       ],
       "Net-(U1506-J1)": [
         "rf200"
+      ],
+      "Net-(U1506-SW)": [
+        "Power"
       ],
       "Net-(U1507-J1)": [
         "rf200"
@@ -2935,8 +3058,68 @@
       "Net-(U203-VDDCR)": [
         "Power"
       ],
+      "Net-(U2101-J1)": [
+        "rf50"
+      ],
+      "Net-(U2101-J2)": [
+        "rf50"
+      ],
+      "Net-(U2101-J3)": [
+        "rf50"
+      ],
+      "Net-(U2102-J1)": [
+        "rf50"
+      ],
+      "Net-(U2102-J2)": [
+        "rf50"
+      ],
+      "Net-(U2102-J3)": [
+        "rf50"
+      ],
+      "Net-(U2103-J1)": [
+        "rf50"
+      ],
+      "Net-(U2103-J2)": [
+        "rf50"
+      ],
       "Net-(U2103-VREG_1V2)": [
         "Power"
+      ],
+      "Net-(U2104-J1)": [
+        "rf50"
+      ],
+      "Net-(U2104-J2)": [
+        "rf50"
+      ],
+      "Net-(U2105-J2)": [
+        "rf50"
+      ],
+      "Net-(U2105-J3)": [
+        "rf50"
+      ],
+      "Net-(U2106-J2)": [
+        "rf50"
+      ],
+      "Net-(U2106-J3)": [
+        "rf50"
+      ],
+      "Net-(U2107-J1)": [
+        "rf50"
+      ],
+      "Net-(U2107-J2)": [
+        "rf50"
+      ],
+      "Net-(U2108-J2)": [
+        "rf50"
+      ],
+      "Net-(U2109-J2)": [
+        "rf50"
+      ],
+      "Net-(U2109-J3)": [
+        "rf50"
+      ],
+      "Net-(U2110-J3)": [
+        "rf50"
       ],
       "Net-(U2201-4-VCCPLL)": [
         "Power"
@@ -2997,6 +3180,9 @@
       ],
       "Net-(U301-OUT)": [
         "Power"
+      ],
+      "Net-(U301-VDD18)": [
+        "power-lite"
       ],
       "Net-(U302-FB)": [
         "Power"
@@ -3866,28 +4052,28 @@
         "rf800"
       ],
       "Net-(U801-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U801-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U802-J2)": [
         "rf200"
       ],
       "Net-(U802-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U901-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U901-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U902-J2)": [
         "rf200"
       ],
       "Net-(U902-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Veer": [
         "PowerRF"
@@ -4161,11 +4347,11 @@
         "pattern": "+2V5bias"
       },
       {
-        "netclass": "rf200",
+        "netclass": "Default",
         "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckIn"
       },
       {
-        "netclass": "rf200",
+        "netclass": "Default",
         "pattern": "/Rx Front End/RxZ200"
       },
       {
@@ -4177,19 +4363,19 @@
         "pattern": "/Power/+5.4V-dirty"
       },
       {
-        "netclass": "rf200",
+        "netclass": "Default",
         "pattern": "/Rx Front End/out24"
       },
       {
-        "netclass": "rf200",
+        "netclass": "Default",
         "pattern": "/Rx Front End/out12"
       },
       {
-        "netclass": "rf200",
+        "netclass": "Default",
         "pattern": "/Rx Front End/out6"
       },
       {
-        "netclass": "rf200",
+        "netclass": "Default",
         "pattern": "/Rx Front End/out3"
       }
     ]
@@ -4550,12 +4736,12 @@
           "show": false
         }
       ],
-      "filter_string": "",
+      "filter_string": "l",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
       "sort_asc": true,
-      "sort_field": "Reference"
+      "sort_field": "Value"
     },
     "connection_grid_size": 50.0,
     "drawing": {
@@ -4607,7 +4793,7 @@
         "version": 0
       },
       "model_mode": 4,
-      "workbook_filename": "NexRig.wbk"
+      "workbook_filename": ""
     },
     "page_layout_descr_file": "qsd.kicad_wsd",
     "plot_directory": "",
@@ -4647,10 +4833,6 @@
       "QSD0"
     ],
     [
-      "4791d531-dc86-4dad-a3f8-522417f410d3",
-      "Rx Preselector"
-    ],
-    [
       "00580834-a893-4f64-96cc-eed31636bfe9",
       "Tpad 3"
     ],
@@ -4671,8 +4853,8 @@
       "Tune Control"
     ],
     [
-      "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
-      "Power"
+      "55f80b23-9ef9-4f9e-b356-423e8c5a7520",
+      "Filters"
     ],
     [
       "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
@@ -4687,6 +4869,10 @@
       "PGA2"
     ],
     [
+      "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
+      "Power"
+    ],
+    [
       "32c670c7-05fb-4d6f-b587-f687839b2e31",
       "PGA2"
     ],
@@ -4701,6 +4887,10 @@
     [
       "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
       "PGA1"
+    ],
+    [
+      "7c90a4f5-b80c-4945-b610-682974b19feb",
+      "filter-tester"
     ]
   ],
   "text_variables": {
