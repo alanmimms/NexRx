@@ -12,12 +12,11 @@ serving, and DSP processing demand serious computational resources.
 graph LR
     A[Antenna] --> B[T/R Switch]
 
-    B --> C[50:200 ohm transformer]
     C --> D[Digital attenuators]
-    D --> E[Rx digital preselector]
+    D --> E[HPF and BPF array]
     F --> I[QSD0 (f-k)]
     G --> I[QSD1 (f+k)]
-    H --> I[QSD2 (6*f)]
+    H --> I[QSD2 (tbd)]
     
     I --> J[6-channel audio codec]
     J --> K[STM32H753]

@@ -12,8 +12,6 @@
 1. [Introduction](#introduction)
 2. [Architecture Overview](#architecture-overview)
 3. [Front-End Protection and Attenuation](#front-end-protection-and-attenuation)
-4. [200Ω Preselector Design](#200ω-preselector-design)
-5. [Impedance Transformation](#impedance-transformation)
 6. [Triple-QSD Architecture](#triple-qsd-architecture)
 7. [Programmable Gain Amplifiers](#programmable-gain-amplifiers)
 8. [Anti-Aliasing and ADC Interface](#anti-aliasing-and-adc-interface)
@@ -44,11 +42,6 @@ different sampling phases and frequencies, the system achieves >40 dB
 harmonic rejection through mathematical cancellation rather than
 analog filtering.
 
-**Impedance Domain Optimization**: The preselector operates at 200Ω
-nominal impedance rather than the traditional 50Ω, providing superior
-selectivity and reduced component stress while maintaining excellent
-dynamic range.
-
 **Software-Defined Flexibility**: Maximum functionality is implemented
 in software (STM32 firmware and host application), allowing
 improvements and new features without hardware changes.
@@ -62,38 +55,11 @@ transmitters.
 
 ## Architecture Overview
 
-### Signal Path Summary
-
-```mermaid
-graph LR
-    A[Antenna<br/>50Ω] --> block[DC Block &<br/>Protection]
-	block --> T50200[Impedance<br/>Transform<br/>50→200Ω]
-	T50200 --> tuner[Digital<br/>Antenna<br/>Tuner]
-    tuner --> bruene[Bruene<br/>Impedance<br/>Sampler]
-	bruene -> LPFs[Tx Low<br/>Pass<br/>Filters]
-    LPFs --> TRrelay[T/R Relay]
-	TRrelay --> TVS25[25V pk-pk<br/>Limiter]
-	TVS25 --> C[Digital<br/>Attenuator<br/>0-45dB]
-    C --> E[Preselector<br/>200Ω LC Tank]
-    E --> F[Transform<br/>200→3×22Ω]
-	F --> TVS13[13V pk-pk<br/>Limiter]
-	TVS13 --> G[Triple QSD<br/>Array]
-    G --> H[6× MAX9939<br/>PGAs]
-    H --> I[Anti-Alias<br/>Filters]
-    I --> J[AK5578<br/>ADC (6ch)]
-    J --> K[STM32H753<br/>Processing]
-    K --> L[Ethernet to<br/>Host PC]
-    
-    style E fill:#e3f2fd
-    style G fill:#c8e6c9
-    style K fill:#fff3e0
-```
-
 The receiver processes signals through distinct functional blocks,
 each optimized for its specific role:
 
 1. **Protection and Attenuation**: Handles strong signals and provides coarse gain control
-2. **Preselector**: Provides band-specific selectivity at 200Ω impedance
+2. **HPF and BPFs**: Provides band-specific selectivity and AM broadcast band rejection.
 3. **Triple-QSD Demodulation**: Converts RF to baseband with harmonic rejection
 4. **Programmable Gain**: Fine gain control with differential signal processing PGAs
 5. **Digitization**: High-resolution conversion with anti-aliasing
@@ -154,99 +120,6 @@ routes completely around the pad with minimal insertion loss. When
 
 **Control**: The STM32 controls these attenuator stages. This provides
 any attenuation combination from 0 to 45 dB in 3 dB steps.
-
----
-
-## 200Ω Preselector Design
-
-### Why 200Ω?
-
-Traditional 50Ω preselectors suffer from several limitations:
-
-| Parameter | 50Ω System | 200Ω System | Improvement |
-|-----------|------------|-------------|-------------|
-| Q Factor | R/X_L = 50/X_L | R/X_L = 200/X_L | 4× higher |
-| Component stress | High current | Low current | Reduced |
-| Selectivity | Limited Q | Excellent Q | Superior |
-
-The 200Ω impedance represents a balance between achievable Q,
-component stress, and practical implementation.
-
-### LC Tank Circuit
-
-The preselector uses switched inductors and a binary-weighted capacitor bank:
-
-**Inductors**
-
-The inductors are simple. There's a 220nH inductor that is always in
-circuit, and a 1.5uH inductor that is sometimes shorted out (by
-AS183-92LF pHEMT switch) for the higher bands, or put into series with
-the first inductor for the lower bands.
-
-**Capacitor Bank**:
-- 10-bit binary-weighted: 8, 15, 33, 68, 120, 250, 560, 2200, 3900, 8200pF
-- Total range: 8-15354pF in 8pF steps
-- ~18pF parasitic (PCB and switch capacitance)
-
-## Impedance Transformation
-
-### Input Transformer (50Ω to 200Ω)
-
-The antenna input uses an autotransformer to step up from 50Ω to the
-200Ω preselector impedance:
-
-**Specifications**:
-- Core: BN-43-202 binocular
-- Winding: Bifilar, 3-4 twists/inch, #30AWG
-- Turns: 4 total (2+2 autotransformer configuration)
-- Configuration: Centertap fed from antenna (50Ω), full winding to 200Ω
-
-**Construction Details**:
-```
-    ┌─────────────────┐
-    │    BN-43-202    │
-    │                 │
-GND─┼──┬─2T─┬─2T──────┼── 200Ω out
-    │      │          │
-    │   50Ω in        │
-    │  (centertap)    │
-    └─────────────────┘
-
-- Two tightly-coupled 2-turn windings form 4-turn autotransformer
-- Antenna connects to centertap (2 turns from ground)
-- 200Ω zone connects to full 4 turns
-- Turns ratio: 2:1, Impedance ratio: 4:1
-```
-
-A 100nF DC blocking capacitor follows the transformer output before
-the attenuator pads.
-
----
-
-### Output Transformer (200Ω to 3×22Ω)
-
-This critical transformer must provide three identical outputs for the triple-QSD array:
-
-**Specifications**:
-- Core: BN-43-202 binocular
-- Winding: hexafilar 2 turns each #30AWG
-- Primary: three of the windings in series
-- Secondaries: Remaining windings
-- Impedance: 200Ω to 22Ω per output (nominal)
-- Actual output impedance: 2-4Ω at HF
-
-**Why Hexafilar Winding?**: The six windings must be absolutely
-identical in impedance and coupling to maintain I/Q balance across the
-three QSDs. Hexafilar winding—where all six wires are wound
-together—ensures this matching. This is done by twisting separately
-(10-12 twists/inch) three pairs of wires. These three twisted pairs
-are then twisted together to create the hexafilar windings.
-
-**Low Output Impedance Requirement**: The QSDs present switched
-capacitive loads (470pF sampling capacitors). At 30 MHz with 6×
-oversampling, each capacitor must charge in ~1.4ns. The transformer's
-low output impedance (2-4Ω from winding resistance and leakage
-inductance) enables adequate charging even at high frequencies.
 
 ---
 
@@ -652,10 +525,9 @@ graph TB
     end
     
     subgraph Preselector
-        A3 --> B0[50:200Ω]
-	    B0 --> B1[digital attenuator 3,6,12,24dB]
-        B1 --> B2[LC Tank]
-        B2 --> B3[200:3×22Ω]
+        A3 --> B1[digital attenuator 3,6,12,24dB]
+        B1 --> B2[HPF and BPFs]
+        B2 --> B3[50:3×22Ω]
     end
     
     subgraph QSD Array
@@ -913,22 +785,6 @@ Built-in test signal generation enables self-calibration:
 - No expensive crystal filters
 - Exceptional harmonic rejection
 
-### Why 200Ω Preselector?
-
-**Alternative Considered**: Traditional 50Ω
-- Pros: Standard impedance throughout
-- Cons: Lower Q, higher current stress
-
-**Alternative Considered**: Even higher impedance (>1kΩ)
-- Pros: Even better Q
-- Cons: Voltage stress exceeds component ratings
-
-**200Ω Optimum**:
-- 4× Q improvement over 50Ω
-- Manageable voltage levels
-- Available components
-- Proven in high-performance receivers
-
 ### Why MAX9939 PGAs?
 
 **Alternative Considered**: Discrete VGA circuits
@@ -1042,13 +898,12 @@ reference for coherent receiver arrays or GPS disciplining.
 The NexRig receiver architecture represents a significant advancement
 in amateur radio receiver design. The triple-QSD approach provides
 exceptional harmonic rejection without complex filtering, while the
-200Ω preselector delivers superior selectivity with reduced component
+HPF and BPF array deliver superior selectivity with reduced component
 stress.
 
 Key innovations include:
 
 1. **Triple-QSD sampling** eliminates traditional direct conversion limitations
-2. **200Ω preselector impedance** optimizes Q factor and component stress
 3. **Comprehensive protection** ensures survival in harsh RF environments
 4. **Software-defined flexibility** enables continuous improvement
 5. **Integration with transmitter** provides vector network analysis capability

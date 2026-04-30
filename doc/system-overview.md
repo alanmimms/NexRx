@@ -47,12 +47,6 @@ PC, STM32H753 microcontroller, and Lattice FPGA handle tasks
 traditionally performed by analog components for flexibility and
 precision.
 
-**Impedance Domain Optimization**: Rather than forcing all subsystems
-to operate at the traditional 50Ω impedance, NexRx uses optimized
-impedance domains for each function. The receiver digital attenuator
-bank and preselector operate nominally at 200Ω for superior
-selectivity and lower component stress.
-
 **Software-Defined Configuration**: The SetBox paradigm replaces
 traditional fixed knobs with hierarchical configuration
 inheritance. Complex operating scenarios become simple profile
@@ -345,16 +339,15 @@ benefit the entire community.
 ### Receiver Performance
 
 **Architecture**: Triple-QSD direct conversion with complementary harmonic rejection
-**Preselection**: Variable LC tuning, 200Ω nominal impedance
+
+**Preselection**: Band pass filters with overlapping ranges for full
+HF coverage and an additional high pass filter to reject the AM
+broadcast band.
+
 **Sampling Rate**: 96 kHz (six channels: I/Q for each of three QSDs)
 **ADC Resolution**: 24-bit (AK5578)
 **Dynamic Range**: >100 dB (achievable with triple-QSD combining and gain ranging)
 **MDS (Minimum Detectable Signal)**: Better than -130 dBm (estimated, 500 Hz BW, 10 dB SNR)
-
-### Impedance Domains
-
-**Receiver Preselector**: 200Ω nominal (optimized for selectivity and reduced component stress)
-**Antenna Interface**: 50Ω (standard)
 
 ### Physical Interfaces
 
