@@ -2259,7 +2259,7 @@
 		)
 		(uuid "124ea0b5-d686-439e-8e52-3041c1970a1e")
 	)
-	(label "Tune.enLPFLo1"
+	(label "Tune.enBPFLo1"
 		(at 109.22 49.53 0)
 		(effects
 			(font
@@ -2279,7 +2279,7 @@
 		)
 		(uuid "30ec2ec1-8b9e-42e1-bfa8-ab22d8c2c2f4")
 	)
-	(label "Tune.nenLPFMid"
+	(label "Tune.nenBPFMid"
 		(at 173.99 49.53 0)
 		(effects
 			(font
@@ -2299,7 +2299,7 @@
 		)
 		(uuid "3e39fbb7-684b-44a0-a6be-dd9162bbaeb2")
 	)
-	(label "Tune.enLPFHi"
+	(label "Tune.enBPFHi"
 		(at 173.99 57.15 0)
 		(effects
 			(font
@@ -2339,7 +2339,7 @@
 		)
 		(uuid "6b0d23f0-0bb9-4e8e-a1f9-7d3f92d38353")
 	)
-	(label "Tune.enLPFLo2"
+	(label "Tune.enBPFLo2"
 		(at 109.22 52.07 0)
 		(effects
 			(font
@@ -2349,7 +2349,7 @@
 		)
 		(uuid "74ff1c68-340a-4116-94fc-9739a50f0e11")
 	)
-	(label "Tune.enLPFMid"
+	(label "Tune.enBPFMid"
 		(at 173.99 52.07 0)
 		(effects
 			(font
@@ -2429,7 +2429,7 @@
 		)
 		(uuid "e34b894a-d404-4d3b-a3b1-b01221bb63b1")
 	)
-	(label "Tune.nenLPFHi"
+	(label "Tune.nenBPFHi"
 		(at 173.99 54.61 0)
 		(effects
 			(font

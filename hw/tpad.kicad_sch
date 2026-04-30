@@ -899,6 +899,38 @@
 			)
 		)
 	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape diamond)
+		(at 139.7 80.01 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8f98762c-e1a9-442a-99ef-0ea008788307")
+		(property "Netclass" "rf50"
+			(at 140.9065 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Component Class" ""
+			(at 135.89 17.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify right)
+			)
+		)
+	)
 	(symbol
 		(lib_id "power:GND")
 		(at 92.71 88.9 0)

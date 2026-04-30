@@ -6386,7 +6386,7 @@
 	)
 	(bus_alias "Tune"
 		(members "enHPF" "nenHPF" "enBPFLo1" "enBPFLo2" "nenBPFMid" "enBPFMid"
-			"enBPFMid1" "enBPFMid2" "nenBPFHi" "enLPFHi" "atten24dB" "n24dB" "atten12dB"
+			"enBPFMid1" "enBPFMid2" "nenBPFHi" "enBPFHi" "atten24dB" "n24dB" "atten12dB"
 			"n12dB" "atten6dB" "n6dB" "atten3dB" "n3dB" "txrx"
 		)
 	)
