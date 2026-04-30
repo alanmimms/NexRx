@@ -11,7 +11,6 @@ namespace nexrx {
 // Helper to measure RMS power on a specific channel
 static double measureChannelRms(RemoteDevice& device, int channel, int durationMs) {
     auto& conn = device.conn();
-    conn.resetStats();
     double sumSq = 0;
     uint64_t count = 0;
     auto callback = [&](const IQFrame& frame) {
@@ -32,27 +31,27 @@ TestStatus pga_chk(RemoteDevice& device, std::string& message) {
     std::cout << "QSD Ch  | Gain 0dB | Gain 20dB | Status" << std::endl;
     std::cout << "--------+----------+-----------+--------" << std::endl;
 
-    conn.setAtten(3, true); conn.setAtten(6, true); conn.setAtten(12, true); conn.setAtten(24, true);
-    // Tune preselector to ~14.2MHz (Mask 64, L1 Shorted/Bypassed)
-    conn.setPreselectorInd(0, true);
-    for (int i=0; i<11; ++i) conn.setPreselectorCap(i, (64 >> i) & 1);
+    conn.setAtten(45);
+    // Select 14MHz BPF (band 3)
+    conn.setHpfBypass(false);
+    conn.setBpfIndex(3);
     
-    conn.setIsgEnable(true);
-    conn.setIsgFreq(14.205e6);
-    conn.setQsdVfo(0, 14.200e6); conn.setQsdVfo(1, 14.200e6); conn.setQsdVfo(2, 14.200e6);
+    conn.setISGEnable(true);
+    conn.setISGFreq(14.205e6);
+    conn.setVFO(14.200e6, 0.0);
     conn.startStream();
     conn.startReceiving();
 
     bool allPassed = true;
     
     // Baseline: 0dB
-    conn.setPgaGain(0.0);
+    conn.setPGAGain(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     double p0[3];
     for (int ch=0; ch<3; ++ch) p0[ch] = measureChannelRms(device, ch, 50);
 
     // Boost: 20dB
-    conn.setPgaGain(20.0);
+    conn.setPGAGain(5);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     double p20[3];
     for (int ch=0; ch<3; ++ch) p20[ch] = measureChannelRms(device, ch, 50);
@@ -68,8 +67,8 @@ TestStatus pga_chk(RemoteDevice& device, std::string& message) {
         if (!ok) allPassed = false;
     }
 
-    conn.setPgaGain(0.0); // Reset
-    conn.setIsgEnable(false);
+    conn.setPGAGain(0); // Reset
+    conn.setISGEnable(false);
     conn.stopStream();
 
     if (allPassed) {

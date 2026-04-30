@@ -172,11 +172,9 @@ function Model.rx.selectedMode:set(val) Model.set("rx.selectedMode", val) end
 -- Spectrum center is an observable we can shift
 Model.spectrumCenterFreq = R.observable(14.2e6)
 
-Model.preselector = {
-    enabled = projection("preselector.enabled", Types.Bool, true),
-    auto = projection("preselector.auto", Types.Bool, true),
-    L = projection("preselector.L", Types.Bool, true),
-    capMask = projection("preselector.capMask", Types.Number, 0)
+Model.filters = {
+    hpfBypass = projection("filters.hpfBypass", Types.Bool, false),
+    bpfIndex = projection("filters.bpfIndex", Types.Number, 0)
 }
 
 Model.ISG = {

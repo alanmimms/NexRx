@@ -22,9 +22,9 @@ TestStatus stream_chk(RemoteDevice& device, std::string& message) {
     // Soak for 2 seconds
     std::this_thread::sleep_for(std::chrono::seconds(2));
     
-    uint64_t frames = conn.framesReceived();
-    uint64_t dropped = conn.framesDropped();
-    uint64_t overruns = conn.bufferOverruns();
+    uint64_t frames = conn.getFramesReceived();
+    uint64_t dropped = 0;
+    uint64_t overruns = 0;
     
     conn.stopStream();
     

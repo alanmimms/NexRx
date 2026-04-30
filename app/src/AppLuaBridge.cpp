@@ -109,10 +109,8 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   hwTable["setAGCMode"] = [engine](int m) { engine->postTwinCommand("AGC", [engine, m]() { engine->getTwinConn().setAGCMode(m); }); };
   hwTable["setIsgFreq"] = [engine](double f) { engine->postTwinCommand("ISG_FREQ", [engine, f]() { engine->getTwinConn().setISGFreq(f); }); };
   hwTable["setIsgEnable"] = [engine](bool en) { engine->postTwinCommand("ISG_EN", [engine, en]() { engine->getTwinConn().setISGEnable(en); }); };
-  hwTable["setPreselectorInd"] = [engine](uint32_t mask) { engine->postTwinCommand("PS_L", [engine, mask]() { engine->getTwinConn().setPreselectorL(mask); }); };
-  hwTable["setPreselectorCap"] = [engine](uint32_t m) { engine->postTwinCommand("PS_C", [engine, m]() { engine->getTwinConn().setPreselectorCap(m); }); };
-  hwTable["setPreselectorAuto"] = [engine](bool en) { engine->postTwinCommand("PS_AUTO", [engine, en]() { engine->getTwinConn().setPreselectorAuto(en); }); };
-  hwTable["setPreselectorEnabled"] = [engine](bool en) { engine->postTwinCommand("PS_EN", [engine, en]() { engine->getTwinConn().setPreselectorEnabled(en); }); };
+  hwTable["setHpfBypass"] = [engine](bool bypass) { engine->postTwinCommand("HPF_BYPASS", [engine, bypass]() { engine->getTwinConn().setHpfBypass(bypass); }); };
+  hwTable["setBpfIndex"] = [engine](int idx) { engine->postTwinCommand("BPF_SELECT", [engine, idx]() { engine->getTwinConn().setBpfIndex(idx); }); };
   
   hwTable["setRFGain"] = [engine](double db) {
     engine->getDSP().setRfGain((float)db);

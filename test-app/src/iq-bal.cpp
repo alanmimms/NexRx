@@ -26,14 +26,14 @@ TestStatus iq_bal(RemoteDevice& device, std::string& message) {
     auto& conn = device.conn();
     std::cout << "\n[IQ Bal] Measuring QSD Image Rejection & Deriving Errors..." << std::endl;
     
-    conn.setAtten(3, true); conn.setAtten(6, true); conn.setAtten(12, true); conn.setAtten(24, true);
-    conn.setPreselectorInd(0, true); // Short L1
-    for (int i=0; i<11; ++i) conn.setPreselectorCap(i, (64 >> i) & 1); 
-    conn.setPgaGain(20.0);
+    conn.setAtten(45);
+    conn.setHpfBypass(false);
+    conn.setBpfIndex(3);
+    conn.setPGAGain(5);
     
-    conn.setIsgEnable(true);
-    conn.setIsgFreq(14.205e6);
-    conn.setQsdVfo(0, 14.200e6); conn.setQsdVfo(1, 14.200e6); conn.setQsdVfo(2, 14.200e6);
+    conn.setISGEnable(true);
+    conn.setISGFreq(14.205e6);
+    conn.setVFO(14.200e6, 0.0);
     conn.startStream();
     conn.startReceiving();
 
@@ -100,7 +100,7 @@ TestStatus iq_bal(RemoteDevice& device, std::string& message) {
         if (rej < 25.0) allOk = false; 
     }
 
-    conn.setIsgEnable(false);
+    conn.setISGEnable(false);
     conn.stopStream();
     if (allOk) { message = "Errors derived using real-component analysis"; return TestStatus::Passed; }
     return TestStatus::Failed;

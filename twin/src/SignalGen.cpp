@@ -15,6 +15,7 @@
 #include "stimulus/ToneGenerator.hpp"
 #include "stimulus/StimulusLua.hpp"
 #include "stimulus/RFCapturePlayer.hpp"
+#include "stimulus/AMGenerator.hpp"
 #include "AttenuatorModel.hpp"
 #include "AGCManager.hpp"
 
@@ -163,40 +164,46 @@ namespace nexrx {
     return opts;
   }
 
-  void getPreselParams(const PreselectorModel& model, double& fRes, double& qFactor) {
-    static const double capVals[11] = { 
-      8e-12, 15e-12, 33e-12, 68e-12, 120e-12, 250e-12, 
-      560e-12, 1000e-12, 2200e-12, 3900e-12, 8200e-12 
-    };
-    double totalC = 20e-12; // Stray
-    for (int i = 0; i < 11; ++i) {
-      if (model.getCap(i)) {
-	totalC += capVals[i];
-      }
+  double getChebyshevGain(double x, int n, double rippleDB) {
+    double epsilon = std::sqrt(std::pow(10.0, rippleDB / 10.0) - 1.0);
+    double cn;
+    double ax = std::abs(x);
+    if (ax <= 1.0) {
+        cn = std::cos(n * std::acos(ax));
+    } else {
+        cn = std::cosh(n * std::acosh(ax));
     }
-    double totalL = model.isL1Shorted() ? 220e-9 : (1.5e-6 + 220e-9);
-    fRes = 1.0 / (2.0 * M_PI * std::sqrt(totalL * totalC));
-    qFactor = 30.0; // Sharp resonance for visible detuning
+    return 1.0 / std::sqrt(1.0 + epsilon * epsilon * cn * cn);
   }
 
-  // Pre-calculate gain using already computed fRes and qFactor
-  double getPreselGainFast(double freqHz, double fRes, double qFactor, bool enabled) {
-    if (!enabled) return 1.0;
-    if (std::abs(freqHz) < 1.0) return 0.00001;
-
-    double x = freqHz / fRes;
-    double y = fRes / freqHz;
-    double diff = qFactor * (x - y);
-    double gain = 1.0 / std::sqrt(1.0 + diff * diff); // Avoid std::pow
-  
-    return std::max(gain, 0.00001);
-  }
-
-  double getPreselGain(double freqHz, const PreselectorModel& model) {
-    if (!model.isEnabled()) return 1.0;
-    double fr, q;
-    getPreselParams(model, fr, q);
-    return getPreselGainFast(freqHz, fr, q, true);
+  double getFilterBankGain(double freqHz, const FilterBankModel& filters) {
+    double totalGain = 1.0;
+    
+    // 1. AM Reject HPF (5th order Chebyshev, 1.75 MHz cutoff, 0.5dB ripple)
+    if (!filters.isHpfBypassed()) {
+        double x = 1.75e6 / std::max(1.0, freqHz);
+        totalGain *= getChebyshevGain(x, 5, 0.5);
+    }
+    
+    // 2. BPF Tree (3rd order Chebyshev, 0.5dB ripple)
+    int bpfIdx = filters.getBpfIndex();
+    if (bpfIdx >= 1 && bpfIdx <= 5) {
+        double fStart, fEnd;
+        switch (bpfIdx) {
+            case 1: fStart = 1.8e6;  fEnd = 3.4e6;  break;
+            case 2: fStart = 3.2e6;  fEnd = 7.5e6;  break;
+            case 3: fStart = 7.3e6;  fEnd = 14.5e6; break;
+            case 4: fStart = 14.3e6; fEnd = 22.0e6; break;
+            case 5: fStart = 21.8e6; fEnd = 30.0e6; break;
+            default: return totalGain;
+        }
+        double bw = fEnd - fStart;
+        double f0 = std::sqrt(fStart * fEnd);
+        double x = (freqHz * freqHz - f0 * f0) / (freqHz * bw);
+        totalGain *= getChebyshevGain(x, 3, 0.5);
+    }
+    
+    return std::max(totalGain, 0.00001);
   }
 
   int runFunctionalMode(const Options& opts) {
@@ -251,6 +258,15 @@ namespace nexrx {
         std::cerr << "[Twin] FAILED to load WAV I/Q: " << opts.wavIQ << std::endl;
       }
     }
+
+    // Add 1.5 MHz AM broadcast source for HPF testing
+    if (stimulusManager) {
+        auto amSource = std::make_shared<AMGenerator>(1.5e6, 0.05); // 1.5 MHz, 50mV peak
+        amSource->setTones({1000.0}); // 1 kHz tone
+        amSource->setModulationIndex(0.8);
+        stimulusManager->addStimulus("am-broadcast", amSource, "am", 1.5e6, 5.0); // Strong signal
+        stimulusManager->freeze();
+    }
   
     TCPControlConfig ctlConfig; 
     ctlConfig.host = opts.bindAddr; 
@@ -274,7 +290,7 @@ namespace nexrx {
       }
     
       AttenuatorModel attenuator;
-      PreselectorModel preselector;
+      FilterBankModel filters;
       PGAModel pga;
       AGCManager agc(&attenuator, &pga);
     
@@ -296,7 +312,7 @@ namespace nexrx {
     
       double lo = opts.loFreqMHz * 1e6;
       double k = opts.qsdOffsetKHz * 1000.0;
-      auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &preselector, &pga, &agc);
+      auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &filters, &pga, &agc);
       if (!opts.headless) {
         controlHandler->start(control.get(), opts.verbose);
       }
@@ -401,9 +417,7 @@ namespace nexrx {
       }
       
       if (!streamLogged) {
-	double fr, q;
-	getPreselParams(preselector, fr, q);
-	std::cout << "[Twin] Data streaming ACTIVE. Presel resonant at " << (fr/1e6) << " MHz" << std::endl;
+	std::cout << "[Twin] Data streaming ACTIVE." << std::endl;
 	streamLogged = true;
       }
 
@@ -415,8 +429,6 @@ namespace nexrx {
       }
 
       // Pre-calculate chunk-wide parameters and gains
-      double fRes, qFactor;
-      getPreselParams(preselector, fRes, qFactor);
       double attenGain = attenuator.getVoltageGain();
       double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
 
@@ -425,10 +437,10 @@ namespace nexrx {
       double oversamplePeriod = 1.0 / 480000.0;
       
       // 1. Generate RF Stimulus in one batch (minimizes virtual calls)
-      // Apply frequency-dependent preselector gain per stimulus inside the manager.
+      // Apply frequency-dependent filter bank gain per stimulus inside the manager.
       if (stimulusManager) {
           auto gainFunc = [&](double f) {
-              return getPreselGainFast(f, fRes, qFactor, preselector.isEnabled());
+              return getFilterBankGain(f, filters);
           };
           stimulusManager->generateBatch(chunkStartTime, oversamplePeriod, nToProcess * OVERSAMPLE_RATIO, 
                                         antBufferIQ.data(), current_lo, 480000.0, gainFunc);
@@ -447,7 +459,7 @@ namespace nexrx {
               // Calibration Stimulus (Clean sine wave) - Overwrites buffer if active
               if (controlHandler->isCalStimActive()) {
                   double fStim = controlHandler->getCalStimFreq();
-                  double pgStim = getPreselGainFast(fStim, fRes, qFactor, preselector.isEnabled());
+                  double pgStim = getFilterBankGain(fStim, filters);
                   double phaseStim = 2.0 * M_PI * std::fmod(fStim * t, 1.0);
                   antI = 0.010 * std::cos(phaseStim) * pgStim;
                   antQ = 0.010 * std::sin(phaseStim) * pgStim;

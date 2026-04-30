@@ -218,48 +218,26 @@ bool TwinConn::setISGEnable(bool enabled) {
   return !sendCBORRequest(Control::CMD_SET_ISG_ENABLE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
-bool TwinConn::setPreselectorL(uint32_t mask) {
-  uint8_t buf[128];
+bool TwinConn::setHpfBypass(bool bypass) {
+  uint8_t buf[64];
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_L);
-  cbor_encode_uint(&arr, mask);
+  cbor_encode_uint(&arr, Control::CMD_SET_HPF_BYPASS);
+  cbor_encode_boolean(&arr, bypass);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest(Control::CMD_SET_PRESEL_L, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_HPF_BYPASS, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
-bool TwinConn::setPreselectorCap(uint32_t mask) {
-  uint8_t buf[128];
+bool TwinConn::setBpfIndex(int index) {
+  uint8_t buf[64];
   CborEncoder enc, arr;
   cbor_encoder_init(&enc, buf, sizeof(buf), 0);
   cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_C);
-  cbor_encode_uint(&arr, mask);
+  cbor_encode_uint(&arr, Control::CMD_SET_BPF_SELECT);
+  cbor_encode_uint(&arr, (uint64_t)index);
   cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest(Control::CMD_SET_PRESEL_C, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
-}
-
-bool TwinConn::setPreselectorAuto(bool enabled) {
-  uint8_t buf[128];
-  CborEncoder enc, arr;
-  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
-  cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_AUTO);
-  cbor_encode_boolean(&arr, enabled);
-  cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest(Control::CMD_SET_PRESEL_AUTO, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
-}
-
-bool TwinConn::setPreselectorEnabled(bool enabled) {
-  uint8_t buf[128];
-  CborEncoder enc, arr;
-  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
-  cbor_encoder_create_array(&enc, &arr, 2);
-  cbor_encode_uint(&arr, Control::CMD_SET_PRESEL_EN);
-  cbor_encode_boolean(&arr, enabled);
-  cbor_encoder_close_container(&enc, &arr);
-  return !sendCBORRequest(Control::CMD_SET_PRESEL_EN, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
+  return !sendCBORRequest(Control::CMD_SET_BPF_SELECT, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
 bool TwinConn::setTrMode(int mode) {

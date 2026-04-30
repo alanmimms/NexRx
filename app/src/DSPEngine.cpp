@@ -148,10 +148,10 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     lastK_hz = k_hz;
   }
 
-  // Shift QSD0 UP by k: (i + j*q) * (cos + j*sin)
-  Complex s0_s(s0_c.real() * shiftCos - s0_c.imag() * shiftSin, s0_c.imag() * shiftCos + s0_c.real() * shiftSin);
-  // Shift QSD1 DOWN by k: (i + j*q) * (cos - j*sin)
-  Complex s1_s(s1_c.real() * shiftCos + s1_c.imag() * shiftSin, s1_c.imag() * shiftCos - s1_c.real() * shiftSin);
+  // Shift QSD0 DOWN by k: (i + j*q) * (cos - j*sin)
+  Complex s0_s(s0_c.real() * shiftCos + s0_c.imag() * shiftSin, s0_c.imag() * shiftCos - s0_c.real() * shiftSin);
+  // Shift QSD1 UP by k: (i + j*q) * (cos + j*sin)
+  Complex s1_s(s1_c.real() * shiftCos - s1_c.imag() * shiftSin, s1_c.imag() * shiftCos + s1_c.real() * shiftSin);
 
 
   // 3. Triple-QSD Image Rejection (Averaging Matrix)
@@ -193,10 +193,10 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     };
     // Frequency shifts WITHOUT current weights for discovery
     // Use the same phasors as the main DSP path (Fundamentals-aligned)
-    // S0 shifted UP by k
-    Complex s0_raw_s(s0.real() * shiftCos - s0.imag() * shiftSin, s0.imag() * shiftCos + s0.real() * shiftSin);
-    // S1 shifted DOWN by k
-    Complex s1_raw_s(s1.real() * shiftCos + s1.imag() * shiftSin, s1.imag() * shiftCos - s1.real() * shiftSin);
+    // S0 shifted DOWN by k
+    Complex s0_raw_s(s0.real() * shiftCos + s0.imag() * shiftSin, s0.imag() * shiftCos - s0.real() * shiftSin);
+    // S1 shifted UP by k
+    Complex s1_raw_s(s1.real() * shiftCos - s1.imag() * shiftSin, s1.imag() * shiftCos + s1.real() * shiftSin);
     accA(s2, s0_raw_s, accA0_r, accA0_i, pA0);
     accA(s2, s1_raw_s, accA1_r, accA1_i, pA1);
 
@@ -262,8 +262,6 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     double phaseInc = -2.0 * M_PI * tuningOffsetHz / 96000.0;
     tuneCos_d = std::cos(phaseInc);
     tuneSin_d = std::sin(phaseInc);
-    tuneCos = 1.0;
-    tuneSin = 0.0;
     lastTune_hz = tuningOffsetHz;
   }
   float iT = iF * (float)tuneCos - qF * (float)tuneSin;

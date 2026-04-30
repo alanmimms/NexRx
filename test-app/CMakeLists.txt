@@ -45,17 +45,14 @@ set(TEST_APP_SOURCES
     src/test-app.cpp
     src/test-engine.cpp
     src/remote-dev.cpp
-    src/presel-cal.cpp
     src/iq-bal.cpp
-    src/spur-chk.cpp
     src/pga-chk.cpp
     src/stream-chk.cpp
-    src/select-chk.cpp
     
     # Shared with app/
     ${APP_SRC_DIR}/Socket.cpp
-    ${APP_SRC_DIR}/TcpControlClient.cpp
-    ${APP_SRC_DIR}/UdpStreamClient.cpp
+    ${APP_SRC_DIR}/TCPControlClient.cpp
+    ${APP_SRC_DIR}/UDPStreamClient.cpp
     ${APP_SRC_DIR}/TwinConn.cpp
 )
 

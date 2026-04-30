@@ -67,21 +67,15 @@ function Hardware.sync(commands)
         end
     end
 
-    -- Preselector Synchronization
-    if commands.preselector then
-        local p = commands.preselector
+    -- RF Filter Synchronization
+    if commands.filters then
+        local f = commands.filters
         if hw then
-            if p.L ~= nil and shouldSend("presel.L", p.L) and hw.setPreselectorInd then
-                hw.setPreselectorInd(p.L and 1 or 0)
+            if f.hpfBypass ~= nil and shouldSend("hpf.bypass", f.hpfBypass) and hw.setHpfBypass then
+                hw.setHpfBypass(f.hpfBypass)
             end
-            if p.capMask ~= nil and shouldSend("presel.cap", p.capMask) and hw.setPreselectorCap then
-                hw.setPreselectorCap(p.capMask)
-            end
-            if p.enabled ~= nil and shouldSend("presel.en", p.enabled) and hw.setPreselectorEnabled then
-                hw.setPreselectorEnabled(p.enabled)
-            end
-            if p.autoTune ~= nil and shouldSend("presel.auto", p.autoTune) and hw.setPreselectorAuto then
-                hw.setPreselectorAuto(p.autoTune)
+            if f.bpfIndex ~= nil and shouldSend("bpf.index", f.bpfIndex) and hw.setBpfIndex then
+                hw.setBpfIndex(f.bpfIndex)
             end
         end
     end

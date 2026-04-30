@@ -75,9 +75,8 @@ A response is a CBOR array:
 | :--- | :--- | :--- | :--- |
 | `SET_QSD_VFO` | `SVFO` | `[index, freq_hz]` | Sets the NCO frequency for QSD 0, 1, or 2. |
 | `SET_ATTEN` | `SATT` | `[db_value, enabled]` | Enables/disables a specific attenuator stage (3, 6, 12, or 24 dB). |
-| `SET_PRESEL_C` | `SPRC` | `[index, enabled]` | Enables/disables one of the 11 preselector capacitors. |
-| `SET_PRESEL_L` | `SPRL` | `[index, enabled]` | Enables/disables a preselector inductor (index 0 for L701 bypass). |
-| `SET_PRESEL_EN`| `SPRE` | `[enabled]` | Master enable/disable for the entire preselector stage. |
+| `SET_HPF_BYPASS` | `SHPB` | `[bypass]` | Bypasses the 1.75 MHz AM reject High Pass Filter if true. |
+| `SET_BPF_SELECT` | `SBPF` | `[index]` | Selects one of the 5 BPFs (1=1.8-3.4, 2=3.2-7.5, 3=7.3-14.5, 4=14.3-22, 5=21.8-30). 0 for bypass. |
 | `SET_PGA_GAIN` | `SPGA` | `[gain_db]` | Sets the gain for all 6 MAX9939 PGAs. |
 | `SET_TR_MODE`  | `STRM` | `[mode]` | Sets T/R mode: 0=RX (default), 1=TX. |
 

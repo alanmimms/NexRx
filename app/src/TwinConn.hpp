@@ -63,10 +63,8 @@ public:
   bool setAGCMode(int mode);
   bool setISGFreq(double freqHz);
   bool setISGEnable(bool enabled);
-  bool setPreselectorL(uint32_t mask);
-  bool setPreselectorCap(uint32_t mask);
-  bool setPreselectorAuto(bool enabled);
-  bool setPreselectorEnabled(bool enabled);
+  bool setHpfBypass(bool bypass);
+  bool setBpfIndex(int index);
   bool setTrMode(int mode);
   bool setQsdOffsetKHz(double khz);
   bool startStream();

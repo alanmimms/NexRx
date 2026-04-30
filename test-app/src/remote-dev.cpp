@@ -14,12 +14,6 @@ bool RemoteDevice::connect(const std::string& host, int controlPort, int streamP
         return false;
     }
 
-    // Basic check: get config
-    std::string hwConfig = conn_.getHardwareConfig();
-    if (hwConfig.empty() || hwConfig == "{}") {
-        // Fallback for simulation if GCNF not fully implemented yet
-    }
-
     return true;
 }
 

@@ -23,6 +23,8 @@ rule {
         ["rx.AGC.mode"] = 0,
         ["rx.RF.gainDB"] = 30,
         ["rx.RF.attenuationDB"] = 0,
+        ["filters.hpfBypass"] = false,
+        ["filters.bpfIndex"] = 0,
         
         windowWidth = 1900,
         windowHeight = 850,
@@ -88,8 +90,6 @@ rule { id = "id-smeter", tags = {"id.id-smeter", "widget.SMeter"}, apply = { par
 rule { id = "id-cal", tags = {"id.id-cal", "widget.Button"}, apply = { parent = "right-sidebar", order = 5, height = 30, label = "I/Q BAL CAL", stickTop = true, stickLeft = true, stickRight = true } }
 
 rule { id = "id-isg", tags = {"id.id-isg", "widget.ISGFrame"}, apply = { parent = "right-sidebar", order = 10, height = 240, background = "#00000000", stickTop = true, stickLeft = true, stickRight = true } }
-
-rule { id = "id-presel", tags = {"id.id-presel", "widget.PreselectorFrame"}, apply = { parent = "right-sidebar", order = 20, height = 120, background = "#00000000", stickTop = true, stickLeft = true, stickRight = true } }
 
 rule { id = "id-agc", tags = {"id.id-agc", "widget.AGCFrame"}, apply = { parent = "right-sidebar", order = 30, height = 80, background = "#00000000", stickTop = true, stickLeft = true, stickRight = true } }
 

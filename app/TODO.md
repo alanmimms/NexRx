@@ -50,13 +50,12 @@ The design philosophy is:
 # Hardware Calibration & Verification (ISG)
 * Implement FPGA ISG Stimulus:
   * Add command to FPGA to generate PDM "sine" on IOB_22a at a requested frequency.
-  * Filtered through 130pf + 100k resistor, fed to rx preselector in 200 ohm domain.
+  * Filtered through 130pf + 100k resistor, fed to rx input in 50 ohm domain.
   * Consider if FPGA can generate a better signal than square wave (e.g., simple DDS or PWM filtering).
   * Add commands to Twin/HW to tune and toggle this ISG signal.
-* Preselector Calibration Sweep:
+* Filter Bank Calibration:
   * App uses FPGA ISG to inject signal, QSD to measure amplitude.
-  * App sweeps all 11 capacitors (C0..C10) and Inductor L1 across frequencies.
-  * App computes the optimal L and C bit pattern for every passband center frequency to ensure monotonic, overlapping coverage.
+  * App verifies filter response for each BPF band.
   * App sends this a priori calibration table to Twin/HW for storage.
   * Replace real-time solver with a priori calculation using this calibration data.
 * Attenuator Calibration:

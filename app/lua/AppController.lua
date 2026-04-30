@@ -27,29 +27,27 @@ local dirty = {
 }
 
 -- =============================================================================
--- Preselector Calibration Logic
+-- BPF Selection Logic
 -- =============================================================================
 
-local PreselCal = {
-    -- L=true means L2 is shorted (220nH), L=false means L2 is in series (1.72uH)
-    table = {
-        { f = 1.0e6,  L = false, C = 0x740 }, -- 1.72uH, ~14.8nF
-        { f = 3.5e6,  L = false, C = 0x0A0 }, -- 1.72uH, ~1.2nF
-        { f = 7.0e6,  L = true,  C = 0x112 }, -- 220nH,  ~2.33nF
-        { f = 14.0e6, L = true,  C = 0x040 }, -- 220nH,  ~560pF
-        { f = 21.0e6, L = true,  C = 0x020 }, -- 220nH,  ~250pF
-        { f = 28.0e6, L = true,  C = 0x011 }, -- 220nH,  ~128pF
+local BpfCal = {
+    ranges = {
+        { start = 1.8e6,  stop = 3.4e6,  index = 1 },
+        { start = 3.2e6,  stop = 7.5e6,  index = 2 },
+        { start = 7.3e6,  stop = 14.5e6, index = 3 },
+        { start = 14.3e6, stop = 22.0e6, index = 4 },
+        { start = 21.8e6, stop = 30.0e6, index = 5 }
     }
 }
 
-function PreselCal.calculate(freqHz)
-    local best = PreselCal.table[1]
-    for _, entry in ipairs(PreselCal.table) do
-        if math.abs(entry.f - freqHz) < math.abs(best.f - freqHz) then
-            best = entry
+function BpfCal.calculate(freqHz)
+    -- Simple selection with preference for lower index on overlaps
+    for _, r in ipairs(BpfCal.ranges) do
+        if freqHz >= r.start and freqHz <= r.stop then
+            return r.index
         end
     end
-    return best.L, best.C
+    return 0 -- Bypass/None
 end
 
 -- =============================================================================
@@ -261,17 +259,15 @@ function AppController.init()
         dirty.VFO = true
     end)
 
-    -- Watch Preselector specific changes
+    -- Watch Filter specific changes
     R.watch(function()
-        Model.preselector.L:get()
-        Model.preselector.capMask:get()
-        Model.preselector.auto:get()
-        Model.preselector.enabled:get()
+        Model.filters.hpfBypass:get()
+        Model.filters.bpfIndex:get()
         
         local box = Model.getSelectedSignalBox()
         if box then local _ = box.frequency end
         
-        dirty.preselector = true
+        dirty.filters = true
     end)
 
     -- Watch AGC changes
@@ -368,22 +364,16 @@ function AppController.pollState()
         end
     end
 
-    -- Update Preselector L/C from hardware IF auto-tune is ON
-    if Model.preselector.auto:peek() then
-        -- Temporarily disabled to ensure it doesn't overwrite manual changes
-        --[[
-        if state.psL ~= nil then
-            local hwL = (state.psL == 1)
-            if hwL ~= Model.preselector.L:peek() then
-                Model.set("preselector.L", hwL)
-            end
+    -- Update Filter status from hardware (not usually needed but for consistency)
+    if state.hpfBypass ~= nil then
+        if state.hpfBypass ~= Model.filters.hpfBypass:peek() then
+            Model.filters.hpfBypass:set(state.hpfBypass)
         end
-        if state.psC ~= nil then
-            if state.psC ~= Model.preselector.capMask:peek() then
-                Model.set("preselector.capMask", state.psC)
-            end
+    end
+    if state.bpfIndex ~= nil then
+        if state.bpfIndex ~= Model.filters.bpfIndex:peek() then
+            Model.filters.bpfIndex:set(state.bpfIndex)
         end
-        ]]
     end
 end
 
@@ -405,26 +395,16 @@ function AppController.sync()
         anyDirty = true
     end
 
-    if dirty.preselector then
-        local p = Model.preselector
-        local autoEn = p.auto:peek()
+    if dirty.filters then
+        local f = Model.filters
         local box = Model.getSelectedSignalBox()
         local freq = box and box.frequency or 14.2e6
         
-        commands.preselector = {
-            enabled = p.enabled:peek(),
-            autoTune = autoEn
+        commands.filters = {
+            hpfBypass = f.hpfBypass:peek(),
+            bpfIndex = BpfCal.calculate(freq)
         }
-        
-        if autoEn then
-            local L, C = PreselCal.calculate(freq)
-            commands.preselector.L = L
-            commands.preselector.capMask = C
-        else
-            commands.preselector.L = p.L:peek()
-            commands.preselector.capMask = p.capMask:peek()
-        end
-        dirty.preselector = false
+        dirty.filters = false
         anyDirty = true
     end
 

@@ -9,11 +9,11 @@ namespace nexrx {
 
 ControlHandler::ControlHandler(double f0, double f1, double f2, 
                                AttenuatorModel* atten, 
-                               PreselectorModel* presel, 
+                               FilterBankModel* filters, 
                                PGAModel* pga,
                                AGCManager* agc)
   : attenuator(atten)
-  , presel(presel)
+  , filters(filters)
   , pga(pga)
   , agc(agc)
   , streaming(false)
@@ -29,10 +29,6 @@ ControlHandler::ControlHandler(double f0, double f1, double f2,
   isgFreqHz.store(14201000.0);
   agcMode.store(0);
   trMode.store(0);
-  
-  if (presel) {
-    presel->autoTune(f2);
-  }
 }
 
 ControlHandler::~ControlHandler() {
@@ -139,9 +135,6 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       qsdFreqHz[0].store(f - k);
       qsdFreqHz[1].store(f + k);
       qsdFreqHz[2].store(f);
-      if (presel && autoTuneEnabled.load()) {
-        presel->autoTune(f);
-      }
       return encodeResponse(0, "OK");
     } 
     case Control::CMD_SET_ATTEN: {
@@ -200,36 +193,19 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       isgEnabled.store(en);
       return encodeResponse(0, "OK");
     }
-    case Control::CMD_SET_PRESEL_L: {
-      uint64_t mask;
-      cbor_value_get_uint64(&arrayIt, &mask);
-      if (presel) {
-        presel->setIndMask((uint32_t)mask);
+    case Control::CMD_SET_HPF_BYPASS: {
+      bool bypass;
+      cbor_value_get_boolean(&arrayIt, &bypass);
+      if (filters) {
+        filters->setHpfBypass(bypass);
       }
       return encodeResponse(0, "OK");
     }
-    case Control::CMD_SET_PRESEL_C: {
-      uint64_t mask;
-      cbor_value_get_uint64(&arrayIt, &mask);
-      if (presel) {
-        presel->setCapMask((uint32_t)mask);
-      }
-      return encodeResponse(0, "OK");
-    }
-    case Control::CMD_SET_PRESEL_EN: {
-      bool en;
-      cbor_value_get_boolean(&arrayIt, &en);
-      if (presel) {
-        presel->setEnabled(en);
-      }
-      return encodeResponse(0, "OK");
-      }
-    case Control::CMD_SET_PRESEL_AUTO: {
-      bool en;
-      cbor_value_get_boolean(&arrayIt, &en);
-      autoTuneEnabled.store(en);
-      if (en && presel) {
-          presel->autoTune(vfoHz.load());
+    case Control::CMD_SET_BPF_SELECT: {
+      uint64_t index;
+      cbor_value_get_uint64(&arrayIt, &index);
+      if (filters) {
+        filters->setBpfIndex((int)index);
       }
       return encodeResponse(0, "OK");
     }
@@ -239,7 +215,7 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       cbor_encoder_init(&enc, buf, sizeof(buf), 0);
       cbor_encoder_create_array(&enc, &array, 2);
       cbor_encode_int(&array, 0); // Status OK
-      cbor_encoder_create_map(&array, &map, 11);
+      cbor_encoder_create_map(&array, &map, 9);
 
       cbor_encode_text_stringz(&map, "vfo");
       cbor_encode_double(&map, vfoHz.load());
@@ -259,17 +235,11 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       cbor_encode_text_stringz(&map, "isgEn");
       cbor_encode_boolean(&map, isgEnabled.load());
 
-      cbor_encode_text_stringz(&map, "psL");
-      cbor_encode_int(&map, presel ? (presel->isL1Shorted() ? 1 : 0) : 0);
+      cbor_encode_text_stringz(&map, "hpfBypass");
+      cbor_encode_boolean(&map, filters ? filters->isHpfBypassed() : false);
 
-      cbor_encode_text_stringz(&map, "psC");
-      cbor_encode_int(&map, presel ? presel->getCapMask() : 0);
-
-      cbor_encode_text_stringz(&map, "psEn");
-      cbor_encode_boolean(&map, presel ? presel->isEnabled() : true);
-
-      cbor_encode_text_stringz(&map, "psAuto");
-      cbor_encode_boolean(&map, autoTuneEnabled.load());
+      cbor_encode_text_stringz(&map, "bpfIndex");
+      cbor_encode_int(&map, filters ? filters->getBpfIndex() : 0);
 
       cbor_encode_text_stringz(&map, "tr");
       cbor_encode_int(&map, trMode.load());

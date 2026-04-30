@@ -25,10 +25,8 @@ public:
   static constexpr uint32_t CMD_GET_TIMESTAMP   = makeControlId("GTIM");
   static constexpr uint32_t CMD_SET_ISG_FREQ    = makeControlId("SIFQ");
   static constexpr uint32_t CMD_SET_ISG_ENABLE  = makeControlId("SIEN");
-  static constexpr uint32_t CMD_SET_PRESEL_L    = makeControlId("SPRL");
-  static constexpr uint32_t CMD_SET_PRESEL_C    = makeControlId("SPRC");
-  static constexpr uint32_t CMD_SET_PRESEL_EN   = makeControlId("SPRE");
-  static constexpr uint32_t CMD_SET_PRESEL_AUTO = makeControlId("SPSA");
+  static constexpr uint32_t CMD_SET_HPF_BYPASS  = makeControlId("SHPB");
+  static constexpr uint32_t CMD_SET_BPF_SELECT  = makeControlId("SBPF");
   static constexpr uint32_t CMD_GET_STATE       = makeControlId("GSTA");
   static constexpr uint32_t CMD_CAL_STIM        = makeControlId("CAL!");
   static constexpr uint32_t CMD_GBYE            = makeControlId("GBYE");
