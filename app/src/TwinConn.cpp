@@ -88,14 +88,19 @@ size_t TwinConn::pollFrames(size_t maxFrames) {
     ++count;
     frameBuffer.push_back(frame);
 
-    std::lock_guard<std::mutex> lock(callbackMutex);
-    if (frameCallback) {
-      frameCallback(frame);
+    {
+      std::lock_guard<std::mutex> lock(callbackMutex);
+      if (frameCallback) {
+        frameCallback(frame);
+      }
     }
   }
-  std::lock_guard<std::mutex> lock(callbackMutex);
-  if (!frameBuffer.empty() && batchCallback) {
-    batchCallback(frameBuffer);
+  
+  {
+    std::lock_guard<std::mutex> lock(callbackMutex);
+    if (!frameBuffer.empty() && batchCallback) {
+      batchCallback(frameBuffer);
+    }
   }
   return count;
 }

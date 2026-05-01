@@ -181,7 +181,9 @@ void GUIEngine::render() {
 void GUIEngine::shutdown() {
   running = false;
   stopCommandThread();
-  twinHost.shutdown();
+  if (radioSource) {
+    radioSource->shutdown();
+  }
   audio.shutdown();
   waterfall.shutdown();
   CloseWindow();
@@ -189,11 +191,13 @@ void GUIEngine::shutdown() {
 
 bool GUIEngine::connectTwin(const std::string& host, int cp, int sp) {
   nexrx::TwinConfig c; c.host = host; c.controlPort = cp; c.streamPort = sp;
-  if (twinHost.initialize(c)) {
-    twinHost.setFrameCallback([this](const nexrx::IQFrame& f) { dsp_.processIQFrame(f); });
-    if (twinHost.startReceiving()) {
+  auto twin = std::make_unique<nexrx::TwinConn>();
+  if (twin->initialize(c)) {
+    twin->setFrameCallback([this](const nexrx::IQFrame& f) { dsp_.processIQFrame(f); });
+    if (twin->startReceiving()) {
       twinConnected.store(true);
-      twinHost.startStream();
+      twin->startStream();
+      radioSource = std::move(twin);
       return true;
     }
   }
@@ -201,22 +205,30 @@ bool GUIEngine::connectTwin(const std::string& host, int cp, int sp) {
 }
 
 void GUIEngine::disconnectTwin() {
-  if (twinConnected.load()) {
-    postTwinCommand("SHUTDOWN", [this]() { twinHost.stopReceiving(); twinHost.shutdown(); });
+  if (twinConnected.load() && radioSource) {
+    postTwinCommand("SHUTDOWN", [this]() { 
+      radioSource->stopReceiving(); 
+      radioSource->shutdown(); 
+      radioSource.reset();
+    });
     twinConnected.store(false);
   }
 }
 
 sol::object GUIEngine::getTwinState(sol::this_state s) {
   if (!twinConnected.load()) return sol::make_object(s, sol::nil);
+  auto src = getRadioSource();
+  if (!src) return sol::make_object(s, sol::nil);
   
   auto now = std::chrono::steady_clock::now();
   if (now - lastStatePollTime > std::chrono::milliseconds(100)) {
     lastStatePollTime = now;
-    postTwinCommand("POLL_STATE", [this](){ twinHost.pollStateAsync(); });
+    postTwinCommand("POLL_STATE", [this](){ 
+      if (auto src = getRadioSource()) src->pollStateAsync(); 
+    });
   }
 
-  auto stateCBOR = twinHost.getState();
+  auto stateCBOR = src->getState();
   if (stateCBOR.empty()) return sol::make_object(s, sol::nil);
   
   CborParser parser; CborValue it;

@@ -562,7 +562,7 @@ namespace nexrx {
                   streamStartTime = nowP - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(targetP));
               }
 
-              if (!opts.headless) {
+              if (opts.headless || controlHandler->isStreaming()) {
                   stream->writeBatch(batch);
               }
               batch.clear();

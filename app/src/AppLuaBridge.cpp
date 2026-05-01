@@ -104,25 +104,25 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   
   // Setters
-  hwTable["setVFO"] = [engine](double f, double k) { engine->postTwinCommand("VFO", [engine, f, k]() { engine->getTwinConn().setVFO(f, k); }); };
-  hwTable["setAttenuation"] = [engine](int db) { engine->postTwinCommand("ATTEN", [engine, db]() { engine->getTwinConn().setAtten(db); }); };
-  hwTable["setAGCMode"] = [engine](int m) { engine->postTwinCommand("AGC", [engine, m]() { engine->getTwinConn().setAGCMode(m); }); };
-  hwTable["setIsgFreq"] = [engine](double f) { engine->postTwinCommand("ISG_FREQ", [engine, f]() { engine->getTwinConn().setISGFreq(f); }); };
-  hwTable["setIsgEnable"] = [engine](bool en) { engine->postTwinCommand("ISG_EN", [engine, en]() { engine->getTwinConn().setISGEnable(en); }); };
-  hwTable["setHpfBypass"] = [engine](bool bypass) { engine->postTwinCommand("HPF_BYPASS", [engine, bypass]() { engine->getTwinConn().setHpfBypass(bypass); }); };
-  hwTable["setBpfIndex"] = [engine](int idx) { engine->postTwinCommand("BPF_SELECT", [engine, idx]() { engine->getTwinConn().setBpfIndex(idx); }); };
+  hwTable["setVFO"] = [engine](double f, double k) { engine->postTwinCommand("VFO", [engine, f, k]() { if (auto src = engine->getRadioSource()) src->setVFO(f, k); }); };
+  hwTable["setAttenuation"] = [engine](int db) { engine->postTwinCommand("ATTEN", [engine, db]() { if (auto src = engine->getRadioSource()) src->setAtten(db); }); };
+  hwTable["setAGCMode"] = [engine](int m) { engine->postTwinCommand("AGC", [engine, m]() { if (auto src = engine->getRadioSource()) src->setAGCMode(m); }); };
+  hwTable["setIsgFreq"] = [engine](double f) { engine->postTwinCommand("ISG_FREQ", [engine, f]() { if (auto src = engine->getRadioSource()) src->setISGFreq(f); }); };
+  hwTable["setIsgEnable"] = [engine](bool en) { engine->postTwinCommand("ISG_EN", [engine, en]() { if (auto src = engine->getRadioSource()) src->setISGEnable(en); }); };
+  hwTable["setHpfBypass"] = [engine](bool bypass) { engine->postTwinCommand("HPF_BYPASS", [engine, bypass]() { if (auto src = engine->getRadioSource()) src->setHpfBypass(bypass); }); };
+  hwTable["setBpfIndex"] = [engine](int idx) { engine->postTwinCommand("BPF_SELECT", [engine, idx]() { if (auto src = engine->getRadioSource()) src->setBpfIndex(idx); }); };
   
   hwTable["setRFGain"] = [engine](double db) {
     engine->getDSP().setRfGain((float)db);
     engine->postTwinCommand("RF_GAIN", [engine, db]() { 
         int code = (int)(db / 6.0);
         if (code < 0) code = 0;
-        engine->getTwinConn().setPGAGain(code); 
+        if (auto src = engine->getRadioSource()) src->setPGAGain(code); 
     }); 
   };
   hwTable["setQSDOffset"] = [engine](double k) { 
     engine->getDSP().setQsdOffset(k); 
-    engine->postTwinCommand("VFO", [engine, k]() { engine->getTwinConn().setVFO(engine->getLastVFOHz(), k * 1000.0); }); 
+    engine->postTwinCommand("VFO", [engine, k]() { if (auto src = engine->getRadioSource()) src->setVFO(engine->getLastVFOHz(), k * 1000.0); }); 
   };
   
   lua["hw"] = hwTable;
@@ -139,7 +139,7 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   rxTable["setVFO"] = [engine](double f) {
     engine->setLastVFOHz(f);
     engine->getDSP().setVfo(f);
-    engine->postTwinCommand("VFO", [engine, f]() { engine->getTwinConn().setVFO(f, engine->getDSP().getQsdOffset() * 1000.0); });
+    engine->postTwinCommand("VFO", [engine, f]() { if (auto src = engine->getRadioSource()) src->setVFO(f, engine->getDSP().getQsdOffset() * 1000.0); });
   };
   rxTable["getStats"] = [engine](sol::this_state s) {
     auto& d = engine->getDSP().getDiagnostics();

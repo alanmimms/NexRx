@@ -18,6 +18,7 @@
 
 #include "AudioEngine.hpp"
 #include "WaterfallRenderer.hpp"
+#include "RadioSource.hpp"
 #include "TwinConn.hpp"
 #include "DSPEngine.hpp"
 
@@ -34,7 +35,8 @@ public:
   DSPEngine& getDSP() { return dsp_; }
   AudioEngine& getAudio() { return audio; }
   WaterfallRenderer& getWaterfall() { return waterfall; }
-  nexrx::TwinConn& getTwinConn() { return twinHost; }
+  
+  nexrx::RadioSource* getRadioSource() { return radioSource.get(); }
   
   bool connectTwin(const std::string& host, int cp, int sp);
   void disconnectTwin();
@@ -59,7 +61,7 @@ private:
   
   AudioEngine audio;
   WaterfallRenderer waterfall;
-  nexrx::TwinConn twinHost;
+  std::unique_ptr<nexrx::RadioSource> radioSource;
   
   int windowWidth, windowHeight;
   bool running = false;

@@ -73,7 +73,16 @@ stimulus.addAm("wwv15", {
     freq = 15e6,
     amplitude = 15e-3, -- 15mV
     modIndex = 0.9,
-    audioFile = "test/wwv-ident.wav",
+    audioFile = "../test/wwv-ident.wav",
+    loop = true
+})
+
+-- CW beacon in the passband!
+stimulus.addMorse("in-band-test", {
+    freq = 14.210e6,
+    amplitude = 15e-3, -- 15mV
+    text = "TEST TEST DE NEXRX",
+    wpm = 20,
     loop = true
 })
 
@@ -83,7 +92,7 @@ stimulus.addSsb("voice-id", {
     freq = 14.200e6,
     amplitude = 15e-3, -- 15mV
     mode = "usb",
-    audioFile = "test/CQ-WB7NAB-gb-fem-8k.wav",
+    audioFile = "../test/CQ-WB7NAB-gb-fem-8k.wav",
     loop = true
 })
 
