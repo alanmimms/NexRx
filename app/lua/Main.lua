@@ -244,8 +244,11 @@ _G.UI = {
 }
 
 function init()
-   print("[Main] init() starting...")
-   
+  print("[Main] init() starting...")
+  
+  System.printVersion();
+
+
    uiState.setEventsModule(events)
    
    local configFiles = {

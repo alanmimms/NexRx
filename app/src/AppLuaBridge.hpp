@@ -27,6 +27,8 @@ public:
   // New function to get engine version
   static float getEngineVersion();
 
+  static void printVersion();
+
 private:
   static Font currentFont;
 };
