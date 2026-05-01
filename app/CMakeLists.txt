@@ -45,7 +45,7 @@ FetchContent_MakeAvailable(raylib)
 
 include_directories(src ../twin/src extern)
 
-add_executable(nexrx-app
+add_executable(sdr-app
   src/main.cpp
   src/DSPEngine.cpp
   src/GUIEngine.cpp
@@ -84,13 +84,13 @@ endif()
 find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
 
-target_include_directories(nexrx-app PRIVATE 
+target_include_directories(sdr-app PRIVATE 
   ${LUA54_INCLUDE_DIRS}
   ${SDL2_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
 )
 
-target_link_libraries(nexrx-app PRIVATE 
+target_link_libraries(sdr-app PRIVATE 
   raylib
   tinycbor
   sol2::sol2
@@ -107,9 +107,9 @@ if(APPLE)
   find_library(COREAUDIO_LIBRARY CoreAudio)
   find_library(AUDIOUNIT_LIBRARY AudioUnit)
   find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-  target_link_libraries(nexrx-app PRIVATE ${COREAUDIO_LIBRARY} ${AUDIOUNIT_LIBRARY} ${COREFOUNDATION_LIBRARY})
+  target_link_libraries(sdr-app PRIVATE ${COREAUDIO_LIBRARY} ${AUDIOUNIT_LIBRARY} ${COREFOUNDATION_LIBRARY})
 elseif(WIN32)
-  target_link_libraries(nexrx-app PRIVATE winmm ws2_32)
+  target_link_libraries(sdr-app PRIVATE winmm ws2_32)
 else()
-  target_link_libraries(nexrx-app PRIVATE dl)
+  target_link_libraries(sdr-app PRIVATE dl)
 endif()

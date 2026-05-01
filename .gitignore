@@ -22,3 +22,9 @@ app/config/layout-overrides.lua
 .venv/
 fpga/nexrx-sim
 fpga/*.vcd
+<<<<<<< HEAD
+=======
+**/__pycache__/
+.aider*
+.env
+>>>>>>> 0f1d7d4 (Switch to locally hosted Qwen to try it)

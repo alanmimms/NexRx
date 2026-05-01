@@ -69,7 +69,6 @@ TransportError UDPStreamClient::write(const IQFrame&) {
 
 void UDPStreamClient::receiveLoop() {
   uint8_t buffer[65536];
-  bool firstLog = true;
   while (running) {
     int len = ::recv(socket, reinterpret_cast<char*>(buffer), sizeof(buffer), 0);
     if (len < static_cast<int>(sizeof(IQPacketHeader))) {
@@ -79,10 +78,6 @@ void UDPStreamClient::receiveLoop() {
     const IQPacketHeader* header = reinterpret_cast<const IQPacketHeader*>(buffer);
     if (header->magic != IQPacketHeader::MAGIC || header->version != 2) {
       continue;
-    }
-
-    if (firstLog) {
-      firstLog = false;
     }
 
     size_t framesInPacket = header->frameCount;
