@@ -197,4 +197,10 @@ local function onTextInput_inner(text)
   end
   
   if not handled and target ~= rxTree then
-    handled = rxTree:handle
+    handled = rxTree:handleEvent(eventData)
+  end
+
+  if not handled then
+    events.dispatch(eventData, rxTree)
+  end
+end
