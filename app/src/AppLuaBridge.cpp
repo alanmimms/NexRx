@@ -30,6 +30,7 @@ float AppLuaBridge::getEngineVersion() {
 void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   // 1. Drawing Primitives (System table)
   sol::table system = lua.create_table();
+  system["printVersion"] = &AppLuaBridge::printVersion;
   system["drawRect"] = &AppLuaBridge::drawRect;
   system["drawRectLines"] = &AppLuaBridge::drawRectLines;
   system["drawRoundedRect"] = &AppLuaBridge::drawRoundedRect;
@@ -105,7 +106,7 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   hwTable["getState"] = [engine](sol::this_state s) -> sol::object {
     return engine->getTwinState(s);
-  });
+  };
   
   // Setters
   hwTable["setVFO"] = [engine](double f, double k) { engine->postTwinCommand("VFO", [engine, f, k]() { if (auto src = engine->getRadioSource()) src->setVFO(f, k); }); };
@@ -267,10 +268,11 @@ void AppLuaBridge::traceLog(int logLevel, sol::variadic_args args, sol::this_sta
     }
     TraceLog(logLevel, "%s", formatted.c_str());
   } catch (...) { TraceLog(LOG_ERROR, "bridge.traceLog format error"); }
+}
 
-  // New function to print version
-  void AppLuaBridge::printVersion() {
-    float version = getEngineVersion();
-    std::cout << "Engine Version: " << version << std::endl;
-  }
+
+// New function to print version
+void AppLuaBridge::printVersion() {
+  float version = getEngineVersion();
+  std::cout << "Engine Version: " << version << std::endl;
 }
