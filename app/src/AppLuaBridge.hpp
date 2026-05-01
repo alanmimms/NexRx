@@ -24,11 +24,6 @@ public:
   static float measureText(const char* text, int fontSize);
   static void traceLog(int logLevel, sol::variadic_args args, sol::this_state L);
 
-  // New function to get engine version
-  static float getEngineVersion();
-
-  static void printVersion();
-
 private:
   static Font currentFont;
 };
