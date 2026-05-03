@@ -3219,7 +3219,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF"
+		(property "Value" "18nF 1%"
 			(at 159.512 106.68 90)
 			(effects
 				(font
@@ -4725,7 +4725,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF"
+		(property "Value" "18nF 1%"
 			(at 159.512 115.57 90)
 			(effects
 				(font
@@ -5127,7 +5127,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF"
+		(property "Value" "18nF 1%"
 			(at 159.512 90.17 90)
 			(effects
 				(font
@@ -5820,7 +5820,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF"
+		(property "Value" "18nF 1%"
 			(at 159.512 97.79 90)
 			(effects
 				(font
