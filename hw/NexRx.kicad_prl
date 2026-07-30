@@ -11,12 +11,12 @@
       "",
       "+3.3V-ON",
       "+3.3VA",
-      "+5VA",
+      "/Filters/out",
       "+3.3V",
-      "+3.3VFPGAIO",
-      "+5.4V",
+      "Net-(C301-Pad2)",
+      "Net-(U1505-+)",
       "GND",
-      "+VFPGACORE"
+      "Net-(U309-J2)"
     ],
     "high_contrast_mode": 0,
     "net_color_mode": 2,
@@ -33,7 +33,7 @@
       "footprints": true,
       "graphics": true,
       "keepouts": false,
-      "lockedItems": true,
+      "lockedItems": false,
       "otherItems": true,
       "pads": true,
       "text": true,
@@ -62,7 +62,7 @@
       "conflict_shadows",
       "shapes"
     ],
-    "visible_layers": "ffffffff_ffffffff_fffffff5_dfff50e5",
+    "visible_layers": "ffffffff_ffffffff_fffffff5_dfff51e5",
     "zone_display_mode": 1
   },
   "git": {

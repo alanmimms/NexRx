@@ -17,7 +17,7 @@
 		)
 	)
 	(property "Value" "RGY14_2P05X2P05"
-		(at 0 0.1 0)
+		(at -0.1 5.2 0)
 		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "b4a4ebfc-3cdd-47e4-8dba-551bf444df62")
@@ -777,7 +777,7 @@
 		(uuid "c3fb07cf-6901-4369-82ae-a308832a2ae5")
 	)
 	(fp_text user "${REFERENCE}"
-		(at 0 0.1 0)
+		(at -0.1 5.2 0)
 		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "489b231d-358d-4508-975d-65a9f868e3fa")
@@ -872,13 +872,7 @@
 		(layers "F.Cu" "F.Mask")
 		(uuid "c440930c-8250-4266-badd-77db093fa806")
 	)
-	(pad "15" smd rect
-		(at 0 0)
-		(size 2.05 2.05)
-		(layers "F.Cu")
-		(uuid "fe95fcc3-0db3-415f-be79-415b1f3e65b8")
-	)
-	(pad "V" thru_hole circle
+	(pad "15" thru_hole circle
 		(at -0.3937 -0.3937)
 		(size 0.508 0.508)
 		(drill 0.254)
@@ -886,7 +880,7 @@
 		(remove_unused_layers no)
 		(uuid "1fba913b-bf06-494e-8c23-380d58d6c665")
 	)
-	(pad "V" thru_hole circle
+	(pad "15" thru_hole circle
 		(at -0.3937 0.3937)
 		(size 0.508 0.508)
 		(drill 0.254)
@@ -894,7 +888,13 @@
 		(remove_unused_layers no)
 		(uuid "0d8874c8-869a-4861-b790-dac6b9620fef")
 	)
-	(pad "V" thru_hole circle
+	(pad "15" smd rect
+		(at 0 0)
+		(size 2.05 2.05)
+		(layers "F.Cu")
+		(uuid "fe95fcc3-0db3-415f-be79-415b1f3e65b8")
+	)
+	(pad "15" thru_hole circle
 		(at 0.3937 -0.3937)
 		(size 0.508 0.508)
 		(drill 0.254)
@@ -902,7 +902,7 @@
 		(remove_unused_layers no)
 		(uuid "8239b63a-2168-47bb-b4c1-8ff850382ddb")
 	)
-	(pad "V" thru_hole circle
+	(pad "15" thru_hole circle
 		(at 0.3937 0.3937)
 		(size 0.508 0.508)
 		(drill 0.254)

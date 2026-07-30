@@ -70,98 +70,6 @@
       ],
       "drc_exclusions": [
         [
-          "clearance|-18320000|-295740000|8715ee77-f033-45ae-acf8-3ceac8713188|2b487d7b-fb48-49f7-9a98-c6b81f84dec2",
-          ""
-        ],
-        [
-          "clearance|-26120000|-295740000|7af94d3b-f9ca-4d0b-b2c4-57c37d8f1c69|209813d3-1952-43c9-bb34-e04b45a3f7d8",
-          ""
-        ],
-        [
-          "clearance|-26220000|-287840000|543b902d-8094-4339-b204-ea56b0f96e77|8588ae31-3fb7-4f7c-b814-d2a8c008af8e",
-          ""
-        ],
-        [
-          "clearance|-28275001|-316965001|df48d871-879c-49c4-adbc-9c719ad34f8b|62406c04-8501-4ea9-be75-9ff30f05f38c",
-          ""
-        ],
-        [
-          "clearance|-28469937|-315364999|a591190b-9e83-42a5-adfb-66b4c1cab559|71e75e71-c8c0-4948-a4cd-20dbca3ab793",
-          ""
-        ],
-        [
-          "clearance|-29364999|-315164999|3cae07c7-1778-4d92-8d7a-55217b492125|ed924b8d-ddce-4c50-97ba-a6a12a6cac82",
-          ""
-        ],
-        [
-          "clearance|-29364999|-316765001|f5d93dfd-c478-4f24-88a1-197885fa3bca|26691b3e-e585-4df4-9e8e-2fa8aa10ece7",
-          ""
-        ],
-        [
-          "clearance|-3975064|-316955001|f60bdad4-371b-4f94-a09e-3826f30cacf5|a0d0617b-3c8a-4947-aa59-2066e3548012",
-          ""
-        ],
-        [
-          "clearance|-4170000|-315354999|8aa63174-7700-4106-adf3-5c41dc1f11f9|f4f3f7c0-7a3d-4655-ba5e-721eecce8aaf",
-          ""
-        ],
-        [
-          "clearance|-5065062|-315154999|3c13bd04-6ba8-428a-b6ec-7df5f0733fde|ea475eb1-7c33-400e-a1a9-5c668781a245",
-          ""
-        ],
-        [
-          "clearance|-5065062|-316755001|d51da6c0-2714-4043-a2d4-1bbf8109d94d|50ce030a-e884-4b55-87ab-9cd1ca961e7f",
-          ""
-        ],
-        [
-          "clearance|-53200001|-316965001|8f447ba0-7b1c-4fcb-ae47-5fcb458e8671|57953aa6-3680-4423-80f2-e2c32846b241",
-          ""
-        ],
-        [
-          "clearance|-53394937|-315364999|2f5d17a3-4430-475c-8f60-c51f5497642d|03b053c0-a251-4bbf-b76f-cf0f1210eb2e",
-          ""
-        ],
-        [
-          "clearance|-54289999|-315164999|25f7d69a-8806-4fc0-9944-58e0dce45340|3f1048fb-6ad2-411a-8936-de653ceeb31e",
-          ""
-        ],
-        [
-          "clearance|-54289999|-316765001|cf3507f5-96ae-436f-b37e-e68504e2c804|c8fee76d-784f-4a46-9d75-91056400a0e5",
-          ""
-        ],
-        [
-          "clearance|12492500|-316587500|ba246405-c601-4acb-a014-c751c24d55bc|a4cb67ee-5347-4d6c-9649-18dc1d535792",
-          ""
-        ],
-        [
-          "clearance|12892500|-320812500|50610d31-2ed3-489f-9df1-b9f9295e8266|9b47a350-752d-47ca-8892-bd94a324d7a2",
-          ""
-        ],
-        [
-          "clearance|13542500|-320812500|d326c3dc-d100-41e7-ac19-54afa0f4979c|50610d31-2ed3-489f-9df1-b9f9295e8266",
-          ""
-        ],
-        [
-          "clearance|13792500|-316587500|0b342ed4-3ab3-4b53-860c-8517ff83fc62|77ea0d84-d57c-4fc5-9036-e4e3373ae10c",
-          ""
-        ],
-        [
-          "clearance|21780000|-297452500|b684ce1e-a167-4c60-978d-c2e54519c39d|563ac795-0650-463b-ac31-2277e74c1b48",
-          ""
-        ],
-        [
-          "clearance|21780000|-297952500|f6ebe106-34ed-4dbb-932b-9564da2e06d3|b684ce1e-a167-4c60-978d-c2e54519c39d",
-          ""
-        ],
-        [
-          "clearance|23205000|-297127500|81319aaa-4021-4158-8943-bebba7183567|73b05f80-0d23-426d-a717-58e87689bdc0",
-          ""
-        ],
-        [
-          "clearance|23205000|-297627500|73b05f80-0d23-426d-a717-58e87689bdc0|1ad28e82-6822-48ef-a948-95e17bcff639",
-          ""
-        ],
-        [
           "silk_edge_clearance|30230000|-328940000|687bbc47-0938-4ea5-8ff4-8a29830269ab|08431044-b08a-4cb4-9c91-45224f9fa8b6",
           ""
         ],
@@ -170,19 +78,7 @@
           ""
         ],
         [
-          "silk_overlap|-22723333|-284876359|0a325d15-9ab2-4d47-8ebe-37ec07c10cab|df3d8864-be88-4e1e-a5c3-3706de8bd3bc",
-          ""
-        ],
-        [
-          "silk_overlap|-23483333|-284876359|377e0c0c-2812-4887-b685-07faeb373b34|db32846d-287e-4721-bbf0-d5135be9688e",
-          ""
-        ],
-        [
           "silk_overlap|-2425538|-342502982|482caffc-4ef5-4a3b-baf1-d34329f02c23|9fc1e1d2-dd50-4a39-b022-78c8a642dada",
-          ""
-        ],
-        [
-          "silk_overlap|-24491667|-284876359|7bda18bf-ba0e-46b7-8431-5afd14065164|a4407030-a409-44ec-926e-5d9a742420af",
           ""
         ],
         [
@@ -600,63 +496,55 @@
   "erc": {
     "erc_exclusions": [
       [
-        "pin_to_pin|1079500|723900|8613063e-e686-46bb-8262-e67a80b8f2e8|ab086a4d-0ea5-4273-bebc-bbf688cddba0|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5",
-        "Bidirectional bus"
-      ],
-      [
-        "pin_to_pin|1092200|1498600|352c1b03-923f-48a0-a9a1-f9cbdb3a8bbe|10503149-1d8f-46ad-ae85-f6b43c6ae18e|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5",
+        "multiple_net_names|1168400|1854200|ff1158cc-6d5d-4bc5-9d29-47f2194a731b|9387a303-6238-4fda-b917-9590c4985140|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
-        "pin_to_pin|1257300|558800|c00fb108-01c8-471e-8166-e61adc94d8f1|a274bf0d-4c62-43dd-95aa-d14c7e8ff371|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874",
+        "multiple_net_names|1168400|1981200|629385b0-3495-40cb-8640-37fc65fd6f0b|315acb25-a920-4e3b-880b-8ac835acbff5|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
-        "pin_to_pin|1257300|558800|c00fb108-01c8-471e-8166-e61adc94d8f1|a274bf0d-4c62-43dd-95aa-d14c7e8ff371|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7",
+        "multiple_net_names|1168400|2006600|29a030a5-de64-4bfe-a984-be9001b96b0f|12e4c6af-9c4b-48ca-9e12-b6d1e7355375|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
-        "pin_to_pin|1257300|558800|c00fb108-01c8-471e-8166-e61adc94d8f1|a274bf0d-4c62-43dd-95aa-d14c7e8ff371|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d",
+        "multiple_net_names|1231900|393700|6e31939d-ff11-4dd2-b89d-2ff7b650eca6|131957c3-b8e8-424f-b410-3ed8e096afee|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
-        "pin_to_pin|1257300|584200|4541fe45-c5d8-41b7-bc3a-26f2999f837f|08d7b547-a2fe-40f3-9816-709a98a685ee|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874",
+        "multiple_net_names|1663700|1574800|22031725-34ed-4ff4-ba64-51c8288c6b22|140c78b6-c9ff-442c-8f78-1efb29758733|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
-        "pin_to_pin|1257300|584200|4541fe45-c5d8-41b7-bc3a-26f2999f837f|08d7b547-a2fe-40f3-9816-709a98a685ee|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7",
+        "multiple_net_names|1663700|1676400|04f0bd59-8acd-47c1-a912-33da38b40b88|c35d42f0-3352-4e79-a07b-4960d5a81f5e|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
-        "pin_to_pin|1257300|584200|4541fe45-c5d8-41b7-bc3a-26f2999f837f|08d7b547-a2fe-40f3-9816-709a98a685ee|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d",
+        "multiple_net_names|2120900|317500|a532490c-f1ac-4038-99cf-f508185ea1ce|3831d96e-9c0a-4ae2-9bcc-9dc7204e08c5|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
         ""
       ],
       [
-        "pin_to_pin|1257300|609600|f63e46b8-4b95-4126-b908-7c9fc0510911|2d2722c2-bbce-4ff8-a203-b28e3065ec33|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874",
+        "multiple_net_names|2133600|292100|a532490c-f1ac-4038-99cf-f508185ea1ce|19ee6598-4f8c-48a9-a61e-61c63f630ddf|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
         ""
       ],
       [
-        "pin_to_pin|1257300|609600|f63e46b8-4b95-4126-b908-7c9fc0510911|2d2722c2-bbce-4ff8-a203-b28e3065ec33|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7",
+        "pin_to_pin|1092200|1498600|352c1b03-923f-48a0-a9a1-f9cbdb3a8bbe|10503149-1d8f-46ad-ae85-f6b43c6ae18e|||",
         ""
       ],
       [
-        "pin_to_pin|1257300|609600|f63e46b8-4b95-4126-b908-7c9fc0510911|2d2722c2-bbce-4ff8-a203-b28e3065ec33|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d",
+        "pin_to_pin|1257300|558800|c00fb108-01c8-471e-8166-e61adc94d8f1|a274bf0d-4c62-43dd-95aa-d14c7e8ff371|||",
         ""
       ],
       [
-        "pin_to_pin|1257300|635000|21095801-82bc-4328-ad73-0d049a51f247|043db911-a283-401f-b0ba-af675987e4f3|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/104f4ab4-5f9d-46b7-aa11-a9b548b73874",
+        "pin_to_pin|1257300|584200|4541fe45-c5d8-41b7-bc3a-26f2999f837f|08d7b547-a2fe-40f3-9816-709a98a685ee|||",
         ""
       ],
       [
-        "pin_to_pin|1257300|635000|21095801-82bc-4328-ad73-0d049a51f247|043db911-a283-401f-b0ba-af675987e4f3|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/14e79162-6490-48bf-872f-f625f6d689c7",
+        "pin_to_pin|1257300|609600|f63e46b8-4b95-4126-b908-7c9fc0510911|2d2722c2-bbce-4ff8-a203-b28e3065ec33|||",
         ""
       ],
       [
-        "pin_to_pin|1257300|635000|21095801-82bc-4328-ad73-0d049a51f247|043db911-a283-401f-b0ba-af675987e4f3|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f0576e51-08ef-46e9-b901-7c65fd3b885d",
-        ""
-      ],
-      [
-        "pin_to_pin|1714500|1485900|10503149-1d8f-46ad-ae85-f6b43c6ae18e|ab086a4d-0ea5-4273-bebc-bbf688cddba0|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5|/8ae46c04-d01a-4756-8774-512b694bfaff/0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f/f2486bc2-eba8-4fb8-890d-ac8b4843b7f5",
+        "pin_to_pin|1257300|635000|21095801-82bc-4328-ad73-0d049a51f247|043db911-a283-401f-b0ba-af675987e4f3|||",
         ""
       ]
     ],
@@ -960,7 +848,7 @@
         "name": "power-lite",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 1,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgb(39, 28, 255)",
         "track_width": 0.2
       },
       {
@@ -1123,6 +1011,12 @@
       ],
       "/FPGA/preselIn": [
         "rf200"
+      ],
+      "/Filters/in": [
+        "rf50"
+      ],
+      "/Filters/out": [
+        "rf50"
       ],
       "/Power/Tx EER Envelope Buck-Boost/PA_SENSE": [
         "Power"
@@ -1288,6 +1182,18 @@
         "pwr200",
         "rf50"
       ],
+      "/Tpad 12/a": [
+        "rf50"
+      ],
+      "/Tpad 12/b": [
+        "rf50"
+      ],
+      "/Tpad 24/b": [
+        "rf50"
+      ],
+      "/Tpad 3/a": [
+        "rf50"
+      ],
       "/Tx Chain/Antenna Tuner/Lcold": [
         "pwr200"
       ],
@@ -1371,6 +1277,9 @@
       ],
       "/USB/C-USBVBUS": [
         "Power"
+      ],
+      "/intSigGen": [
+        "rf50"
       ],
       "GND": [
         "rf50"
@@ -1726,16 +1635,61 @@
       "Net-(C2201-Pad2)": [
         "PowerRF"
       ],
+      "Net-(C301-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C302-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C303-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C304-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C305-Pad1)": [
+        "rf50"
+      ],
       "Net-(C306-Pad1)": [
         "rf50"
       ],
       "Net-(C307-Pad1)": [
         "rf50"
       ],
+      "Net-(C307-Pad2)": [
+        "rf50"
+      ],
       "Net-(C308-Pad1)": [
         "rf50"
       ],
       "Net-(C309-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C310-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C311-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C312-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C313-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C314-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C315-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C316-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C317-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C318-Pad2)": [
         "rf50"
       ],
       "Net-(C502-Pad1)": [
@@ -2668,11 +2622,23 @@
       "Net-(R332-Pad1)": [
         "rf200"
       ],
+      "Net-(R401-Pad1)": [
+        "rf50"
+      ],
+      "Net-(R501-Pad1)": [
+        "rf50"
+      ],
       "Net-(R502-Pad1)": [
         "pwr200"
       ],
       "Net-(R504-Pad1)": [
         "pwr200"
+      ],
+      "Net-(R601-Pad1)": [
+        "rf50"
+      ],
+      "Net-(R701-Pad1)": [
+        "rf50"
       ],
       "Net-(R7717-Pad1)": [
         "rf200"
@@ -2766,6 +2732,9 @@
       ],
       "Net-(R903-Pad1)": [
         "rf200"
+      ],
+      "Net-(T101-P1A)": [
+        "rf50"
       ],
       "Net-(T101-PA)": [
         "rf200"
@@ -3310,6 +3279,15 @@
       "Net-(U2602-J2)": [
         "rf200"
       ],
+      "Net-(U301-J1)": [
+        "rf50"
+      ],
+      "Net-(U301-J2)": [
+        "rf50"
+      ],
+      "Net-(U301-J3)": [
+        "rf50"
+      ],
       "Net-(U301-OUT)": [
         "Power"
       ],
@@ -3319,20 +3297,32 @@
       "Net-(U302-FB)": [
         "Power"
       ],
+      "Net-(U302-J1)": [
+        "rf50"
+      ],
+      "Net-(U302-J2)": [
+        "rf50"
+      ],
+      "Net-(U302-J3)": [
+        "rf50"
+      ],
       "Net-(U302-OUT)": [
         "Power"
       ],
       "Net-(U302-VDD18)": [
         "power-lite"
       ],
+      "Net-(U303-J1)": [
+        "rf50"
+      ],
       "Net-(U303-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U303-J3)": [
         "rf200"
       ],
       "Net-(U304-J1)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U304-J2)": [
         "rf50"
@@ -3341,10 +3331,10 @@
         "rf200"
       ],
       "Net-(U305-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U305-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U306-J1)": [
         "rf200"
@@ -3353,10 +3343,13 @@
         "rf50"
       ],
       "Net-(U306-J3)": [
-        "rf200"
+        "rf50"
+      ],
+      "Net-(U307-J1)": [
+        "rf50"
       ],
       "Net-(U307-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U307-J3)": [
         "rf200"
@@ -3364,19 +3357,31 @@
       "Net-(U308-J1)": [
         "rf200"
       ],
+      "Net-(U308-J2)": [
+        "rf50"
+      ],
       "Net-(U308-J3)": [
         "rf200"
       ],
       "Net-(U309-J2)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U309-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U310-J3)": [
-        "rf200"
+        "rf50"
+      ],
+      "Net-(U401-J2)": [
+        "rf50"
+      ],
+      "Net-(U401-J3)": [
+        "rf50"
       ],
       "Net-(U401-NO1)": [
+        "rf50"
+      ],
+      "Net-(U402-J3)": [
         "rf50"
       ],
       "Net-(U402-NO1)": [
@@ -3445,7 +3450,16 @@
       "Net-(U426-J1)": [
         "rf800"
       ],
+      "Net-(U501-J2)": [
+        "rf50"
+      ],
+      "Net-(U501-J3)": [
+        "rf50"
+      ],
       "Net-(U501-NO1)": [
+        "rf50"
+      ],
+      "Net-(U502-J3)": [
         "rf50"
       ],
       "Net-(U502-NO1)": [
@@ -3453,6 +3467,12 @@
       ],
       "Net-(U601-4-VCCPLL)": [
         "Power"
+      ],
+      "Net-(U601-J2)": [
+        "rf50"
+      ],
+      "Net-(U601-J3)": [
+        "rf50"
       ],
       "Net-(U601-NO1)": [
         "rf50"
@@ -3463,14 +3483,26 @@
       "Net-(U602-4-VCCPLL)": [
         "Power"
       ],
+      "Net-(U602-J3)": [
+        "rf50"
+      ],
       "Net-(U602-NO1)": [
         "rf50"
       ],
       "Net-(U701-J1)": [
         "rf200"
       ],
+      "Net-(U701-J2)": [
+        "rf50"
+      ],
+      "Net-(U701-J3)": [
+        "rf50"
+      ],
       "Net-(U702-J1)": [
         "rf200"
+      ],
+      "Net-(U702-J3)": [
+        "rf50"
       ],
       "Net-(U703-J1)": [
         "rf200"
@@ -4367,14 +4399,6 @@
         "pattern": "VBUS"
       },
       {
-        "netclass": "Default",
-        "pattern": "Veer"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/*/Ctrl.*"
-      },
-      {
         "netclass": "GND",
         "pattern": "GND*"
       },
@@ -4388,27 +4412,15 @@
       },
       {
         "netclass": "Power",
-        "pattern": "+5.7V"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+5VA"
-      },
-      {
-        "netclass": "Power",
         "pattern": "VBUS"
       },
       {
         "netclass": "Power",
-        "pattern": "+3.3VFPGAIO"
+        "pattern": "+3.3VCPLDIO"
       },
       {
         "netclass": "Power",
-        "pattern": "+VFPGAAUX"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+VFPGACORE"
+        "pattern": "+VCPLDCORE"
       },
       {
         "netclass": "Power",
@@ -4420,39 +4432,15 @@
       },
       {
         "netclass": "Power",
-        "pattern": "FPGAVCORE"
-      },
-      {
-        "netclass": "Power",
         "pattern": "+5V"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+6V"
       },
       {
         "netclass": "Power",
         "pattern": "VUSBPD"
       },
       {
-        "netclass": "Power",
-        "pattern": "+12V"
-      },
-      {
-        "netclass": "Rail-low-power",
-        "pattern": "/FPGA/VPP2V5"
-      },
-      {
-        "netclass": "Rail-low-power",
-        "pattern": "+5VA"
-      },
-      {
         "netclass": "Rail-low-power",
         "pattern": "+3.3VA"
-      },
-      {
-        "netclass": "Rail-low-power",
-        "pattern": "/microcontroller/UC3VA"
       },
       {
         "netclass": "diff100",
@@ -4464,51 +4452,7 @@
       },
       {
         "netclass": "power-lite",
-        "pattern": "EthVDDA"
-      },
-      {
-        "netclass": "power-lite",
-        "pattern": "+6V"
-      },
-      {
-        "netclass": "power-lite",
         "pattern": "+1V65bias"
-      },
-      {
-        "netclass": "power-lite",
-        "pattern": "+2V5bias"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/Rx Front End/Clipper, Attenuator, Preselector/RF deck/RFDeckIn"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/Rx Front End/RxZ200"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+5.4V"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "/Power/+5.4V-dirty"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/Rx Front End/out24"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/Rx Front End/out12"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/Rx Front End/out6"
-      },
-      {
-        "netclass": "Default",
-        "pattern": "/Rx Front End/out3"
       }
     ]
   },
@@ -4868,12 +4812,12 @@
           "show": false
         }
       ],
-      "filter_string": "l",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
       "sort_asc": true,
-      "sort_field": "Value"
+      "sort_field": "Reference"
     },
     "connection_grid_size": 50.0,
     "drawing": {
@@ -4949,76 +4893,40 @@
       "microcontroller"
     ],
     [
-      "0ee31834-a2c3-474b-9f7c-c9b4f3cadb3f",
-      "Rx Front End"
-    ],
-    [
-      "f0576e51-08ef-46e9-b901-7c65fd3b885d",
-      "QSD1"
-    ],
-    [
-      "14e79162-6490-48bf-872f-f625f6d689c7",
-      "QSD2"
-    ],
-    [
-      "104f4ab4-5f9d-46b7-aa11-a9b548b73874",
-      "QSD0"
-    ],
-    [
-      "00580834-a893-4f64-96cc-eed31636bfe9",
-      "Tpad 3"
-    ],
-    [
-      "a3931169-68de-4e8b-813d-ff6ffed62146",
-      "Tpad 6"
-    ],
-    [
-      "d4b536b3-8496-4c97-8d52-85d67c75a967",
-      "Tpad 12"
-    ],
-    [
-      "9d22ac7c-7c0b-45c3-a875-a3a1935f96cc",
-      "Tpad 24"
-    ],
-    [
-      "f2486bc2-eba8-4fb8-890d-ac8b4843b7f5",
-      "Tune Control"
-    ],
-    [
-      "55f80b23-9ef9-4f9e-b356-423e8c5a7520",
+      "fa7b2322-fc43-45a5-8601-16987dcf2a8f",
       "Filters"
     ],
     [
-      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
-      "PGA1"
+      "38bdf91d-6638-423a-8652-09f179551567",
+      "Tpad 3"
+    ],
+    [
+      "3d307fc8-8a2a-43c9-9530-20d7e8637298",
+      "Tpad 6"
+    ],
+    [
+      "26285a91-ea78-4050-80bc-4c7f7f209d18",
+      "Tpad 12"
+    ],
+    [
+      "c36922fa-9319-49ea-a23f-51af8a33ae65",
+      "Tpad 24"
+    ],
+    [
+      "b1d18b09-925c-4b08-b727-6db371b003ee",
+      "osd0"
+    ],
+    [
+      "78a8603e-e916-4f21-a27d-f37985357e50",
+      "osd1"
     ],
     [
       "18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641",
-      "FPGA"
-    ],
-    [
-      "32c670c7-05fb-4d6f-b587-f687839b2e31",
-      "PGA2"
+      "cpld"
     ],
     [
       "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
       "Power"
-    ],
-    [
-      "32c670c7-05fb-4d6f-b587-f687839b2e31",
-      "PGA2"
-    ],
-    [
-      "32c670c7-05fb-4d6f-b587-f687839b2e31",
-      "PGA2"
-    ],
-    [
-      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
-      "PGA1"
-    ],
-    [
-      "5ffcf0e7-51e5-47a9-8fef-78cb8699aff9",
-      "PGA1"
     ]
   ],
   "text_variables": {
