@@ -6,7 +6,7 @@
 	(property "Reference" "REF**"
 		(at 0.44577 -4.89759 0)
 		(layer "F.SilkS")
-		(uuid "293d72df-81a6-4189-a42e-20ba09070371")
+		(uuid "56131615-82c8-454a-9475-f9d040dfa7db")
 		(effects
 			(font
 				(size 1.402457 1.402457)
@@ -17,7 +17,7 @@
 	(property "Value" "LATTICE_ICE40LP1K-QN84"
 		(at 15.58041 4.86799 0)
 		(layer "F.Fab")
-		(uuid "5063ec0f-cd5b-44af-8a19-22d131b8e7f9")
+		(uuid "8b14a5c7-97d2-4189-82b8-a1af4b724e8b")
 		(effects
 			(font
 				(size 1.402016 1.402016)
@@ -29,7 +29,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "e3cbe870-d3cf-4667-8e8e-9383cb98b6e1")
+		(uuid "8821f659-32d7-4c8f-85cc-dfab69de7b3c")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -41,7 +41,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "b9a75ea9-1de1-4f3a-a497-9d7c49b02a88")
+		(uuid "651d0ef0-a9bd-4f5e-b141-babe94f44680")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -49,6 +49,7 @@
 			)
 		)
 	)
+	(clearance 0.889)
 	(attr smd)
 	(fp_line
 		(start -3.5 -3.5)
@@ -255,14 +256,16 @@
 		(at -3.25 -2.75)
 		(size 0.4 0.22)
 		(layers "F.Cu" "F.Mask" "F.Paste")
-		(solder_mask_margin 0.102)
+		(solder_mask_margin 0.09)
+		(clearance 0.09)
 		(uuid "7af5b066-b1b5-4bad-b396-6aaa67b89363")
 	)
 	(pad "A2" smd rect
 		(at -3.25 -2.25)
 		(size 0.4 0.22)
 		(layers "F.Cu" "F.Mask" "F.Paste")
-		(solder_mask_margin 0.102)
+		(solder_mask_margin 0.09)
+		(clearance 0.09)
 		(uuid "0e08d6c5-a009-4e6a-9cd3-e8ce615c2850")
 	)
 	(pad "A3" smd rect
@@ -591,7 +594,9 @@
 		(at -2.6 -2)
 		(size 0.4 0.22)
 		(layers "F.Cu" "F.Mask" "F.Paste")
-		(solder_mask_margin 0.102)
+		(solder_mask_margin 0.09)
+		(solder_paste_margin 0)
+		(clearance 0.09)
 		(uuid "075052d9-b2bc-405e-8140-56bb4e4e8a92")
 	)
 	(pad "B2" smd rect

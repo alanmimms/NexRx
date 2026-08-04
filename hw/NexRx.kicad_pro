@@ -38,8 +38,8 @@
         "other_text_upright": false,
         "pads": {
           "drill": 0.0,
-          "height": 0.65,
-          "width": 0.35
+          "height": 0.4,
+          "width": 0.2
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -75,38 +75,6 @@
         ],
         [
           "silk_edge_clearance|30230000|-334940000|687bbc47-0938-4ea5-8ff4-8a29830269ab|7d71532b-5da0-40eb-9498-642fc8882ac4",
-          ""
-        ],
-        [
-          "silk_overlap|-2425538|-342502982|482caffc-4ef5-4a3b-baf1-d34329f02c23|9fc1e1d2-dd50-4a39-b022-78c8a642dada",
-          ""
-        ],
-        [
-          "silk_overlap|-2727820|-341493982|017c842b-6290-47b4-8600-256cddc086a5|972ba0ba-43a9-4e00-bb8b-c9debd7a9d0d",
-          ""
-        ],
-        [
-          "silk_overlap|-977180|-352014340|9a646ca9-1521-4344-adbf-2eea142ac91d|d9d94282-8837-4e12-bca2-c34fddbd25dc",
-          ""
-        ],
-        [
-          "silk_overlap|287820|-352014340|5719b173-ed27-4097-9b53-889f20296a22|6e0ab1f4-0a5b-47b0-923b-46be05308526",
-          ""
-        ],
-        [
-          "silk_overlap|7184820|-334949342|0b6e4344-062a-4d76-900d-8eacb70a22ee|39c5e0ca-cfc4-4bab-884d-007f5f5f51a2",
-          ""
-        ],
-        [
-          "silk_overlap|8200820|-335251623|281ee83d-0fa1-4042-80c2-d217e8f7e762|e46a97d2-d381-46e5-8f43-371dd94a7b62",
-          ""
-        ],
-        [
-          "silk_overlap|9282180|-346768982|18642122-9f93-427b-b500-90b8057a1b04|8298aaf7-5405-4118-95b6-f3054af11ba7",
-          ""
-        ],
-        [
-          "silk_overlap|9584461|-345752982|03bbaabd-b575-47e7-8e44-ae0c8e090fa8|c4456f80-63bd-4b71-a3d3-33ec20c3b971",
           ""
         ]
       ],
@@ -174,11 +142,11 @@
       },
       "rules": {
         "max_error": 0.005,
-        "min_clearance": 0.2,
-        "min_connection": 0.1,
+        "min_clearance": 0.09,
+        "min_connection": 0.09,
         "min_copper_edge_clearance": 0.3,
         "min_groove_width": 0.0,
-        "min_hole_clearance": 0.3,
+        "min_hole_clearance": 0.2,
         "min_hole_to_hole": 0.45,
         "min_microvia_diameter": 0.0,
         "min_microvia_drill": 0.0,
@@ -239,7 +207,7 @@
       ],
       "track_widths": [
         0.0,
-        0.1,
+        0.1016,
         0.127,
         0.15,
         0.156464,
@@ -283,6 +251,10 @@
         {
           "diameter": 0.0,
           "drill": 0.0
+        },
+        {
+          "diameter": 0.4,
+          "drill": 0.2
         },
         {
           "diameter": 0.6,
@@ -496,6 +468,22 @@
   "erc": {
     "erc_exclusions": [
       [
+        "multiple_net_names|1155700|1460500|b82366c9-446a-4914-818f-8555d2b6e161|125c0590-e389-4d75-8ef2-9785b443cfb0|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1155700|1485900|f2b13167-d0c3-42f7-8656-d48534f849a5|5232c085-99bf-4c5f-96b2-d31b9670071d|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1155700|1981200|629385b0-3495-40cb-8640-37fc65fd6f0b|3029108f-31a5-4c16-b59e-941f56356383|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1155700|2006600|29a030a5-de64-4bfe-a984-be9001b96b0f|74b0e159-c03e-46f7-b03b-6682d46ec190|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
         "multiple_net_names|1168400|1854200|ff1158cc-6d5d-4bc5-9d29-47f2194a731b|9387a303-6238-4fda-b917-9590c4985140|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
@@ -512,11 +500,23 @@
         ""
       ],
       [
+        "multiple_net_names|1231900|825500|efea9f2c-e73c-4f0f-8512-01a046001013|92c506d4-2e1c-4d0c-a6f6-fa601d11703f|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
         "multiple_net_names|1663700|1574800|22031725-34ed-4ff4-ba64-51c8288c6b22|140c78b6-c9ff-442c-8f78-1efb29758733|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
         "multiple_net_names|1663700|1676400|04f0bd59-8acd-47c1-a912-33da38b40b88|c35d42f0-3352-4e79-a07b-4960d5a81f5e|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1689100|1600200|22031725-34ed-4ff4-ba64-51c8288c6b22|50faa46b-ed24-4355-a1d5-31dfbac91437|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1689100|1701800|04f0bd59-8acd-47c1-a912-33da38b40b88|b50bb6ac-08c8-4012-bca6-ba4372b2f4ed|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
@@ -804,7 +804,7 @@
         "line_style": 0,
         "name": "GND",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
+        "priority": 2,
         "schematic_color": "rgb(34, 95, 23)",
         "track_width": 0.3,
         "wire_width": 12
@@ -814,7 +814,7 @@
         "line_style": 0,
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
+        "priority": 3,
         "schematic_color": "rgb(79, 122, 21)",
         "track_width": 0.3,
         "wire_width": 20
@@ -822,7 +822,7 @@
       {
         "name": "Rail-low-power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
+        "priority": 1,
         "schematic_color": "rgb(79, 122, 21)"
       },
       {
@@ -830,7 +830,7 @@
         "line_style": 0,
         "name": "diff100",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
+        "priority": 6,
         "schematic_color": "rgb(72, 52, 255)",
         "track_width": 0.15,
         "wire_width": 6
@@ -840,21 +840,28 @@
         "line_style": 0,
         "name": "diff75",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
+        "priority": 7,
         "schematic_color": "rgb(51, 78, 255)",
         "wire_width": 6
       },
       {
         "name": "power-lite",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
+        "priority": 0,
         "schematic_color": "rgb(39, 28, 255)",
         "track_width": 0.2
       },
       {
+        "name": "rf39-inner-layer",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgb(255, 86, 48)",
+        "track_width": 0.1016
+      },
+      {
         "name": "rf50",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
+        "priority": 5,
         "schematic_color": "rgb(255, 90, 35)",
         "track_width": 0.156464
       }
@@ -884,6 +891,9 @@
       ],
       "/Antenna Tuner, TR Relay/AntTx": [
         "PowerRF"
+      ],
+      "/Clock/intSigGen": [
+        "rf50"
       ],
       "/FPGA/Ctrl.audioReset": [
         "rf50"
@@ -1650,6 +1660,9 @@
       "Net-(C305-Pad1)": [
         "rf50"
       ],
+      "Net-(C305-Pad2)": [
+        "rf50"
+      ],
       "Net-(C306-Pad1)": [
         "rf50"
       ],
@@ -1665,6 +1678,12 @@
       "Net-(C309-Pad1)": [
         "rf50"
       ],
+      "Net-(C309-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C310-Pad1)": [
+        "rf50"
+      ],
       "Net-(C310-Pad2)": [
         "rf50"
       ],
@@ -1672,6 +1691,12 @@
         "rf50"
       ],
       "Net-(C312-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C312-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C313-Pad1)": [
         "rf50"
       ],
       "Net-(C313-Pad2)": [
@@ -1683,13 +1708,25 @@
       "Net-(C315-Pad1)": [
         "rf50"
       ],
+      "Net-(C315-Pad2)": [
+        "rf50"
+      ],
       "Net-(C316-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C317-Pad1)": [
         "rf50"
       ],
       "Net-(C317-Pad2)": [
         "rf50"
       ],
       "Net-(C318-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C319-Pad2)": [
+        "rf50"
+      ],
+      "Net-(C320-Pad2)": [
         "rf50"
       ],
       "Net-(C502-Pad1)": [
@@ -3319,7 +3356,7 @@
         "rf50"
       ],
       "Net-(U303-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U304-J1)": [
         "rf50"
@@ -3329,6 +3366,9 @@
       ],
       "Net-(U304-J3)": [
         "rf200"
+      ],
+      "Net-(U305-J1)": [
+        "rf50"
       ],
       "Net-(U305-J2)": [
         "rf50"
@@ -3352,7 +3392,7 @@
         "rf50"
       ],
       "Net-(U307-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U308-J1)": [
         "rf200"
@@ -3361,7 +3401,10 @@
         "rf50"
       ],
       "Net-(U308-J3)": [
-        "rf200"
+        "rf50"
+      ],
+      "Net-(U309-J1)": [
+        "rf50"
       ],
       "Net-(U309-J2)": [
         "rf50"
@@ -3369,7 +3412,19 @@
       "Net-(U309-J3)": [
         "rf50"
       ],
+      "Net-(U310-J2)": [
+        "rf50"
+      ],
       "Net-(U310-J3)": [
+        "rf50"
+      ],
+      "Net-(U311-J2)": [
+        "rf50"
+      ],
+      "Net-(U311-J3)": [
+        "rf50"
+      ],
+      "Net-(U312-J3)": [
         "rf50"
       ],
       "Net-(U401-J2)": [
@@ -4215,11 +4270,35 @@
       "Net-(U7793-J1)": [
         "rf800"
       ],
+      "Net-(U801-1B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U801-2B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U801-3B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U801-4B)": [
+        "rf39-inner-layer"
+      ],
       "Net-(U801-J2)": [
         "rf50"
       ],
       "Net-(U801-J3)": [
         "rf50"
+      ],
+      "Net-(U802-1B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U802-2B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U802-3B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U802-4B)": [
+        "rf39-inner-layer"
       ],
       "Net-(U802-J2)": [
         "rf200"
@@ -4227,11 +4306,35 @@
       "Net-(U802-J3)": [
         "rf50"
       ],
+      "Net-(U901-1B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U901-2B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U901-3B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U901-4B)": [
+        "rf39-inner-layer"
+      ],
       "Net-(U901-J2)": [
         "rf50"
       ],
       "Net-(U901-J3)": [
         "rf50"
+      ],
+      "Net-(U902-1B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U902-2B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U902-3B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U902-4B)": [
+        "rf39-inner-layer"
       ],
       "Net-(U902-J2)": [
         "rf200"
@@ -4921,8 +5024,16 @@
       "osd1"
     ],
     [
+      "d4526fc6-bbf8-441d-8ff0-555c73258576",
+      "cpld1"
+    ],
+    [
+      "54a1b66b-2e18-4097-9838-d6ffa2faf921",
+      "Clock"
+    ],
+    [
       "18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641",
-      "cpld"
+      "cpld0"
     ],
     [
       "cbf7569b-90aa-4e1a-84a7-d4153f6242b6",

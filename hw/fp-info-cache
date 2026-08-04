@@ -1,4 +1,4 @@
-27507151715568450
+27512509193960625
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71491,6 +71491,13 @@ Schottky Diode
 2
 2
 Library
+DGV14
+
+SN74CBTLV3125DGVR 
+0
+14
+14
+Library
 ECSTXO201633400TR
 ECS-TXO-2016-33-400-TR-2
 Crystal or Oscillator
@@ -71673,6 +71680,13 @@ Integrated Circuit
 29
 29
 Library
+QFNS32_LAT
+
+ICE40LP384-SG32 
+0
+33
+33
+Library
 RFPCSMA27F
 RFPC-SMA27-F-1
 Connector
@@ -71728,6 +71742,13 @@ Integrated Circuit
 0
 14
 14
+Library
+SOIC_G14DCK3_TEX
+
+SN74LVC2G14DCK3 
+0
+6
+6
 Library
 SON50P300X300X80-13N
 DRR0012E
