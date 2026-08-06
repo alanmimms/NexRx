@@ -1795,10 +1795,6 @@
 		(uuid "24f7dcbf-00f1-4fc5-982f-6b59731a176d")
 	)
 	(no_connect
-		(at 123.19 121.92)
-		(uuid "49621453-23eb-4c01-aaaa-87352c065e1c")
-	)
-	(no_connect
 		(at 113.03 121.92)
 		(uuid "4ad72afe-8022-4646-a4c0-78573824971e")
 	)
@@ -1809,6 +1805,10 @@
 	(no_connect
 		(at 118.11 121.92)
 		(uuid "81dfb6cb-62d1-457b-b600-8b4f1a63e938")
+	)
+	(no_connect
+		(at 115.57 121.92)
+		(uuid "9cdf848c-336e-4c34-8788-d98649c3ae68")
 	)
 	(no_connect
 		(at 120.65 121.92)
@@ -2166,7 +2166,7 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 120.65) (xy 115.57 121.92)
+			(xy 135.89 156.21) (xy 134.62 156.21)
 		)
 		(stroke
 			(width 0)
@@ -2396,7 +2396,7 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 156.21) (xy 134.62 156.21)
+			(xy 123.19 120.65) (xy 123.19 121.92)
 		)
 		(stroke
 			(width 0)
@@ -2515,7 +2515,7 @@
 		(uuid "27cb6a02-7a92-4d3a-8984-9432a5d6bdcb")
 	)
 	(label "osd.nPh4"
-		(at 135.89 146.05 0)
+		(at 135.89 151.13 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2525,7 +2525,7 @@
 		(uuid "3dde1791-9d8f-424a-91f1-dfb73354ee3e")
 	)
 	(label "osd.nPh2"
-		(at 77.47 146.05 180)
+		(at 77.47 153.67 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2535,7 +2535,7 @@
 		(uuid "3f6c7ec8-5440-4f1f-82d1-e938a967a237")
 	)
 	(label "osd.nPh3"
-		(at 77.47 153.67 180)
+		(at 77.47 143.51 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2545,7 +2545,7 @@
 		(uuid "40aef7b0-4525-40b8-a55d-a6f4bfc758b8")
 	)
 	(label "osd.nPh7"
-		(at 115.57 120.65 90)
+		(at 135.89 156.21 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2565,7 +2565,7 @@
 		(uuid "4ef98e37-4287-4303-989e-a7a5e598004b")
 	)
 	(label "osd.nPh1"
-		(at 77.47 143.51 180)
+		(at 77.47 146.05 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2575,7 +2575,7 @@
 		(uuid "7ba636f1-16cf-47b0-874b-d14fc5efc2fe")
 	)
 	(label "osd.nPh6"
-		(at 135.89 151.13 0)
+		(at 135.89 146.05 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2637,7 +2637,7 @@
 	)
 	(hierarchical_label "miscClk"
 		(shape input)
-		(at 135.89 156.21 0)
+		(at 123.19 120.65 90)
 		(effects
 			(font
 				(size 1.27 1.27)

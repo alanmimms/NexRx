@@ -1410,6 +1410,10 @@
 		(uuid "15f44246-76ec-49ac-93a3-87eb5b218cc8")
 	)
 	(no_connect
+		(at 132.08 82.55)
+		(uuid "2e8144f0-a3cf-4d95-9b62-54cae978a1f0")
+	)
+	(no_connect
 		(at 132.08 102.87)
 		(uuid "323c62bf-d027-4382-a0da-b1f5c4da9161")
 	)
@@ -1420,10 +1424,6 @@
 	(no_connect
 		(at 132.08 107.95)
 		(uuid "4c8d48a3-bb81-4c72-b019-5946eb7b7413")
-	)
-	(no_connect
-		(at 132.08 92.71)
-		(uuid "8c1b5e01-a0bf-4a98-9882-d51795f8687b")
 	)
 	(no_connect
 		(at 101.6 77.47)
@@ -1605,7 +1605,7 @@
 	)
 	(wire
 		(pts
-			(xy 132.08 82.55) (xy 133.35 82.55)
+			(xy 132.08 92.71) (xy 133.35 92.71)
 		)
 		(stroke
 			(width 0)
@@ -2170,7 +2170,7 @@
 	)
 	(hierarchical_label "osd1Clk"
 		(shape output)
-		(at 133.35 82.55 0)
+		(at 133.35 92.71 0)
 		(effects
 			(font
 				(size 1.27 1.27)
