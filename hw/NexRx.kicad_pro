@@ -807,8 +807,8 @@
         "priority": 2147483647,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.2,
-        "via_diameter": 0.6,
-        "via_drill": 0.3,
+        "via_diameter": 0.4,
+        "via_drill": 0.2,
         "wire_width": 6
       },
       {
@@ -4321,6 +4321,18 @@
       "Net-(U802-J3)": [
         "rf50"
       ],
+      "Net-(U803-1B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U803-2B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U803-3B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U803-4B)": [
+        "rf39-inner-layer"
+      ],
       "Net-(U901-1B)": [
         "rf39-inner-layer"
       ],
@@ -4356,6 +4368,18 @@
       ],
       "Net-(U902-J3)": [
         "rf50"
+      ],
+      "Net-(U903-1B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U903-2B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U903-3B)": [
+        "rf39-inner-layer"
+      ],
+      "Net-(U903-4B)": [
+        "rf39-inner-layer"
       ],
       "Veer": [
         "PowerRF"

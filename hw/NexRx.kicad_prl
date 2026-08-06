@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 0,
+    "active_layer": 2,
     "active_layer_preset": "",
     "auto_track_width": true,
     "hidden_netclasses": [
@@ -15,9 +15,9 @@
       "Net-(T101-P1A)",
       "+3.3V",
       "GND",
-      "Net-(U802-1B)",
+      "Net-(U803-1B)",
       "Net-(U801-4B)",
-      "Net-(U802-2B)",
+      "Net-(C819-Pad2)",
       "/cpld0/cpld.MOSI",
       "/cpld0/cpld.SCK",
       "/Clock/rf.SDA",
