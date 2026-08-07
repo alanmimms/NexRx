@@ -7963,7 +7963,7 @@
 				)
 			)
 		)
-		(property "Value" "220pF"
+		(property "Value" "200pF"
 			(at 187.706 45.72 0)
 			(effects
 				(font
@@ -7971,7 +7971,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 183.1848 39.37 0)
 			(effects
 				(font
@@ -8042,7 +8042,7 @@
 				)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 184.15 43.18 90)
 			(effects
 				(font
@@ -8492,7 +8492,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 208.5848 109.22 0)
 			(effects
 				(font
@@ -8555,7 +8555,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "tant"
+		(property "cap-type" "X7R"
 			(at 209.55 105.41 0)
 			(effects
 				(font
@@ -8751,7 +8751,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "10V"
+		(property "working-voltage" "25V"
 			(at 209.55 105.41 0)
 			(effects
 				(font
@@ -14532,7 +14532,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 148.2852 107.95 0)
 			(effects
 				(font
@@ -14595,7 +14595,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "tant"
+		(property "cap-type" "X7R"
 			(at 147.574 103.886 0)
 			(effects
 				(font
@@ -14791,7 +14791,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "10V"
+		(property "working-voltage" "25V"
 			(at 147.32 104.14 0)
 			(effects
 				(font
@@ -15576,7 +15576,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 216.2048 109.22 0)
 			(effects
 				(font
@@ -15835,7 +15835,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "50V"
 			(at 217.17 105.41 0)
 			(effects
 				(font
@@ -18438,7 +18438,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 200.9648 109.22 0)
 			(effects
 				(font
@@ -18697,7 +18697,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "50V"
 			(at 201.93 105.41 0)
 			(effects
 				(font

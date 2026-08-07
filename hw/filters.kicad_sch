@@ -5075,7 +5075,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 152.4 124.46 0)
 			(effects
 				(font
@@ -5127,6 +5127,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GCM1555C1H750FA6J"
+			(at 152.4 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 152.4 124.46 90)
 			(effects
 				(font
@@ -5766,7 +5775,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 93.98 97.79 0)
 			(effects
 				(font
@@ -5818,6 +5827,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GCM1555C1H201FA6D"
+			(at 93.98 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 93.98 97.79 90)
 			(effects
 				(font
@@ -6256,7 +6274,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 67.31 191.77 0)
 			(effects
 				(font
@@ -6292,7 +6310,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 67.31 191.77 0)
 			(effects
 				(font
@@ -6344,6 +6362,15 @@
 			)
 		)
 		(property "Mouser_PN" "581-08051A911JAT2A"
+			(at 67.31 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 67.31 191.77 90)
 			(effects
 				(font
@@ -6717,7 +6744,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 151.13 40.64 0)
 			(effects
 				(font
@@ -6769,6 +6796,15 @@
 			)
 		)
 		(property "Mouser_PN" "80-C0402C132J5GACTU"
+			(at 151.13 40.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 151.13 40.64 90)
 			(effects
 				(font
@@ -6951,6 +6987,23 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRT1555C1H431FA2D"
+			(at 116.84 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" "NP0"
+			(at 116.84 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 116.84 160.02 0)
 			(effects
 				(font
@@ -7638,7 +7691,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 92.71 154.94 0)
 			(effects
 				(font
@@ -7690,6 +7743,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM1555C2A390JA1D"
+			(at 92.71 154.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 92.71 154.94 90)
 			(effects
 				(font
@@ -9969,7 +10031,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 85.09 191.77 0)
 			(effects
 				(font
@@ -10005,7 +10067,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 85.09 191.77 0)
 			(effects
 				(font
@@ -10057,6 +10119,15 @@
 			)
 		)
 		(property "Mouser_PN" "581-08051A911JAT2A"
+			(at 85.09 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 85.09 191.77 90)
 			(effects
 				(font
@@ -10209,7 +10280,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 92.71 40.64 0)
 			(effects
 				(font
@@ -10261,6 +10332,15 @@
 			)
 		)
 		(property "Mouser_PN" "80-C0402C132J5GACTU"
+			(at 92.71 40.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 92.71 40.64 90)
 			(effects
 				(font
@@ -11238,7 +11318,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 152.4 97.79 0)
 			(effects
 				(font
@@ -11290,6 +11370,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GCM1555C1H201FA6D"
+			(at 152.4 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 152.4 97.79 90)
 			(effects
 				(font
@@ -11405,6 +11494,23 @@
 			)
 		)
 		(property "Mouser_PN" "80-C0402C202J3G"
+			(at 116.84 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" "NP0"
+			(at 116.84 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 116.84 45.72 0)
 			(effects
 				(font
@@ -11891,7 +11997,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 151.13 67.31 0)
 			(effects
 				(font
@@ -11943,6 +12049,15 @@
 			)
 		)
 		(property "Mouser_PN" "80-C0402C132J5GACTU"
+			(at 151.13 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 151.13 67.31 90)
 			(effects
 				(font
@@ -12244,7 +12359,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 93.98 124.46 0)
 			(effects
 				(font
@@ -12296,6 +12411,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GCM1555C1H750FA6J"
+			(at 93.98 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 93.98 124.46 90)
 			(effects
 				(font
@@ -12576,6 +12700,23 @@
 				(hide yes)
 			)
 		)
+		(property "cap-type" "NP0"
+			(at 118.11 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "working-voltage" "25V"
+			(at 118.11 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1da80543-9966-4cd6-9d14-11c4035068c9")
 		)
@@ -12683,6 +12824,23 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM1555C2A471GE1D"
+			(at 118.11 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" "NP0"
+			(at 118.11 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 118.11 129.54 0)
 			(effects
 				(font
@@ -12814,7 +12972,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 101.6 191.77 0)
 			(effects
 				(font
@@ -12850,7 +13008,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 101.6 191.77 0)
 			(effects
 				(font
@@ -12902,6 +13060,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM2165C1H162JA1D"
+			(at 101.6 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 101.6 191.77 90)
 			(effects
 				(font
@@ -13629,7 +13796,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 92.71 67.31 0)
 			(effects
 				(font
@@ -13681,6 +13848,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRT1555C1H511FA2D"
+			(at 92.71 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 92.71 67.31 90)
 			(effects
 				(font
@@ -14141,7 +14317,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 151.13 154.94 0)
 			(effects
 				(font
@@ -14193,6 +14369,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM1555C2A390JA1D"
+			(at 151.13 154.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 151.13 154.94 90)
 			(effects
 				(font
@@ -14885,6 +15070,23 @@
 				(hide yes)
 			)
 		)
+		(property "cap-type" "NP0"
+			(at 116.84 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "working-voltage" "25V"
+			(at 116.84 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "17057962-67d6-4d90-a400-77615c8f37c1")
 		)
@@ -15414,7 +15616,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 48.26 191.77 0)
 			(effects
 				(font
@@ -15450,7 +15652,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" ""
+		(property "cap-type" "NP0"
 			(at 48.26 191.77 0)
 			(effects
 				(font
@@ -15502,6 +15704,15 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM2165C1H162JA1D"
+			(at 48.26 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "working-voltage" "25V"
 			(at 48.26 191.77 90)
 			(effects
 				(font

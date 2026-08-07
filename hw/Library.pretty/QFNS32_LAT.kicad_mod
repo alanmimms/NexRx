@@ -1788,29 +1788,6 @@
 		(uuid "d48dd4b8-fe31-4a8c-9fe0-ee7337be8c39")
 	)
 	(fp_text user "*"
-		(at -3.4417 -2 0)
-		(unlocked yes)
-		(layer "F.SilkS")
-		(uuid "0cce8f55-3be3-4614-8905-0df370fed950")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
-		(at -3.4417 -2 0)
-		(layer "F.SilkS")
-		(uuid "abdb9e26-8939-451e-b86d-190c3537b099")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
 		(at -2.0019 -2 0)
 		(unlocked yes)
 		(layer "F.Fab")
@@ -2044,4 +2021,15 @@
 		(uuid "fbc00886-871b-48a3-ad0e-d6ec9f0253f4")
 	)
 	(embedded_fonts no)
+	(model "/home/alan/ham/NexRx/symbols/ICE40LP384-SG32TR--3DModel-STEP-510211.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -0)
+		)
+	)
 )

@@ -1,0 +1,194 @@
+(footprint "S8401-46"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "S8401-46")
+	(tags "Connector")
+	(property "Reference" "J**"
+		(at -0.376 -0.036 0)
+		(layer "F.SilkS")
+		(uuid "ca20f9d2-251f-4f89-93ad-b87d6e7e2c85")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(property "Value" "S8401-46"
+		(at -0.376 -0.036 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "f561f111-149b-42aa-afa7-f05f0848b4cd")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "daf53614-5553-459d-bee3-844e3480b385")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "d141fae7-261f-4f89-a71f-9b20362a2642")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_line
+		(start -11.45 -3.3)
+		(end -11.45 3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "6313aa67-d1bf-4ad9-b9bf-7606628026aa")
+	)
+	(fp_line
+		(start -11.45 3.3)
+		(end 11.45 3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "facd31c1-0092-4596-bf00-affc1779b10c")
+	)
+	(fp_line
+		(start 11.45 -3.3)
+		(end -11.45 -3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "62a5f082-dd57-4b68-9a68-0ca8b7d75269")
+	)
+	(fp_line
+		(start 11.45 3.3)
+		(end 11.45 -3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "8c7ee65c-8db2-454b-8bd7-130998dc7742")
+	)
+	(fp_circle
+		(center 0.012 -3.891)
+		(end 0.012 -3.79738)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "1033c08a-ce8d-483e-ad57-b1fa00b13a71")
+	)
+	(fp_line
+		(start -11.45 -3.3)
+		(end 11.45 -3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "edf947cb-8d9a-472c-978d-555a404343f2")
+	)
+	(fp_line
+		(start -11.45 3.3)
+		(end -11.45 -3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "fd68a0b5-7c87-42e9-94c4-83d38d23a3ff")
+	)
+	(fp_line
+		(start 11.45 -3.3)
+		(end 11.45 3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "59cf4b2d-289f-4815-8391-3a56ee1c0e61")
+	)
+	(fp_line
+		(start 11.45 3.3)
+		(end -11.45 3.3)
+		(stroke
+			(width 0.254)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "2c6dc8c9-4492-46ab-abed-4c337da4eeaf")
+	)
+	(fp_text user "${REFERENCE}"
+		(at -0.376 -0.036 0)
+		(layer "F.Fab")
+		(uuid "dbdfe7f2-9262-42c1-88a6-b06de81d6f31")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+			)
+		)
+	)
+	(pad "1" thru_hole circle
+		(at 0 -1.6)
+		(size 1.45 1.45)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "92a5cd8c-b155-41b9-ad1c-746c4fbf2006")
+	)
+	(pad "2" thru_hole circle
+		(at -5 1.6)
+		(size 1.45 1.45)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "e293d7f0-1243-4893-85dd-5c3b77dc30f1")
+	)
+	(pad "3" thru_hole circle
+		(at 5 1.6)
+		(size 1.45 1.45)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "0d747e68-0153-4c50-8e74-1b1a564cf505")
+	)
+	(embedded_fonts no)
+	(model "/home/alan/ham/NexRx/symbols/S8401-46/3D/S8401-46.stp"
+		(offset
+			(xyz -0.05999999776 2.999999955 15.02999951)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -180 0 0)
+		)
+	)
+)

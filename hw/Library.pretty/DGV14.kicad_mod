@@ -747,57 +747,11 @@
 		(layer "F.Fab")
 		(uuid "9dab0e8e-8736-41f9-9d1b-51130fe47054")
 	)
-	(fp_text user "*"
-		(at -3.0734 -2.5716 0)
-		(layer "F.SilkS")
-		(uuid "858416e9-8fc0-44a5-8410-965c84155e85")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
-		(at -3.0734 -2.5716 0)
-		(unlocked yes)
-		(layer "F.SilkS")
-		(uuid "d3b70325-0562-4a18-b189-da6d3c906157")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
-		(at -3.0734 -2.5716 0)
-		(layer "F.Fab")
-		(uuid "025cc9ec-1ff7-4624-9a91-d80c68f49b86")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
 	(fp_text user "${REFERENCE}"
 		(at 0 0 0)
 		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "a5c5b433-78c7-4172-ab9c-5b2bb6cfce72")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
-		(at -3.0734 -2.5716 0)
-		(unlocked yes)
-		(layer "F.Fab")
-		(uuid "c9ef0def-4a2d-4dc6-abcf-b907df250471")
 		(effects
 			(font
 				(size 1 1)
@@ -890,4 +844,15 @@
 		(uuid "2876e64d-a26b-4b8b-96a7-3b30edd5d416")
 	)
 	(embedded_fonts no)
+	(model "/home/alan/ham/NexRx/symbols/SN74CBTLV3125DGVR.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -0)
+		)
+	)
 )

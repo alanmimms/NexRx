@@ -485,29 +485,6 @@
 		(uuid "04074b32-81bf-4687-9a04-c04b0dd17843")
 	)
 	(fp_text user "*"
-		(at -1.37795 -2.148586 0)
-		(layer "F.SilkS")
-		(uuid "8cfb3b62-8789-4569-b674-75dbd68b9459")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
-		(at -1.37795 -2.148586 0)
-		(unlocked yes)
-		(layer "F.SilkS")
-		(uuid "e6272b7a-5229-4a1d-b984-acddfdaedbcb")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
 		(at -0.3175 -1.0033 0)
 		(layer "F.Fab")
 		(uuid "0b8e8318-2ad6-4058-baca-3d4129d7fdae")
@@ -579,4 +556,15 @@
 		(uuid "23d60196-13ea-418f-9b8f-584a57769bf3")
 	)
 	(embedded_fonts no)
+	(model "/home/alan/ham/NexRx/symbols/SN74LVC2G14DCK3.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -90)
+		)
+	)
 )

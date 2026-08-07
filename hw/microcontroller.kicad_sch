@@ -6292,7 +6292,7 @@
 	)
 	(text "SAI1a=n/u\nSAI1b=n/u\n\nSAI2a=master osd0\nSAI2b=slave osd1\n\nSAI3a=n/u\nSAI3b=n/u\n\nSAI4a=n/u\nSAI4b=n/u\n"
 		(exclude_from_sim no)
-		(at 132.842 182.372 0)
+		(at 130.048 182.372 0)
 		(effects
 			(font
 				(size 1.905 1.905)
@@ -6666,10 +6666,6 @@
 		(uuid "06c39714-4db1-4fc4-9aa4-c442f3afb690")
 	)
 	(no_connect
-		(at 57.15 80.01)
-		(uuid "0fa512cc-90b4-4b7e-a8e7-24103493db8f")
-	)
-	(no_connect
 		(at 102.87 156.21)
 		(uuid "38f7e8f6-a81b-4c7b-ae36-a77fa4273b3e")
 	)
@@ -6706,6 +6702,10 @@
 		(uuid "76009036-6514-4f23-9bb0-6210bf6bf4a2")
 	)
 	(no_connect
+		(at 57.15 74.93)
+		(uuid "86553f3c-2ea3-46a3-b293-9c7be2aad214")
+	)
+	(no_connect
 		(at 102.87 59.69)
 		(uuid "9a0a3043-5e0d-4d33-a8fb-a36d1e24fd34")
 	)
@@ -6726,16 +6726,8 @@
 		(uuid "b4481dd0-2fa2-4b9c-9ddb-cde9eee242da")
 	)
 	(no_connect
-		(at 57.15 77.47)
-		(uuid "d0f65067-301e-4900-a90b-e7f6a99c6c78")
-	)
-	(no_connect
 		(at 102.87 143.51)
 		(uuid "d18da079-a8ed-4ac7-8596-c3478a2eccac")
-	)
-	(no_connect
-		(at 57.15 74.93)
-		(uuid "d3bc4c2d-2c3f-4a89-8e21-487b6d41e84b")
 	)
 	(no_connect
 		(at 102.87 151.13)
@@ -6750,16 +6742,22 @@
 		(uuid "e2470b1b-d227-4a20-9e73-4b0170516660")
 	)
 	(no_connect
-		(at 102.87 85.09)
-		(uuid "e7453059-ae97-4645-856a-c75c5d4405ec")
-	)
-	(no_connect
 		(at 102.87 54.61)
 		(uuid "ed80cb71-118d-4d91-8855-115153fc93a0")
 	)
 	(no_connect
 		(at 102.87 113.03)
 		(uuid "f09221ae-05a7-4e2c-b355-8028120700e6")
+	)
+	(wire
+		(pts
+			(xy 55.88 80.01) (xy 57.15 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "004f4257-eda2-40b8-8f4f-098129407936")
 	)
 	(wire
 		(pts
@@ -8843,6 +8841,16 @@
 	)
 	(wire
 		(pts
+			(xy 102.87 85.09) (xy 104.14 85.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9a968e5f-531b-4bd0-a053-b1c5a8eb0413")
+	)
+	(wire
+		(pts
 			(xy 139.7 123.19) (xy 151.13 123.19)
 		)
 		(stroke
@@ -9680,6 +9688,16 @@
 			(type default)
 		)
 		(uuid "d627597c-b725-4ca2-862a-240f2ca1f338")
+	)
+	(wire
+		(pts
+			(xy 55.88 77.47) (xy 57.15 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d6ffe2e5-3223-4979-86b3-3f7e401a5497")
 	)
 	(wire
 		(pts
@@ -11547,6 +11565,17 @@
 		)
 		(uuid "308141a8-f6a2-4bf9-8673-227425ec8b03")
 	)
+	(hierarchical_label "gnssRx"
+		(shape input)
+		(at 55.88 77.47 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "51ef1f49-564d-479a-a929-7a07e2228cbb")
+	)
 	(hierarchical_label "osd1{OSD}"
 		(shape bidirectional)
 		(at 26.67 161.29 180)
@@ -11569,6 +11598,17 @@
 		)
 		(uuid "763d662e-aec0-4b76-97e0-c50ed5618479")
 	)
+	(hierarchical_label "gnssTx"
+		(shape input)
+		(at 55.88 80.01 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "871d2e2e-6433-45d4-b4a1-0865e204d20d")
+	)
 	(hierarchical_label "adcReset"
 		(shape input)
 		(at 124.46 49.53 0)
@@ -11579,6 +11619,17 @@
 			(justify left)
 		)
 		(uuid "8eaf2657-8be5-428f-bd53-ea7e64b182b0")
+	)
+	(hierarchical_label "gnssNRESET"
+		(shape input)
+		(at 104.14 85.09 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9b184080-de8f-4cde-a069-f8851573f184")
 	)
 	(hierarchical_label "usbDN"
 		(shape bidirectional)
@@ -14585,7 +14636,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 130.81 134.62 0)
 			(effects
 				(font
@@ -15630,7 +15681,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 138.43 134.62 0)
 			(effects
 				(font
@@ -16476,7 +16527,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 56.8452 154.94 0)
 			(effects
 				(font
@@ -16728,7 +16779,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 55.88 151.13 0)
 			(effects
 				(font
@@ -21410,7 +21461,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 49.8348 154.94 0)
 			(effects
 				(font
@@ -21662,7 +21713,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 50.8 151.13 0)
 			(effects
 				(font
@@ -21801,7 +21852,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 27.94 49.53 0)
 			(effects
 				(font
@@ -27684,7 +27735,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 233.3752 101.6 0)
 			(effects
 				(font
@@ -27747,7 +27798,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "tant"
+		(property "cap-type" "X7R"
 			(at 235.204 102.616 0)
 			(effects
 				(font
@@ -27935,7 +27986,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "10V"
+		(property "working-voltage" "25V"
 			(at 232.41 97.79 0)
 			(effects
 				(font
@@ -31056,7 +31107,7 @@
 				)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 20.32 49.53 0)
 			(effects
 				(font

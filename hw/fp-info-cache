@@ -1,4 +1,4 @@
-27513864829853629
+27515653823441210
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71728,6 +71728,13 @@ kelvin-connection
 0
 4
 4
+Library
+S8401-46
+S8401-46
+Connector
+0
+3
+3
 Library
 SDR0805100ML
 SDR0805-100ML-3
