@@ -2633,12 +2633,6 @@
 		(uuid "6e5b9d3d-b272-4070-8e8c-a0e18290502a")
 	)
 	(junction
-		(at 219.71 93.98)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "857d96df-3f68-4707-9af0-3fc2797cbb62")
-	)
-	(junction
 		(at 88.9 139.7)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3138,16 +3132,6 @@
 	)
 	(wire
 		(pts
-			(xy 219.71 111.76) (xy 215.9 111.76)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "534a8147-b678-4ed6-84dd-f501a2a481df")
-	)
-	(wire
-		(pts
 			(xy 30.48 31.75) (xy 31.75 31.75)
 		)
 		(stroke
@@ -3255,16 +3239,6 @@
 			(type default)
 		)
 		(uuid "773f3fbc-0029-4ac2-a129-efc389699dcc")
-	)
-	(wire
-		(pts
-			(xy 219.71 93.98) (xy 219.71 111.76)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "78ae8113-2e18-4e1b-8108-296856ea7c93")
 	)
 	(wire
 		(pts
@@ -3448,16 +3422,6 @@
 	)
 	(wire
 		(pts
-			(xy 219.71 73.66) (xy 219.71 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9eadd8f5-4a91-4c7a-b642-443f4814bfef")
-	)
-	(wire
-		(pts
 			(xy 63.5 152.4) (xy 64.77 152.4)
 		)
 		(stroke
@@ -3495,16 +3459,6 @@
 			(type default)
 		)
 		(uuid "a32298ff-0b10-4231-86f7-064ae492066f")
-	)
-	(wire
-		(pts
-			(xy 198.12 73.66) (xy 219.71 73.66)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a55abdd1-7f3b-43bc-ba11-2cd9a4e25697")
 	)
 	(wire
 		(pts
@@ -3985,16 +3939,6 @@
 			(type default)
 		)
 		(uuid "f48d0871-8077-40a3-bb6d-77e7ce26168a")
-	)
-	(wire
-		(pts
-			(xy 219.71 93.98) (xy 198.12 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f556cbd6-1be5-46f2-bfdb-9ecaf1b77e77")
 	)
 	(wire
 		(pts
@@ -9170,16 +9114,6 @@
 				(justify right)
 			)
 		)
-		(pin "miscClk" input
-			(at 198.12 73.66 0)
-			(uuid "019a259a-336c-472d-a6e5-7b88900cbc63")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
 		(pin "osdClk" input
 			(at 198.12 71.12 0)
 			(uuid "380400c7-9164-4aa5-be16-bdde7324f8ba")
@@ -9578,16 +9512,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-			)
-		)
-		(pin "miscClk" output
-			(at 215.9 111.76 0)
-			(uuid "8509ffd1-2d16-4c97-9703-c418cc87439e")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
 			)
 		)
 		(pin "osd0Clk" output
@@ -10287,16 +10211,6 @@
 		(pin "cpldDONE" tri_state
 			(at 198.12 86.36 0)
 			(uuid "72d4de21-3d81-467a-9393-c9ff13fcbc38")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "miscClk" input
-			(at 198.12 93.98 0)
-			(uuid "b615be6f-7ae8-478b-98cf-ac07aee3b98e")
 			(effects
 				(font
 					(size 1.27 1.27)

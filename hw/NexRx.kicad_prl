@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 2,
+    "active_layer": 0,
     "active_layer_preset": "",
     "auto_track_width": true,
     "hidden_netclasses": [
@@ -8,29 +8,7 @@
       "Power"
     ],
     "hidden_nets": [
-      "",
-      "+3.3V-ON",
-      "+VCPLDCORE",
-      "VBUS",
-      "Net-(T101-P1A)",
-      "+3.3V",
-      "GND",
-      "Net-(U803-1B)",
-      "Net-(U801-4B)",
-      "Net-(C819-Pad2)",
-      "/cpld0/cpld.MOSI",
-      "/cpld0/cpld.SCK",
-      "/Clock/rf.SDA",
-      "/Clock/rf.SCL",
-      "/cpld0/cpldDONE",
-      "/cpld0/cpldCRESET",
-      "/cpld0/cpld.MISO",
-      "/Clock/miscClk",
-      "/cpld1/cpld.NSS",
-      "/Clock/rfOEB",
-      "/cpld0/cpld.NSS",
-      "/Clock/tcxo",
-      "/osd0/swIn+"
+      ""
     ],
     "high_contrast_mode": 0,
     "net_color_mode": 2,
@@ -76,7 +54,7 @@
       "conflict_shadows",
       "shapes"
     ],
-    "visible_layers": "ffffffff_ffffffff_fffffff5_dfff50e5",
+    "visible_layers": "ffffffff_ffffffff_fffffff5_dfff51e5",
     "zone_display_mode": 1
   },
   "git": {
@@ -123,20 +101,20 @@
       13
     ],
     "col_widths": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      2977
     ],
     "custom_group_rules": [],
     "expanded_rows": [],

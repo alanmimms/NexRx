@@ -1799,6 +1799,10 @@
 		(uuid "4ad72afe-8022-4646-a4c0-78573824971e")
 	)
 	(no_connect
+		(at 123.19 121.92)
+		(uuid "619b2ec8-b8e4-4af3-ab35-2b3c4abd33a5")
+	)
+	(no_connect
 		(at 78.74 151.13)
 		(uuid "6e8b5262-a418-454a-a71e-581051d92cfa")
 	)
@@ -2396,16 +2400,6 @@
 	)
 	(wire
 		(pts
-			(xy 123.19 120.65) (xy 123.19 121.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d98a2e3d-fda1-429c-80c5-1cf915c2c32b")
-	)
-	(wire
-		(pts
 			(xy 64.77 99.06) (xy 64.77 97.79)
 		)
 		(stroke
@@ -2634,17 +2628,6 @@
 			(justify left)
 		)
 		(uuid "03b713ae-2bc5-41a6-a12b-439cd219a3b9")
-	)
-	(hierarchical_label "miscClk"
-		(shape input)
-		(at 123.19 120.65 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "0726a7f0-aa8f-44af-b228-eb7b513e2824")
 	)
 	(hierarchical_label "osdClk"
 		(shape input)

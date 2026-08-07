@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": true,
         "zones": {
-          "min_clearance": 0.0
+          "min_clearance": 0.15
         }
       },
       "diff_pair_dimensions": [
@@ -154,10 +154,10 @@
         "min_silk_clearance": 0.15,
         "min_text_height": 0.8,
         "min_text_thickness": 0.15,
-        "min_through_hole_diameter": 0.25,
+        "min_through_hole_diameter": 0.2,
         "min_track_width": 0.1,
-        "min_via_annular_width": 0.15,
-        "min_via_diameter": 0.25,
+        "min_via_annular_width": 0.1,
+        "min_via_diameter": 0.2,
         "solder_mask_to_copper_clearance": 0.005,
         "use_height_for_length_calcs": true
       },
@@ -537,6 +537,10 @@
       ],
       [
         "multiple_net_names|2133600|292100|a532490c-f1ac-4038-99cf-f508185ea1ce|19ee6598-4f8c-48a9-a61e-61c63f630ddf|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
+        ""
+      ],
+      [
+        "multiple_net_names|558800|698500|29a030a5-de64-4bfe-a984-be9001b96b0f|b40173ab-2e74-4168-940f-2095452d87a4|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [

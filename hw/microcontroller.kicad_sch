@@ -6706,10 +6706,6 @@
 		(uuid "76009036-6514-4f23-9bb0-6210bf6bf4a2")
 	)
 	(no_connect
-		(at 102.87 87.63)
-		(uuid "7a1dc21d-94bc-4fbe-b5a2-a73901d8da6a")
-	)
-	(no_connect
 		(at 102.87 59.69)
 		(uuid "9a0a3043-5e0d-4d33-a8fb-a36d1e24fd34")
 	)
@@ -6736,6 +6732,10 @@
 	(no_connect
 		(at 102.87 143.51)
 		(uuid "d18da079-a8ed-4ac7-8596-c3478a2eccac")
+	)
+	(no_connect
+		(at 57.15 74.93)
+		(uuid "d3bc4c2d-2c3f-4a89-8e21-487b6d41e84b")
 	)
 	(no_connect
 		(at 102.87 151.13)
@@ -7130,16 +7130,6 @@
 			(type default)
 		)
 		(uuid "176d54ad-92b3-457c-aae4-679642ac1877")
-	)
-	(wire
-		(pts
-			(xy 55.88 74.93) (xy 57.15 74.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "18673085-b3c8-4a43-9bbd-899f054777e0")
 	)
 	(wire
 		(pts
@@ -8010,6 +8000,16 @@
 			(type default)
 		)
 		(uuid "58310948-a0c8-4e38-b479-338556056b14")
+	)
+	(wire
+		(pts
+			(xy 104.14 87.63) (xy 102.87 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5a11d552-66a5-44be-aa0d-237dba573df6")
 	)
 	(wire
 		(pts
@@ -11514,6 +11514,17 @@
 		)
 		(uuid "24429a3d-57f6-4538-9712-f5fa6f17b077")
 	)
+	(hierarchical_label "rfOEB"
+		(shape output)
+		(at 104.14 87.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2d4f593d-de63-4718-a6ad-cb6f7d677c51")
+	)
 	(hierarchical_label "rf{I2C}"
 		(shape bidirectional)
 		(at 26.67 147.32 180)
@@ -11568,17 +11579,6 @@
 			(justify left)
 		)
 		(uuid "8eaf2657-8be5-428f-bd53-ea7e64b182b0")
-	)
-	(hierarchical_label "rfOEB"
-		(shape output)
-		(at 55.88 74.93 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a8f7873e-284d-4239-9b31-f160cf92a2e9")
 	)
 	(hierarchical_label "usbDN"
 		(shape bidirectional)
