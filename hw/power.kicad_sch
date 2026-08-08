@@ -10195,7 +10195,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 119.126 41.402 0)
 			(effects
 				(font
@@ -10437,7 +10437,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Taoup Uidem"
+		(property "Manufacturer_Name" ""
 			(at 116.84 39.37 0)
 			(effects
 				(font
@@ -10446,7 +10446,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "81-GXT155R71E223KE1D"
+		(property "Manufacturer_Part_Number" ""
 			(at 116.84 39.37 0)
 			(effects
 				(font
@@ -10455,7 +10455,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "963-MLAST168BB5106MT"
+		(property "Mouser Part Number" ""
 			(at 116.84 39.37 0)
 			(effects
 				(font
@@ -10482,7 +10482,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C327087"
+		(property "JLCPCBpn" ""
 			(at 116.84 39.37 0)
 			(effects
 				(font
@@ -10889,7 +10889,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
+		(property "Manufacturer_Name" ""
 			(at 200.66 38.1 0)
 			(effects
 				(font
@@ -10898,7 +10898,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
+		(property "Manufacturer_Part_Number" ""
 			(at 200.66 38.1 0)
 			(effects
 				(font
@@ -10907,7 +10907,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
+		(property "Mouser Part Number" ""
 			(at 200.66 38.1 0)
 			(effects
 				(font
@@ -10934,7 +10934,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C301928"
+		(property "JLCPCBpn" ""
 			(at 200.66 38.1 0)
 			(effects
 				(font
@@ -12792,7 +12792,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -13472,7 +13472,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 37.084 115.57 0)
 			(effects
 				(font
@@ -14362,7 +14362,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
+		(property "Manufacturer_Name" ""
 			(at 58.42 69.85 0)
 			(effects
 				(font
@@ -14371,7 +14371,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
+		(property "Manufacturer_Part_Number" ""
 			(at 58.42 69.85 0)
 			(effects
 				(font
@@ -14380,7 +14380,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
+		(property "Mouser Part Number" ""
 			(at 58.42 69.85 0)
 			(effects
 				(font
@@ -14407,7 +14407,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C301928"
+		(property "JLCPCBpn" ""
 			(at 58.42 69.85 0)
 			(effects
 				(font
@@ -15029,7 +15029,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 129.286 41.402 0)
 			(effects
 				(font
@@ -15271,7 +15271,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Taoup Uidem"
+		(property "Manufacturer_Name" ""
 			(at 127 39.37 0)
 			(effects
 				(font
@@ -15280,7 +15280,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "81-GXT155R71E223KE1D"
+		(property "Manufacturer_Part_Number" ""
 			(at 127 39.37 0)
 			(effects
 				(font
@@ -15289,7 +15289,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "963-MLAST168BB5106MT"
+		(property "Mouser Part Number" ""
 			(at 127 39.37 0)
 			(effects
 				(font
@@ -15316,7 +15316,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C327087"
+		(property "JLCPCBpn" ""
 			(at 127 39.37 0)
 			(effects
 				(font
@@ -17154,7 +17154,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Murata"
+		(property "Manufacturer_Name" ""
 			(at 101.6 69.85 0)
 			(effects
 				(font
@@ -17163,7 +17163,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "GRM155R61E105KE11D"
+		(property "Manufacturer_Part_Number" ""
 			(at 101.6 69.85 0)
 			(effects
 				(font
@@ -17172,7 +17172,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "81-GRM155R61E105KE1D"
+		(property "Mouser Part Number" ""
 			(at 101.6 69.85 0)
 			(effects
 				(font
@@ -17199,7 +17199,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C301928"
+		(property "JLCPCBpn" ""
 			(at 101.6 69.85 0)
 			(effects
 				(font

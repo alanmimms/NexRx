@@ -185,4 +185,15 @@
 		(uuid "259b8159-e896-4f9d-b88e-bdaecee8b39d")
 	)
 	(embedded_fonts no)
+	(model "/home/alan/ham/NexRx/symbols/binocular-bn-43-202.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
 )

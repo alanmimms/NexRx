@@ -2800,7 +2800,7 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 74.93) (xy 39.37 74.93)
+			(xy 29.21 74.93) (xy 30.48 74.93)
 		)
 		(stroke
 			(width 0)
@@ -2927,6 +2927,16 @@
 			(type default)
 		)
 		(uuid "2e866211-ea17-44cb-9da0-1e3e20ab5b73")
+	)
+	(wire
+		(pts
+			(xy 38.1 74.93) (xy 39.37 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "306300cc-bb7d-4e23-9e72-70bfcc9beac4")
 	)
 	(wire
 		(pts
@@ -3067,6 +3077,16 @@
 			(type default)
 		)
 		(uuid "3ae7016f-dcd5-4677-8fd4-86ece9b017c7")
+	)
+	(wire
+		(pts
+			(xy 38.1 148.59) (xy 39.37 148.59)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c221ea7-611b-4ce6-b4e1-f702baaf2927")
 	)
 	(wire
 		(pts
@@ -3930,7 +3950,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.32 148.59) (xy 22.86 148.59)
+			(xy 20.32 148.59) (xy 21.59 148.59)
 		)
 		(stroke
 			(width 0)
@@ -4530,7 +4550,7 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 148.59) (xy 39.37 148.59)
+			(xy 29.21 148.59) (xy 30.48 148.59)
 		)
 		(stroke
 			(width 0)
@@ -5340,7 +5360,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.32 74.93) (xy 22.86 74.93)
+			(xy 20.32 74.93) (xy 21.59 74.93)
 		)
 		(stroke
 			(width 0)
@@ -5951,7 +5971,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 26.67 148.59 90)
+		(at 25.4 148.59 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -5960,7 +5980,7 @@
 		(dnp no)
 		(uuid "019892ac-e88b-4719-931f-38b97673ca2e")
 		(property "Reference" "C845"
-			(at 23.368 147.32 90)
+			(at 22.098 147.32 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5968,7 +5988,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 30.734 147.32 90)
+			(at 29.464 147.32 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5976,7 +5996,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
-			(at 30.48 149.5552 0)
+			(at 29.21 149.5552 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5985,7 +6005,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5994,7 +6014,7 @@
 			)
 		)
 		(property "Description" "Capacitor, MLCC, NP0, 100V, 5%, 100nF, 1206"
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6003,7 +6023,7 @@
 			)
 		)
 		(property "Manufacturer" "Murata"
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6012,7 +6032,7 @@
 			)
 		)
 		(property "MPN" "GRM3195C2A104JA01D"
-			(at -29.21 231.14 0)
+			(at -30.48 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6021,7 +6041,7 @@
 			)
 		)
 		(property "LCSC_PN" "C170182"
-			(at -29.21 231.14 0)
+			(at -30.48 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6030,7 +6050,7 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM31C5C2A104JA1L"
-			(at -29.21 231.14 0)
+			(at -30.48 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6039,7 +6059,7 @@
 			)
 		)
 		(property "cap-type" "NP0"
-			(at 26.67 148.082 0)
+			(at 25.4 148.082 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6047,7 +6067,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6056,7 +6076,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6065,7 +6085,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6074,7 +6094,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6083,7 +6103,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6092,7 +6112,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6101,7 +6121,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6110,7 +6130,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6119,7 +6139,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6128,7 +6148,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6137,7 +6157,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6146,7 +6166,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6155,7 +6175,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6164,7 +6184,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6173,7 +6193,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6182,7 +6202,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6191,7 +6211,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6200,7 +6220,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6209,7 +6229,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6218,7 +6238,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6226,7 +6246,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6235,7 +6255,7 @@
 			)
 		)
 		(property "working-voltage" "100V"
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6244,7 +6264,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6253,7 +6273,7 @@
 			)
 		)
 		(property "label" ""
-			(at 26.67 148.59 0)
+			(at 25.4 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6262,7 +6282,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 26.67 148.59 90)
+			(at 25.4 148.59 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6554,7 +6574,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "176cbdb7-c7e6-4be5-933f-76ed253db6b1")
-		(property "Reference" "R807"
+		(property "Reference" "R808"
 			(at 245.618 82.804 90)
 			(effects
 				(font
@@ -6658,11 +6678,11 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
-					(reference "R907")
+					(reference "R908")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
-					(reference "R807")
+					(reference "R808")
 					(unit 1)
 				)
 			)
@@ -6695,7 +6715,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 173.6852 123.19 0)
 			(effects
 				(font
@@ -6991,7 +7011,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 240.9952 54.61 0)
 			(effects
 				(font
@@ -7099,7 +7119,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 240.03 50.8 0)
 			(effects
 				(font
@@ -7250,7 +7270,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "10V"
 			(at 240.03 50.8 0)
 			(effects
 				(font
@@ -7761,7 +7781,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 66.04 90)
 			(effects
 				(font
@@ -8146,7 +8166,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "31160bf8-7e93-49c6-a606-5deed343b26f")
-		(property "Reference" "R812"
+		(property "Reference" "R813"
 			(at 40.386 137.16 0)
 			(effects
 				(font
@@ -8414,11 +8434,11 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
-					(reference "R912")
+					(reference "R913")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
-					(reference "R812")
+					(reference "R813")
 					(unit 1)
 				)
 			)
@@ -8434,7 +8454,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "32f8be72-085e-46d2-b75a-161ee5187ddf")
-		(property "Reference" "R809"
+		(property "Reference" "R810"
 			(at 170.18 96.774 90)
 			(effects
 				(font
@@ -8702,11 +8722,11 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
-					(reference "R909")
+					(reference "R910")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
-					(reference "R809")
+					(reference "R810")
 					(unit 1)
 				)
 			)
@@ -8793,7 +8813,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "38201334-dedb-41a9-9339-be61fdfb3514")
-		(property "Reference" "R811"
+		(property "Reference" "R812"
 			(at 170.18 122.174 90)
 			(effects
 				(font
@@ -9061,11 +9081,11 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
-					(reference "R911")
+					(reference "R912")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
-					(reference "R811")
+					(reference "R812")
 					(unit 1)
 				)
 			)
@@ -9671,7 +9691,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 81.28 90)
 			(effects
 				(font
@@ -10065,7 +10085,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 76.2 90)
 			(effects
 				(font
@@ -10484,7 +10504,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 173.6852 96.52 0)
 			(effects
 				(font
@@ -13442,7 +13462,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 172.4152 46.99 0)
 			(effects
 				(font
@@ -14628,7 +14648,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 240.9952 38.1 0)
 			(effects
 				(font
@@ -14736,7 +14756,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 240.03 34.29 0)
 			(effects
 				(font
@@ -14887,7 +14907,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "10V"
 			(at 240.03 34.29 0)
 			(effects
 				(font
@@ -15895,7 +15915,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 71.12 90)
 			(effects
 				(font
@@ -17097,7 +17117,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 55.88 90)
 			(effects
 				(font
@@ -17771,7 +17791,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8f5c28b4-bd7d-4bac-8bc3-97ad106da886")
-		(property "Reference" "R810"
+		(property "Reference" "R811"
 			(at 170.18 112.014 90)
 			(effects
 				(font
@@ -18039,11 +18059,11 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
-					(reference "R910")
+					(reference "R911")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
-					(reference "R810")
+					(reference "R811")
 					(unit 1)
 				)
 			)
@@ -18148,7 +18168,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 207.3148 48.26 0)
 			(effects
 				(font
@@ -18256,7 +18276,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 208.28 44.45 0)
 			(effects
 				(font
@@ -18407,7 +18427,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "10V"
 			(at 208.28 44.45 0)
 			(effects
 				(font
@@ -19059,7 +19079,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 60.96 90)
 			(effects
 				(font
@@ -19517,7 +19537,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ab6347a1-d674-408f-b8c9-03397d9a4b24")
-		(property "Reference" "R808"
+		(property "Reference" "R809"
 			(at 170.18 85.344 90)
 			(effects
 				(font
@@ -19785,11 +19805,11 @@
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
-					(reference "R908")
+					(reference "R909")
 					(unit 1)
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
-					(reference "R808")
+					(reference "R809")
 					(unit 1)
 				)
 			)
@@ -21931,6 +21951,294 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_US")
+		(at 34.29 74.93 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c211f7bc-fbcc-4d66-945c-e0ced2518d72")
+		(property "Reference" "R807"
+			(at 33.274 76.962 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10"
+			(at 38.1 76.962 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 34.544 75.946 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 34.29 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, Thin Film, 0.1%, 10 ohm, 0402"
+			(at 34.29 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at -35.56 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" ""
+			(at -35.56 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at -35.56 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Availability" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description_1" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Package" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Part Number" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Specifications" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser-part-number" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Core" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "label" ""
+			(at 34.29 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 34.29 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 34.29 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Winding" ""
+			(at 34.29 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "854b164d-cb76-4abd-bcf0-dfb8c3eb09b8")
+		)
+		(pin "1"
+			(uuid "43769a7e-039c-4ebb-abc8-e086fe3a1aaf")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
+					(reference "R907")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
+					(reference "R807")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 234.95 39.37 0)
 		(unit 1)
@@ -22361,7 +22669,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 91.44 90)
 			(effects
 				(font
@@ -23149,7 +23457,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 26.67 74.93 90)
+		(at 25.4 74.93 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -23158,7 +23466,7 @@
 		(dnp no)
 		(uuid "c759de07-e167-4073-bae0-337fc4431605")
 		(property "Reference" "C825"
-			(at 23.368 73.66 90)
+			(at 22.098 73.66 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23166,7 +23474,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 30.734 73.66 90)
+			(at 29.464 73.66 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23174,7 +23482,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
-			(at 30.48 75.8952 0)
+			(at 29.21 75.8952 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23183,7 +23491,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23192,7 +23500,7 @@
 			)
 		)
 		(property "Description" "Capacitor, MLCC, NP0, 100V, 5%, 100nF, 1206"
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23201,7 +23509,7 @@
 			)
 		)
 		(property "Manufacturer" "Murata"
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23210,7 +23518,7 @@
 			)
 		)
 		(property "MPN" "GRM3195C2A104JA01D"
-			(at -29.21 157.48 0)
+			(at -30.48 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23219,7 +23527,7 @@
 			)
 		)
 		(property "LCSC_PN" "C170182"
-			(at -29.21 157.48 0)
+			(at -30.48 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23228,7 +23536,7 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM31C5C2A104JA1L"
-			(at -29.21 157.48 0)
+			(at -30.48 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23237,7 +23545,7 @@
 			)
 		)
 		(property "cap-type" "NP0"
-			(at 26.67 74.422 0)
+			(at 25.4 74.422 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23245,7 +23553,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23254,7 +23562,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23263,7 +23571,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23272,7 +23580,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23281,7 +23589,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23290,7 +23598,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23299,7 +23607,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23308,7 +23616,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23317,7 +23625,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23326,7 +23634,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23335,7 +23643,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23344,7 +23652,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23353,7 +23661,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23362,7 +23670,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23371,7 +23679,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23380,7 +23688,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23389,7 +23697,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23398,7 +23706,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23407,7 +23715,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23416,7 +23724,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23424,7 +23732,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23433,7 +23741,7 @@
 			)
 		)
 		(property "working-voltage" "100V"
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23442,7 +23750,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23451,7 +23759,7 @@
 			)
 		)
 		(property "label" ""
-			(at 26.67 74.93 0)
+			(at 25.4 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23460,7 +23768,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 26.67 74.93 90)
+			(at 25.4 74.93 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23514,7 +23822,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 172.4152 72.39 0)
 			(effects
 				(font
@@ -24577,7 +24885,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "18nF 1%"
+		(property "Value" "8nF 1%"
 			(at 130.302 86.36 90)
 			(effects
 				(font
@@ -24877,6 +25185,294 @@
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
 					(reference "C830")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_US")
+		(at 34.29 148.59 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e9598a3b-c7b7-4850-b3df-c3a9d251dd06")
+		(property "Reference" "R814"
+			(at 33.274 150.622 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10"
+			(at 38.1 150.622 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 34.544 149.606 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 34.29 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, Thin Film, 0.1%, 10 ohm, 0402"
+			(at 34.29 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
+			(at -35.56 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" ""
+			(at -35.56 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" ""
+			(at -35.56 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Availability" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description_1" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Package" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Part Number" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Specifications" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser-part-number" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Core" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "label" ""
+			(at 34.29 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 34.29 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 34.29 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Winding" ""
+			(at 34.29 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "076259a0-a15b-4051-8182-96970931ff1e")
+		)
+		(pin "1"
+			(uuid "f687874b-1a4a-4458-9e0b-1f4e142f25ab")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/78a8603e-e916-4f21-a27d-f37985357e50"
+					(reference "R914")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/b1d18b09-925c-4b08-b727-6db371b003ee"
+					(reference "R814")
 					(unit 1)
 				)
 			)

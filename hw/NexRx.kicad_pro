@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": true,
         "zones": {
-          "min_clearance": 0.15
+          "min_clearance": 0.0
         }
       },
       "diff_pair_dimensions": [
@@ -492,11 +492,23 @@
         ""
       ],
       [
+        "multiple_net_names|1155700|1790700|efea9f2c-e73c-4f0f-8512-01a046001013|edb473c5-1909-40f8-bec9-d1fb59d51fd3|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
         "multiple_net_names|1155700|1981200|629385b0-3495-40cb-8640-37fc65fd6f0b|3029108f-31a5-4c16-b59e-941f56356383|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
         "multiple_net_names|1155700|2006600|29a030a5-de64-4bfe-a984-be9001b96b0f|74b0e159-c03e-46f7-b03b-6682d46ec190|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1168400|1676400|b82366c9-446a-4914-818f-8555d2b6e161|f4298c93-225b-4723-b52b-e7bdccc46211|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1168400|1727200|f2b13167-d0c3-42f7-8656-d48534f849a5|f08be51f-4377-40f5-8809-73df614afa2d|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
@@ -561,6 +573,10 @@
       ],
       [
         "multiple_net_names|2133600|292100|a532490c-f1ac-4038-99cf-f508185ea1ce|19ee6598-4f8c-48a9-a61e-61c63f630ddf|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6|/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6",
+        ""
+      ],
+      [
+        "multiple_net_names|457200|927100|629385b0-3495-40cb-8640-37fc65fd6f0b|9b2abcda-3abf-4318-99bc-6622c1129d50|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
@@ -1716,6 +1732,9 @@
         "rf50"
       ],
       "Net-(C308-Pad1)": [
+        "rf50"
+      ],
+      "Net-(C308-Pad2)": [
         "rf50"
       ],
       "Net-(C309-Pad1)": [
@@ -3414,7 +3433,7 @@
         "rf50"
       ],
       "Net-(U304-J3)": [
-        "rf200"
+        "rf50"
       ],
       "Net-(U305-J1)": [
         "rf50"
@@ -5023,7 +5042,7 @@
       "include_excluded_from_bom": false,
       "name": "",
       "sort_asc": true,
-      "sort_field": "Value"
+      "sort_field": "Reference"
     },
     "connection_grid_size": 50.0,
     "drawing": {

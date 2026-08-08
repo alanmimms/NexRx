@@ -9037,7 +9037,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "10V"
 			(at 168.91 123.19 90)
 			(effects
 				(font
@@ -9055,7 +9055,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 168.91 123.19 90)
 			(effects
 				(font
@@ -11594,7 +11594,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "10V"
 			(at 181.61 133.35 0)
 			(effects
 				(font
@@ -11612,7 +11612,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 181.61 133.35 0)
 			(effects
 				(font
