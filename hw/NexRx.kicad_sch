@@ -7453,7 +7453,7 @@
 			)
 		)
 		(property "Value" "150pF"
-			(at 115.316 147.574 90)
+			(at 120.142 147.828 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8249,7 +8249,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 73.406 27.94 90)
+			(at 65.786 27.94 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9766,7 +9766,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 93.472 71.12 90)
+			(at 85.09 73.66 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11681,7 +11681,7 @@
 			)
 		)
 		(property "Value" "TPD1E0B04DPY"
-			(at 64.008 36.576 90)
+			(at 62.992 36.83 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12242,7 +12242,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeries" "29.93"
+		(property "rSeries" "30.1"
 			(at 31.75 36.83 0)
 			(effects
 				(font
@@ -12251,7 +12251,25 @@
 				(hide yes)
 			)
 		)
-		(property "rShunt" "26.83"
+		(property "rShunt" "26.7"
+			(at 31.75 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rSeriesLCSC" "C852716"
+			(at 31.75 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntLCSC" "C284468"
 			(at 31.75 36.83 0)
 			(effects
 				(font
@@ -12351,7 +12369,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeries" "8.56"
+		(property "rSeries" "8.66"
 			(at 31.75 59.69 0)
 			(effects
 				(font
@@ -12360,7 +12378,25 @@
 				(hide yes)
 			)
 		)
-		(property "rShunt" "141.93"
+		(property "rShunt" "143"
+			(at 31.75 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rSeriesLCSC" "C477802"
+			(at 31.75 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntLCSC" "C852531"
 			(at 31.75 59.69 0)
 			(effects
 				(font
@@ -12460,7 +12496,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeries" "16.59"
+		(property "rSeries" "16.5"
 			(at 31.75 48.26 0)
 			(effects
 				(font
@@ -12469,7 +12505,25 @@
 				(hide yes)
 			)
 		)
-		(property "rShunt" "66.94"
+		(property "rShunt" "66.5"
+			(at 31.75 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rSeriesLCSC" "C852562"
+			(at 31.75 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntLCSC" "C273725"
 			(at 31.75 48.26 0)
 			(effects
 				(font
@@ -13071,7 +13125,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeries" "44.05"
+		(property "rSeries" "44.2"
 			(at 31.75 25.4 0)
 			(effects
 				(font
@@ -13080,7 +13134,25 @@
 				(hide yes)
 			)
 		)
-		(property "rShunt" "6.33"
+		(property "rShunt" "6.34"
+			(at 31.75 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rSeriesLCSC" "C284579"
+			(at 31.75 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "rShuntLCSC" "C166432"
 			(at 31.75 25.4 0)
 			(effects
 				(font

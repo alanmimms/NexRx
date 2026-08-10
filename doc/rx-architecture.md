@@ -1,9 +1,5 @@
 # NexRig: Receiver Architecture
-## Triple-QSD Direct Conversion with Harmonic Rejection
-
-**Document Version:** 1.0  
-**Date:** October 2025  
-**Supersedes:** Previous RX-ARCHITECTURE.md versions
+## Dual-OSD Direct Conversion with Harmonic Rejection
 
 ---
 

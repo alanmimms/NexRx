@@ -1027,7 +1027,7 @@
 				)
 			)
 		)
-		(property "Value" "34.4"
+		(property "Value" "${rSeries}"
 			(at 114.3 84.582 90)
 			(effects
 				(font
@@ -1053,7 +1053,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402"
+		(property "Description" "Resistor, Thick Film, 1%, $P{rSeries}, 0402"
 			(at 114.3 82.55 0)
 			(effects
 				(font
@@ -1080,7 +1080,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C2503774"
+		(property "LCSC_PN" "${rSeriesLCSC}"
 			(at 0 0 0)
 			(effects
 				(font
@@ -1268,6 +1268,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 114.3 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C166423"
 			(at 114.3 82.55 90)
 			(effects
 				(font
@@ -1657,7 +1666,7 @@
 				)
 			)
 		)
-		(property "Value" "562"
+		(property "Value" "${rShunt}"
 			(at 111.252 87.63 90)
 			(effects
 				(font
@@ -1683,7 +1692,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 562, 0402"
+		(property "Description" "Resistor, Thick Film, 1%, ${rShunt}, 0402"
 			(at 109.22 87.63 0)
 			(effects
 				(font
@@ -1710,7 +1719,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C284620"
+		(property "LCSC_PN" "${rShuntLCSC}"
 			(at 0 0 0)
 			(effects
 				(font
@@ -2445,7 +2454,7 @@
 				)
 			)
 		)
-		(property "Value" "34.4"
+		(property "Value" "${rSeries}"
 			(at 104.14 84.582 90)
 			(effects
 				(font
@@ -2471,7 +2480,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 34.4, 0402"
+		(property "Description" "Resistor, Thick Film, 1%, ${rSeries}, 0402"
 			(at 104.14 82.55 0)
 			(effects
 				(font
@@ -2498,7 +2507,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C2503774"
+		(property "LCSC_PN" "${rSeriesLCSC}"
 			(at 0 0 0)
 			(effects
 				(font
@@ -2686,6 +2695,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 104.14 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C166423"
 			(at 104.14 82.55 90)
 			(effects
 				(font

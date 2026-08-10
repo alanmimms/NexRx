@@ -12552,6 +12552,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C4258780"
+			(at 118.11 36.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6fda2475-c86d-41ae-8939-b4d92fe5b5a7")
 		)
@@ -22235,6 +22244,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCBpn" "C4258780"
+			(at 109.22 39.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "3edaaf11-c20f-4d06-990e-9e680e70a0b1")
 		)
@@ -23240,7 +23258,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "STM32H753VITx"
+		(property "Value" "STM32H743VIT6"
 			(at 84.6933 168.91 0)
 			(effects
 				(font
@@ -23259,7 +23277,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.st.com/resource/en/datasheet/stm32h753vi.pdf"
+		(property "Datasheet" "https://www.st.com/resource/en/datasheet/stm32h743vi.pdf"
 			(at 80.01 97.79 0)
 			(effects
 				(font
@@ -23277,7 +23295,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" ""
+		(property "Manufacturer" "ST Micro"
 			(at 0 0 0)
 			(effects
 				(font
@@ -23286,7 +23304,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "STM32H743VIT6"
 			(at 0 0 0)
 			(effects
 				(font
@@ -23295,7 +23313,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C730206"
+		(property "LCSC_PN" "C114409"
 			(at 0 0 0)
 			(effects
 				(font

@@ -9425,7 +9425,7 @@
 				)
 			)
 		)
-		(property "Value" "34.4"
+		(property "Value" "22"
 			(at 180.086 98.298 90)
 			(effects
 				(font
@@ -9451,7 +9451,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 33, 0402"
+		(property "Description" "Resistor, Thin Film, 0.1%, 22, 0402"
 			(at 180.34 100.33 0)
 			(effects
 				(font
@@ -9711,6 +9711,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 180.34 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCBpn" "C4258780"
 			(at 180.34 100.33 90)
 			(effects
 				(font
@@ -17625,7 +17634,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C165948"
+		(property "LCSC_PN" "C393939"
 			(at -19.05 -25.4 0)
 			(effects
 				(font
