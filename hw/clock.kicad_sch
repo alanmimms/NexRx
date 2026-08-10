@@ -2559,7 +2559,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C107045"
+		(property "JLCPCBpn" ""
 			(at 146.05 123.19 0)
 			(effects
 				(font
@@ -2728,7 +2728,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -50.8 -30.48 0)
 			(effects
 				(font
@@ -3065,7 +3065,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 317.5 -36.83 0)
 			(effects
 				(font
@@ -5037,7 +5037,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C107045"
+		(property "JLCPCBpn" ""
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -5143,7 +5143,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 24.13 -43.18 0)
 			(effects
 				(font
@@ -5967,7 +5967,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C107045"
+		(property "JLCPCBpn" ""
 			(at 146.05 129.54 0)
 			(effects
 				(font
@@ -6509,7 +6509,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 279.4 -29.21 0)
 			(effects
 				(font
@@ -7442,7 +7442,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -88.9 -35.56 0)
 			(effects
 				(font
@@ -7778,7 +7778,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -96.52 -41.91 0)
 			(effects
 				(font

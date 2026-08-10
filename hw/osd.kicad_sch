@@ -6290,6 +6290,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mouser Part Number" "81-GRM3195C2A104JA1D"
+			(at 25.4 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9d6a82f6-190f-4dbe-b1f2-f4c66e0646f8")
 		)
@@ -7047,7 +7056,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TAJD106K050RNJ"
+		(property "MPN" ""
 			(at 486.41 -107.95 0)
 			(effects
 				(font
@@ -8049,7 +8058,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 64.77 0)
 			(effects
 				(font
@@ -9154,7 +9163,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 414.02 -109.22 0)
 			(effects
 				(font
@@ -9478,7 +9487,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "XLV320ADC5140IRTWR"
+		(property "Value" "TLV320ADC5140IRTWR"
 			(at 225.6633 96.52 0)
 			(effects
 				(font
@@ -9497,7 +9506,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "XLV320ADC5140IRTWR"
+		(property "Datasheet" "https://www.ti.com/lit/gpn/tlv320adc5140"
 			(at 142.24 132.08 0)
 			(effects
 				(font
@@ -9509,6 +9518,48 @@
 		)
 		(property "Description" ""
 			(at 189.23 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 220.98 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 220.98 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 220.98 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "TLV320ADC5140IRTWR"
+			(at 220.98 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "TI"
+			(at 220.98 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9959,7 +10010,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 80.01 0)
 			(effects
 				(font
@@ -10353,7 +10404,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 74.93 0)
 			(effects
 				(font
@@ -11194,7 +11245,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM155R61E105KE11D"
+		(property "MPN" ""
 			(at 88.9 -182.88 0)
 			(effects
 				(font
@@ -11599,7 +11650,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 17.78 53.34 0)
 			(effects
 				(font
@@ -12350,7 +12401,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 317.5 -20.32 0)
 			(effects
 				(font
@@ -12648,7 +12699,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 25.4 2.54 0)
 			(effects
 				(font
@@ -13794,7 +13845,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 130.81 -26.67 0)
 			(effects
 				(font
@@ -14092,7 +14143,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 15.24 2.54 0)
 			(effects
 				(font
@@ -14684,7 +14735,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TAJD106K050RNJ"
+		(property "MPN" ""
 			(at 486.41 -124.46 0)
 			(effects
 				(font
@@ -15322,7 +15373,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 181.61 314.96 0)
 			(effects
 				(font
@@ -16183,7 +16234,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 69.85 0)
 			(effects
 				(font
@@ -16427,7 +16478,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 27.94 53.34 0)
 			(effects
 				(font
@@ -16795,7 +16846,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 17.78 26.67 0)
 			(effects
 				(font
@@ -17385,7 +17436,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 54.61 0)
 			(effects
 				(font
@@ -18204,7 +18255,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TAJD106K050RNJ"
+		(property "MPN" ""
 			(at -38.1 -114.3 0)
 			(effects
 				(font
@@ -18687,7 +18738,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 27.94 26.67 0)
 			(effects
 				(font
@@ -19347,7 +19398,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 59.69 0)
 			(effects
 				(font
@@ -19879,7 +19930,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 115.57 66.04 0)
 			(effects
 				(font
@@ -21085,7 +21136,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 317.5 -36.83 0)
 			(effects
 				(font
@@ -21383,7 +21434,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 181.61 353.06 0)
 			(effects
 				(font
@@ -22372,7 +22423,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -50.8 274.32 0)
 			(effects
 				(font
@@ -22937,7 +22988,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 90.17 0)
 			(effects
 				(font
@@ -23222,7 +23273,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 25.4 -22.86 0)
 			(effects
 				(font
@@ -23768,6 +23819,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 25.4 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GRM3195C2A104JA1D"
 			(at 25.4 74.93 90)
 			(effects
 				(font
@@ -24522,7 +24582,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "06033A151FAT2A"
+		(property "MPN" ""
 			(at 15.24 -22.86 0)
 			(effects
 				(font
@@ -25153,7 +25213,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCBpn" "C106211"
+		(property "JLCPCBpn" ""
 			(at 120.65 85.09 0)
 			(effects
 				(font
@@ -25755,7 +25815,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 115.57 -7.62 0)
 			(effects
 				(font
@@ -26124,7 +26184,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 181.61 388.62 0)
 			(effects
 				(font
@@ -26763,7 +26823,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM155R61E105KE11D"
+		(property "MPN" ""
 			(at 447.04 151.13 0)
 			(effects
 				(font

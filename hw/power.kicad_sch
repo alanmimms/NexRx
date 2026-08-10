@@ -8007,7 +8007,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C1608C0G1H221F080AA"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -8528,7 +8528,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TMCP1D225MTR2F"
+		(property "MPN" ""
 			(at 81.28 -52.07 0)
 			(effects
 				(font
@@ -8933,7 +8933,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 12.7 -81.28 0)
 			(effects
 				(font
@@ -11031,7 +11031,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM155R61E105KE11D"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -12092,7 +12092,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -12765,7 +12765,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "81-GXT155R71E223KE1D"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -13445,7 +13445,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "81-GXT155R71E223KE1D"
+		(property "MPN" ""
 			(at -2.54 10.16 0)
 			(effects
 				(font
@@ -14568,7 +14568,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TMCP1D225MTR2F"
+		(property "MPN" ""
 			(at 208.28 -50.8 0)
 			(effects
 				(font
@@ -15612,7 +15612,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GCM1885C2A103JE02J"
+		(property "MPN" ""
 			(at 96.52 -52.07 0)
 			(effects
 				(font
@@ -16041,7 +16041,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Texas Instruments"
+		(property "Manufacturer_Name" ""
 			(at 191.77 729.21 0)
 			(effects
 				(font
@@ -16051,7 +16051,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPS22918DBVR"
+		(property "Manufacturer_Part_Number" ""
 			(at 191.77 829.21 0)
 			(effects
 				(font
@@ -16062,6 +16062,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 167.64 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "TI"
 			(at 167.64 34.29 0)
 			(effects
 				(font
@@ -16161,7 +16170,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 10.16 -64.77 0)
 			(effects
 				(font
@@ -18011,7 +18020,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM155R61E105KE11D"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -18474,7 +18483,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GCM1885C2A103JE02J"
+		(property "MPN" ""
 			(at 81.28 -52.07 0)
 			(effects
 				(font

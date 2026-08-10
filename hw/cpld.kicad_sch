@@ -3824,7 +3824,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -48.26 50.8 0)
 			(effects
 				(font
@@ -4172,7 +4172,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -76.2 55.88 0)
 			(effects
 				(font
@@ -4676,7 +4676,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -154.94 -20.32 0)
 			(effects
 				(font
@@ -5191,7 +5191,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -76.2 35.56 0)
 			(effects
 				(font
@@ -5990,7 +5990,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "298D475X9010M2T"
+		(property "MPN" ""
 			(at 19.05 7.62 0)
 			(effects
 				(font
@@ -6391,7 +6391,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -93.98 62.23 0)
 			(effects
 				(font
@@ -6739,7 +6739,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -48.26 30.48 0)
 			(effects
 				(font
@@ -7440,7 +7440,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "298D475X9010M2T"
+		(property "MPN" ""
 			(at 19.05 7.62 0)
 			(effects
 				(font
@@ -7856,7 +7856,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -93.98 41.91 0)
 			(effects
 				(font

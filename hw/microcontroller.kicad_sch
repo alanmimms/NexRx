@@ -13618,7 +13618,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -14192,6 +14192,30 @@
 				(hide yes)
 			)
 		)
+		(property "cap-type" ""
+			(at 251.46 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 251.46 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 251.46 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "3"
 			(uuid "393be796-1ae4-41ac-9802-491aba2fc222")
 		)
@@ -14731,7 +14755,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C107045"
+		(property "JLCPCBpn" ""
 			(at 130.81 134.62 0)
 			(effects
 				(font
@@ -15216,7 +15240,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -15776,7 +15800,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C107045"
+		(property "JLCPCBpn" ""
 			(at 138.43 134.62 0)
 			(effects
 				(font
@@ -21078,7 +21102,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM155R61E105KE11D"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -21947,7 +21971,7 @@
 				)
 			)
 		)
-		(property "JLCPCBpn" "C107045"
+		(property "JLCPCBpn" ""
 			(at 27.94 49.53 0)
 			(effects
 				(font
@@ -24584,7 +24608,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -25365,7 +25389,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM155R61E105KE11D"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -25753,7 +25777,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "EATON"
+		(property "Manufacturer_Name" ""
 			(at 145.415 139.065 90)
 			(effects
 				(font
@@ -25762,7 +25786,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "E2X260181G01"
+		(property "Manufacturer_Part_Number" ""
 			(at 148.59 142.875 90)
 			(effects
 				(font
@@ -25781,6 +25805,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 134.62 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "EATON"
 			(at 134.62 130.81 0)
 			(effects
 				(font
@@ -25872,7 +25905,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "81-GXT155R71E223KE1D"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -26789,7 +26822,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -27875,7 +27908,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "298D475X9010M2T"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -29438,7 +29471,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font
@@ -29836,7 +29869,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "EATON"
+		(property "Manufacturer_Name" ""
 			(at 34.925 53.975 90)
 			(effects
 				(font
@@ -29845,7 +29878,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "E2X260181G01"
+		(property "Manufacturer_Part_Number" ""
 			(at 38.1 57.785 90)
 			(effects
 				(font
@@ -29864,6 +29897,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 24.13 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "EATON"
 			(at 24.13 45.72 0)
 			(effects
 				(font
@@ -30093,7 +30135,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "81-GXT155R71E223KE1D"
+		(property "MPN" ""
 			(at 0 0 0)
 			(effects
 				(font

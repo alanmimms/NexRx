@@ -3937,160 +3937,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:L_Ferrite_Small")
-		(at 195.58 137.16 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "0bbc13e6-3be2-4565-b3be-c6f19fbc8b9e")
-		(property "Reference" "L311"
-			(at 195.58 134.874 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "330nH"
-			(at 195.326 138.684 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
-			(at 195.58 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 195.58 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Inductor with ferrite core, small symbol"
-			(at 195.58 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "cap-type" ""
-			(at 195.58 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "r-power" ""
-			(at 195.58 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "label" ""
-			(at 195.58 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Winding" ""
-			(at 195.58 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 195.58 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 195.58 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "Coilcraft"
-			(at 195.58 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" ""
-			(at 195.58 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1812CS-332XJR"
-			(at 195.58 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser_PN" "994-1812CS-332XJRC"
-			(at 195.58 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "6cd94bd6-76da-4aed-a952-e4e2cfec744e")
-		)
-		(pin "1"
-			(uuid "1a2a8d12-00af-47fa-84f9-3231366c1ea7")
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
-					(reference "L311")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Library:AS183-92LF")
 		(at 240.03 96.52 0)
 		(unit 1)
@@ -4562,7 +4408,7 @@
 		(at 181.61 53.34 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "1a9c4264-926b-459c-b3e9-62b1226e3ef7")
@@ -4805,7 +4651,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "08051A911JAT2A"
+		(property "MPN" ""
 			(at 64.77 97.79 90)
 			(effects
 				(font
@@ -4996,7 +4842,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C202J3GACTU"
+		(property "MPN" ""
 			(at 189.23 142.24 0)
 			(effects
 				(font
@@ -5484,7 +5330,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 176.53 85.09 90)
 			(effects
 				(font
@@ -5809,7 +5655,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C202J3GACTU"
+		(property "MPN" ""
 			(at 189.23 85.09 0)
 			(effects
 				(font
@@ -6203,6 +6049,160 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:L_Ferrite_Small")
+		(at 181.61 80.01 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4f6b8e83-a519-4d43-95dd-0e90ac4a151e")
+		(property "Reference" "L303"
+			(at 181.61 77.724 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1.2uH"
+			(at 181.356 81.534 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+			(at 181.61 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 181.61 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Inductor with ferrite core, small symbol"
+			(at 181.61 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 181.61 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 181.61 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 181.61 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Winding" ""
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Coilcraft"
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" ""
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1812CS-122XJR"
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "994-1812CS-122XJRC"
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "b7ecdf27-b015-43fa-acd7-a17f752db11c")
+		)
+		(pin "1"
+			(uuid "ed303d82-31bb-4e0c-b751-11c8d69dcd62")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
+					(reference "L303")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 80.01 171.45 0)
 		(unit 1)
@@ -6331,7 +6331,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at 287.02 129.54 0)
 			(effects
 				(font
@@ -6686,7 +6686,7 @@
 		(at 195.58 53.34 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "5d9241f5-4cb5-4097-a54f-9563d680d4e0")
@@ -7170,10 +7170,164 @@
 	)
 	(symbol
 		(lib_id "Device:L_Ferrite_Small")
+		(at 181.61 110.49 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "66755fde-baa9-43a4-a189-47fc3d4da9cd")
+		(property "Reference" "L308"
+			(at 181.61 108.204 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "560nH"
+			(at 181.356 112.014 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:L_1008_2520Metric_Pad1.43x2.20mm_HandSolder-keepout"
+			(at 181.61 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 181.61 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Inductor with ferrite core, small symbol"
+			(at 181.61 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 181.61 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 181.61 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 181.61 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Winding" ""
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Coilcraft"
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" ""
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1008CS-561XJR"
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "994-1008CS-561XJRC"
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "85a5c314-6295-4361-ae74-cf38a1710e75")
+		)
+		(pin "1"
+			(uuid "80a8916f-f184-4e9d-8bdb-836fa124167e")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
+					(reference "L308")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:L_Ferrite_Small")
 		(at 195.58 110.49 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "6acc14c9-8cf6-42c0-9084-16470158efac")
@@ -7193,7 +7347,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Library:L_1008_2520Metric_Pad1.43x2.20mm_HandSolder-keepout"
 			(at 195.58 110.49 0)
 			(effects
 				(font
@@ -7289,7 +7443,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1812CS-332XJR"
+		(property "MPN" "1008CS-561XJR"
 			(at 195.58 110.49 90)
 			(effects
 				(font
@@ -7298,7 +7452,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser_PN" "994-1812CS-332XJRC"
+		(property "Mouser_PN" "994-1008CS-561XJRC"
 			(at 195.58 110.49 90)
 			(effects
 				(font
@@ -7416,7 +7570,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 201.93 115.57 90)
 			(effects
 				(font
@@ -7695,7 +7849,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "08051A911JAT2A"
+		(property "MPN" ""
 			(at 78.74 97.79 90)
 			(effects
 				(font
@@ -7908,7 +8062,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 176.53 58.42 90)
 			(effects
 				(font
@@ -8053,7 +8207,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 201.93 58.42 90)
 			(effects
 				(font
@@ -8099,160 +8253,6 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
 					(reference "C303")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:L_Ferrite_Small")
-		(at 181.61 137.16 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "7f284ebf-b45d-465c-8b16-ec4a5ae7efb8")
-		(property "Reference" "L310"
-			(at 181.61 134.874 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "330nH"
-			(at 181.356 138.684 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
-			(at 181.61 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 181.61 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Inductor with ferrite core, small symbol"
-			(at 181.61 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "cap-type" ""
-			(at 181.61 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "r-power" ""
-			(at 181.61 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "label" ""
-			(at 181.61 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Winding" ""
-			(at 181.61 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 181.61 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 181.61 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "Coilcraft"
-			(at 181.61 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" ""
-			(at 181.61 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1812CS-332XJR"
-			(at 181.61 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser_PN" "994-1812CS-332XJRC"
-			(at 181.61 137.16 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "c80f22f6-c53a-4ad0-8447-032bb1ae50af")
-		)
-		(pin "1"
-			(uuid "53ba6ec2-a1fa-4b83-ad09-b068debe6170")
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
-					(reference "L310")
 					(unit 1)
 				)
 			)
@@ -8331,7 +8331,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C202J3GACTU"
+		(property "MPN" ""
 			(at 189.23 115.57 0)
 			(effects
 				(font
@@ -8484,7 +8484,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 201.93 85.09 90)
 			(effects
 				(font
@@ -8871,318 +8871,10 @@
 	)
 	(symbol
 		(lib_id "Device:L_Ferrite_Small")
-		(at 181.61 110.49 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "8424ff7d-0a56-4344-b147-09165efab9f2")
-		(property "Reference" "L308"
-			(at 181.61 108.204 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "560nH"
-			(at 181.356 112.014 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
-			(at 181.61 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 181.61 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Inductor with ferrite core, small symbol"
-			(at 181.61 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "cap-type" ""
-			(at 181.61 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "r-power" ""
-			(at 181.61 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "label" ""
-			(at 181.61 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Winding" ""
-			(at 181.61 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 181.61 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 181.61 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "Coilcraft"
-			(at 181.61 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" ""
-			(at 181.61 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1812CS-332XJR"
-			(at 181.61 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser_PN" "994-1812CS-332XJRC"
-			(at 181.61 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "0cc3a968-4f94-41f4-ba38-8ffb34d36f20")
-		)
-		(pin "1"
-			(uuid "e34cabae-6d64-4da8-aeb1-da0c93ac0884")
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
-					(reference "L308")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:L_Ferrite_Small")
-		(at 181.61 80.01 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "8b28d41d-b161-4259-a1e8-051517f8fd61")
-		(property "Reference" "L303"
-			(at 181.61 77.724 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1.2uH"
-			(at 181.356 81.534 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
-			(at 181.61 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 181.61 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Inductor with ferrite core, small symbol"
-			(at 181.61 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "cap-type" ""
-			(at 181.61 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "r-power" ""
-			(at 181.61 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "label" ""
-			(at 181.61 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Winding" ""
-			(at 181.61 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 181.61 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 181.61 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "Coilcraft"
-			(at 181.61 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" ""
-			(at 181.61 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1812CS-332XJR"
-			(at 181.61 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser_PN" "994-1812CS-332XJRC"
-			(at 181.61 80.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "b26fbed9-01b7-4fd0-9ca3-b94ef7a878ba")
-		)
-		(pin "1"
-			(uuid "f5c2bec5-a9f7-4139-94f8-25a7fb1f3de4")
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
-					(reference "L303")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:L_Ferrite_Small")
 		(at 69.85 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -9301,7 +8993,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1812CS-332XJR"
+		(property "MPN" "1812CS-272XJR"
 			(at 69.85 104.14 0)
 			(effects
 				(font
@@ -9310,7 +9002,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser_PN" "994-1812CS-332XJRC"
+		(property "Mouser_PN" "994-1812CS-272XJRC"
 			(at 69.85 104.14 0)
 			(effects
 				(font
@@ -9407,7 +9099,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C202J3GACTU"
+		(property "MPN" ""
 			(at 189.23 58.42 0)
 			(effects
 				(font
@@ -10177,7 +9869,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 176.53 142.24 90)
 			(effects
 				(font
@@ -10233,7 +9925,7 @@
 		(at 83.82 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -10380,6 +10072,160 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
 					(reference "L307")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:L_Ferrite_Small")
+		(at 195.58 137.16 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b5d0e669-9867-44dd-81ac-f6112567817a")
+		(property "Reference" "L311"
+			(at 195.58 134.874 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "330nH"
+			(at 195.326 138.684 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:L_1008_2520Metric_Pad1.43x2.20mm_HandSolder-keepout"
+			(at 195.58 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 195.58 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Inductor with ferrite core, small symbol"
+			(at 195.58 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 195.58 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 195.58 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 195.58 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Winding" ""
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Coilcraft"
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" ""
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1008CS-331XJR"
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "994-1008CS-331XJRC"
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "e5a28741-354f-40a3-ab3d-2aa798532f6c")
+		)
+		(pin "1"
+			(uuid "debdc5c3-6f53-4fe5-9d35-66f27a7c1d3f")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
+					(reference "L311")
 					(unit 1)
 				)
 			)
@@ -10561,7 +10407,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM2165C1H162JA01D"
+		(property "MPN" ""
 			(at 92.71 97.79 90)
 			(effects
 				(font
@@ -10775,7 +10621,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 176.53 115.57 90)
 			(effects
 				(font
@@ -10888,6 +10734,160 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
 					(reference "#PWR0314")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:L_Ferrite_Small")
+		(at 181.61 137.16 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d587a8b1-06cb-4622-a24a-ecef53a23e42")
+		(property "Reference" "L310"
+			(at 181.61 134.874 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "330nH"
+			(at 181.356 138.684 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:L_1008_2520Metric_Pad1.43x2.20mm_HandSolder-keepout"
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Inductor with ferrite core, small symbol"
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Winding" ""
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Coilcraft"
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" ""
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1008CS-331XJR"
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser_PN" "994-1008CS-331XJRC"
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "af1bd19c-9730-4aff-98d5-29a58c0c62ed")
+		)
+		(pin "1"
+			(uuid "698c0f79-2c53-4640-b09d-6e9281f16a18")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/fa7b2322-fc43-45a5-8601-16987dcf2a8f"
+					(reference "L310")
 					(unit 1)
 				)
 			)
@@ -11033,7 +11033,7 @@
 		(at 195.58 80.01 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "db4d6fc4-d21a-48d6-b438-c41d9f19bfeb")
@@ -11149,7 +11149,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1812CS-332XJR"
+		(property "MPN" "1812CS-122XJR"
 			(at 195.58 80.01 90)
 			(effects
 				(font
@@ -11158,7 +11158,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser_PN" "994-1812CS-332XJRC"
+		(property "Mouser_PN" "994-1812CS-122XJRC"
 			(at 195.58 80.01 90)
 			(effects
 				(font
@@ -11389,7 +11389,7 @@
 		(at 54.61 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -11635,7 +11635,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C132J5GACTU"
+		(property "MPN" ""
 			(at 201.93 142.24 90)
 			(effects
 				(font
@@ -12315,7 +12315,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "GRM2165C1H162JA01D"
+		(property "MPN" ""
 			(at 49.53 97.79 90)
 			(effects
 				(font

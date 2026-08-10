@@ -1,0 +1,171 @@
+(footprint "L_1008_2520Metric_Pad1.43x2.20mm_HandSolder-keepout"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "Inductor SMD 1008 (2520 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: https://ecsxtal.com/store/pdf/ECS-MPI2520-SMD-POWER-INDUCTOR.pdf), generated with kicad-footprint-generator")
+	(tags "inductor handsolder")
+	(property "Reference" "REF**"
+		(at 0 -2.05 0)
+		(layer "F.SilkS")
+		(uuid "4e68a8bd-73b2-4cf6-bb85-e33fe9788d14")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "L_1008_2520Metric_Pad1.43x2.20mm_HandSolder-keepout"
+		(at 0 2.05 0)
+		(layer "F.Fab")
+		(uuid "d24def4f-a11d-47b0-9521-96b1df7290d4")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "cc9d90f5-515a-489b-8452-341c2a9b85c6")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "e3ee38c5-853c-4380-b5e9-368e86fa9331")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -0.261252 -1.11)
+		(end 0.261252 -1.11)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "71c523f6-7181-48c1-8987-56a6b57f3125")
+	)
+	(fp_line
+		(start -0.261252 1.11)
+		(end 0.261252 1.11)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "e4dc7fde-daf4-421b-985c-89a27e220855")
+	)
+	(fp_rect
+		(start -2.13 -1.35)
+		(end 2.13 1.35)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "3da1dfaf-224a-439d-9b5e-dfc1211bdc96")
+	)
+	(fp_rect
+		(start -1.25 -1)
+		(end 1.25 1)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "73113614-dc46-4307-9fd5-67d60b377aa7")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(uuid "e8034483-c2e2-438d-b247-a90ce08a726c")
+		(effects
+			(font
+				(size 0.62 0.62)
+				(thickness 0.09)
+			)
+		)
+	)
+	(pad "1" smd roundrect
+		(at -1.1625 0)
+		(size 1.425 2.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.175439)
+		(uuid "4d362520-554a-4465-ae4f-02bba35e0646")
+	)
+	(pad "2" smd roundrect
+		(at 1.1625 0)
+		(size 1.425 2.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.175439)
+		(uuid "5ee057dc-6e74-421a-8b1b-2c0dfc209163")
+	)
+	(zone
+		(net 0)
+		(net_name "")
+		(layers "B.Cu" "In1.Cu" "F.SilkS" "In2.Cu" "In3.Cu" "In4.Cu" "In5.Cu" "In6.Cu"
+			"In7.Cu" "In8.Cu" "In9.Cu" "In10.Cu" "In11.Cu" "In12.Cu" "In13.Cu" "In14.Cu"
+			"In15.Cu" "In16.Cu" "In17.Cu" "In18.Cu" "In19.Cu" "In20.Cu" "In21.Cu"
+			"In22.Cu" "In23.Cu" "In24.Cu" "In25.Cu" "In26.Cu" "In27.Cu" "In28.Cu"
+			"In29.Cu" "In30.Cu"
+		)
+		(uuid "1a91ec2a-2912-469a-ba0b-b1527601d434")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(filled_areas_thickness no)
+		(keepout
+			(tracks not_allowed)
+			(vias not_allowed)
+			(pads not_allowed)
+			(copperpour allowed)
+			(footprints allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+		)
+		(polygon
+			(pts
+				(xy 2.15 -1.35) (xy 2.15 1.35) (xy -2.15 1.35) (xy -2.15 -1.35)
+			)
+		)
+	)
+	(embedded_fonts no)
+	(model "${KICAD9_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_1008_2520Metric.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

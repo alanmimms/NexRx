@@ -5862,7 +5862,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -125.73 123.19 0)
 			(effects
 				(font
@@ -7241,6 +7241,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mouser Part Number" "81-GRM3195C2A104JA1D"
+			(at 52.07 72.39 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f80eaea2-70d0-4b45-ae8b-c638e333d745")
 		)
@@ -7659,7 +7668,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Harwin"
+		(property "Manufacturer_Name" ""
 			(at 143.51 -569.19 0)
 			(effects
 				(font
@@ -7669,7 +7678,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "S8401-46"
+		(property "Manufacturer_Part_Number" ""
 			(at 143.51 -669.19 0)
 			(effects
 				(font
@@ -8543,6 +8552,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mouser Part Number" "81-GRM3195C2A104JA1D"
+			(at 67.31 26.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "843d9752-2bcf-4931-b83e-fb885a91b1d9")
 		)
@@ -9001,7 +9019,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG" "Kyocera AVX"
+		(property "MFG" ""
 			(at 168.91 123.19 90)
 			(effects
 				(font
@@ -9010,7 +9028,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CM105X5R106M25AT"
+		(property "MPN" ""
 			(at 168.91 123.19 90)
 			(effects
 				(font
@@ -10051,6 +10069,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mouser Part Number" "81-GRM3195C2A104JA1D"
+			(at 86.36 72.39 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e717b9bc-7761-4f64-ae10-1f6c36ec1043")
 		)
@@ -10478,7 +10505,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0805F104K1RACAUTO"
+		(property "MPN" ""
 			(at -118.11 107.95 0)
 			(effects
 				(font
@@ -11558,7 +11585,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG" "Kyocera AVX"
+		(property "MFG" ""
 			(at 181.61 133.35 0)
 			(effects
 				(font
@@ -11567,7 +11594,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CM105X5R106M25AT"
+		(property "MPN" ""
 			(at 181.61 133.35 0)
 			(effects
 				(font
