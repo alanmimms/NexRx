@@ -26,13 +26,13 @@
       "footprints": true,
       "graphics": true,
       "keepouts": false,
-      "lockedItems": false,
+      "lockedItems": true,
       "otherItems": true,
       "pads": true,
       "text": true,
       "tracks": true,
       "vias": true,
-      "zones": true
+      "zones": false
     },
     "visible_items": [
       "vias",
@@ -55,7 +55,7 @@
       "conflict_shadows",
       "shapes"
     ],
-    "visible_layers": "ffffffff_ffffffff_fffffff5_dfff51e7",
+    "visible_layers": "ffffffff_ffffffff_fffffff5_dfff50e7",
     "zone_display_mode": 1
   },
   "git": {
