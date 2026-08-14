@@ -1058,6 +1058,176 @@
 		)
 		(embedded_fonts no)
 	)
+	(symbol "3046"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "J"
+			(at -2.54 10.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Value" "3046"
+			(at -2.54 7.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Footprint" "3046"
+			(at 19.05 -94.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.mouser.in/datasheet/2/215/3046-1947340.pdf"
+			(at 19.05 -194.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Keystone Electronics 30 MM COIN CELL CLIP FOR CR3032"
+			(at 0 -8.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.24"
+			(at 19.05 -394.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "534-3046"
+			(at 19.05 -494.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Keystone-Electronics/3046?qs=W%2FMpXkg%252BdQ6qpbf%252BhapY3w%3D%3D"
+			(at 19.05 -594.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "Keystone Electronics"
+			(at 19.05 -694.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "3046"
+			(at 19.05 -794.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(symbol "3046_1_1"
+			(rectangle
+				(start -2.54 5.08)
+				(end 3.81 -5.08)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+			(pin passive line
+				(at -5.08 2.54 0)
+				(length 2.54)
+				(name "-1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "-2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_out line
+				(at -5.08 -2.54 0)
+				(length 2.54)
+				(name "+"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 	(symbol "503480-0800"
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -32365,10 +32535,28 @@
 					(type background)
 				)
 			)
+			(pin passive line
+				(at 2.54 1.27 0)
+				(length 2.54)
+				(name "-"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
 			(pin power_out line
-				(at 0 0 0)
-				(length 5.08)
-				(name "2"
+				(at 2.54 -1.27 0)
+				(length 2.54)
+				(name "+1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -32384,9 +32572,9 @@
 				)
 			)
 			(pin passive line
-				(at 0 -2.54 0)
-				(length 5.08)
-				(name "3"
+				(at 2.54 -3.81 0)
+				(length 2.54)
+				(name "+2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -32394,24 +32582,6 @@
 					)
 				)
 				(number "3"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 22.86 0 180)
-				(length 5.08)
-				(name "-VE"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -54496,7 +54666,7 @@
 				)
 			)
 		)
-		(property "Value" "USB_C_Receptacle_USB2.0_16P-bursted"
+		(property "Value" "UJ20-C-G-MSMT-TR-68"
 			(at 0 19.685 0)
 			(effects
 				(font
@@ -54504,7 +54674,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Library:UJ20CHGMSMT4P16TR"
 			(at 3.81 0 0)
 			(effects
 				(font
@@ -54513,7 +54683,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.usb.org/sites/default/files/documents/usb_type-c.zip"
+		(property "Datasheet" "https://www.mouser.com/datasheet/3/6118/1/uj20_c_g_msmt_tr_68.pdf"
 			(at 46.355 -24.13 0)
 			(effects
 				(font
@@ -54522,7 +54692,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB 2.0-only 16P Type-C Receptacle connector"
+		(property "Description" "USB Connectors Type C, USB 2.0, 480 Mbps, 20 Vdc, 5 A, Horizontal, Mid Mount SMT, Surface Mount Contact Pin Type, Gold Flash, 16 Pins, IP68, USB Receptacle"
 			(at 42.545 -24.13 0)
 			(effects
 				(font
@@ -54685,7 +54855,7 @@
 		)
 		(symbol "USB_C_Receptacle_USB2.0_16P-bursted_0_1"
 			(rectangle
-				(start -10.16 17.78)
+				(start -15.24 17.78)
 				(end 10.16 -17.78)
 				(stroke
 					(width 0.254)
@@ -54886,7 +55056,7 @@
 		)
 		(symbol "USB_C_Receptacle_USB2.0_16P-bursted_1_1"
 			(pin passive line
-				(at -7.62 -22.86 90)
+				(at -13.97 -22.86 90)
 				(length 5.08)
 				(name "SHIELD"
 					(effects
@@ -54895,7 +55065,61 @@
 						)
 					)
 				)
-				(number "S1"
+				(number "SH1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -11.43 -22.86 90)
+				(length 5.08)
+				(name "SHIELD"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "SH2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -8.89 -22.86 90)
+				(length 5.08)
+				(name "SHIELD"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "SH3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -6.35 -22.86 90)
+				(length 5.08)
+				(name "SHIELD"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "SH4"
 					(effects
 						(font
 							(size 1.27 1.27)

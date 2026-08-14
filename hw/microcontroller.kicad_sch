@@ -12677,7 +12677,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "5034800800"
+		(property "MPN" "503480-0800"
 			(at 0 0 0)
 			(effects
 				(font
@@ -12902,6 +12902,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 149.86 24.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "molex"
+			(at 149.86 24.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "538-503480-0800"
 			(at 149.86 24.13 0)
 			(effects
 				(font
@@ -13467,7 +13485,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 254 162.56 90)
 			(effects
 				(font
@@ -13504,6 +13522,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 254 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 254 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 254 162.56 90)
 			(effects
 				(font
@@ -13657,7 +13693,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 0 0 0)
 			(effects
 				(font
@@ -13909,6 +13945,24 @@
 			)
 		)
 		(property "Manufacturer_Name" ""
+			(at 161.29 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 161.29 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 161.29 80.01 0)
 			(effects
 				(font
@@ -14253,6 +14307,15 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "Mouser Part Number" "941-UHD1AA3K3E3V53Z3"
+			(at 251.46 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(pin "3"
@@ -14656,7 +14719,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
 			(at 154.94 99.06 90)
 			(effects
 				(font
@@ -14693,6 +14756,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 154.94 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 154.94 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GRM155R61E105MA12D"
 			(at 154.94 99.06 90)
 			(effects
 				(font
@@ -14813,6 +14894,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 130.81 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Kyocera"
+			(at 130.81 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "04023A270JAT2A"
+			(at 130.81 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "581-04023A270JAT2A"
 			(at 130.81 134.62 0)
 			(effects
 				(font
@@ -15140,7 +15248,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 48.26 191.77 0)
 			(effects
 				(font
@@ -15194,6 +15302,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 48.26 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 48.26 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 48.26 191.77 0)
 			(effects
 				(font
@@ -15279,7 +15405,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 0 0 0)
 			(effects
 				(font
@@ -15531,6 +15657,24 @@
 			)
 		)
 		(property "Manufacturer_Name" ""
+			(at 173.99 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 173.99 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 173.99 80.01 0)
 			(effects
 				(font
@@ -15858,6 +16002,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 138.43 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Kyocera"
+			(at 138.43 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "04023A270JAT2A"
+			(at 138.43 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "581-04023A270JAT2A"
 			(at 138.43 134.62 0)
 			(effects
 				(font
@@ -16299,7 +16470,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
 			(at 181.61 99.06 90)
 			(effects
 				(font
@@ -16336,6 +16507,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 181.61 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 181.61 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GRM155R61E105MA12D"
 			(at 181.61 99.06 90)
 			(effects
 				(font
@@ -16730,7 +16919,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "TMK105CBJ225MV-F"
 			(at 0 0 0)
 			(effects
 				(font
@@ -16974,6 +17163,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 55.88 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "TAIYO YUDEN"
+			(at 55.88 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "963-TMK105CBJ225MV-F"
 			(at 55.88 151.13 0)
 			(effects
 				(font
@@ -17311,7 +17518,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 189.23 31.75 90)
 			(effects
 				(font
@@ -17348,6 +17555,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 189.23 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 189.23 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 189.23 31.75 0)
 			(effects
 				(font
@@ -18733,7 +18958,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 232.41 129.54 90)
 			(effects
 				(font
@@ -18770,6 +18995,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 232.41 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 232.41 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 232.41 129.54 90)
 			(effects
 				(font
@@ -19502,7 +19745,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
 			(at 154.94 80.01 90)
 			(effects
 				(font
@@ -19547,6 +19790,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 154.94 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 154.94 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GRM155R61E105MA12D"
 			(at 154.94 80.01 0)
 			(effects
 				(font
@@ -20399,7 +20660,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 246.38 162.56 90)
 			(effects
 				(font
@@ -20436,6 +20697,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 246.38 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 246.38 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 246.38 162.56 90)
 			(effects
 				(font
@@ -20771,7 +21050,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
 			(at 180.34 80.01 90)
 			(effects
 				(font
@@ -20816,6 +21095,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 180.34 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 180.34 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GRM155R61E105MA12D"
 			(at 180.34 80.01 0)
 			(effects
 				(font
@@ -21152,7 +21449,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 209.55 162.56 90)
 			(effects
 				(font
@@ -21189,6 +21486,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 209.55 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 209.55 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 209.55 162.56 90)
 			(effects
 				(font
@@ -21779,7 +22094,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GRM155R61E105MA12D"
 			(at 0 0 0)
 			(effects
 				(font
@@ -22022,6 +22337,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 223.52 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 223.52 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
 			(at 223.52 162.56 90)
 			(effects
 				(font
@@ -22302,7 +22635,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "TMK105CBJ225MV-F"
 			(at 0 0 0)
 			(effects
 				(font
@@ -22554,6 +22887,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "TAIYO YUDEN"
+			(at 50.8 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "963-TMK105CBJ225MV-F"
+			(at 50.8 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "70e128d7-91b4-4e4c-b0f2-2a2aa7103cbe")
 		)
@@ -22667,6 +23018,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 27.94 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Kyocera"
+			(at 27.94 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "04023A270JAT2A"
+			(at 27.94 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "581-04023A270JAT2A"
 			(at 27.94 49.53 0)
 			(effects
 				(font
@@ -23710,7 +24088,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 19.05 191.77 0)
 			(effects
 				(font
@@ -23764,6 +24142,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 19.05 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 19.05 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 19.05 191.77 0)
 			(effects
 				(font
@@ -24724,7 +25120,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 217.17 162.56 90)
 			(effects
 				(font
@@ -24761,6 +25157,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 217.17 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 217.17 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 217.17 162.56 90)
 			(effects
 				(font
@@ -25605,7 +26019,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 0 0 0)
 			(effects
 				(font
@@ -25857,6 +26271,24 @@
 			)
 		)
 		(property "Manufacturer_Name" ""
+			(at 261.62 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 261.62 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 261.62 162.56 90)
 			(effects
 				(font
@@ -26386,7 +26818,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GRM155R61E105MA12D"
 			(at 0 0 0)
 			(effects
 				(font
@@ -26629,6 +27061,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 226.06 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 226.06 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
 			(at 226.06 129.54 90)
 			(effects
 				(font
@@ -26902,7 +27352,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 0 0 0)
 			(effects
 				(font
@@ -27146,6 +27596,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 237.49 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 237.49 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 237.49 25.4 0)
 			(effects
 				(font
@@ -27616,7 +28084,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 238.76 162.56 90)
 			(effects
 				(font
@@ -27653,6 +28121,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 238.76 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 238.76 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 238.76 162.56 90)
 			(effects
 				(font
@@ -27819,7 +28305,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 0 0 0)
 			(effects
 				(font
@@ -28079,6 +28565,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "muRata"
+			(at 224.79 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
+			(at 224.79 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "39ba63ee-0ce4-46a0-946b-1734d5b1add3")
 		)
@@ -28293,7 +28797,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "FTSH-105-01-L-DV-K"
 			(at 0 0 0)
 			(effects
 				(font
@@ -28489,6 +28993,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 228.6 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samtec"
+			(at 228.6 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "200-FTSH10501LDVK "
 			(at 228.6 41.91 0)
 			(effects
 				(font
@@ -29215,7 +29737,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CM05X5R475M10AH"
 			(at 0 0 0)
 			(effects
 				(font
@@ -29242,7 +29764,7 @@
 				(hide yes)
 			)
 		)
-		(property "cap-type" "X7R"
+		(property "cap-type" "X5R"
 			(at 235.204 102.616 0)
 			(effects
 				(font
@@ -29430,7 +29952,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "25V"
+		(property "working-voltage" "10V"
 			(at 232.41 97.79 0)
 			(effects
 				(font
@@ -29458,6 +29980,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 232.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Kyocera"
+			(at 232.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "346-CM05X5R475M10AH"
 			(at 232.41 97.79 0)
 			(effects
 				(font
@@ -30284,7 +30824,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 231.14 162.56 90)
 			(effects
 				(font
@@ -30321,6 +30861,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 231.14 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 231.14 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 231.14 162.56 90)
 			(effects
 				(font
@@ -30657,7 +31215,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 195.58 162.56 90)
 			(effects
 				(font
@@ -30694,6 +31252,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 195.58 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 195.58 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 195.58 162.56 90)
 			(effects
 				(font
@@ -30778,7 +31354,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 0 0 0)
 			(effects
 				(font
@@ -31030,6 +31606,24 @@
 			)
 		)
 		(property "Manufacturer_Name" ""
+			(at 213.36 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 213.36 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 213.36 97.79 0)
 			(effects
 				(font
@@ -31442,7 +32036,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 0 0 0)
 			(effects
 				(font
@@ -31686,6 +32280,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 175.26 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 175.26 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 175.26 46.99 0)
 			(effects
 				(font
@@ -32022,7 +32634,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 189.23 162.56 90)
 			(effects
 				(font
@@ -32059,6 +32671,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 189.23 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 189.23 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 189.23 162.56 90)
 			(effects
 				(font
@@ -32395,7 +33025,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "187-CL05A106MP6NUN8"
 			(at 201.93 162.56 90)
 			(effects
 				(font
@@ -32432,6 +33062,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 201.93 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Samsung"
+			(at 201.93 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL05A106MP6NUN8"
 			(at 201.93 162.56 90)
 			(effects
 				(font
@@ -33524,6 +34172,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "Laird"
+			(at 219.71 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "875-MI0603J601R-10"
+			(at 219.71 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "18a07e13-819d-4f7c-85cd-a6d197acc0b1")
 		)
@@ -33602,7 +34268,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "04023A270JAT2A"
 			(at 0 0 0)
 			(effects
 				(font
@@ -33663,6 +34329,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 20.32 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Kyocera"
+			(at 20.32 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "581-04023A270JAT2A"
 			(at 20.32 49.53 0)
 			(effects
 				(font

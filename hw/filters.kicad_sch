@@ -4642,7 +4642,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GRT1555C1E102JA02J"
 			(at 64.77 97.79 90)
 			(effects
 				(font
@@ -4651,7 +4651,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GRT1555C1E102JA02J"
 			(at 64.77 97.79 90)
 			(effects
 				(font
@@ -4679,6 +4679,15 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 64.77 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
 			(at 64.77 97.79 90)
 			(effects
 				(font
@@ -4788,7 +4797,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "160pF"
+		(property "Value" "150pF"
 			(at 195.326 145.034 0)
 			(effects
 				(font
@@ -4833,7 +4842,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-C0402C151J3G"
 			(at 189.23 142.24 0)
 			(effects
 				(font
@@ -4842,7 +4851,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C151J3GACTU"
 			(at 189.23 142.24 0)
 			(effects
 				(font
@@ -4878,6 +4887,15 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 189.23 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
 			(at 189.23 142.24 0)
 			(effects
 				(font
@@ -5321,7 +5339,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-C0402C301J3GACTU"
 			(at 176.53 85.09 90)
 			(effects
 				(font
@@ -5330,7 +5348,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C301J3GACTU"
 			(at 176.53 85.09 90)
 			(effects
 				(font
@@ -5359,6 +5377,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 176.53 85.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
+			(at 176.53 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5601,7 +5628,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "620pF"
+		(property "Value" "680pF"
 			(at 195.326 87.884 0)
 			(effects
 				(font
@@ -5646,7 +5673,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GRT1555C1E681JA02J"
 			(at 189.23 85.09 0)
 			(effects
 				(font
@@ -5655,7 +5682,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GRT1555C1E681JA02J"
 			(at 189.23 85.09 0)
 			(effects
 				(font
@@ -5664,7 +5691,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "KEMET"
+		(property "Manufacturer" ""
 			(at 189.23 85.09 0)
 			(effects
 				(font
@@ -5673,7 +5700,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser_PN" "80-C0402C202J3G"
+		(property "Mouser_PN" ""
 			(at 189.23 85.09 0)
 			(effects
 				(font
@@ -5691,6 +5718,31 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 189.23 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "r-power" ""
+			(at 189.23 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 189.23 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG" "muRata"
 			(at 189.23 85.09 0)
 			(effects
 				(font
@@ -6331,7 +6383,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GCM155R71H104KE02D"
 			(at 287.02 129.54 0)
 			(effects
 				(font
@@ -6591,6 +6643,24 @@
 			)
 		)
 		(property "Manufacturer_Name" ""
+			(at 80.01 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
+			(at 80.01 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
 			(at 80.01 166.37 0)
 			(effects
 				(font
@@ -7561,7 +7631,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "581-04023A151J"
 			(at 201.93 115.57 90)
 			(effects
 				(font
@@ -7570,7 +7640,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "04023A151JAT2A"
 			(at 201.93 115.57 90)
 			(effects
 				(font
@@ -7599,6 +7669,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 201.93 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Kyocera"
+			(at 201.93 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7840,7 +7919,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "81-GRT1555C1E102JA02J"
 			(at 78.74 97.79 90)
 			(effects
 				(font
@@ -7849,7 +7928,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "GRT1555C1E102JA02J"
 			(at 78.74 97.79 90)
 			(effects
 				(font
@@ -7877,6 +7956,15 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 78.74 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "muRata"
 			(at 78.74 97.79 90)
 			(effects
 				(font
@@ -7993,7 +8081,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 176.53 58.42 0)
 			(effects
 				(font
@@ -8053,7 +8141,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "791-0603N911J250CT"
 			(at 176.53 58.42 90)
 			(effects
 				(font
@@ -8062,7 +8150,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0603N911J250CT"
 			(at 176.53 58.42 90)
 			(effects
 				(font
@@ -8091,6 +8179,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 176.53 58.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "WALSIN"
+			(at 176.53 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8138,7 +8235,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 201.93 58.42 0)
 			(effects
 				(font
@@ -8198,7 +8295,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "791-0603N911J250CT"
 			(at 201.93 58.42 90)
 			(effects
 				(font
@@ -8207,7 +8304,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "0603N911J250CT"
 			(at 201.93 58.42 90)
 			(effects
 				(font
@@ -8236,6 +8333,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 201.93 58.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "WALSIN"
+			(at 201.93 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8322,7 +8428,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-C0402C301J3GACTU"
 			(at 189.23 115.57 0)
 			(effects
 				(font
@@ -8331,7 +8437,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C301J3GACTU"
 			(at 189.23 115.57 0)
 			(effects
 				(font
@@ -8367,6 +8473,15 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 189.23 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
 			(at 189.23 115.57 0)
 			(effects
 				(font
@@ -8475,7 +8590,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-C0402C301J3GACTU"
 			(at 201.93 85.09 90)
 			(effects
 				(font
@@ -8484,7 +8599,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C301J3GACTU"
 			(at 201.93 85.09 90)
 			(effects
 				(font
@@ -8513,6 +8628,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 201.93 85.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
+			(at 201.93 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9090,7 +9214,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-C0402C152J3GACAUTO"
 			(at 189.23 58.42 0)
 			(effects
 				(font
@@ -9099,7 +9223,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C152J3GACAUTO"
 			(at 189.23 58.42 0)
 			(effects
 				(font
@@ -9135,6 +9259,15 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 189.23 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
 			(at 189.23 58.42 0)
 			(effects
 				(font
@@ -9860,7 +9993,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-CBR04C750G3GAC"
 			(at 176.53 142.24 90)
 			(effects
 				(font
@@ -9869,7 +10002,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CBR04C750G3GAC"
 			(at 176.53 142.24 90)
 			(effects
 				(font
@@ -9898,6 +10031,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 176.53 142.24 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
+			(at 176.53 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10398,7 +10540,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-C0402C222K3GECTU"
 			(at 92.71 97.79 90)
 			(effects
 				(font
@@ -10407,7 +10549,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C222K3GECTU"
 			(at 92.71 97.79 90)
 			(effects
 				(font
@@ -10435,6 +10577,15 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 92.71 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
 			(at 92.71 97.79 90)
 			(effects
 				(font
@@ -10612,7 +10763,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "581-04023A151J"
 			(at 176.53 115.57 90)
 			(effects
 				(font
@@ -10621,7 +10772,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "04023A151JAT2A"
 			(at 176.53 115.57 90)
 			(effects
 				(font
@@ -10650,6 +10801,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 176.53 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Kyocera"
+			(at 176.53 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11626,7 +11786,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-CBR04C750G3GAC"
 			(at 201.93 142.24 90)
 			(effects
 				(font
@@ -11635,7 +11795,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CBR04C750G3GAC"
 			(at 201.93 142.24 90)
 			(effects
 				(font
@@ -11664,6 +11824,15 @@
 		)
 		(property "working-voltage" "25V"
 			(at 201.93 142.24 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
+			(at 201.93 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12306,7 +12475,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "80-C0402C222K3GECTU"
 			(at 49.53 97.79 90)
 			(effects
 				(font
@@ -12315,7 +12484,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C222K3GECTU"
 			(at 49.53 97.79 90)
 			(effects
 				(font
@@ -12343,6 +12512,15 @@
 			)
 		)
 		(property "working-voltage" "25V"
+			(at 49.53 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "KEMET"
 			(at 49.53 97.79 90)
 			(effects
 				(font

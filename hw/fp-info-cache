@@ -1,4 +1,4 @@
-27517440234640652
+27521014334495005
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71414,12 +71414,26 @@ Coilcraft 2929SQ-501
 2
 2
 Library
+3046
+3046-4
+Undefined or Miscellaneous
+0
+3
+3
+Library
 733910083
 73391-0083
 Connector
 0
 5
 5
+Library
+AMPHENOL_10155435-00011LF
+
+
+0
+16
+15
 Library
 ANDERSONPOWER_PC5930T
 
