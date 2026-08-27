@@ -4426,9 +4426,9 @@
 		(at 181.61 53.34 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "1a9c4264-926b-459c-b3e9-62b1226e3ef7")
 		(property "Reference" "L301"
 			(at 181.61 51.054 90)
@@ -4464,7 +4464,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 2.7uH, 1812"
 			(at 181.61 53.34 0)
 			(effects
 				(font
@@ -4533,7 +4533,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1812CS-272XJRC"
 			(at 181.61 53.34 90)
 			(effects
 				(font
@@ -4542,7 +4542,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1812CS-332XJR"
+		(property "MPN" "1812CS-272XJR"
 			(at 181.61 53.34 90)
 			(effects
 				(font
@@ -4552,6 +4552,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1812CS-332XJRC"
+			(at 181.61 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 181.61 53.34 90)
 			(effects
 				(font
@@ -6141,9 +6150,9 @@
 		(at 181.61 80.01 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "4f6b8e83-a519-4d43-95dd-0e90ac4a151e")
 		(property "Reference" "L303"
 			(at 181.61 77.724 90)
@@ -6179,7 +6188,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 1.2uH, 1812"
 			(at 181.61 80.01 0)
 			(effects
 				(font
@@ -6248,7 +6257,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1812CS-122XJRC"
 			(at 181.61 80.01 90)
 			(effects
 				(font
@@ -6267,6 +6276,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1812CS-122XJRC"
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 181.61 80.01 90)
 			(effects
 				(font
@@ -6792,9 +6810,9 @@
 		(at 195.58 53.34 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "5d9241f5-4cb5-4097-a54f-9563d680d4e0")
 		(property "Reference" "L302"
 			(at 195.58 51.054 90)
@@ -6830,7 +6848,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 2.7uH, 1812"
 			(at 195.58 53.34 0)
 			(effects
 				(font
@@ -6899,7 +6917,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1812CS-272XJRC"
 			(at 195.58 53.34 90)
 			(effects
 				(font
@@ -6908,7 +6926,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1812CS-332XJR"
+		(property "MPN" "1812CS-272XJR"
 			(at 195.58 53.34 90)
 			(effects
 				(font
@@ -6918,6 +6936,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1812CS-332XJRC"
+			(at 195.58 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 195.58 53.34 90)
 			(effects
 				(font
@@ -7288,9 +7315,9 @@
 		(at 181.61 110.49 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "66755fde-baa9-43a4-a189-47fc3d4da9cd")
 		(property "Reference" "L308"
 			(at 181.61 108.204 90)
@@ -7326,7 +7353,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 560nH, 1008"
 			(at 181.61 110.49 0)
 			(effects
 				(font
@@ -7395,7 +7422,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1008CS-561XJRC"
 			(at 181.61 110.49 90)
 			(effects
 				(font
@@ -7414,6 +7441,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1008CS-561XJRC"
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 181.61 110.49 90)
 			(effects
 				(font
@@ -7442,9 +7478,9 @@
 		(at 195.58 110.49 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "6acc14c9-8cf6-42c0-9084-16470158efac")
 		(property "Reference" "L309"
 			(at 195.58 108.204 90)
@@ -7480,7 +7516,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 560nH, 1008"
 			(at 195.58 110.49 0)
 			(effects
 				(font
@@ -7549,7 +7585,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1008CS-561XJRC"
 			(at 195.58 110.49 90)
 			(effects
 				(font
@@ -7568,6 +7604,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1008CS-561XJRC"
+			(at 195.58 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 195.58 110.49 90)
 			(effects
 				(font
@@ -9052,7 +9097,7 @@
 		(at 69.85 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -9093,7 +9138,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 2.7uH, 1812"
 			(at 69.85 104.14 0)
 			(effects
 				(font
@@ -9162,7 +9207,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1812CS-272XJRC"
 			(at 69.85 104.14 0)
 			(effects
 				(font
@@ -9181,6 +9226,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1812CS-272XJRC"
+			(at 69.85 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 69.85 104.14 0)
 			(effects
 				(font
@@ -10130,7 +10184,7 @@
 		(at 83.82 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -10171,7 +10225,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 3.3uH, 1812"
 			(at 83.82 104.14 0)
 			(effects
 				(font
@@ -10240,7 +10294,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1812CS-332XJRC"
 			(at 83.82 104.14 0)
 			(effects
 				(font
@@ -10259,6 +10313,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1812CS-332XJRC"
+			(at 83.82 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 83.82 104.14 0)
 			(effects
 				(font
@@ -10287,9 +10350,9 @@
 		(at 195.58 137.16 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "b5d0e669-9867-44dd-81ac-f6112567817a")
 		(property "Reference" "L311"
 			(at 195.58 134.874 90)
@@ -10325,7 +10388,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 330nH, 1008"
 			(at 195.58 137.16 0)
 			(effects
 				(font
@@ -10394,7 +10457,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1008CS-331XJRC"
 			(at 195.58 137.16 90)
 			(effects
 				(font
@@ -10413,6 +10476,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1008CS-331XJRC"
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 195.58 137.16 90)
 			(effects
 				(font
@@ -10994,9 +11066,9 @@
 		(at 181.61 137.16 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "d587a8b1-06cb-4622-a24a-ecef53a23e42")
 		(property "Reference" "L310"
 			(at 181.61 134.874 90)
@@ -11032,7 +11104,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 330nH, 1008"
 			(at 181.61 137.16 0)
 			(effects
 				(font
@@ -11101,7 +11173,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1008CS-331XJRC"
 			(at 181.61 137.16 90)
 			(effects
 				(font
@@ -11120,6 +11192,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1008CS-331XJRC"
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 181.61 137.16 90)
 			(effects
 				(font
@@ -11283,9 +11364,9 @@
 		(at 195.58 80.01 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "db4d6fc4-d21a-48d6-b438-c41d9f19bfeb")
 		(property "Reference" "L304"
 			(at 195.58 77.724 90)
@@ -11321,7 +11402,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 1.2uH, 1812"
 			(at 195.58 80.01 0)
 			(effects
 				(font
@@ -11390,7 +11471,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1812CS-122XJRC"
 			(at 195.58 80.01 90)
 			(effects
 				(font
@@ -11409,6 +11490,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1812CS-122XJRC"
+			(at 195.58 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 195.58 80.01 90)
 			(effects
 				(font
@@ -11639,7 +11729,7 @@
 		(at 54.61 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -11680,7 +11770,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor with ferrite core, small symbol"
+		(property "Description" "SMD RF chip inductor, 3.3uH, 1812"
 			(at 54.61 104.14 0)
 			(effects
 				(font
@@ -11749,7 +11839,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "994-1812CS-332XJRC"
 			(at 54.61 104.14 0)
 			(effects
 				(font
@@ -11768,6 +11858,15 @@
 			)
 		)
 		(property "Mouser_PN" "994-1812CS-332XJRC"
+			(at 54.61 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Coilcraft"
 			(at 54.61 104.14 0)
 			(effects
 				(font
