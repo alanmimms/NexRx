@@ -1,4 +1,4 @@
-27521014335021005
+27526377931952609
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71652,6 +71652,13 @@ MLZ
 2
 2
 Library
+MAXM10M20B
+18-SMD Module_2026
+Integrated Circuit
+0
+18
+18
+Library
 PW14
 
 SN74LVC04APW 
@@ -71771,6 +71778,13 @@ Integrated Circuit
 14
 14
 Library
+SMAJPHRATH1
+SMA-J-P-H-RA-TH1-1
+Connector
+0
+5
+5
+Library
 SOIC_G14DCK3_TEX
 
 SN74LVC2G14DCK3 
@@ -71816,6 +71830,13 @@ Library
 SOT-6
 
 
+0
+6
+6
+Library
+SOT65P210X110-6N
+DCK (R-PDSO-G6)
+Integrated Circuit
 0
 6
 6

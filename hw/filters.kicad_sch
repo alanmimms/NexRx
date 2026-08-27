@@ -3900,7 +3900,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 157.48 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 157.48 120.65 0)
 			(effects
 				(font
@@ -4233,7 +4242,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 240.03 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 240.03 96.52 0)
 			(effects
 				(font
@@ -4408,7 +4426,7 @@
 		(at 181.61 53.34 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "1a9c4264-926b-459c-b3e9-62b1226e3ef7")
@@ -4600,7 +4618,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 1uF, 0402"
 			(at 64.77 97.79 0)
 			(effects
 				(font
@@ -4824,7 +4842,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 150pF, 0402"
 			(at 189.23 142.24 0)
 			(effects
 				(font
@@ -4842,7 +4860,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "80-C0402C151J3G"
+		(property "Mouser Part Number" "C0402C151J3GACTU"
 			(at 189.23 142.24 0)
 			(effects
 				(font
@@ -5217,7 +5235,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 34.29 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 34.29 95.25 0)
 			(effects
 				(font
@@ -5297,7 +5324,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 300pF, 0402"
 			(at 176.53 85.09 0)
 			(effects
 				(font
@@ -5655,7 +5682,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 680pF, 0402"
 			(at 189.23 85.09 0)
 			(effects
 				(font
@@ -6064,7 +6091,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 142.24 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 142.24 95.25 0)
 			(effects
 				(font
@@ -6105,7 +6141,7 @@
 		(at 181.61 80.01 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "4f6b8e83-a519-4d43-95dd-0e90ac4a151e")
@@ -6365,7 +6401,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 80.01 166.37 0)
 			(effects
 				(font
@@ -6756,7 +6792,7 @@
 		(at 195.58 53.34 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "5d9241f5-4cb5-4097-a54f-9563d680d4e0")
@@ -7202,7 +7238,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 224.79 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 224.79 72.39 0)
 			(effects
 				(font
@@ -7243,7 +7288,7 @@
 		(at 181.61 110.49 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "66755fde-baa9-43a4-a189-47fc3d4da9cd")
@@ -7397,7 +7442,7 @@
 		(at 195.58 110.49 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "6acc14c9-8cf6-42c0-9084-16470158efac")
@@ -7589,7 +7634,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 150pF, 0402"
 			(at 201.93 115.57 0)
 			(effects
 				(font
@@ -7631,7 +7676,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" "581-04023A151J"
+		(property "Mouser Part Number" "C0402C151J3GACTU"
 			(at 201.93 115.57 90)
 			(effects
 				(font
@@ -7640,7 +7685,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "04023A151JAT2A"
+		(property "MPN" "C0402C151J3GACTU"
 			(at 201.93 115.57 90)
 			(effects
 				(font
@@ -7676,7 +7721,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG" "Kyocera"
+		(property "MFG" "KEMET"
 			(at 201.93 115.57 0)
 			(effects
 				(font
@@ -7877,7 +7922,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 1uF, 0402"
 			(at 78.74 97.79 0)
 			(effects
 				(font
@@ -8099,7 +8144,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 910pF, 0603"
 			(at 176.53 58.42 0)
 			(effects
 				(font
@@ -8253,7 +8298,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 910pF, 0603"
 			(at 201.93 58.42 0)
 			(effects
 				(font
@@ -8410,7 +8455,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 300pF, 0402"
 			(at 189.23 115.57 0)
 			(effects
 				(font
@@ -8548,7 +8593,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 300pF, 0402"
 			(at 201.93 85.09 0)
 			(effects
 				(font
@@ -8957,7 +9002,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 107.95 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 107.95 95.25 0)
 			(effects
 				(font
@@ -8998,7 +9052,7 @@
 		(at 69.85 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -9196,7 +9250,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 150pF, 0402"
 			(at 189.23 58.42 0)
 			(effects
 				(font
@@ -9588,7 +9642,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 224.79 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 224.79 124.46 0)
 			(effects
 				(font
@@ -9951,7 +10014,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 75pF, 0402"
 			(at 176.53 142.24 0)
 			(effects
 				(font
@@ -10067,7 +10130,7 @@
 		(at 83.82 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -10224,7 +10287,7 @@
 		(at 195.58 137.16 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "b5d0e669-9867-44dd-81ac-f6112567817a")
@@ -10391,7 +10454,7 @@
 				)
 			)
 		)
-		(property "Value" "SN74LVC2G14DCK3"
+		(property "Value" "SN74LVC2G14DCKRE4"
 			(at 53.34 154.94 0)
 			(effects
 				(font
@@ -10419,7 +10482,34 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Inverters Dual Schmitt-Trigger"
+			(at 53.34 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "TI"
+			(at 53.34 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "SN74LVC2G14DCKRE4"
+			(at 53.34 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "595-SN74LVC2G14DCKRE4"
 			(at 53.34 161.29 0)
 			(effects
 				(font
@@ -10498,7 +10588,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 2.2uF, 0402"
 			(at 92.71 97.79 0)
 			(effects
 				(font
@@ -10721,7 +10811,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 150pF, 0402"
 			(at 176.53 115.57 0)
 			(effects
 				(font
@@ -10763,7 +10853,7 @@
 				)
 			)
 		)
-		(property "Mouser Part Number" "581-04023A151J"
+		(property "Mouser Part Number" "C0402C151J3GACTU"
 			(at 176.53 115.57 90)
 			(effects
 				(font
@@ -10772,7 +10862,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "04023A151JAT2A"
+		(property "MPN" "C0402C151J3GACTU"
 			(at 176.53 115.57 90)
 			(effects
 				(font
@@ -10808,7 +10898,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG" "Kyocera"
+		(property "MFG" "KEMET"
 			(at 176.53 115.57 0)
 			(effects
 				(font
@@ -10904,7 +10994,7 @@
 		(at 181.61 137.16 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "d587a8b1-06cb-4622-a24a-ecef53a23e42")
@@ -11193,7 +11283,7 @@
 		(at 195.58 80.01 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp yes)
 		(uuid "db4d6fc4-d21a-48d6-b438-c41d9f19bfeb")
@@ -11549,7 +11639,7 @@
 		(at 54.61 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -11744,7 +11834,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 75pF, 0402"
 			(at 201.93 142.24 0)
 			(effects
 				(font
@@ -12220,7 +12310,16 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "873-AS183-92LF"
+			(at 158.75 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "SKYWORKS"
 			(at 158.75 71.12 0)
 			(effects
 				(font
@@ -12433,7 +12532,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 2.2uF, 0402"
 			(at 49.53 97.79 0)
 			(effects
 				(font

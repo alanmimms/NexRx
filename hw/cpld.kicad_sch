@@ -3140,7 +3140,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 22.1k, 0402"
+		(property "Description" "Resistor, Thin Film, 1%, 22.1k, 0402"
 			(at 26.67 45.72 0)
 			(effects
 				(font
@@ -3158,7 +3158,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0722K1L"
 			(at -111.76 -59.69 0)
 			(effects
 				(font
@@ -3186,6 +3186,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 26.67 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "YAGEO"
+			(at 26.67 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0722K1L "
 			(at 26.67 45.72 0)
 			(effects
 				(font
@@ -3486,8 +3504,35 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "FPGA - Field Programmable Gate Array iCE40LP Ultra LowPwr 384 LUTs 1.2V"
 			(at 54.61 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "ICE40LP384-SG32 "
+			(at 107.95 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "842-ICE40LP384SG32 "
+			(at 107.95 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Lattice Semi"
+			(at 107.95 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3806,7 +3851,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 92.71 99.06 0)
 			(effects
 				(font
@@ -4172,7 +4217,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 64.77 104.14 0)
 			(effects
 				(font
@@ -4694,7 +4739,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 26.67 76.2 0)
 			(effects
 				(font
@@ -5138,7 +5183,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
+		(property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402"
 			(at 20.32 53.34 0)
 			(effects
 				(font
@@ -5157,6 +5202,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 20.32 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "YAGEO"
+			(at 20.32 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "RT0402BRD0710KL"
+			(at 20.32 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
 			(at 20.32 53.34 90)
 			(effects
 				(font
@@ -5227,7 +5299,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 64.77 83.82 0)
 			(effects
 				(font
@@ -5921,7 +5993,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 101.6 175.26 0)
 			(effects
 				(font
@@ -5974,6 +6046,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 101.6 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 101.6 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 101.6 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 101.6 175.26 90)
 			(effects
 				(font
@@ -6044,7 +6143,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805"
+		(property "Description" "Capacitor, MLCC, X5R, 10V, 20%, 2.7uF, 0402"
 			(at 46.99 50.8 0)
 			(effects
 				(font
@@ -6463,7 +6562,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 113.03 99.06 0)
 			(effects
 				(font
@@ -6829,7 +6928,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 92.71 78.74 0)
 			(effects
 				(font
@@ -7548,7 +7647,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805"
+		(property "Description" "Capacitor, MLCC, X5R, 10V, 20%, 2.7uF, 0402"
 			(at 60.96 50.8 0)
 			(effects
 				(font
@@ -7982,7 +8081,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 113.03 78.74 0)
 			(effects
 				(font

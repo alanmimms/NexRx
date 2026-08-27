@@ -12115,7 +12115,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402"
+		(property "Description" "Resistor, Thick Film, 1%, 330, 0402"
 			(at 38.1 167.64 0)
 			(effects
 				(font
@@ -12133,7 +12133,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0402JR-7D330RL"
 			(at 0 -22.86 0)
 			(effects
 				(font
@@ -12367,6 +12367,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 38.1 167.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RC0402JR-7D330RL "
+			(at 38.1 167.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "2a4c94db-b445-4e2c-8297-1eb6951ba549")
 		)
@@ -12426,7 +12444,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 22, 0402"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 118.11 36.83 0)
 			(effects
 				(font
@@ -12444,7 +12462,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "560112110216"
 			(at 71.12 -63.5 0)
 			(effects
 				(font
@@ -12523,6 +12541,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "Wurth Electronik"
+			(at 118.11 36.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
+			(at 118.11 36.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6fda2475-c86d-41ae-8939-b4d92fe5b5a7")
 		)
@@ -12581,7 +12617,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Thin Film Resistors - SMD .063W 100ohms 1% 0402 50ppm"
 			(at 228.6 76.2 0)
 			(effects
 				(font
@@ -12591,6 +12627,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 228.6 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Vishay"
+			(at 228.6 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "MCS04020C1000FE000"
+			(at 228.6 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "594-MCS04020C1000FE0"
 			(at 228.6 76.2 90)
 			(effects
 				(font
@@ -12659,7 +12722,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Wurth Elektronik 687 Series 0.5mm 8 Way 1 Row Straight PCB Socket Surface Mount Wire to Board"
+		(property "Description" "FPC Connectors .5mm FPC 8P CONN RA SMT B-FLIP DUAL"
 			(at 149.86 24.13 0)
 			(effects
 				(font
@@ -13216,7 +13279,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 254 162.56 0)
 			(effects
 				(font
@@ -13675,7 +13738,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 161.29 80.01 0)
 			(effects
 				(font
@@ -14029,7 +14092,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Thin Film Resistors - SMD .063W 100ohms 1% 0402 50ppm"
 			(at 215.9 66.04 0)
 			(effects
 				(font
@@ -14039,6 +14102,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 215.9 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Vishay"
+			(at 215.9 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "MCS04020C1000FE000"
+			(at 215.9 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "594-MCS04020C1000FE0"
 			(at 215.9 66.04 90)
 			(effects
 				(font
@@ -14449,7 +14539,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402"
 			(at 154.94 99.06 0)
 			(effects
 				(font
@@ -14842,7 +14932,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, small US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 27pF, 0402"
 			(at 130.81 134.62 0)
 			(effects
 				(font
@@ -14988,7 +15078,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 48.26 191.77 0)
 			(effects
 				(font
@@ -15387,7 +15477,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 173.99 80.01 0)
 			(effects
 				(font
@@ -15950,7 +16040,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, small US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 27pF, 0402"
 			(at 138.43 134.62 0)
 			(effects
 				(font
@@ -16141,6 +16231,33 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "Panasonic"
+			(at 38.1 179.07 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "EVQ-PUK02K"
+			(at 38.1 179.07 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "667-EVQ-PUK02K"
+			(at 38.1 179.07 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "35cb8cd4-fb12-4bad-8f63-26a4fd33927e")
 		)
@@ -16200,7 +16317,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402"
 			(at 181.61 99.06 0)
 			(effects
 				(font
@@ -16609,7 +16726,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 0 0 0)
 			(effects
 				(font
@@ -16843,6 +16960,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 38.1 190.5 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
+			(at 38.1 190.5 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "6c759f16-cbe4-466b-aa33-19b4f2acfed9")
 		)
@@ -16901,7 +17036,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 10%, 2.2uF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 10%, 2.2uF, 0402"
 			(at 55.88 151.13 0)
 			(effects
 				(font
@@ -17248,7 +17383,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 189.23 31.75 0)
 			(effects
 				(font
@@ -17707,7 +17842,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 49.53 92.71 0)
 			(effects
 				(font
@@ -17760,6 +17895,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 49.53 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 49.53 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 49.53 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 49.53 92.71 90)
 			(effects
 				(font
@@ -18097,7 +18259,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 5.1k, 0603"
+		(property "Description" "Resistor, Thick Film, 1%, 5.1k, 0402"
 			(at 68.58 189.23 0)
 			(effects
 				(font
@@ -18115,7 +18277,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "AC0402FR-7W5K1L"
 			(at -55.88 5.08 0)
 			(effects
 				(font
@@ -18365,6 +18527,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 68.58 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-AC0402FR-7W5K1L"
+			(at 68.58 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c1c74725-4d74-4f0d-94b3-908c66164693")
 		)
@@ -18423,7 +18603,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 114.3 123.19 0)
 			(effects
 				(font
@@ -18476,6 +18656,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 114.3 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 114.3 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 114.3 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 114.3 123.19 90)
 			(effects
 				(font
@@ -18561,7 +18768,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 0 0 0)
 			(effects
 				(font
@@ -18631,6 +18838,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 259.08 46.99 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
+			(at 259.08 46.99 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a9284363-f6d9-49e3-8b16-3ca98dce0e7c")
 		)
@@ -18689,7 +18914,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 232.41 129.54 0)
 			(effects
 				(font
@@ -19149,7 +19374,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 1k, 0603"
+		(property "Description" "Resistor, Thin Film, 0.1%, 1k, 0402"
 			(at 147.32 146.05 0)
 			(effects
 				(font
@@ -19167,7 +19392,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RP0402FRE071KL"
 			(at 13.97 -25.4 0)
 			(effects
 				(font
@@ -19417,6 +19642,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 147.32 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RP0402FRE071KL"
+			(at 147.32 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a1c8872a-1b97-4fca-aee0-52165b8fe2da")
 		)
@@ -19476,7 +19719,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402"
 			(at 154.94 80.01 0)
 			(effects
 				(font
@@ -19939,7 +20182,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Thin Film Resistors - SMD .063W 100ohms 1% 0402 50ppm"
 			(at 228.6 66.04 0)
 			(effects
 				(font
@@ -19949,6 +20192,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 228.6 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Vishay"
+			(at 228.6 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "MCS04020C1000FE000"
+			(at 228.6 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "594-MCS04020C1000FE0"
 			(at 228.6 66.04 90)
 			(effects
 				(font
@@ -20098,7 +20368,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 111.76 -35.56 0)
 			(effects
 				(font
@@ -20332,6 +20602,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 149.86 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
+			(at 149.86 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "cec9e497-1a3f-47b4-957b-1dd2e5970c75")
 		)
@@ -20391,7 +20679,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 246.38 162.56 0)
 			(effects
 				(font
@@ -20781,7 +21069,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402"
 			(at 180.34 80.01 0)
 			(effects
 				(font
@@ -21180,7 +21468,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 209.55 162.56 0)
 			(effects
 				(font
@@ -21853,7 +22141,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Thin Film Resistors - SMD .063W 100ohms 1% 0402 50ppm"
 			(at 228.6 71.12 0)
 			(effects
 				(font
@@ -21863,6 +22151,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 228.6 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Vishay"
+			(at 228.6 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "MCS04020C1000FE000"
+			(at 228.6 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "594-MCS04020C1000FE0"
 			(at 228.6 71.12 90)
 			(effects
 				(font
@@ -22421,7 +22736,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 107.95 57.15 0)
 			(effects
 				(font
@@ -22474,6 +22789,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 107.95 57.15 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 107.95 57.15 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 107.95 57.15 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 107.95 57.15 90)
 			(effects
 				(font
@@ -22540,7 +22882,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Thin Film Resistors - SMD .063W 100ohms 1% 0402 50ppm"
 			(at 241.3 66.04 0)
 			(effects
 				(font
@@ -22550,6 +22892,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 241.3 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Vishay"
+			(at 241.3 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "MCS04020C1000FE000"
+			(at 241.3 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "594-MCS04020C1000FE0"
 			(at 241.3 66.04 90)
 			(effects
 				(font
@@ -22617,7 +22986,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 10%, 2.2uF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 10%, 2.2uF, 0402"
 			(at 50.8 151.13 0)
 			(effects
 				(font
@@ -22966,7 +23335,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "capacitor, small US symbol"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 27pF, 0402"
 			(at 27.94 49.53 0)
 			(effects
 				(font
@@ -23202,7 +23571,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 22, 0402"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 109.22 39.37 0)
 			(effects
 				(font
@@ -23220,7 +23589,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "560112110216"
 			(at 62.23 -60.96 0)
 			(effects
 				(font
@@ -23291,6 +23660,24 @@
 			)
 		)
 		(property "JLCPCBpn" "C4258780"
+			(at 109.22 39.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 109.22 39.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 109.22 39.37 90)
 			(effects
 				(font
@@ -23443,7 +23830,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 0 0 0)
 			(effects
 				(font
@@ -23505,6 +23892,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 256.54 30.48 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "YAGEO"
+			(at 256.54 30.48 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
 			(at 256.54 30.48 90)
 			(effects
 				(font
@@ -23708,7 +24113,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 52.07 62.23 0)
 			(effects
 				(font
@@ -23761,6 +24166,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 52.07 62.23 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 52.07 62.23 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 52.07 62.23 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 52.07 62.23 90)
 			(effects
 				(font
@@ -23828,7 +24260,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 19.05 191.77 0)
 			(effects
 				(font
@@ -24227,7 +24659,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 107.95 64.77 0)
 			(effects
 				(font
@@ -24280,6 +24712,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 107.95 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 107.95 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 107.95 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 107.95 64.77 90)
 			(effects
 				(font
@@ -24421,6 +24880,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 80.01 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "STMicro"
+			(at 80.01 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "511-STM32H743VIT6"
 			(at 80.01 97.79 0)
 			(effects
 				(font
@@ -24851,7 +25328,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 217.17 162.56 0)
 			(effects
 				(font
@@ -25341,7 +25818,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 185.42 -35.56 0)
 			(effects
 				(font
@@ -25568,6 +26045,24 @@
 		)
 		(property "Winding" ""
 			(at 147.32 154.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "YAGEO"
+			(at 147.32 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
+			(at 147.32 154.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25804,6 +26299,24 @@
 				(hide yes)
 			)
 		)
+		(property "Mouser Part Number" "579-USB3343-CP"
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Microchip"
+			(at 166.37 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "24"
 			(uuid "4d52e020-b3a2-4ade-a399-fff8f9eb730d")
 		)
@@ -26001,7 +26514,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 261.62 162.56 0)
 			(effects
 				(font
@@ -26373,7 +26886,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 0 0 0)
 			(effects
 				(font
@@ -26599,6 +27112,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 123.19 54.61 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "YAGEO"
+			(at 123.19 54.61 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
 			(at 123.19 54.61 90)
 			(effects
 				(font
@@ -27334,7 +27865,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 237.49 25.4 0)
 			(effects
 				(font
@@ -27815,7 +28346,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 238.76 162.56 0)
 			(effects
 				(font
@@ -28287,7 +28818,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 224.79 97.79 0)
 			(effects
 				(font
@@ -29102,7 +29633,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 110.49 82.55 0)
 			(effects
 				(font
@@ -29155,6 +29686,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 110.49 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 110.49 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 110.49 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 110.49 82.55 90)
 			(effects
 				(font
@@ -29239,7 +29797,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 111.76 -44.45 0)
 			(effects
 				(font
@@ -29473,6 +30031,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 149.86 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
+			(at 149.86 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "7e62ca14-b241-4ec4-9a2d-4c4ad1181358")
 		)
@@ -29600,7 +30176,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 109.22 146.05 0)
 			(effects
 				(font
@@ -29653,6 +30229,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 109.22 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 109.22 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 109.22 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 109.22 146.05 90)
 			(effects
 				(font
@@ -29719,7 +30322,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, Tantalum, 10V, 10%, 4.7uF, 0805"
+		(property "Description" "Capacitor, MLCC, X5R, 10V, 20%, 2.7uF, 0402"
 			(at 232.41 97.79 0)
 			(effects
 				(font
@@ -30133,7 +30736,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 22.1k, 0402"
+		(property "Description" "Resistor, Thin Film, 1%, 22.1k, 0402"
 			(at 138.43 105.41 0)
 			(effects
 				(font
@@ -30151,7 +30754,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0722K1L"
 			(at 0 0 0)
 			(effects
 				(font
@@ -30179,6 +30782,24 @@
 			)
 		)
 		(property "Winding" ""
+			(at 138.43 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "YAGEO"
+			(at 138.43 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0722K1L "
 			(at 138.43 105.41 0)
 			(effects
 				(font
@@ -30246,7 +30867,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 118.11 67.31 0)
 			(effects
 				(font
@@ -30299,6 +30920,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 118.11 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 118.11 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 118.11 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 118.11 67.31 90)
 			(effects
 				(font
@@ -30435,7 +31083,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
 			(at 110.49 69.85 0)
 			(effects
 				(font
@@ -30488,6 +31136,33 @@
 			)
 		)
 		(property "Winding" ""
+			(at 110.49 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "Wurth Electronik"
+			(at 110.49 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "560112110216"
+			(at 110.49 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-560112110216"
 			(at 110.49 69.85 90)
 			(effects
 				(font
@@ -30555,7 +31230,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 231.14 162.56 0)
 			(effects
 				(font
@@ -30946,7 +31621,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 195.58 162.56 0)
 			(effects
 				(font
@@ -31336,7 +32011,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
 			(at 213.36 97.79 0)
 			(effects
 				(font
@@ -32018,7 +32693,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0603"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 175.26 46.99 0)
 			(effects
 				(font
@@ -32365,7 +33040,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 189.23 162.56 0)
 			(effects
 				(font
@@ -32756,7 +33431,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 10%, 10uF, 0402"
 			(at 201.93 162.56 0)
 			(effects
 				(font
@@ -33164,7 +33839,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RT0402BRD0710KL"
 			(at 111.76 -26.67 0)
 			(effects
 				(font
@@ -33391,6 +34066,24 @@
 		)
 		(property "Winding" ""
 			(at 149.86 163.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG" "YAGEO"
+			(at 149.86 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0402BRD0710KL"
+			(at 149.86 163.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33757,7 +34450,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 5.1k, 0603"
+		(property "Description" "Resistor, Thick Film, 1%, 5.1k, 0402"
 			(at 71.12 189.23 0)
 			(effects
 				(font
@@ -33775,7 +34468,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "AC0402FR-7W5K1L"
 			(at 195.58 5.08 0)
 			(effects
 				(font
@@ -34025,6 +34718,24 @@
 				(hide yes)
 			)
 		)
+		(property "MFG" "YAGEO"
+			(at 71.12 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-AC0402FR-7W5K1L"
+			(at 71.12 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "17c40ad1-e269-4f77-a5a0-f4af7835f522")
 		)
@@ -34084,7 +34795,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Ferrite bead, small symbol,TDK KPZ1608SHR601ATD25 600 ohm ferrite bead 1A"
+		(property "Description" "Ferrite Beads 600ohms 100MHz 1A Monolithic 0603 SMD"
 			(at 219.71 91.44 0)
 			(effects
 				(font
@@ -34250,7 +34961,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, NP0, 50V, 5%, 27pF, 0402"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 27pF, 0402"
 			(at 20.32 49.53 0)
 			(effects
 				(font
