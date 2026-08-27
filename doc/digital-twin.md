@@ -1,153 +1,142 @@
 # NexRx Digital Twin Architecture
 
 ## 1. Overview
-The NexRx Digital Twin is a Software-in-the-Loop (SiL) simulation
-environment that allows the host application (DSP, UI) to be
-developed, tested, and validated without requiring physical hardware.
-It accurately emulates the RF frontend, the unique Triple-QSD
-(Quadrature Sampling Detector) architecture, and the network transport
-mechanisms of the physical radio.
 
-The Twin operates primarily in a **High-Fidelity Functional Mode**,
-which uses complex analytic mathematics to synthesize and mix signals
-in real-time, avoiding the aliasing artifacts common in discrete-time
-RF simulations.
+The NexRx Digital Twin (`Twin`) is a Software-in-the-Loop (SiL)
+simulation environment that models the physical hardware and executes
+the identical shared C++ firmware algorithms natively on the host
+PC. It allows the host PC receiver engine (DSP, UI, demodulation) to
+be developed, tested, and validated without requiring physical
+hardware.
 
----
-
-## 2. Signal Pipeline
-
-### 2.1 RF Stimulus Generation
-The Digital Twin uses a Lua-scriptable `StimulusManager` to inject RF
-signals into the virtual antenna.
-
-- **Supported Signals:** CW (Morse), SSB (Multi-tone or Audio Files),
-  Sweeps, Thermal Noise, and I/Q RF Capture playback.
-
-- **Complex Baseband Synthesis:** Instead of generating real-valued
-  voltages at high RF frequencies, generators compute the complex
-  envelope `(I + jQ)` of the signal at its target frequency using
-  absolute time. This analytic approach guarantees mathematically
-  perfect frequency representation without Nyquist aliasing issues.
-
-### 2.2 High-Fidelity Analytic Mixing
-The core of the simulation is the virtual QSD array.
-
-- The composite RF analytic signal is complex-downconverted by three
-  independent VFOs representing the three hardware QSDs.
-
-- `baseband = (rf_i + j*rf_q) * exp(-j * 2pi * vfo * t)`
-
-- This continuous-time equivalent mixing occurs before any decimation,
-  providing pristine downconversion regardless of how high the carrier
-  frequency is.
-
-### 2.3 Internal Signal Generator (ISG)
-The twin simulates the hardware's internal FPGA-based PDM signal
-generator (used for calibration and testing). The ISG signal is
-injected into the processing chain such that its amplitude remains
-constant relative to the ADC, regardless of the RF attenuator
-settings, perfectly mimicking the hardware injection topology.
-
-### 2.4 Filtering, Decimation, and Quantization
-- Baseband signals are passed through a chain of Biquad low-pass
-  filters that model the AK5578 ADC's internal anti-aliasing response.
-
-- Signals are decimated from the internal oversampled simulation rate
-  (e.g., 480 kHz) to the target output sample rate (96 kHz).
-
-- Finally, the high-precision floating-point values are dithered with
-  uniform noise and quantized to 24-bit integers to accurately emulate
-  the ADC's dynamic range and noise floor.
+The Twin accurately emulates the RF frontend's Dual Octal Sampling
+Detector (OSD) architecture and runs the exact STM32 embedded DSP
+pipeline to synthesize the final data stream.
 
 ---
 
-## 3. Host Application Interface
+## 2. Shared Firmware Core & Hardware Abstraction Layer (HAL)
 
-The app connects to the Digital Twin over two virtual network links,
-exactly mimicking the physical hardware's NexBus interface over
-Ethernet/USB.
+To guarantee exact behavioral parity between the physical silicon and
+the simulation environment without duplicating firmware logic, all
+core receiver algorithms compile against abstract C++ Hardware
+Abstraction interfaces.
 
-### 3.1 Control Plane (TCP Port 5000)
-A text-based command protocol allowing the app to control the hardware
-state.
+* **HALSynth:** The Twin intercepts simulated I2C register writes to
+  Si5351 MultiSynth parameters and computes the active mixing
+  frequencies ($f - 12\text{kHz}$ and $f + 12\text{kHz}$) for OSD0
+  and OSD1.
 
-- `SET_QSD_VFO <ch> <freq_hz>`: Tunes one of the three QSDs. The app
-  offsets QSD 0 and 1 by `+k` and `-k` kHz.
+* **HALGpio:** Simulates the state of hardware control pins, including
+  the Output Enable Bar (OEB), reset lines, and mode selection relays.
 
-- `SET_ATTEN_TOTAL <db>`: Adjusts the RF front-end attenuation.
+* **HALAudio:** Injects synthetic RF test vectors into the simulated
+  mixing and ADC quantization stages, pushing the resulting 8-channel
+  frames to the DSP callback.
 
-- `SET_PRESEL_C <idx> <0|1>`: Toggles individual preselector capacitor
-  relays.
-
-- `SET_PRESEL_L <index> <0|1>`: Toggles a preselector inductor relay.
-
-- `SET_ISG_ENABLE <0|1>`: Enables the Internal Signal Generator (ISG).
-
-- `SET_ISG_FREQ <freq_hz>`: Sets the ISG frequency.
-
-### 3.2 Data Stream (UDP Port 5001)
-A high-speed data pipe sending interleaved I/Q samples to the host.
-
-- Sent in batches of `IQFrame` structs.
-
-- Each frame contains a timestamp, a sequence number, and 3 pairs of
-  32-bit (containing 24-bit data) I/Q values representing the
-  simultaneous state of the three QSDs.
+* **HALTransport:** Binds the high-level command and data streams to a
+  local Inter-Process Communication (IPC) transport—such as a POSIX
+  domain socket or named pipe—acting as a direct stand-in for the
+  physical USB endpoints.
 
 ---
 
-## 4. Hardware Emulation Parity
+## 3. Simulated Signal Pipeline
 
-Currently, the twin effectively matches the hardware in several
-critical areas:
+### 3.1 Synthetic RF Generation
 
-- **Tuning & VFO control:** The app issues separate VFO commands for
-  the 3 QSDs, driving them to independent frequencies.
+Mathematical signal generators synthesize arbitrary RF test
+environments. The engine supports complex carrier injection,
+atmospheric noise (AWGN), QRN impulses, and modulated digital signals.
 
-- **Data formatting:** The app receives the exact binary `IQFrame`
-  structures it will receive from the STM32H7 via Ethernet/USB.
+### 3.2 Mixer & ADC Behavioral Engine
 
-- **Signal routing & DSP:** The app performs its LMS adaptive
-  interference cancellation and baseband filtering using the 3-channel
-  data just as it will with real hardware.
+* The synthetic RF input is downconverted by multiplying it against
+  simulated 8-phase or 4-phase switching functions.
 
-- **ISG/Attenuator topology:** Changing attenuation affects the
-  apparent strength of external signals but leaves the ISG calibration
-  tone unaffected.
+* This generates the 8 differential baseband audio channels while
+  simulating analog phase and amplitude skews typical of the physical
+  hardware.
+
+
+### 3.3 Deterministic Sample Pacing
+
+* The Twin acts as an unyielding data master, operating at precisely
+  384ksps.
+
+* A dedicated `SamplePacer` thread uses high-precision timers to push
+  exactly 384 sample pairs every 1.0 ms into the virtual transport.
+
+* This perfectly mimics the timing of the STM32's hardware DMA buffer
+  intervals and forces the host software to perform host-side elastic
+  buffering and dynamic time interpolation.
 
 ---
 
-## 5. Future Work & Emulation Completeness
+## 4. Embedded DSP Pipeline (Executed in the Twin)
 
-To make the emulation a perfect 1:1 representation of the physical
-world, several milestones remain:
+Rather than executing pre-processing on the host, the Twin runs the
+exact embedded DSP pipeline to condense the 8 differential channels
+internally before transmission.
 
-1. **Harmonic Mixing Simulation:** The current analytic mixer only
-   downconverts the fundamental VFO frequency. Real QSDs act as
-   square-wave mixers, heavily mixing on odd harmonics (3rd, 5th,
-   etc.). The twin needs to generate these harmonic responses so the
-   app's 1-2-1 harmonic cancellation logic can be validated.
+* **Polyphase Recombination:** Multiplies the incoming channels by a
+  programmable $2 \times 4$ projection matrix to produce orthogonal
+  $I$ and $Q$ baseband signals, intrinsically rejecting 3rd and 5th
+  harmonics.
 
-2. **Zephyr Firmware Surrogate:** Transition from the standalone C++
-   `twin` application to running the actual STM32H7 C code in a Zephyr
-   `native_sim` environment. The firmware will use POSIX shared memory
-   to pull samples from the C++ signal generator.
+* **Frequency Shift & Image Vetoing:** Rotates the OSD0 stream by
+  $+12\text{kHz}$ and the OSD1 stream by $-12\text{kHz}$. The
+  streams are then summed coherently to achieve a $+6\text{dB}$
+  signal reinforcement while vetoing unaligned hardware images and ADC
+  spurs into the noise floor.
 
-3. **Xyce Physics Engine Integration:** For true analog validation,
-   complete the integration of the Xyce SPICE simulator. This will
-   allow testing of the exact non-linearities of the TS3A4751 CMOS
-   switches, switch charge injection, and the mutual inductance of the
-   hexafilar transformer, rather than relying solely on idealized
-   mathematical mixing.
+* **Hardware State Encapsulation (Mode Gain Normalization):**
+  Evaluates the 15.1 MHz viewport hysteresis to manage 8-way vs. 4-way
+  simulated hardware switching. It automatically applies a $+3\text{
+  dB}$ digital gain scaling when 4-way mode is active to keep the
+  baseline noise floor perfectly stable.
 
-4. **Preselector Physics:** Currently, the preselector commands
-   (`SET_PRESEL_C`, etc.) are accepted but do not actively filter the
-   RF spectrum in the fast Functional Mode. This requires implementing
-   a dynamic filter whose coefficients update based on the L/C relay
-   states.
 
-5. **A Priori Calibration Support:** Implement a file transfer
-   mechanism to allow the app to generate and upload preselector and
-   attenuator calibration tables to the twin's virtual flash
-   filesystem, matching the STM32H7's behavior.
+* **Autonomous BIST Engine:** Executes the 113-bin Goertzel magnitude
+  detector for closed-loop Scalar Network Analyzer (SNA) sweeps across
+  1.8 to 30.0MHz.
+
+---
+
+## 5. Host Application Interface
+
+The host PC application connects to the Twin via virtual links that
+perfectly replicate the data formatting and payload bandwidth of the
+physical USB interfaces.
+
+### 5.1 Command Protocol (Virtual Endpoint 0x02 OUT)
+
+The host issues high-level VFO and state commands, completely
+decoupled from the low-level hardware orchestration. Commands are
+fixed-header, variable-length binary packets.
+
+* `0x0001 - SetTunedFrequency`: A 32-bit unsigned integer representing
+  the target center frequency in Hz.
+
+* `0x0002 - SetAnalogGain`: An 8-bit unsigned integer setting
+  front-end PGA gain from 0 to 42 dB.
+
+* `0x0003 - SetAttenuator`: Configures the input T-pad attenuation
+  states.
+
+* `0x0010 - TriggerRFSweep`: Defines the start, stop, and step size
+  for autonomous SNA BIST execution.
+
+* `0x0020 - SetRecombinationWeights`: Uploads fixed-point coefficients
+  to calibrate the $2 \times 4$ polyphase recombination matrix.
+
+### 5.2 Data Stream Framing (Virtual Endpoint 0x81 IN)
+
+The Twin delivers a single, continuous, and normalized pre-stitched
+$I/Q$ baseband stream requiring 24.576 Mbps of sustained throughput.
+
+* **Sample Depth & Alignment:** 24-bit signed integers, sign-extended
+  and left-aligned into 32-bit integer words.
+
+* **Interleaving:** Consecutive sample pairs are transmitted in an
+  alternating $[I_k, Q_k]$ sequence.

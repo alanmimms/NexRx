@@ -3,7 +3,7 @@
 
 ### Hardware Architecture
 
-The NexRx hardware platform centers around an STM32H753
+The NexRx hardware platform centers around an STM32H743
 microcontroller - a 480MHz Cortex-M7 processor with 1MB of both flash
 memory and RAM. This isn't overkill; real-time RF control, web
 serving, and DSP processing demand serious computational resources.
@@ -13,72 +13,117 @@ graph LR
     A[Antenna] --> B[T/R Switch]
 
     C --> D[Digital attenuators]
-    D --> E[HPF and BPF array]
-    F --> I[QSD0 (f-k)]
-    G --> I[QSD1 (f+k)]
-    H --> I[QSD2 (tbd)]
+    D --> E[broadcast HPF and four octave BPF array]
+    F --> I[OSD0 (f-k)]
+    G --> I[OSD1 (f+k)]
     
-    I --> J[6-channel audio codec]
-    J --> K[STM32H753]
-    K --> L[FPGA NCO]
+    I --> J[4-channel audio codec with integrated PGA]
+    J --> K[STM32H743]
+    K --> L[host app via USB]
 ```
 
 
-### Host PC Interface
+### USB to Host Communication Architecture
 
-The receiver connects to a host PC running the native control app
-through one of two physical connection options:
+To achieve bit-perfect data integrity and cross-platform plug-and-play
+capability without requiring custom kernel drivers, the architecture
+uses a **Vendor-Specific Bulk USB Class utilizing Microsoft OS 2.0
+Descriptors**.
 
-**USB 2.0 High-Speed (480 Mbps)**: The STM32 operates as a USB
-ethernet gadget, presenting a standard network interface to the host
-without requiring driver installation. This works seamlessly across
-Windows, macOS, and Linux systems. This could alternatively be
-implemented using USB audio 2.0 with 6 channels and a serial stream
-for the control path. The decision about how to do this is TBD.
+By moving away from USB Audio Class 2.0 (UAC2) and embracing Bulk
+transfers, the system benefits from hardware-level CRC error-checking
+and automatic retransmissions. This guarantees delivery and entirely
+eliminates the dropped packets associated with isochronous streams,
+keeping the phase determinism perfectly stable for your DSP pipeline.
 
-**100Mb Ethernet**: Direct Ethernet connection provides higher
-bandwidth and longer cable runs, particularly useful for remote
-installations or multi-operator stations. Implementation planned for
-future software releases.
+### Data Stream and Payload
 
-Both interfaces carry identical data streams using the same protocol
-layer. The system streams three independent stereo (I/Q) channels at
-96 kS/s with 24-bit resolution from the three quadrature sampling
-detectors to the host. The host PC handles the majority of DSP
-processing - demodulation, filtering, digital mode decoding, and the
-user interface - while the STM32 maintains real-time RF control and
-basic signal conditioning.
+Because the STM32 handles polyphase recombination, dual-OSD frequency
+shifting, and cross-correlation internally, the USB payload is
+significantly reduced.
 
-The host can be a laptop, desktop computer, or single-board computer
-like a Raspberry Pi. The requirement is one of the supported OSes on a
-supported architecture (probably only PC and ARM64) capable of doing
-the DSP required.
+* **Channel Count**: The STM32 sends a single, normalized,
+  pre-stitched I/Q baseband stream (2 channels) to the host PC.
+
+* **Framing**: The stream consists of 24-bit samples packed into
+  32-bit words to ensure optimal DMA alignment.
+
+* **Sample Rate & Bandwidth**: Streaming at 384 ksps, this 2-channel,
+  32-bit payload consumes a highly stable 24.576 Mbps of Bulk USB
+  bandwidth.
+
+### Command and Status Data Path
+
+Control and telemetry data are completely decoupled from the I/Q data
+stream, utilizing dedicated endpoints.
+
+* **Command Channel (Endpoint 0x02 OUT)**: The host PC uses this bulk
+  endpoint to issue high-level commands, such as target VFO
+  frequencies and PGA analog gains, entirely abstracting the hardware
+  state from the PC.
+
+* **Telemetry Channel (Endpoint 0x83 IN)**: This bulk/interrupt
+  endpoint delivers state feedback, telemetry, and autonomous SNA
+  sweep responses back to the host.
+
+* **Command Protection**: Command packets are protected by a purely
+  software-based Fletcher-16 checksum loop on the host and STM32 to
+  ensure commands are not corrupted.
+
+### Operating System Deployment Matrix
+
+This Vendor-Specific Bulk architecture cleanly satisfies your security
+and privilege constraints across all target platforms:
+
+* **Windows (10 / 11)**: 100% Zero-Admin. Windows Plug-and-Play
+  manager reads the MS OS 2.0 descriptors and silently binds the
+  native `WinUSB.sys` driver in the background with zero UAC or
+  installer prompts.
+
+
+* **macOS**: 100% Zero-Admin. The host application uses native
+  user-space APIs (via `libusb` and `IOUSBHost`) to connect directly
+  without requiring any kernel extensions.
+
+
+* **Linux**: Standard Non-Root User Execution. Users will run a
+  standard, one-time `sudo` command to copy a udev rule (e.g.,
+  `99-nexrx.rules`) into `/etc/udev/rules.d/` to grant read/write
+  access to the raw USB nodes.
+
+
+* **Android**: Zero-Root / User-Space. The mobile app utilizes the
+  standard Android USB Host API (`android.hardware.usb`). The OS
+  simply displays a one-time permission pop-up asking the user to
+  allow the app to access the NexRx SDR.
+
 
 ### Software Architecture
 
-The software stack divides responsibilities between the embedded system and the native host application, with each handling what it does best.
+The software stack divides responsibilities between the embedded
+system and the native host application, with each handling what it
+does best.
 
 ```mermaid
 graph TB
     subgraph Native app ["Native App (Lua + Raylib + C++)"]
         A[Advanced DSP - C++]
-        B[Setbox Config Management - Lua]
+        B[Config Management - Lua]
         C[Unified Widget UI - Lua]
         D[Visualizations - C++/Raylib]
         E[Digital Mode Decoding - C++]
     end
     
     subgraph Comms ["Communication Layer"]
-        F[Direct TCP/UDP Sockets]
-        G[Binary I/Q Data]
-        H[CBOR/JSON Control Messages]
+        F[Binary I/Q Data]
+        G[CBOR/JSON Control Messages]
     end
     
     subgraph Embedded ["STM32 Embedded (C++20/Zephyr)"]
-        I[Real-time RF Control]
-        J[Basic DSP]
-        K[Control Plane Server]
-        L[USB/Ethernet]
+        H[Real-time RF Control]
+        I[Basic DSP]
+        J[Control Plane Server]
+        K[USB]
     end
     
     Native app --> Comms
@@ -87,23 +132,22 @@ graph TB
 
 ### Receiver Architecture
 
-The receive path implements a sophisticated three-receiver
-architecture using independent quadrature sampling detectors (QSDs).
-Each QSD operates as a direct-conversion mixer, producing I and Q
-baseband signals that capture both amplitude and phase information of
-the RF signal. The three receivers operate simultaneously, each with
-independent frequency tuning controlled by separate FPGA-generated
+The receive path implements a sophisticated dual-receiver architecture
+using independent octature sampling detectors (OSDs). Each OSD
+operates as a direct-conversion mixer, producing I and Q baseband
+signals that capture both amplitude and phase information of the RF
+signal. The two receivers operate simultaneously, each with
+independent frequency tuning controlled by separate CPLD-generated
 local oscillator signals.
 
 
 **Signal Path Components:**
 
 The **preselector** provides digitally-tuned input bandpass filtering
-ahead of the attenuators. Controlled via FPGA GPIO pins set by the
-STM32 firmware, it uses a bank of digitally switched binary weighted
-capacitors to optimize front-end selectivity based on the operating
-frequency. This reduces out-of-band interference and improves dynamic
-range.
+ahead of the attenuators. Controlled via STM32 GPIO pins, it uses a
+bank of digitally switched binary weighted capacitors to optimize
+front-end selectivity based on the operating frequency. This reduces
+out-of-band interference and improves dynamic range.
 
 The **attenuator pad array** consists of multiple switched attenuator
 stages providing 0-63 dB of attenuation in 3 dB steps. The STM32
@@ -136,46 +180,33 @@ conditioning before transmission to the host PC for advanced DSP
 processing.
 
 
-### FPGA Subsystem
+### Two CPLD Subsystem
 
-The FPGA serves as the high-speed signal processing and clock
-generation hub, and a wide fan-out GPIO expander for slowly changing
-signals like the digital capactiro bank selectors. It also handles
-tasks requiring precise timing and high-speed logic.
+The two CPLDs are identical, and there is one for each of the two OSD
+pipelines. Each CPLD serves as the high-speed clock generation hub,
+and houses a frequency counter for the TCXO clock it receives gated by
+the 1pps signal from the GNSS receiver, and a pulse density modulation
+signal generator used to sweep the receiver's input frequency range to
+calibrate filters and the small OSD phase and amplitude differences.
 
 **Master Clocking:**
 
 A 40 MHz temperature-compensated crystal oscillator (TCXO) provides
 the master timebase.
 
-From this 40 MHz reference, the FPGA synthesizes all system clocks:
+From this 40 MHz reference, the CPLD synthesizes all system clocks.
+This is done in one of two modes, settable by software:
 
-```
-40 MHz TCXO
-    ↓
-┌───────────────┐
-│  FPGA PLL/DCM │
-└───────────────┘
-    ├──→ NCO 1 Clock (QSD 1 LO)
-    ├──→ NCO 2 Clock (QSD 2 LO) 
-    ├──→ NCO 3 Clock (QSD 3 LO)
-    ├──→ TX Phase NCO Clock
-    ├──→ Audio Codec Master Clock (24.576 MHz for 96kS/s)
-    └──→ STM32 External Clock (precise timing for USB/Ethernet)
-```
+* For VFO frequencies below 15MHz, we generate 8 phase octature clocks
+  running at VFO * 8 (up to 120MHz).
 
-**Numerically Controlled Oscillators (NCOs):**
-
-The FPGA implements independent NCOs:
-
-1. **RX NCO 0**: Generates quadrature sampling signals for `f-k` QSD
-1. **RX NCO 1**: Generates quadrature sampling signals for `f+k` QSD
-1. **RX NCO 2**: Generates quadrature sampling signals for `6f` QSD
+* For higher VFO frequencies, we generate 8 outputs but these are set
+  up as 4 phase quadrature clocking running at VFO * 4 (up to 120MHz).
 
 
 ### STM32 Subsystem
 
-The STM32H753 microcontroller orchestrates all real-time control and
+The STM32H743 microcontroller orchestrates all real-time control and
 serves as the bridge between RF hardware and host PC.
 
 **Peripheral Usage:**
@@ -185,7 +216,7 @@ serves as the bridge between RF hardware and host PC.
 
 **SPI Interfaces:**
 
-- **FPGA Configuration**: Bitstream loading and reconfiguration,
+- **CPLD Configuration**: Bitstream loading and reconfiguration,
   read/write of control and status registers.
 
 - **High-speed peripherals**: Future expansion
@@ -197,12 +228,10 @@ serves as the bridge between RF hardware and host PC.
 **Real-time Control Tasks:**
 
 The STM32 runs Zephyr RTOS managing multiple concurrent tasks:
-- RF switching coordination (T/R relay, MESFET gate, attenuators)
+- RF switching coordination (low pass filter gating, attenuators)
 - AGC fast loop (signal strength → attenuator control)
-- Power sequencing (startup and shutdown coordination)
-- I/Q data conditioning and formatting
+- OSD channel combining into I/Q data
 - Command processing from host PC
-
 
 ### Power Sequencing
 
@@ -218,31 +247,25 @@ The following outlines requirements and approach:
 - VBAT pin connects to 3.3V (no battery backup planned)
 - STM32 boots on internal 64 MHz HSI clock
 
-**Controlled Power Rails:**
-- FPGA core voltage (typically 1.1V) before FPGA I/O voltage (3.3V)
-- TBD there are more of these to document.
-
-**Startup Sequence (Planned):**
-1. STM32 3.3V powers on
-2. STM32 boots on internal clock
-3. STM32 enables FPGA core voltage
-4. STM32 enables FPGA I/O voltage
-5. STM32 configures FPGA from SD card
-6. STM32 switches to FPGA external clock
-8. System ready for receive
-
-**Shutdown Sequence (Planned):**
-1. Power down FPGA I/O voltage
-2. Power down FPGA core voltage
-3. STM32 3.3V remains until power removed
-
+**Startup Sequence:**
+1. STM32 3.3V powers on using the "3.3V ON" power rail, which is
+   enabled immediately up availability of VBUS power from USB.
+1. STM32 boots on internal clock.
+1. STM32 configures the two CPLDs (simultaneously by selecting them
+   both on its SPI bus) with an image from its flash file system.
+1. STM32 switches to external crystal clock.
+1. STM32 configures the receiver for the current VFO frequency F,
+   setting the OSDs' clock generators to F +/- 12kHz.
+1. STM32 configures the audio codec to set up the I/Q channel I/O.
+1. STM32 connects with the host PC application (if present) over USB.
+1. System ready for receive.
 
 ### Development Standards and Practices
 
 The project maintains consistent coding standards across both embedded
-and host application components. All code uses CamelCase naming conventions for
-variables, functions, and methods, with SNAKE_CASE reserved only for
-constants and preprocessor macros.
+and host application components. All code uses CamelCase naming
+conventions for variables, functions, and methods, with SNAKE_CASE
+reserved only for constants and preprocessor macros.
 
 The embedded system targets C++20 running on Zephyr RTOS, taking
 advantage of modern language features for safer and more expressive
@@ -252,18 +275,23 @@ logic, utilizing Raylib for hardware-accelerated rendering.
 
 **Performance Requirements**: The system maintains sub-100ms response
 times for critical RF parameter changes, continuous I/Q streaming at
-96 kS/s, and smooth real-time waterfall displays. These requirements
-drive many of the architectural decisions, particularly the division
-of responsibilities between embedded and native host components.
+384ksps, and smooth real-time waterfall displays via the host PC app.
+These requirements drive many of the architectural decisions,
+particularly the division of responsibilities between embedded and
+native host components.
 
-**Communication Protocol**: The system uses binary frames for high-throughput I/Q data and structured messages (CBOR or JSON) for control and status updates. This hybrid approach optimizes for both efficiency and developer productivity.
+**Communication Protocol**: The system uses binary frames for
+high-throughput I/Q data and structured messages (CBOR or JSON) for
+control and status updates. This hybrid approach optimizes for both
+efficiency and developer productivity.
 
 ### Hardware Interface Abstractions
 
 The embedded software provides clean C++20 abstractions for all
-hardware interfaces. Relay and pHEMT FET switching, power amplifier
-control, and RF parameter adjustment all use object-oriented
-interfaces that hide hardware complexity from higher-level code.
+hardware interfaces. pHEMT FET switching, Si5351 synthesizer
+configuration, and other RF parameter adjustment all use
+object-oriented interfaces that hide hardware complexity from
+higher-level code.
 
 These abstractions enable rapid development and testing while
 maintaining the real-time performance requirements of RF operation.
@@ -277,11 +305,8 @@ both automated testing and careful measurement validation. The project
 includes provisions for automated testing of DSP algorithms,
 communication protocols, and user interface components.
 
-Hardware validation requires RF test equipment for measuring transmit
-signal quality, receive sensitivity, and harmonic suppression. The
-integrated predistortion system provides some self-monitoring
-capability, but external measurement remains essential for complete
-validation.
+Hardware validation requires RF test equipment for measuring receive
+sensitivity and various distortion and harmonic responses.
 
 The open-source nature of the project enables distributed testing
 across different operating environments and use cases, helping
