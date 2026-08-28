@@ -1,25 +1,16 @@
 /**
  * register-bank.sv
- * SPI-accessible register map for NexRx FPGA.
+ * SPI-accessible register map for NexRx CPLD.
  */
 module RegisterBank (
     input  logic        clkSys,
-    input  logic        clkTcxo,
     input  logic        resetN,
 
     /* SPI Interface */
-    input  logic        spiSck,
-    input  logic        spiMosi,
-    output logic        spiMiso,
-    input  logic        spiNss,
-
-    /* Register Outputs */
-    output logic [31:0] ISGInc,
-    output logic [31:0] QSD0Inc,
-    output logic [31:0] QSD1Inc,
-    output logic [31:0] QSD2Inc,
-    output logic        commitFreq,
-    output logic        commitPhase,
+    input  logic        spiSCK,
+    input  logic        spiMOSI,
+    output logic        spiMISO,
+    input  logic        spiNSS,
 
     /* Inputs from Internal Logic */
     input  logic [63:0] tcxoTimer
@@ -35,30 +26,21 @@ module RegisterBank (
     logic [31:0] dataIn;
     logic [31:0] dataOut;
 
-    logic [31:0] scratchReg;
-    logic [31:0] ISGIncShadow;
-    logic [31:0] QSD0IncShadow;
-    logic [31:0] QSD1IncShadow;
-    logic [31:0] QSD2IncShadow;
-
     logic [31:0] timeHLatch;
-    logic [31:0] tcxoTimerLow;
-
-    assign tcxoTimerLow = tcxoTimer[31:0];
 
     //==================================================================
     // SPI Frontend
     //==================================================================
-    always_ff @(posedge spiSck or posedge spiNss) begin
-        if (spiNss) begin
+    always_ff @(posedge spiSCK or posedge spiNSS) begin
+        if (spiNSS) begin
             bitCnt <= 6'd0;
             cmdDone <= 1'b0;
             cmdLatch <= 8'h0;
         end else begin
             if (bitCnt < 6'd8) begin
-                cmdLatch <= {cmdLatch[6:0], spiMosi};
+                cmdLatch <= {cmdLatch[6:0], spiMOSI};
             end else begin
-                shiftReg <= {shiftReg[30:0], spiMosi};
+                shiftReg <= {shiftReg[30:0], spiMOSI};
             end
 
             if (bitCnt == 6'd39) begin
@@ -69,14 +51,14 @@ module RegisterBank (
         end
     end
 
-    always_ff @(negedge spiSck or posedge spiNss) begin
-        if (spiNss) begin
-            spiMiso <= 1'b0;
+    always_ff @(negedge spiSCK or posedge spiNSS) begin
+        if (spiNSS) begin
+            spiMISO <= 1'b0;
         end else begin
             if (bitCnt >= 6'd8 && bitCnt < 6'd40) begin
-                spiMiso <= dataOut[39 - bitCnt];
+                spiMISO <= dataOut[39 - bitCnt];
             end else begin
-                spiMiso <= 1'b0;
+                spiMISO <= 1'b0;
             end
         end
     end
@@ -88,40 +70,14 @@ module RegisterBank (
     //==================================================================
     // Register Logic
     //==================================================================
-    logic cmdDoneSyncQ1, cmdDoneSyncQ2;
-    always_ff @(posedge clkSys) begin
-        cmdDoneSyncQ1 <= cmdDone;
-        cmdDoneSyncQ2 <= cmdDoneSyncQ1;
-    end
-    assign cmdDoneSys = cmdDoneSyncQ1 && !cmdDoneSyncQ2;
-
     always_ff @(posedge clkSys or negedge resetN) begin
         if (!resetN) begin
-            scratchReg <= 32'h55AA;
-            ISGIncShadow <= 32'h0;
-            QSD0IncShadow <= 32'h0;
-            QSD1IncShadow <= 32'h0;
-            QSD2IncShadow <= 32'h0;
-            commitFreq <= 1'b0;
-            commitPhase <= 1'b0;
-            timeHLatch <= 32'h0;
         end else begin
-            commitFreq <= 1'b0;
-            commitPhase <= 1'b0;
-            if (cmdDoneSys) begin
+            if (cmdDone) begin
                 if (isWrite) begin
                     case (addr)
-                        7'h00: scratchReg <= dataIn;
-                        7'h01: begin
-                            commitFreq <= dataIn[0];
-                            commitPhase <= dataIn[1];
-                        end
-                        7'h10: ISGIncShadow <= dataIn;
-                        7'h20: QSD0IncShadow <= dataIn;
-                        7'h30: QSD1IncShadow <= dataIn;
-                        7'h40: QSD2IncShadow <= dataIn;
                     endcase
-                end else if (addr == 7'h04) begin
+                end else if (addr == 7'h03) begin
                     timeHLatch <= tcxoTimer[63:32];
                 end
             end
@@ -130,22 +86,12 @@ module RegisterBank (
 
     always_comb begin
         case (addr)
-            7'h00: dataOut = scratchReg;
-            7'h02: dataOut = 32'h4E585258; /* "NXRX" */
-            7'h03: dataOut = 32'h00010000; /* v1.0.0 */
-            7'h04: dataOut = tcxoTimerLow;
-            7'h05: dataOut = timeHLatch;
-            7'h10: dataOut = ISGIncShadow;
-            7'h20: dataOut = QSD0IncShadow;
-            7'h30: dataOut = QSD1IncShadow;
-            7'h40: dataOut = QSD2IncShadow;
+            7'h00: dataOut = 32'h4E585258; /* "NXRX" */
+            7'h01: dataOut = 32'h00010000; /* v1.0.0 */
+            7'h02: dataOut = tcxoTimer[31:0];
+            7'h03: dataOut = timeHLatch;
             default: dataOut = 32'hDEADBEEF;
         endcase
     end
-
-    assign ISGInc = ISGIncShadow;
-    assign QSD0Inc = QSD0IncShadow;
-    assign QSD1Inc = QSD1IncShadow;
-    assign QSD2Inc = QSD2IncShadow;
 
 endmodule
