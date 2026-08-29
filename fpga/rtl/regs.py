@@ -34,8 +34,8 @@ if __name__ == "__main__":
   if len(sys.argv) > 1:
     genDir = sys.argv[1]
   else:
-    genDir = "gen-FIXME" # Fallback if no param is passed
-    print("No genDir parameter provided, using 'gen-FIXME'.")
+    genDir = "gen" # Fallback if no param is passed
+    print("No genDir parameter provided, using 'gen/'.")
   
   os.makedirs(genDir, exist_ok=True)
   prefix = os.path.join(genDir, "regs")

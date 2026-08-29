@@ -113,16 +113,21 @@ class RegisterSet:
   def emitSV(self):
     lines = [
       f"// Generated SystemVerilog Register Package for {self.namespace}",
-      f"package {self.namespace.lower()}_regs;",
+      f"package {self.namespace}Regs;",
+      f"  timeunit 1ns;",
+      f"  timeprecision 1ps;",
       ""
     ]
 
     # Emit Enums
     for reg in self.registers:
+
       for f in reg.fields:
+
         if isinstance(f, Enum):
           enumName = f"t{reg.name}{f.name[0].upper()}{f.name[1:]}"
           lines.append(f"  typedef enum logic [{f.bits-1}:0] {{")
+
           for vName, vVal in f.values:
             suffix = f"{vName[0].upper()}{vName[1:]}" if vName else "Val"
             lines.append(f"    e{reg.name}{f.name[0].upper()}{f.name[1:]}{suffix} = {f.bits}'h{vVal:X},")
@@ -157,9 +162,11 @@ class RegisterSet:
       lines.append(f"  typedef enum logic [6:0] {{")
       for reg in self.registers:
         lines.append(f"    a{self.namespace}{reg.name} = 7'h{reg.addr:02X},")
-        lines[-1] = lines[-1].rstrip(',')
-        lines.append(f"  }} t{self.namespace}Addr;")
-        lines.append("")
+
+      lines[-1] = lines[-1].rstrip(',')
+
+      lines.append(f"  }} t{self.namespace}Addr;")
+      lines.append("")
 
       lines.append("endpackage")
       return "\n".join(lines)
@@ -226,6 +233,7 @@ class RegisterSet:
       lines.append(f"  a{self.namespace}{reg.name} = 0x{reg.addr:02X},")
 
     lines.append(f"}};")
+    lines.append(f"")
     return "\n".join(lines)
 
 
