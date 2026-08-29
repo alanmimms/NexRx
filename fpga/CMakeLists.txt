@@ -8,7 +8,6 @@ endif()
 
 find_package(Python3 REQUIRED)
 
-
 # ------------------------------------------------------------------------------
 # Register Generation (Python -> SV, C++, Markdown)
 # ------------------------------------------------------------------------------
@@ -92,7 +91,7 @@ add_custom_command(
 add_custom_target(bitstream ALL DEPENDS ${SYNTH_BIN})
 
 # ------------------------------------------------------------------------------
-# Verilator Digital Twin Simulation (Target: sim)
+# Verilator CPLD Simulation (Target: sim)
 # ------------------------------------------------------------------------------
 find_package(verilator HINTS $ENV{VERILATOR_ROOT})
 
