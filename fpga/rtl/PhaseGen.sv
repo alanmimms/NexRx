@@ -2,7 +2,7 @@
  * phaseGen.sv
  * One-hot ring counter for N-phase quadrature clocks.
  */
-module PhaseGenerator
+module PhaseGen
   #(parameter int N = 8)
   (
    input  logic       clk,

@@ -37,13 +37,14 @@ module top (
   //==================================================================
   // Register Bank & SPI
   //==================================================================
-  RegAccss uReg (.clkSys(clkSys),
-		 .resetN(resetN),
-		 .spiSck(spiSCK),
-		 .spiMosi(spiMOSI),
-		 .spiMiso(spiMISO),
-		 .spiNss(spiNSS),
-		 .tcxoTimer(tcxoTimer));
+  logic [63:0] tcxoTimer;
+  RegAccess uReg (.clkSys(clkSys),
+		  .resetN(resetN),
+		  .spiSCK(spiSCK),
+		  .spiMOSI(spiMOSI),
+		  .spiMISO(spiMISO),
+		  .spiNSS(spiNSS),
+		  .tcxoTimer(tcxoTimer));
 
   //==================================================================
   // Precision Monotonic Timer

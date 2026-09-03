@@ -4,8 +4,7 @@ import CPLDRegs::*;
  * RegAccess.sv
  * SPI-accessible register map for NexRx CPLD.
  */
-module RegAccess (
-		  input  logic        clkSys,
+module RegAccess (input  logic        clkSys,
 		  input  logic        resetN,
 
 		  /* SPI Interface */
@@ -15,8 +14,7 @@ module RegAccess (
 		  input  logic        spiNSS,
 
 		  /* Inputs from Internal Logic */
-		  input  logic [63:0] tcxoTimer
-		  );
+		  input  logic [63:0] tcxoTimer);
 
   timeunit 1ns;
   timeprecision 1ps;
@@ -37,11 +35,13 @@ module RegAccess (
   // SPI Frontend
   //==================================================================
   always_ff @(posedge spiSCK or posedge spiNSS) begin
+
     if (spiNSS) begin
       bitCnt <= 6'd0;
       cmdDone <= 1'b0;
       cmdLatch <= 8'h0;
     end else begin
+
       if (bitCnt < 6'd8) begin
         cmdLatch <= {cmdLatch[6:0], spiMOSI};
       end else begin
@@ -57,9 +57,11 @@ module RegAccess (
   end
 
   always_ff @(negedge spiSCK or posedge spiNSS) begin
+
     if (spiNSS) begin
       spiMISO <= 1'b0;
     end else begin
+
       if (bitCnt >= 6'd8 && bitCnt < 6'd40) begin
         spiMISO <= dataOut[39 - bitCnt];
       end else begin
