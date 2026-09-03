@@ -1,10 +1,9 @@
-#include "VTop.h"
+#include "Vtop.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include <iostream>
 #include <cstdint>
 #include "regs.h"
-//#include "buildNumber.hpp"
 #include <memory>
 #include <iomanip>
 #include <algorithm>
@@ -216,31 +215,31 @@ static constexpr uint64_t spiHalfPeriodPS = MEG(2) * 1000000ull / 2;
 
 // A high-level, linear SPI driver coroutine
 // A true Async SPI Master Coroutine
-SimTask spiWrite(VTop* top, uint8_t addr, uint32_t data) {
-  top->fpgaNCS = 0;
-  top->fpgaSCLKpin = 0;
+SimTask spiWrite(Vtop* top, uint8_t addr, uint32_t data) {
+  top->spiNSS = 0;
+  top->spiSCK = 0;
   co_await WaitTime{spiHalfPeriodPS};
     
   addr |= 0x80;		 // It's a write.
   uint64_t payload = (static_cast<uint64_t>(addr) << 32) | data;
 
   for (int i = 39; i >= 0; i--) {
-    top->fpgaMOSI = (payload >> i) & 1;
+    top->spiMOSI = (payload >> i) & 1;
     co_await WaitTime{spiHalfPeriodPS};
-    top->fpgaSCLKpin = 1;
+    top->spiSCK = 1;
     co_await WaitTime{spiHalfPeriodPS};
-    top->fpgaSCLKpin = 0;
+    top->spiSCK = 0;
   }
 
   co_await WaitTime{spiHalfPeriodPS};
-  top->fpgaNCS = 1;
+  top->spiNSS = 1;
   co_await WaitTime{spiHalfPeriodPS};
 }
 
 // A true Async SPI Read Coroutine
-SimTask spiRead(VTop* top, uint8_t addr, uint32_t &dataOut) {
-  top->fpgaNCS = 0;
-  top->fpgaSCLKpin = 0;
+SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
+  top->spiNSS = 0;
+  top->spiSCK = 0;
   co_await WaitTime{spiHalfPeriodPS};
     
   addr &= 0x7F;		 // It's a read (MSB is 0).
@@ -249,70 +248,48 @@ SimTask spiRead(VTop* top, uint8_t addr, uint32_t &dataOut) {
   uint32_t readVal = 0;
 
   for (int i = 39; i >= 0; i--) {
-    top->fpgaMOSI = (payload >> i) & 1;
+    top->spiMOSI = (payload >> i) & 1;
     co_await WaitTime{spiHalfPeriodPS};
-    top->fpgaSCLKpin = 1;
+    top->spiSCK = 1;
     
-    // Sample MISO while SCLK is high
+    // Sample MISO while SCK is high
     if (i < 32) {
-      readVal = (readVal << 1) | (top->fpgaMISO & 1);
+      readVal = (readVal << 1) | (top->spiMISO & 1);
     }
     
     co_await WaitTime{spiHalfPeriodPS};
-    top->fpgaSCLKpin = 0;
+    top->spiSCK = 0;
   }
 
   dataOut = readVal;
 
   co_await WaitTime{spiHalfPeriodPS};
-  top->fpgaNCS = 1;
+  top->spiNSS = 1;
   co_await WaitTime{spiHalfPeriodPS};
 }
 
 
-static SimTask runTestSequence(VTop* top) {
-  // Hold reset for 100ns (100,000 ps) for things to stabilize
-  top->fpgaNRESET = 0;
-  co_await WaitTime{100000};
-  top->fpgaNRESET = 1;
-
-  // Wait 10us for PLL Lock
-  co_await WaitTime{MEG(10)};
+static SimTask runTestSequence(Vtop* top) {
 
   // Read Hardware Signature register to verify SPI read
   uint32_t sig = 0;
-  co_await spiRead(top, aWSPRSig, sig);
+  co_await spiRead(top, aCPLDSig, sig);
   std::cout << "SPI: Read Signature register (0x0F): 0x" 
             << std::hex << std::setw(8) << std::setfill('0') << sig << std::dec << std::endl;
-  if (sig == 0x52505357) {
-    std::cout << "SPI: Signature matches 'WSPR' (0x52505357) - Success!" << std::endl;
+  if (sig == 0x4E785278) {
+    std::cout << "SPI: Signature matches 'NxRx' (0x4E785278) - Success!" << std::endl;
   } else {
-    std::cout << "SPI ERROR: Signature mismatch! Expected 0x52505357, got 0x" 
+    std::cout << "SPI ERROR: Signature mismatch! Expected 0x4E785278, got 0x" 
               << std::hex << sig << std::dec << std::endl;
   }
-
-  // Read FPGA Build Number register to verify SPI read
-  uint32_t buildNum = 0;
-  co_await spiRead(top, aWSPRBuildNo, buildNum);
-  std::cout << "SPI: Read Build Number register (0x0E): " << buildNum << std::endl;
-  std::cout << "TB: Compiled build number is: " << fpgaBuildNumber << std::endl;
-  if (buildNum == fpgaBuildNumber) {
-    std::cout << "SPI: Build number matches - Success!" << std::endl;
-  } else {
-    std::cout << "SPI ERROR: Build number mismatch! Expected " << fpgaBuildNumber 
-              << ", got " << buildNum << std::endl;
-  }
-
 
   // Wait 10,000 TCXO cycles (assuming 40MHz clock = 25ns period)
   co_await WaitTime{10000 * 25000};
 }
 
 
-
-
 int main(int argc, char *argv[]) {
-  VTop* top = new VTop();
+  Vtop* top = new Vtop();
   VerilatedVcdC* traceP = nullptr;
   
   Verilated::commandArgs(argc, argv);
@@ -328,21 +305,20 @@ int main(int argc, char *argv[]) {
     traceP->open(waveformFileName);
   }
 
-  ClockSource clk40(MEG(40), &top->clk40);
-  ClockSource clk90(MEG(90), &top->clk90sim); // Pointing to the SIM pin, not internal PLL
+  ClockSource clkTCXO(MEG(40), &top->clkTCXO);
+  ClockSource clkSynth(MEG(5), &top->clkSynth);
 
   // Initialize all driving pins
-  top->clk40 = 0;
-  top->clk90sim = 0;
-  top->fpgaNCS = 1;
-  top->fpgaSCLKpin = 0;
-  top->fpgaMOSI = 0;
+  top->clkTCXO = 0;
+  top->clkSynth = 0;
+  top->spiNSS = 1;
+  top->spiSCK = 0;
+  top->spiMOSI = 0;
   top->gnssPPS = 0;
-  top->fpgaNRESET = 0;
 
   std::cout << "Starting simulation..." << std::endl;
 
-  std::vector<EventSource*> sources = {&clk40, &clk90, &theTM};
+  std::vector<EventSource*> sources = {&clkTCXO, &clkSynth, &theTM};
   uint64_t MAX_SIM_TIME = MEG(1000); // 1ms to prevent infinite loops
 
   // Set up coroutine that drives our test sequence.
@@ -368,12 +344,6 @@ int main(int argc, char *argv[]) {
     top->eval();
     theTM.execute();
     top->eval(); 
-
-    uint8_t currentRF = (top->rfPushBase << 3) | (top->rfPushPeak << 2) | (top->rfPullBase << 1) | top->rfPullPeak;
-    if (currentRF != lastRF) {
-      rfTransitions++;
-      lastRF = currentRF;
-    }
 
     if (traceP) traceP->dump(currentTime);
   }

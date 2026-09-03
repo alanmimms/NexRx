@@ -20,11 +20,7 @@ class Control:
 class PpsLatch:
   val:          UInt(0, 32, "Latched TCXO clock cycles count at PPS edge")
 
-# We can assume these never change address.
-@regs.register(0x7E, "CPLD Build Number")
-class BuildNo:
-  val:          UInt(0, 32, "CPLD 32-bit build number")
-
+# We can assume this never changes address.
 @regs.register(0x7F, "CPLD Hardware Signature")
 class Sig:
   val:          Enum(0x4E785278, 32, [("", 0x4E785278)], "Fixed value ASCII 'NxRx'")

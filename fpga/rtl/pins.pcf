@@ -1,0 +1,10 @@
+# Clock Inputs
+set_io osdClk 20
+set_io tcxo 29
+set_io gnssPPS 32
+
+# SPI Interface
+set_io fpgaMISO 12
+set_io fpgaSCK 15
+set_io fpgaNSS 14
+set_io fpgaMOSI 13

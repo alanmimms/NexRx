@@ -3,8 +3,8 @@
  * Top-level module for NexRx CPLDs.
  */
 module top (
-	    input  logic iClk40M,    // 40 MHz External TCXO
-	    input  logic iClkVFO,	 // Si5351 generated "VFO" for phase outputs
+	    input  logic clkTCXO,	// External TCXO
+	    input  logic clkSynth,	// Si5351 generated "VFO" for phase outputs
 
 	    /* SPI Slave Interface */
 	    input  logic spiSCK,
@@ -12,9 +12,9 @@ module top (
 	    output logic spiMISO,
 	    input  logic spiNSS,
 
-	    input  logic iGNSS1PPS, // GNSS 1pps signal for TCXO counting
+	    input  logic gnssPPS,	// GNSS 1pps signal for TCXO counting
 
-	    output logic [7:0] oPhase // Output for each octature phase
+	    output logic [7:0] oPhase	// Output for each octature phase
 	    );
 
   timeunit 1ns;
@@ -30,8 +30,8 @@ module top (
   always #25.0 clkSys = ~clkSys;
 `else
   // THIS PROBABLY NEEDS GLOBAL CLOCK BUFFER.
-  assign clkSys = iClk40M;
-  assign clkVFO = iClkVFO;
+  assign clkSys = clkTCXO;
+  assign clkVFO = clkSynth;
 `endif
 
   //==================================================================
