@@ -12,13 +12,16 @@ regs = RegisterSet("CPLD")
 
 @regs.register(0x00, "Main control and status")
 class Control:
-  octMode:      Bit(0, "Generate 8 phases if true, 4 phases otherwise")
-  softReset:    Bit(1, "Soft reset for internal state machines")
-  reserved:     UInt(2, 30, "Reserved")
+  octMode:      Bit(1, "Generate 8 phases if true, 4 phases otherwise")
+  reserved:     UInt(0, 31, "Reserved")
 
-@regs.register(0x01, "GNSS PPS Latched Counter")
-class PPSLatch:
-  val:          UInt(0, 32, "Latched TCXO clock cycles count at PPS edge")
+@regs.register(0x01, "GNSS PPS Latched Counter MSBs")
+class PPSLatchHi:
+  val:          UInt(0, 32, "Latched TCXO clock cycles count at PPS edge high word")
+
+@regs.register(0x02, "GNSS PPS Latched Counter LSBs")
+class PPSLatchLo:
+  val:          UInt(0, 32, "Latched TCXO clock cycles count at PPS edge low word")
 
 # We can assume this never changes address.
 @regs.register(0x7F, "CPLD Hardware Signature")
