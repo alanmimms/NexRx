@@ -106,7 +106,7 @@ does best.
 
 ```mermaid
 graph TB
-    subgraph Native app ["Native App (Lua + Raylib + C++)"]
+    subgraph App ["Native App (Lua + Raylib + C++)"]
         A[Advanced DSP - C++]
         B[Config Management - Lua]
         C[Unified Widget UI - Lua]
@@ -126,8 +126,8 @@ graph TB
         K[USB]
     end
     
-    Native app --> Comms
-    Comms --> Embedded
+    Embedded --> Comms
+    Comms --> App
 ```
 
 ### Receiver Architecture
