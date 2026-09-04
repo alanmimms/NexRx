@@ -188,7 +188,7 @@ Each audio codec has its own TDM output serial line attached to the
 STM32, where these audio samples are reduced via DSP.
 
 | Input Signal | Switch Instance | Clock Phase | Accumulator Capacitor | Codec Channel |
-| --- | --- | --- | --- | --- |
+| :---: | :---: | :---: | :---: | :---: |
 | RF+ | 0 | 0 | 0 | IN1+ |
 | RF+ | 0 | 1 | 1 | IN3+ |
 | RF+ | 0 | 2 | 2 | IN2+ |
