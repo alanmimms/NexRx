@@ -208,12 +208,10 @@ STM32, where these audio samples are reduced via DSP.
 
 ### Two CPLD Subsystem
 
-The two CPLDs are identical, and there is one for each of the two OSD
+The two CPLDs are identical. There is one for each of the two OSD
 pipelines. Each CPLD serves as the high-speed clock generation hub,
 and houses a frequency counter for the TCXO clock it receives gated by
-the 1pps signal from the GNSS receiver, and a pulse density modulation
-signal generator used to sweep the receiver's input frequency range to
-calibrate filters and the small OSD phase and amplitude differences.
+the 1pps signal from the GNSS receiver.
 
 **Master Clocking:**
 
@@ -275,16 +273,16 @@ The following outlines requirements and approach:
 
 **Startup Sequence:**
 1. STM32 3.3V powers on using the "3.3V ON" power rail, which is
-   enabled immediately up availability of VBUS power from USB.
+   enabled immediately upon availability of VBUS power from USB.
 1. STM32 boots on internal clock.
+1. STM32 switches to external crystal clock.
 1. STM32 configures the two CPLDs (simultaneously by selecting them
    both on its SPI bus) with an image from its flash file system.
-1. STM32 switches to external crystal clock.
 1. STM32 configures the receiver for the current VFO frequency F,
    setting the OSDs' clock generators to F +/- 12kHz.
 1. STM32 configures the audio codec to set up the I/Q channel I/O.
 1. STM32 connects with the host PC application (if present) over USB.
-1. System ready for receive.
+1. Ready to receive.
 
 ### Development Standards and Practices
 
