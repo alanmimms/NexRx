@@ -10,15 +10,15 @@ serving, and DSP processing demand serious computational resources.
 
 ```mermaid
 graph LR
-    A[Antenna] --> B[T/R Switch]
-
-    C --> D[Digital attenuators]
-    D --> E[broadcast HPF and four octave BPF array]
-    F --> I[OSD0 (f-k)]
-    G --> I[OSD1 (f+k)]
+    A[Antenna] --> D[Digital attenuators]
+    D --> F[broadcast HPF and four octave BPF array]
+    F --> G[OSD0 f-k]
+    F --> H[OSD1 f+k]
     
-    I --> J[4-channel audio codec with integrated PGA]
-    J --> K[STM32H743]
+    G --> I[4-channel audio codec with integrated PGA]
+    H --> J[4-channel audio codec with integrated PGA]
+    I --> K[STM32H743]
+    J --> K
     K --> L[host app via USB]
 ```
 
