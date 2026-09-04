@@ -111,7 +111,7 @@ if(verilator_FOUND)
     TOP_MODULE top
     PREFIX Vtop
     TRACE_VCD
-    OPTS "-sv -Wall"
+    OPTS "-sv -Wall -DSIMULATION=1"
     DEPENDS ${GENERATED_REGS}
   )
 

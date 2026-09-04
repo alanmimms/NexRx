@@ -17,7 +17,7 @@ class Control:
   reserved:     UInt(2, 30, "Reserved")
 
 @regs.register(0x01, "GNSS PPS Latched Counter")
-class PpsLatch:
+class PPSLatch:
   val:          UInt(0, 32, "Latched TCXO clock cycles count at PPS edge")
 
 # We can assume this never changes address.

@@ -12,6 +12,8 @@ module PhaseGen
   timeunit 1ns;
   timeprecision 1ps;
 
+  initial phases = {{(N-1){1'b0}}, 1'b1};
+
   always_ff @(posedge clk or negedge resetN) begin
 
     if (!resetN) begin

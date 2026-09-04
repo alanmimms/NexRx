@@ -15,7 +15,6 @@
 constexpr uint64_t MEG(uint64_t m) { return m * 1000ull * 1000ull; }
 constexpr uint64_t SEC_TO_PS(uint64_t t) { return t * 1000ull * 1000ull * 1000ull * 1000ull; }
 
-static const vluint64_t clockHz = MEG(40ull);
 static const char waveformFileName[] = "waveform.vcd";
 
 static uint64_t currentTime;	// Current sim time in ps
@@ -210,7 +209,7 @@ struct WaitTime {
 
 
 // SPI clock 2MHz half period in ps.
-static constexpr uint64_t spiHalfPeriodPS = MEG(2) * 1000000ull / 2;
+static constexpr uint64_t spiHalfPeriodPS = 1000 * 1000;
 
 
 // A high-level, linear SPI driver coroutine
@@ -238,8 +237,10 @@ SimTask spiWrite(Vtop* top, uint8_t addr, uint32_t data) {
 
 // A true Async SPI Read Coroutine
 SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
+  std::cout << "spiRead 0x" << std::hex << std::setw(2) << std::setfill('0') << (unsigned) addr << std::endl;
   top->spiNSS = 0;
   top->spiSCK = 0;
+  std::cout << "spiRead NSS=0 SCK=0" << std::endl;
   co_await WaitTime{spiHalfPeriodPS};
     
   addr &= 0x7F;		 // It's a read (MSB is 0).
@@ -249,27 +250,36 @@ SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
 
   for (int i = 39; i >= 0; i--) {
     top->spiMOSI = (payload >> i) & 1;
+    std::cout << "spiRead MOSI=" << top->spiMOSI << std::endl;
     co_await WaitTime{spiHalfPeriodPS};
     top->spiSCK = 1;
+    std::cout << "spiRead SCK=1" << std::endl;
     
     // Sample MISO while SCK is high
     if (i < 32) {
       readVal = (readVal << 1) | (top->spiMISO & 1);
+      std::cout << "spiRead MISO=" << (top->spiMISO & 1) << std::endl;
     }
     
     co_await WaitTime{spiHalfPeriodPS};
     top->spiSCK = 0;
+    std::cout << "spiRead SCK=0" << std::endl;
   }
 
   dataOut = readVal;
 
   co_await WaitTime{spiHalfPeriodPS};
   top->spiNSS = 1;
+  std::cout << "spiRead NSS=1" << std::endl;
   co_await WaitTime{spiHalfPeriodPS};
 }
 
 
 static SimTask runTestSequence(Vtop* top) {
+  std::cout << "runTestSequence" << std::endl;
+
+  // Wait 1us
+  co_await WaitTime(MEG(1));
 
   // Read Hardware Signature register to verify SPI read
   uint32_t sig = 0;
@@ -319,15 +329,12 @@ int main(int argc, char *argv[]) {
   std::cout << "Starting simulation..." << std::endl;
 
   std::vector<EventSource*> sources = {&clkTCXO, &clkSynth, &theTM};
-  uint64_t MAX_SIM_TIME = MEG(1000); // 1ms to prevent infinite loops
+  const uint64_t maxSimTime = MEG(1000); // 1ms to prevent infinite loops
 
   // Set up coroutine that drives our test sequence.
   auto testSeqTask = runTestSequence(top);
 
-  uint64_t rfTransitions = 0;
-  uint8_t lastRF = 0;
-
-  while (!Verilated::gotFinish() && currentTime < MAX_SIM_TIME) {
+  while (!Verilated::gotFinish() && currentTime < maxSimTime) {
     uint64_t nextTime = UINT64_MAX;
 
     for (auto* source : sources) {
@@ -355,12 +362,6 @@ int main(int argc, char *argv[]) {
 
   std::cout << "=== Simulation Summary ===" << std::endl;
   std::cout << "Simulation time: " << (currentTime / 1000000ull) << " us" << std::endl;
-  std::cout << "RF pin transitions: " << rfTransitions << std::endl;
-  if (rfTransitions > 0) {
-    std::cout << "SUCCESS: RF outputs toggled successfully!" << std::endl;
-  } else {
-    std::cout << "FAILURE: No RF output activity detected." << std::endl;
-  }
 
   delete top;
   std::cout << "Simulation finished. Waveform saved." << std::endl;

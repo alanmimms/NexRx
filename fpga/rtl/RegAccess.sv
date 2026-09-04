@@ -89,8 +89,6 @@ module RegAccess (input  logic        clkSys,
           case (addr)
 	    default: ;
           endcase
-        end else if (addr == 7'h03) begin
-          timeHLatch <= tcxoTimer[63:32];
         end
       end
     end
@@ -98,10 +96,7 @@ module RegAccess (input  logic        clkSys,
 
   always_comb begin
     case (addr)
-      7'h00: dataOut = 32'h4E585258; /* "NXRX" */
-      7'h01: dataOut = 32'h00010000; /* v1.0.0 */
-      7'h02: dataOut = tcxoTimer[31:0];
-      7'h03: dataOut = timeHLatch;
+      7'h7F: dataOut = 32'h4E785278;	/* 'NxRx' */
       default: dataOut = 32'hDEADBEEF;
     endcase
   end
