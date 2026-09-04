@@ -96,7 +96,7 @@ module RegAccess (input  logic        clkSys,
 
   always_comb begin
     case (addr)
-      7'h7F: dataOut = 32'h4E785278;	/* 'NxRx' */
+      aCPLDSig: dataOut = 32'h4E785278;	/* 'NxRx' */
       default: dataOut = 32'hDEADBEEF;
     endcase
   end

@@ -53,8 +53,8 @@ add_custom_target(GenerateRegisters DEPENDS ${GENERATED_REGS})
 # ------------------------------------------------------------------------------
 set(RTL_SOURCES
   "${REG_GEN_DIR}/regs.sv"
-  "${CMAKE_CURRENT_SOURCE_DIR}/rtl/PhaseGen.sv"
-  "${CMAKE_CURRENT_SOURCE_DIR}/rtl/RegAccess.sv"
+  "${CMAKE_CURRENT_SOURCE_DIR}/rtl/phaseGen.sv"
+  "${CMAKE_CURRENT_SOURCE_DIR}/rtl/regAccess.sv"
   "${CMAKE_CURRENT_SOURCE_DIR}/rtl/timer64.sv"
   "${CMAKE_CURRENT_SOURCE_DIR}/rtl/top.sv"
 )
