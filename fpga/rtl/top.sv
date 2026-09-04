@@ -14,7 +14,7 @@ module top (
 	    output logic spiMISO,
 	    input  logic spiNSS,
 
-	    input  logic gnssPPS,	// GNSS 1pps signal for TCXO counting
+	    input  logic gnssPPS,	// GNSS 1pps signal for TCXO freq counter
 
 	    // Output for each octature phase
 	    output logic [7:0] nPh
@@ -39,7 +39,7 @@ module top (
   // Register Bank & SPI
   //==================================================================
   tCPLDControl control;
-  logic [63:0] tcxoCounter;
+  logic [63:0] tcxoValue;
 
   logic [31:0] shiftReg;
   logic [5:0]  bitCnt;
@@ -50,8 +50,6 @@ module top (
   logic        isWrite;
   logic [31:0] dataIn;
   logic [31:0] dataOut;
-
-  logic [31:0] timeHLatch;
 
   //==================================================================
   // SPI Frontend
@@ -106,6 +104,7 @@ module top (
       if (isWrite) begin
 
         case (addr)
+	  aCPLDControl:	control <= dataIn;
 	  default: ;
         endcase
       end
@@ -115,20 +114,33 @@ module top (
   always_comb begin
     case (addr)
       aCPLDControl:	dataOut = 32'(control);
-      aCPLDPPSLatchHi:	dataOut = tcxoCounter[63:32];
-      aCPLDPPSLatchLo:	dataOut = tcxoCounter[31:0];
+      aCPLDPPSLatchHi:	dataOut = tcxoValue[63:32];
+      aCPLDPPSLatchLo:	dataOut = tcxoValue[31:0];
       aCPLDSig:		dataOut = eSigValVal;	/* 'NxRx' */
       default:		dataOut = 'hDEADBEEF;
     endcase
   end
 
   //==================================================================
-  // Precision Monotonic Timer
+  // Precision frequency counter for clkSys gated by 1pps from GNSS.
   //==================================================================
+  logic [63:0] tcxoCounter;
   initial tcxoCounter = 0;
 
+  // Synchronizer to bring 1pps signal into TCXO clock domain safely.
+  logic [2:0] ppsSync;
+  wire ppsRise = ppsSync[1] & ~ppsSync[2];
+
   always_ff @(posedge clkSys) begin
-    tcxoCounter <= tcxoCounter + '1;
+    ppsSync <= {ppsSync[1:0], gnssPPS};
+  end
+
+  always_ff @(posedge clkSys) begin
+    tcxoCounter <= tcxoCounter + 1'b1;
+
+    if (ppsRise) begin
+      tcxoValue <= tcxoCounter;
+    end
   end
 
   //==================================================================

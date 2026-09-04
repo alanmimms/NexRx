@@ -278,8 +278,8 @@ SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
 static SimTask runTestSequence(Vtop* top) {
   std::cout << "runTestSequence" << std::endl;
 
-  // Wait 1us
-  co_await WaitTime(MEG(1));
+  // Wait 100ns before starting for luck.
+  co_await WaitTime(MEG(1)/10);
 
   // Read Hardware Signature register to verify SPI read
   uint32_t sig = 0;
@@ -318,6 +318,10 @@ int main(int argc, char *argv[]) {
   ClockSource clkTCXO(MEG(40), &top->clkTCXO);
   ClockSource clkSynth(MEG(5), &top->clkSynth);
 
+  // This is faked to be 100kHz clock instead of 1Hz to test freq
+  // counter.
+  ClockSource gnssPPS(MEG(1)/10, &top->gnssPPS);
+
   // Initialize all driving pins
   top->clkTCXO = 0;
   top->clkSynth = 0;
@@ -328,8 +332,8 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Starting simulation..." << std::endl;
 
-  std::vector<EventSource*> sources = {&clkTCXO, &clkSynth, &theTM};
-  const uint64_t maxSimTime = MEG(1000); // 1ms to prevent infinite loops
+  std::vector<EventSource*> sources = {&clkTCXO, &clkSynth, &gnssPPS, &theTM};
+  const uint64_t maxSimTime = MEG(10000); // 10ms to prevent infinite loops
 
   // Set up coroutine that drives our test sequence.
   auto testSeqTask = runTestSequence(top);
