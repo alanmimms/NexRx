@@ -107,6 +107,17 @@ does best.
 
 ```mermaid
 graph TB
+    subgraph Embedded ["STM32 Embedded (C++20/Zephyr)"]
+        J[Control Plane Server]
+		LCD[Tiny LCD Status]
+		CAL[GNSS calibration discipline]
+        H[RF Controls: AGC, attenuation, filter enables]
+        I[Basic DSP / Channel Reduction]
+		F[Reduced I/Q Data]
+		G[CBOR/JSON Control/Status]
+        K[USB]
+    end
+    
     subgraph App ["Native App (Lua + Raylib + C++)"]
         A[Advanced DSP - C++]
         B[Config Management - Lua]
@@ -115,20 +126,7 @@ graph TB
         E[Digital Mode Decoding - C++]
     end
     
-    subgraph Comms ["Communication Layer"]
-        F[Binary I/Q Data]
-        G[CBOR/JSON Control Messages]
-    end
-    
-    subgraph Embedded ["STM32 Embedded (C++20/Zephyr)"]
-        H[Real-time RF Control]
-        I[Basic DSP]
-        J[Control Plane Server]
-        K[USB]
-    end
-    
-    Embedded --> Comms
-    Comms --> App
+    Embedded --> |Control, Status, I/Q Data| App
 ```
 
 ### Receiver Architecture
