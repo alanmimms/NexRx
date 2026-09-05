@@ -27,7 +27,7 @@ See `CPLD/rtl/regs.py` for more information. This is used to generate
 `regs.sv`, `regs.h`, and `regs.md` documentation.
 
 | Address | Mode | Name | Description |
-| :---: | :--:- | :---: | :--- |
+| :---: | :---: | :---: | :--- |
 | **0x00** | RW | `Control` | Control and status flags. |
 | **0x01** | RO | `PPSLatchHi` | High 32-bits of 64-bit TCXO frequency counter latched by each 1pps rising edge. |
 | **0x02** | RO | `PPSLatchLo` | Low 32-bits of 64-bit TCXO frequency counter latched by each 1pps rising edge. |
