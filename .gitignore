@@ -23,3 +23,4 @@ app/config/layout-overrides.lua
 fpga/nexrx-sim
 fpga/*.vcd
 **/__pycache__/
+BOM/
