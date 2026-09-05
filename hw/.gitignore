@@ -4,3 +4,6 @@ plots/
 results/
 NexRx-backups/
 NexRx.step
+production/
+fabrication-toolkit-options.json
+replicate_layout.log
