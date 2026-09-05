@@ -11,7 +11,8 @@ serving, and DSP processing demand serious computational resources.
 ```mermaid
 graph TB
     A(Antenna) --> D(Digital attenuators)
-    D --> F(broadcast HPF and four octave BPF array)
+    D --> E(broadcast HPF)
+	E --> F(four octave BPF array)
     F --> G(OSD0 f-k)
     F --> H(OSD1 f+k)
     
