@@ -8272,7 +8272,7 @@
 		(fields_autoplaced yes)
 		(uuid "452d5b1b-e9ed-49ab-9d2e-98b711b35c53")
 		(property "Reference" "U102"
-			(at 146.685 132.08 0)
+			(at 147.32 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8280,14 +8280,14 @@
 			)
 		)
 		(property "Value" "GNSS module"
-			(at 146.685 134.62 0)
+			(at 147.32 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "MAXM10M20B"
+		(property "Footprint" "Library:MAXM10M20B"
 			(at 106.68 244.78 0)
 			(effects
 				(font

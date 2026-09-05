@@ -6274,7 +6274,7 @@
 		)
 	)
 	(bus_alias "Filter"
-		(members "HPF" "BPFLo1" "BPFLo2" "BPFHi" "BPFHi1" "BPFHi2")
+		(members "HPF" "BPF1" "BPF2" "BPF3" "BPF4" "nHPF")
 	)
 	(bus_alias "I2C"
 		(members "SCL" "SDA")
@@ -10660,7 +10660,7 @@
 		)
 		(uuid "39ed3ca6-046b-49f6-91d1-e0b34fcdccef")
 	)
-	(label "filter.BPFHi2"
+	(label "filter.BPF4"
 		(at 55.88 110.49 180)
 		(effects
 			(font
@@ -11080,7 +11080,7 @@
 		)
 		(uuid "9b2abcda-3abf-4318-99bc-6622c1129d50")
 	)
-	(label "filter.BPFLo1"
+	(label "filter.BPF1"
 		(at 55.88 102.87 180)
 		(effects
 			(font
@@ -11360,7 +11360,7 @@
 		)
 		(uuid "d6be3ac7-9d38-479e-a53e-66ac7dc0fd84")
 	)
-	(label "filter.BPFHi1"
+	(label "filter.BPF3"
 		(at 55.88 113.03 180)
 		(effects
 			(font
@@ -11460,7 +11460,7 @@
 		)
 		(uuid "edb473c5-1909-40f8-bec9-d1fb59d51fd3")
 	)
-	(label "filter.BPFLo2"
+	(label "filter.BPF2"
 		(at 55.88 100.33 180)
 		(effects
 			(font
@@ -11540,7 +11540,7 @@
 		)
 		(uuid "f4298c93-225b-4723-b52b-e7bdccc46211")
 	)
-	(label "filter.BPFHi"
+	(label "filter.nHPF"
 		(at 55.88 107.95 180)
 		(effects
 			(font
