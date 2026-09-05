@@ -9,7 +9,7 @@ memory and RAM. This isn't overkill; real-time RF control, web
 serving, and DSP processing demand serious computational resources.
 
 ```mermaid
-graph LR
+graph TB
     A(Antenna) --> D(Digital attenuators)
     D --> F(broadcast HPF and four octave BPF array)
     F --> G(OSD0 f-k)
