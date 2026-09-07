@@ -201,7 +201,7 @@
 		(uuid "593ad4ab-3458-4d30-9916-ba4f69eacab2")
 	)
 	(embedded_fonts no)
-	(model "SN74LVC2G14DCKRE4.stp"
+	(model "/home/alan/ham/NexRx/symbols/SN74LVC2G14DCKRE4/3D/SN74LVC2G14DCKRE4.stp"
 		(offset
 			(xyz 0 0.009999999626 0)
 		)
