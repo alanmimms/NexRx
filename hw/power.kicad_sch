@@ -2108,7 +2108,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Library:USB_C_Receptacle_USB2.0_16P-bursted"
+		(symbol "Library:UJ20-C-G-MSMT-TR-68"
 			(pin_names
 				(offset 1.016)
 			)
@@ -2176,7 +2176,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "USB_C_Receptacle_USB2.0_16P-bursted_0_0"
+			(symbol "UJ20-C-G-MSMT-TR-68_0_0"
 				(rectangle
 					(start -1.4922 -16.7459)
 					(end -0.9842 -17.7619)
@@ -2310,9 +2310,9 @@
 					)
 				)
 			)
-			(symbol "USB_C_Receptacle_USB2.0_16P-bursted_0_1"
+			(symbol "UJ20-C-G-MSMT-TR-68_0_1"
 				(rectangle
-					(start -15.24 17.78)
+					(start -10.16 17.78)
 					(end 10.16 -17.78)
 					(stroke
 						(width 0.254)
@@ -2511,9 +2511,9 @@
 					)
 				)
 			)
-			(symbol "USB_C_Receptacle_USB2.0_16P-bursted_1_1"
+			(symbol "UJ20-C-G-MSMT-TR-68_1_1"
 				(pin passive line
-					(at -13.97 -22.86 90)
+					(at -7.62 -22.86 90)
 					(length 5.08)
 					(name "SHIELD"
 						(effects
@@ -2531,7 +2531,7 @@
 					)
 				)
 				(pin passive line
-					(at -11.43 -22.86 90)
+					(at -5.08 -22.86 90)
 					(length 5.08)
 					(name "SHIELD"
 						(effects
@@ -2549,42 +2549,6 @@
 					)
 				)
 				(pin passive line
-					(at -8.89 -22.86 90)
-					(length 5.08)
-					(name "SHIELD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "SH3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -6.35 -22.86 90)
-					(length 5.08)
-					(name "SHIELD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "SH4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
 					(at -1.27 -22.86 90)
 					(length 5.08)
 					(name "GND"
@@ -2594,7 +2558,7 @@
 							)
 						)
 					)
-					(number "A1B12"
+					(number "A12_B1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2612,7 +2576,7 @@
 							)
 						)
 					)
-					(number "A12B1"
+					(number "B12_A1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2630,7 +2594,7 @@
 							)
 						)
 					)
-					(number "A4B9"
+					(number "A4_B9"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2648,7 +2612,7 @@
 							)
 						)
 					)
-					(number "A9B4"
+					(number "B4_A9"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2764,7 +2728,7 @@
 						)
 					)
 				)
-				(pin bidirectional line
+				(pin no_connect line
 					(at 15.24 -12.7 180)
 					(length 5.08)
 					(name "SBU1"
@@ -2782,7 +2746,7 @@
 						)
 					)
 				)
-				(pin bidirectional line
+				(pin no_connect line
 					(at 15.24 -15.24 180)
 					(length 5.08)
 					(name "SBU2"
@@ -4180,12 +4144,6 @@
 		(uuid "40fe1c4e-46ae-4f92-80e7-6f0f6ec77363")
 	)
 	(junction
-		(at 44.45 157.48)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "4194fe76-6192-4a41-a521-4ecb196c8b8d")
-	)
-	(junction
 		(at 101.6 74.93)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4264,7 +4222,7 @@
 		(uuid "75e1c33b-0f03-45d9-901b-b072fed972c5")
 	)
 	(junction
-		(at 39.37 157.48)
+		(at 45.72 157.48)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7b41fa0c-8438-4084-ac96-23b011777ceb")
@@ -4376,12 +4334,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e8de31f6-9415-478d-ab05-e6a5557c9d92")
-	)
-	(junction
-		(at 41.91 157.48)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "ef7b4c0e-bc29-4eaf-843a-214b95154d96")
 	)
 	(junction
 		(at 209.55 100.33)
@@ -4795,16 +4747,6 @@
 	)
 	(wire
 		(pts
-			(xy 44.45 156.21) (xy 44.45 157.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "27ff0043-5013-4b05-9ea1-0604e7e44a1a")
-	)
-	(wire
-		(pts
 			(xy 66.04 64.77) (xy 58.42 64.77)
 		)
 		(stroke
@@ -5105,16 +5047,6 @@
 	)
 	(wire
 		(pts
-			(xy 46.99 157.48) (xy 44.45 157.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5266c7a9-cc56-4f41-88b5-9ca27f4baa7b")
-	)
-	(wire
-		(pts
 			(xy 255.27 41.91) (xy 255.27 43.18)
 		)
 		(stroke
@@ -5365,7 +5297,7 @@
 	)
 	(wire
 		(pts
-			(xy 39.37 157.48) (xy 39.37 158.75)
+			(xy 45.72 157.48) (xy 45.72 158.75)
 		)
 		(stroke
 			(width 0)
@@ -5525,17 +5457,7 @@
 	)
 	(wire
 		(pts
-			(xy 46.99 156.21) (xy 46.99 157.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9247aa14-a3d2-4073-a996-e59347ccb28b")
-	)
-	(wire
-		(pts
-			(xy 39.37 156.21) (xy 39.37 157.48)
+			(xy 45.72 156.21) (xy 45.72 157.48)
 		)
 		(stroke
 			(width 0)
@@ -5905,16 +5827,6 @@
 	)
 	(wire
 		(pts
-			(xy 44.45 157.48) (xy 41.91 157.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cacd1bb0-d88b-4c11-9431-c90fa3ed6b7e")
-	)
-	(wire
-		(pts
 			(xy 217.17 110.49) (xy 209.55 110.49)
 		)
 		(stroke
@@ -5985,7 +5897,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 157.48) (xy 39.37 157.48)
+			(xy 48.26 157.48) (xy 45.72 157.48)
 		)
 		(stroke
 			(width 0)
@@ -6005,7 +5917,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 156.21) (xy 41.91 157.48)
+			(xy 48.26 156.21) (xy 48.26 157.48)
 		)
 		(stroke
 			(width 0)
@@ -18275,7 +18187,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Library:USB_C_Receptacle_USB2.0_16P-bursted")
+		(lib_id "Library:UJ20-C-G-MSMT-TR-68")
 		(at 53.34 133.35 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -18285,7 +18197,7 @@
 		(fields_autoplaced yes)
 		(uuid "ab914657-5888-4a22-83fd-3d52039037f4")
 		(property "Reference" "J1501"
-			(at 50.8 110.49 0)
+			(at 53.34 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18293,14 +18205,14 @@
 			)
 		)
 		(property "Value" "pwr+data"
-			(at 50.8 113.03 0)
+			(at 53.34 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Library:AMPHENOL_10155435-00011LF"
+		(property "Footprint" "Library:CUI_UJ20-C-G-MSMT-TR-68"
 			(at 57.15 133.35 0)
 			(effects
 				(font
@@ -18591,16 +18503,16 @@
 		(pin "B5"
 			(uuid "72f7adba-72f6-4c2b-bbd4-9626dac36688")
 		)
-		(pin "A12B1"
+		(pin "A4_B9"
 			(uuid "7b6c0419-14cc-4f0f-ac20-386fadc01751")
 		)
 		(pin "A5"
 			(uuid "ad262ca7-ae6d-43ef-b449-4d2842104f6d")
 		)
-		(pin "A4B9"
+		(pin "B12_A1"
 			(uuid "61aa8197-00a0-41dc-a035-f38531f00854")
 		)
-		(pin "A9B4"
+		(pin "B4_A9"
 			(uuid "a9c7dbfe-8370-4207-ba46-8f89281fd06b")
 		)
 		(pin "B8"
@@ -18615,17 +18527,11 @@
 		(pin "B6"
 			(uuid "7cee9bbd-11ef-4172-ad83-569154dc2cbf")
 		)
-		(pin "A1B12"
+		(pin "A12_B1"
 			(uuid "01c0c710-d006-4d24-93ab-c98ab7879970")
-		)
-		(pin "SH3"
-			(uuid "d1b2be0b-5ee4-4475-b41f-6f99ad486513")
 		)
 		(pin "SH2"
 			(uuid "073dc63d-a622-4fd6-ab5f-cfbda12a909f")
-		)
-		(pin "SH4"
-			(uuid "d8c7b390-d63b-4574-9241-145ebcddaa3a")
 		)
 		(instances
 			(project "NexRx"
@@ -21330,7 +21236,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 39.37 158.75 0)
+		(at 45.72 158.75 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -21339,7 +21245,7 @@
 		(fields_autoplaced yes)
 		(uuid "fd08840d-634c-4096-ad44-a2dcdad2267f")
 		(property "Reference" "#PWR01531"
-			(at 39.37 165.1 0)
+			(at 45.72 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21348,7 +21254,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 39.37 163.83 0)
+			(at 45.72 163.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21357,7 +21263,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 39.37 158.75 0)
+			(at 45.72 158.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21366,7 +21272,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 39.37 158.75 0)
+			(at 45.72 158.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21375,7 +21281,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 39.37 158.75 0)
+			(at 45.72 158.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)

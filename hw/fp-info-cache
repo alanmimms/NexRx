@@ -1,4 +1,4 @@
-27528166499868099
+27360885330029373
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71476,6 +71476,13 @@ Resistor
 0
 2
 2
+Library
+CUI_UJ20-C-G-MSMT-TR-68
+
+
+0
+14
+14
 Library
 D0353
 
