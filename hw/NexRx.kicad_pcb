@@ -151952,7 +151952,7 @@
 				)
 			)
 		)
-		(property "label" "DATA+Power"
+		(property "label" ""
 			(at -0.016197 -5.240373 90)
 			(unlocked yes)
 			(layer "F.SilkS")
@@ -181740,6 +181740,18 @@
 				(bold yes)
 			)
 			(justify bottom)
+		)
+	)
+	(gr_text "DVT3"
+		(at 136.005 41.885 0)
+		(layer "F.SilkS")
+		(uuid "b0293b1e-5944-4e9d-b746-8c3859be9c61")
+		(effects
+			(font
+				(size 2 2)
+				(thickness 0.25)
+			)
+			(justify left bottom)
 		)
 	)
 	(gr_text "NexRx\nWB7NAB"
