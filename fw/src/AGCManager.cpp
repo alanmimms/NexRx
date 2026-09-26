@@ -2,8 +2,7 @@
 #include <zephyr/logging/log.h>
 #include <cmath>
 #include <algorithm>
-#include "../drivers/MAX9939.hpp"
-#include "../drivers/NexBus.hpp"
+#include "MAX9939.hpp"
 
 LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
 
@@ -20,7 +19,7 @@ static float lastPeakDB = -100.0f;
 
 void AGCManager::init() {
   currentMode = Mode::MANUAL;
-  virtualGainDB = 20.0f; /* Start with some baseline gain */
+  virtualGainDB = 20.0f; /* Start with baseline gain */
   applyHardwareGain();
 }
 
@@ -38,27 +37,26 @@ void AGCManager::processReflex(int32_t peakValue) {
   float peakDB = 20.0f * std::log10(std::max(1, std::abs(peakValue)) / 8388607.0f);
   lastPeakDB = peakDB;
 
-  /* 2. Calculate Error relative to -15dBFS target */
+  /* 2. Calculate Error relative to target headroom */
   float error = peakDB - targetHeadroomDB;
 
   /* 3. Apply Attack/Decay Timing */
   if (error > 0) {
-    /* ATTACK: Signal is too strong. Drop gain fast (1ms constant approx) */
+    /* ATTACK: Drop gain fast */
     virtualGainDB -= error * 0.5f; 
   } else {
-    /* DECAY: Signal is weak. Increase gain slowly based on mode */
-    float decayFactor = 0.001f; /* Default Slow */
+    /* DECAY: Increase gain slowly based on mode */
+    float decayFactor = 0.001f;
     if (currentMode == Mode::FAST) {
       decayFactor = 0.05f;
     }
     if (currentMode == Mode::MEDIUM) {
       decayFactor = 0.01f;
     }
-    
     virtualGainDB -= error * decayFactor;
   }
 
-  /* 4. Clamp to hardware limits (approx 0 to 60 dB total range) */
+  /* 4. Clamp to hardware limits */
   virtualGainDB = std::clamp(virtualGainDB, 0.0f, 60.0f);
 
   /* 5. Update Hardware if change is significant (> 0.5 dB) */
@@ -70,14 +68,9 @@ void AGCManager::processReflex(int32_t peakValue) {
 }
 
 void AGCManager::setTotalGain(float totalGainDB) {
-  /* 
-   * Handover Logic: 
-   * Map virtualGainDB to Attenuator (3dB steps) and PGA (fine).
-   */
   int32_t newAtten = static_cast<int32_t>(std::floor(totalGainDB / 3.0f) * 3.0f);
   newAtten = std::clamp(newAtten, 0, 45);
 
-  /* Map remaining gain to PGA code (approx 1dB per code for this model) */
   int32_t newPGA = static_cast<int32_t>(totalGainDB - newAtten);
   newPGA = std::clamp(newPGA, 0, 11);
 
@@ -88,15 +81,6 @@ void AGCManager::setTotalGain(float totalGainDB) {
 }
 
 void AGCManager::applyHardwareGain() {
-  uint32_t bitmask = 0;
-  int32_t rem = currentAttenDB;
-  if (rem >= 24) { bitmask |= (1 << 3); rem -= 24; }
-  if (rem >= 12) { bitmask |= (1 << 2); rem -= 12; }
-  if (rem >= 6)  { bitmask |= (1 << 1); rem -= 6;  }
-  if (rem >= 3)  { bitmask |= (1 << 0); rem -= 3;  }
-
-  /* COORDINATED REFLEX: Minimize gain glitches */
-  NexBus::transmit(bitmask, 32); 
   MAX9939::setGain(static_cast<uint8_t>(currentPGACode));
 }
 

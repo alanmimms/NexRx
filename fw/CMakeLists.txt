@@ -1,4 +1,4 @@
-# NexRx STM32H753 Firmware
+# NexRx STM32H743VIT6 Firmware
 # Using Zephyr RTOS with C++20
 
 cmake_minimum_required(VERSION 3.20.0)
@@ -13,17 +13,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Source files
 target_sources(app PRIVATE 
     src/main.cpp
-    src/app/AGCManager.cpp
-    src/drivers/FPGAManager.cpp
-    src/drivers/AK5578.cpp
-    src/drivers/MAX9939.cpp
-    src/drivers/NexBus.cpp
-    src/drivers/DisplayManager.cpp
-    src/transport/USBManager.cpp
-    src/transport/QSDCapture.cpp
-    src/transport/ControlHandler.cpp
-    src/transport/USBCDCTransport.cpp
+    src/AGCManager.cpp
+    src/Si5351Driver.cpp
+    src/CPLDDriver.cpp
+    src/AK5578.cpp
+    src/MAX9939.cpp
+    src/DisplayManager.cpp
+    src/USBManager.cpp
+    src/OSDCapture.cpp
+    src/ControlHandler.cpp
+    src/USBCDCTransport.cpp
 )
 
 # Include directories
 target_include_directories(app PRIVATE src)
+

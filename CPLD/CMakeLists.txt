@@ -6,14 +6,17 @@ if(POLICY CMP0144)
   cmake_policy(SET CMP0144 NEW)
 endif()
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(Python3 REQUIRED)
 
 # ------------------------------------------------------------------------------
 # Register Generation (Python -> SV, C++, Markdown)
 # ------------------------------------------------------------------------------
-set(REG_GEN_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/rtl/regs.py")
-set(REG_TOOL_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/rtl/regTool.py")
-set(REG_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/rtl/gen")
+set(REG_GEN_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/regs.py")
+set(REG_TOOL_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/regTool.py")
+set(REG_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/gen")
 
 set(GENERATED_REGS
   "${REG_GEN_DIR}/regs.sv"
@@ -53,13 +56,13 @@ add_custom_target(GenerateRegisters DEPENDS ${GENERATED_REGS})
 # ------------------------------------------------------------------------------
 set(RTL_SOURCES
   "${REG_GEN_DIR}/regs.sv"
-  "${CMAKE_CURRENT_SOURCE_DIR}/rtl/top.sv"
+  "${CMAKE_CURRENT_SOURCE_DIR}/top.sv"
 )
 
 # ------------------------------------------------------------------------------
 # Yosys + NextPNR Synthesis (Target: bitstream)
 # ------------------------------------------------------------------------------
-set(PCF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/rtl/pins.pcf")
+set(PCF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/pins.pcf")
 set(SYNTH_JSON "${CMAKE_CURRENT_BINARY_DIR}/top.json")
 set(SYNTH_ASC "${CMAKE_CURRENT_BINARY_DIR}/top.asc")
 set(SYNTH_BIN "${CMAKE_CURRENT_BINARY_DIR}/top.bin")
@@ -93,7 +96,7 @@ add_custom_target(bitstream ALL DEPENDS ${SYNTH_BIN})
 find_package(verilator HINTS $ENV{VERILATOR_ROOT})
 
 if(verilator_FOUND)
-  set(SIM_CPP "${CMAKE_CURRENT_SOURCE_DIR}/rtl/tb.cpp")
+  set(SIM_CPP "${CMAKE_CURRENT_SOURCE_DIR}/tb.cpp")
   add_executable(sim ${SIM_CPP})
   
   # Expose the generated headers in the build directory to the C++ testbench

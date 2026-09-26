@@ -71,7 +71,7 @@ TransportError UDPStreamTransport::writeBatch(std::span<const IQFrame> frames) {
     return TransportError::Closed;
   }
 
-  const size_t packetSize = sizeof(IQPacketHeader) + frames.size() * 6 * 4;
+  const size_t packetSize = sizeof(IQPacketHeader) + frames.size() * 4 * 4;
   if (packetSize > preallocatedPacket.size()) {
       preallocatedPacket.resize(packetSize);
   }
@@ -88,12 +88,10 @@ TransportError UDPStreamTransport::writeBatch(std::span<const IQFrame> frames) {
 
   int32_t* samples = reinterpret_cast<int32_t*>(data + sizeof(IQPacketHeader));
   for (size_t i = 0; i < frames.size(); i++) {
-    samples[i*6 + 0] = frames[i].qsd[0].i;
-    samples[i*6 + 1] = frames[i].qsd[0].q;
-    samples[i*6 + 2] = frames[i].qsd[1].i;
-    samples[i*6 + 3] = frames[i].qsd[1].q;
-    samples[i*6 + 4] = frames[i].qsd[2].i;
-    samples[i*6 + 5] = frames[i].qsd[2].q;
+    samples[i*4 + 0] = frames[i].osd[0].i;
+    samples[i*4 + 1] = frames[i].osd[0].q;
+    samples[i*4 + 2] = frames[i].osd[1].i;
+    samples[i*4 + 3] = frames[i].osd[1].q;
   }
 
   std::lock_guard<std::mutex> lock(destMutex);
@@ -131,12 +129,10 @@ void UDPStreamTransport::receiveLoop() {
       IQFrame frame;
       frame.sequence = header->sequence;
       frame.timestampNS = header->timestampNS;
-      frame.qsd[0].i = samples[i*6 + 0];
-      frame.qsd[0].q = samples[i*6 + 1];
-      frame.qsd[1].i = samples[i*6 + 2];
-      frame.qsd[1].q = samples[i*6 + 3];
-      frame.qsd[2].i = samples[i*6 + 4];
-      frame.qsd[2].q = samples[i*6 + 5];
+      frame.osd[0].i = samples[i*4 + 0];
+      frame.osd[0].q = samples[i*4 + 1];
+      frame.osd[1].i = samples[i*4 + 2];
+      frame.osd[1].q = samples[i*4 + 3];
 
       size_t nextWrite = (writePos.load() + 1) % config.receiveBufferSize;
       if (nextWrite == readPos.load()) {

@@ -47,12 +47,12 @@ struct IQSample {
 };
 
 //======================================================================
-// I/Q Frame (all three QSDs)
+// I/Q Frame (Dual OSDs)
 // One frame per sample period (96kHz = 10.4μs per frame)
 //======================================================================
 struct IQFrame {
-  // Samples from each QSD
-  IQSample qsd[3];
+  // Samples from each OSD
+  IQSample osd[2];
 
   // Timing information
   uint64_t timestampNS;      // Nanoseconds since simulation/start
@@ -62,20 +62,20 @@ struct IQFrame {
   uint8_t flags;              // Reserved
   uint8_t padding[3];        // Alignment
 
-  IQFrame() : qsd{}, timestampNS(0), sequence(0), flags(0), padding{} {}
+  IQFrame() : osd{}, timestampNS(0), sequence(0), flags(0), padding{} {}
 
   // Access helpers
-  IQSample& operator[](size_t idx) { return qsd[idx]; }
-  const IQSample& operator[](size_t idx) const { return qsd[idx]; }
+  IQSample& operator[](size_t idx) { return osd[idx]; }
+  const IQSample& operator[](size_t idx) const { return osd[idx]; }
 
-  static constexpr size_t NUM_CHANNELS = 3;
+  static constexpr size_t NUM_CHANNELS = 2;
   static constexpr size_t SAMPLE_RATE_HZ = 96000;
   static constexpr uint64_t SAMPLE_PERIOD_NS = 10416;
 };
 
 // Verify size for shared memory alignment
 static_assert(sizeof(IQSample) == 8, "IQSample must be 8 bytes");
-static_assert(sizeof(IQFrame) == 40, "IQFrame must be 40 bytes");
+static_assert(sizeof(IQFrame) == 32, "IQFrame must be 32 bytes");
 
 //======================================================================
 // Ring buffer header for shared memory

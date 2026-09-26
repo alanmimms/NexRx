@@ -1,50 +1,43 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
-#include "app/PowerManager.hpp"
-#include "drivers/FPGAManager.hpp"
-#include "drivers/AK5578.hpp"
-#include "drivers/MAX9939.hpp"
-#include "drivers/NexBus.hpp"
-#include "drivers/DisplayManager.hpp"
-#include "transport/USBManager.hpp"
-#include "transport/QSDCapture.hpp"
-#include "transport/ControlHandler.hpp"
-#include "transport/USBCDCTransport.hpp"
+#include "Si5351Driver.hpp"
+#include "CPLDDriver.hpp"
+#include "AK5578.hpp"
+#include "MAX9939.hpp"
+#include "DisplayManager.hpp"
+#include "USBManager.hpp"
+#include "OSDCapture.hpp"
+#include "ControlHandler.hpp"
+#include "USBCDCTransport.hpp"
 
 LOG_MODULE_REGISTER(nexrx_main, LOG_LEVEL_INF);
 
 int main() {
   /* 1. Initialize USB Connectivity First for Logging */
   nexrx::USBManager::init();
-  LOG_INF("NexRx MCU Firmware Starting...");
+  LOG_INF("NexRx MCU Firmware Starting (STM32H743VIT6)...");
 
-  /* 2. Hardware Power-up */
-  nexrx::PowerManager::init();
-  nexrx::PowerManager::monitorUSBPower();
-  nexrx::PowerManager::runSequence();
-
-  /* 3. Initialize Display Early for Status Feedback */
+  /* 2. Initialize Display Early for Status Feedback */
   nexrx::DisplayManager::init();
   nexrx::DisplayManager::showStatus("BOOTING...");
 
-  /* 4. Load FPGA and Validate Path */
-  nexrx::FPGAManager::init();
-  nexrx::FPGAManager::loadBitstream(nullptr, 0);
+  /* 3. Initialize Synthesizer and Dual CPLDs */
+  nexrx::Si5351Driver::init();
+  nexrx::CPLDDriver::init();
 
-  /* 5. Configure Analog Front End */
+  /* 4. Configure Analog Front End */
   nexrx::AK5578::init();
   nexrx::MAX9939::init();
 
-  /* 6. Initialize Distributed Control & Data Capture */
-  nexrx::NexBus::init();
-  nexrx::QSDCapture::init();
+  /* 5. Initialize OSD Audio DMA Data Capture */
+  nexrx::OSDCapture::init();
 
-  /* 7. Initialize Control Plane Transport */
+  /* 6. Initialize Control Plane Transport */
   static nexrx::USBCDCTransport controlTransport;
   controlTransport.init();
 
-  LOG_INF("System Initialization Complete.");
+  LOG_INF("System Initialization Complete. Automatic power hardware ready.");
   nexrx::DisplayManager::showStatus("READY");
 
   while (true) {

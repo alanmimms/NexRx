@@ -3,19 +3,23 @@ project(NexRxTwin)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_definitions(SOL_HAS_STD_OPTIONAL=1 SOL_USE_STD_OPTIONAL=1)
 
 include(FetchContent)
 
 # tinycbor - lightweight CBOR encoder/decoder
-FetchContent_Declare(
-  tinycbor
-  GIT_REPOSITORY https://github.com/intel/tinycbor.git
-  GIT_TAG v0.6.0
-)
-
-FetchContent_GetProperties(tinycbor)
-if(NOT tinycbor_POPULATED)
-  FetchContent_Populate(tinycbor)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/tinycbor-src")
+  set(tinycbor_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/tinycbor-src")
+else()
+  FetchContent_Declare(
+    tinycbor
+    GIT_REPOSITORY https://github.com/intel/tinycbor.git
+    GIT_TAG v0.6.0
+  )
+  FetchContent_GetProperties(tinycbor)
+  if(NOT tinycbor_POPULATED)
+    FetchContent_Populate(tinycbor)
+  endif()
 endif()
 
 add_library(tinycbor STATIC
@@ -27,12 +31,18 @@ add_library(tinycbor STATIC
 target_include_directories(tinycbor PUBLIC ${tinycbor_SOURCE_DIR}/src)
 
 # sol2 is header-only, for Lua bindings
-FetchContent_Declare(
-  sol2
-  GIT_REPOSITORY https://github.com/ThePhD/sol2.git
-  GIT_TAG v3.3.0
-)
-FetchContent_MakeAvailable(sol2)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/sol2-src")
+  add_library(sol2 INTERFACE)
+  add_library(sol2::sol2 ALIAS sol2)
+  target_include_directories(sol2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/sol2-src/include")
+else()
+  FetchContent_Declare(
+    sol2
+    GIT_REPOSITORY https://github.com/ThePhD/sol2.git
+    GIT_TAG v3.3.0
+  )
+  FetchContent_MakeAvailable(sol2)
+endif()
 
 # Xyce paths
 set(XYCE_SOURCE_DIR "/home/alan/ham/xyce/Xyce-7.10")
@@ -106,16 +116,20 @@ set(XYCE_LIBRARY "${XYCE_BUILD_DIR}/src/.libs/libxyce.a")
 
 include_directories(src ${XYCE_INCLUDE_DIRS})
 
-# System libraries
-find_library(FFTW3_LIBRARY fftw3 HINTS /usr/lib/x86_64-linux-gnu)
-find_library(AMD_LIBRARY amd HINTS /usr/lib/x86_64-linux-gnu)
-find_package(LAPACK REQUIRED)
-find_package(BLAS REQUIRED)
-find_library(GFORTRAN_LIBRARY gfortran HINTS /usr/lib/x86_64-linux-gnu /usr/lib/gcc/x86_64-linux-gnu/13 /usr/lib/gcc/x86_64-linux-gnu/14 /usr/lib/gcc/x86_64-linux-gnu/12)
-find_library(QUADMATH_LIBRARY quadmath HINTS /usr/lib/x86_64-linux-gnu /usr/lib/gcc/x86_64-linux-gnu/13 /usr/lib/gcc/x86_64-linux-gnu/14 /usr/lib/gcc/x86_64-linux-gnu/12)
+option(BUILD_TWIN_XYCE "Build full Xyce SPICE simulator twin" OFF)
+
+# System libraries (for Xyce SPICE twin)
+if(BUILD_TWIN_XYCE AND EXISTS "${XYCE_LIBRARY}")
+  find_library(FFTW3_LIBRARY fftw3 HINTS /usr/lib/x86_64-linux-gnu)
+  find_library(AMD_LIBRARY amd HINTS /usr/lib/x86_64-linux-gnu)
+  find_package(LAPACK QUIET)
+  find_package(BLAS QUIET)
+  find_library(GFORTRAN_LIBRARY gfortran HINTS /usr/lib/x86_64-linux-gnu /usr/lib/gcc/x86_64-linux-gnu/13 /usr/lib/gcc/x86_64-linux-gnu/14 /usr/lib/gcc/x86_64-linux-gnu/12)
+  find_library(QUADMATH_LIBRARY quadmath HINTS /usr/lib/x86_64-linux-gnu /usr/lib/gcc/x86_64-linux-gnu/13 /usr/lib/gcc/x86_64-linux-gnu/14 /usr/lib/gcc/x86_64-linux-gnu/12)
+endif()
 
 # Common sources for both executables
-set(COMMON_SOURCES
+set(SIGNALGEN_SOURCES
   src/ControlHandler.cpp
   src/transport/TCPControlTransport.cpp
   src/transport/UDPStreamTransport.cpp
@@ -126,21 +140,27 @@ set(COMMON_SOURCES
   src/stimulus/StimulusManager.cpp
   src/stimulus/SweepGenerator.cpp
   src/stimulus/StimulusLua.cpp
+)
+
+set(COMMON_SOURCES
+  ${SIGNALGEN_SOURCES}
   src/sampler/ADCSampler.cpp
   src/xyce/XyceWrapper.cpp
   src/orchestrator/Orchestrator.cpp
 )
 
-# Twin - Full Xyce SPICE simulation
+# Twin - Full Xyce SPICE simulation (if enabled and Xyce is built)
+if(BUILD_TWIN_XYCE AND EXISTS "${XYCE_LIBRARY}")
 add_executable(nexrx-twin
   src/main.cpp
   ${COMMON_SOURCES}
 )
+endif()
 
 # SignalGen - Fast functional simulator
 add_executable(nexrx-signalgen
   src/SignalGen.cpp
-  ${COMMON_SOURCES}
+  ${SIGNALGEN_SOURCES}
 )
 
 # Libraries
@@ -152,13 +172,37 @@ endif()
 
 # Fallback for Lua
 if(NOT LUA54_FOUND)
-  find_package(Lua REQUIRED)
-  set(LUA54_LIBRARIES ${LUA_LIBRARIES})
-  set(LUA54_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
+  if(EXISTS "/home/alan/ham/vcpkg/installed/x64-linux/lib/libluajit-5.1.a")
+    set(LUA54_LIBRARIES "/home/alan/ham/vcpkg/installed/x64-linux/lib/libluajit-5.1.a")
+    set(LUA54_INCLUDE_DIRS "/home/alan/ham/vcpkg/installed/x64-linux/include/luajit-2.1")
+  else()
+    find_package(Lua REQUIRED)
+    set(LUA54_LIBRARIES ${LUA_LIBRARIES})
+    set(LUA54_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
+  endif()
 endif()
 
-foreach(target nexrx-twin nexrx-signalgen)
-  target_link_libraries(${target} PRIVATE 
+target_link_libraries(nexrx-signalgen PRIVATE 
+  tinycbor
+  sol2::sol2
+  ${LUA54_LIBRARIES}
+  pthread 
+  dl
+  m
+)
+target_include_directories(nexrx-signalgen PRIVATE ${LUA54_INCLUDE_DIRS})
+
+if(ESPEAK_FOUND)
+  target_link_libraries(nexrx-signalgen PRIVATE ${ESPEAK_LIBRARIES})
+  target_include_directories(nexrx-signalgen PRIVATE ${ESPEAK_INCLUDE_DIRS})
+endif()
+
+if(UNIX AND NOT APPLE)
+  target_link_libraries(nexrx-signalgen PRIVATE rt)
+endif()
+
+if(BUILD_TWIN_XYCE AND EXISTS "${XYCE_LIBRARY}")
+  target_link_libraries(nexrx-twin PRIVATE 
     tinycbor
     sol2::sol2
     ${LUA54_LIBRARIES}
@@ -174,14 +218,5 @@ foreach(target nexrx-twin nexrx-signalgen)
     dl
     m
   )
-  target_include_directories(${target} PRIVATE ${LUA54_INCLUDE_DIRS})
-  
-  if(ESPEAK_FOUND)
-    target_link_libraries(${target} PRIVATE ${ESPEAK_LIBRARIES})
-    target_include_directories(${target} PRIVATE ${ESPEAK_INCLUDE_DIRS})
-  endif()
-
-  if(UNIX AND NOT APPLE)
-    target_link_libraries(${target} PRIVATE rt)
-  endif()
-endforeach()
+  target_include_directories(nexrx-twin PRIVATE ${LUA54_INCLUDE_DIRS})
+endif()

@@ -41,7 +41,7 @@ public:
 
 private:
   std::atomic<bool> hpfBypass;
-  std::atomic<int> bpfIndex; // 0=None/Bypass, 1=1.8-3.4, 2=3.2-7.5, 3=7.3-14.5, 4=14.3-22, 5=21.8-30
+  std::atomic<int> bpfIndex; // 0=Bypass, 1=1.8-3.4, 2=3.2-7.5, 3=7.3-14.5, 4=14.3-22, 5=21.8-30
 };
 
 class PGAModel {
@@ -74,22 +74,22 @@ struct CodecConfig {
 
 class ControlHandler {
 public:
-  ControlHandler(double f0, double f1, double f2, 
+  ControlHandler(double centerFreqHz, double offsetHz, 
                  AttenuatorModel* atten = nullptr, 
                  FilterBankModel* filters = nullptr, 
                  PGAModel* pga = nullptr,
                  AGCManager* agc = nullptr);
   ~ControlHandler();
 
-  void start(TCPControlTransport* control, bool verbose);
+  void start(TCPControlTransport* controlTransport, bool verbosity);
   void stop();
 
-  double getQSDFreq(int idx) const { 
-    return (idx >= 0 && idx < 3) ? qsdFreqHz[idx].load(std::memory_order_relaxed) : 0; 
+  double getOSDFreq(int idx) const { 
+    return (idx >= 0 && idx < 2) ? osdFreqHz[idx].load(std::memory_order_relaxed) : 0.0; 
   }
 
   double getVFO() const { return vfoHz.load(std::memory_order_relaxed); }
-  double getQSDOffset() const { return qsdKHz.load(std::memory_order_relaxed); }
+  double getOSDOffset() const { return osdOffsetKHz.load(std::memory_order_relaxed); }
 
   bool isStreaming() const { return streaming.load(std::memory_order_acquire); }
   bool isConnected() const { return connected.load(std::memory_order_acquire); }
@@ -110,11 +110,11 @@ private:
   std::vector<uint8_t> handleCborCommand(const std::vector<uint8_t>& request);
   std::vector<uint8_t> encodeResponse(int status, const std::string& payload);
 
-  TCPControlTransport* control_ = nullptr;
-  bool verbose_ = false;
+  TCPControlTransport* controlTransport = nullptr;
+  bool verbose = false;
   std::atomic<double> vfoHz{14.2e6};
-  std::atomic<double> qsdKHz{12000.0};
-  std::atomic<double> qsdFreqHz[3];
+  std::atomic<double> osdOffsetKHz{12.0};
+  std::atomic<double> osdFreqHz[2];
   AttenuatorModel* attenuator = nullptr;
   FilterBankModel* filters = nullptr;
   PGAModel* pga = nullptr;
@@ -133,7 +133,7 @@ private:
   std::atomic<bool> reconnected;
   std::string newClientIP;
   std::mutex reconnectMutex;
-  std::thread thread_;
+  std::thread workerThread;
 };
 
 } // namespace nexrx

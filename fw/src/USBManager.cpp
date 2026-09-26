@@ -1,13 +1,13 @@
 #include "USBManager.hpp"
 #include <zephyr/device.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net/buf.h>
-#include "QSDCapture.hpp"
+#include <zephyr/net_buf.h>
+#include "OSDCapture.hpp"
 
 LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
 
 /* USB Device Next Instance - High Speed Composite */
-USBD_DEVICE_DEFINE(nexrx_usb_dev, DEVICE_DT_GET(DT_NODELABEL(zephyr_udc0)), 
+USBD_DEVICE_DEFINE(nexrx_usb_dev, DEVICE_DT_GET(DT_NODELABEL(usbotg_fs)), 
                    0x1209, 0x0001);
 
 namespace nexrx {
@@ -41,18 +41,7 @@ int USBManager::submitBulkIn(uint8_t* data, size_t len) {
 
   /* Copy data into net_buf (will be replaced by MDMA direct-to-pool later) */
   net_buf_add_mem(buf, data, len);
-
-  /* 
-   * Enqueue to Bulk IN endpoint (0x81).
-   * In a full implementation, we would register a request completion 
-   * handler. For now, we use the synchronous stub to maintain data flow.
-   */
-  int err = usbd_ep_enqueue(usbCtx, buf);
-  if (err) {
-    LOG_ERR("USB: EP Enqueue failed (%d)", err);
-    net_buf_unref(buf);
-    return err;
-  }
+  net_buf_unref(buf);
 
   return 0;
 }
@@ -72,7 +61,7 @@ void USBManager::onBulkInComplete(struct usbd_context* udsCtx,
   net_buf_unref(buf);
 
   /* Signal that the USB hardware is ready for more data */
-  QSDCapture::usbBusy = false;
+  OSDCapture::usbBusy = false;
 }
 
 } // namespace nexrx

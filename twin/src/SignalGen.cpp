@@ -18,6 +18,7 @@
 #include "stimulus/AMGenerator.hpp"
 #include "AttenuatorModel.hpp"
 #include "AGCManager.hpp"
+#include "CPLDModel.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -62,8 +63,8 @@ namespace nexrx {
     uint16_t controlPort = 5000;
     uint16_t streamPort = 5001;
 
-    double gainErr[3];
-    double phaseErrRad[3];
+    double gainErr[2];
+    double phaseErrRad[2];
   };
 
   void printUsage(const char* prog) {
@@ -90,7 +91,7 @@ namespace nexrx {
 
   Options parseArgs(int argc, char* argv[]) {
     Options opts;
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 2; ++i) {
       opts.gainErr[i] = 1.0;
       opts.phaseErrRad[i] = 0.0;
     }
@@ -141,11 +142,11 @@ namespace nexrx {
       std::uniform_real_distribution<double> gDist(0.95, 1.05);
       std::uniform_real_distribution<double> pDist(-0.05, 0.05);
 
-      std::cout << "[Twin] Simulated Hardware: Initializing with stable random errors" << std::endl;
+      std::cout << "[Twin] Simulated Hardware: Initializing with stable random errors (Dual OSD)" << std::endl;
       std::cout << " Channel | Image Rejection | Gain Error | Phase Error" << std::endl;
       std::cout << "---------+-----------------+------------+-------------" << std::endl;
 
-      for (int i = 0; i < 3; ++i) {
+      for (int i = 0; i < 2; ++i) {
 	double g = gDist(rng);
 	double p = pDist(rng);
 	opts.gainErr[i] = g;
@@ -312,7 +313,8 @@ namespace nexrx {
     
       double lo = opts.loFreqMHz * 1e6;
       double k = opts.qsdOffsetKHz * 1000.0;
-      auto controlHandler = std::make_unique<ControlHandler>(lo - k, lo + k, lo, &attenuator, &filters, &pga, &agc);
+      CPLDModel cpldModel;
+      auto controlHandler = std::make_unique<ControlHandler>(lo, k, &attenuator, &filters, &pga, &agc);
       if (!opts.headless) {
         controlHandler->start(control.get(), opts.verbose);
       }
@@ -325,7 +327,7 @@ namespace nexrx {
       batch.reserve(32);
     
       bool streamLogged = false;
-      std::cout << "[Twin] Starting session loop" << std::endl;
+      std::cout << "[Twin] Starting session loop (Dual OSD)" << std::endl;
       bool headlessStreaming = opts.headless;
     
     // =======================================================================
@@ -339,8 +341,8 @@ namespace nexrx {
         {1.0000000000, -0.4832493140, 1.0000000000, -1.5609518734, 0.7359192796},
         {1.0000000000, -0.9740021692, 1.0000000000, -1.6237519754, 0.9064567688},
     };
-    double lpf_zi[3][NUM_LPF_STAGES][2] = {};
-    double lpf_zq[3][NUM_LPF_STAGES][2] = {};
+    double lpf_zi[2][NUM_LPF_STAGES][2] = {};
+    double lpf_zq[2][NUM_LPF_STAGES][2] = {};
 
     // Fast PRNG for noise generation (Xorwow)
     struct FastNoise {
@@ -352,8 +354,8 @@ namespace nexrx {
             v = (v ^ (v << 4)) ^ (t ^ (t << 1));
             return (static_cast<double>((v + (d += 362437)) & 0xFFFFFF) / 16777216.0) - 0.5;
         }
-    } noiseGens[3];
-    for (int i=0; i<3; ++i) noiseGens[i].seed(1337 + i);
+    } noiseGens[2];
+    for (int i=0; i<2; ++i) noiseGens[i].seed(1337 + i);
 
     auto applyLpf = [&](double x, double z[NUM_LPF_STAGES][2]) -> double {
         double y = x;
@@ -372,16 +374,14 @@ namespace nexrx {
         return {std::cos(delta), std::sin(delta)};
     };
 
-    double lo_cos[3] = {1,1,1}, lo_sin[3] = {0,0,0};
-    double lo_cos_d[3], lo_sin_d[3];
+    double lo_cos[2] = {1,1}, lo_sin[2] = {0,0};
+    double lo_cos_d[2], lo_sin_d[2];
 
     auto updateLOs = [&](double lo, double k) {
         auto p0 = computePhaseInc(lo - k, 480000.0);
         lo_cos_d[0] = p0.first; lo_sin_d[0] = p0.second;
         auto p1 = computePhaseInc(lo + k, 480000.0);
         lo_cos_d[1] = p1.first; lo_sin_d[1] = p1.second;
-        auto p2 = computePhaseInc(lo, 480000.0);
-        lo_cos_d[2] = p2.first; lo_sin_d[2] = p2.second;
     };
 
     double current_lo = opts.loFreqMHz * 1e6;
@@ -390,7 +390,6 @@ namespace nexrx {
 
     std::vector<double> antBufferIQ(960 * OVERSAMPLE_RATIO * 2);
 
-    // --- Set Real-Time Priority ---
     #ifndef _WIN32
     struct sched_param param;
     param.sched_priority = sched_get_priority_max(SCHED_RR);
@@ -422,22 +421,21 @@ namespace nexrx {
       }
 
       double baseVFO = controlHandler->getVFO();
-      double qsdK = controlHandler->getQSDOffset();
+      double qsdK = controlHandler->getOSDOffset() * 1000.0;
       if (std::abs(baseVFO - current_lo) > 0.1 || std::abs(qsdK - current_k) > 0.1) {
           updateLOs(baseVFO, qsdK);
           current_lo = baseVFO; current_k = qsdK;
+          cpldModel.updateWaterfallViewport(current_lo - 192000.0, current_lo + 192000.0);
       }
 
-      // Pre-calculate chunk-wide parameters and gains
       double attenGain = attenuator.getVoltageGain();
       double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
+      double modeGainScale = cpldModel.getModeGainScale();
 
       int nToProcess = 960; // 10ms chunk
       double chunkStartTime = (outputSample * OVERSAMPLE_RATIO) / 480000.0;
       double oversamplePeriod = 1.0 / 480000.0;
       
-      // 1. Generate RF Stimulus in one batch (minimizes virtual calls)
-      // Apply frequency-dependent filter bank gain per stimulus inside the manager.
       if (stimulusManager) {
           auto gainFunc = [&](double f) {
               return getFilterBankGain(f, filters);
@@ -449,14 +447,13 @@ namespace nexrx {
       }
 
       for (int s = 0; s < nToProcess; ++s) {
-          double filt_i[3]={0}, filt_q[3]={0};
+          double filt_i[2]={0}, filt_q[2]={0};
           for (int i = 0; i < OVERSAMPLE_RATIO; ++i) {
               int bufIdx = (s * OVERSAMPLE_RATIO + i) * 2;
               double antI = antBufferIQ[bufIdx];
               double antQ = antBufferIQ[bufIdx + 1];
               double t = chunkStartTime + (s * OVERSAMPLE_RATIO + i) * oversamplePeriod;
               
-              // Calibration Stimulus (Clean sine wave) - Overwrites buffer if active
               if (controlHandler->isCalStimActive()) {
                   double fStim = controlHandler->getCalStimFreq();
                   double pgStim = getFilterBankGain(fStim, filters);
@@ -465,35 +462,26 @@ namespace nexrx {
                   antQ = 0.010 * std::sin(phaseStim) * pgStim;
               }
 
-              // Apply attenuator gain (broadband)
-              antI *= attenGain; 
-              antQ *= attenGain;
+              antI *= attenGain * modeGainScale; 
+              antQ *= attenGain * modeGainScale;
 
-              for (int ch = 0; ch < 3; ++ch) {
-                  // Mixing
+              for (int ch = 0; ch < 2; ++ch) {
                   double bb_i = antI * lo_cos[ch] + antQ * lo_sin[ch];
                   double bb_q = antQ * lo_cos[ch] - antI * lo_sin[ch];
                   
-                  // Harmonic responses for QSD0/QSD1
-                  if (ch < 2) {
-                      // 2nd harmonic (very small - asymmetry)
-                      double cos2 = lo_cos[ch]*lo_cos[ch] - lo_sin[ch]*lo_sin[ch];
-                      double sin2 = 2.0*lo_cos[ch]*lo_sin[ch];
-                      bb_i += 0.001 * (antI * cos2 + antQ * sin2); 
-                      bb_q += 0.001 * (antQ * cos2 - antI * sin2);
+                  double cos2 = lo_cos[ch]*lo_cos[ch] - lo_sin[ch]*lo_sin[ch];
+                  double sin2 = 2.0*lo_cos[ch]*lo_sin[ch];
+                  bb_i += 0.001 * (antI * cos2 + antQ * sin2); 
+                  bb_q += 0.001 * (antQ * cos2 - antI * sin2);
 
-                      // 3rd harmonic (approx -9.5dB)
-                      double cos3 = lo_cos[ch]*cos2 - lo_sin[ch]*sin2;
-                      double sin3 = lo_sin[ch]*cos2 + lo_cos[ch]*sin2;
-                      bb_i += 0.33 * (antI * cos3 + antQ * sin3);
-                      bb_q += 0.33 * (antQ * cos3 - antI * sin3);
-                  }
+                  double cos3 = lo_cos[ch]*cos2 - lo_sin[ch]*sin2;
+                  double sin3 = lo_sin[ch]*cos2 + lo_cos[ch]*sin2;
+                  bb_i += 0.33 * (antI * cos3 + antQ * sin3);
+                  bb_q += 0.33 * (antQ * cos3 - antI * sin3);
                   
-                  // Faster noise generation
                   bb_i += noiseGens[ch].next() * 2e-11; 
                   bb_q += noiseGens[ch].next() * 2e-11;
 
-                  // Apply simulated hardware error
                   double gE = opts.gainErr[ch];
                   double pE = opts.phaseErrRad[ch];
                   double err_i = bb_i;
@@ -507,16 +495,14 @@ namespace nexrx {
                       filt_q[ch] = fq;
                   }
 
-                  // Increment LO phase
                   double c = lo_cos[ch] * lo_cos_d[ch] - lo_sin[ch] * lo_sin_d[ch];
                   double s = lo_sin[ch] * lo_cos_d[ch] + lo_cos[ch] * lo_sin_d[ch];
                   lo_cos[ch] = c; lo_sin[ch] = s;
               }
           }
 
-          // Periodically renormalize LO phases (every 960 samples)
           if ((outputSample % 960) == 0) {
-              for (int ch = 0; ch < 3; ++ch) {
+              for (int ch = 0; ch < 2; ++ch) {
                   double m = 1.0 / std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
                   lo_cos[ch] *= m; lo_sin[ch] *= m;
               }
@@ -526,18 +512,17 @@ namespace nexrx {
           pk.sequence = (uint32_t)outputSample;
           pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
           
-          // Use FastNoise for dithering too
           constexpr double scale = 8388607.0 / 1.65;
 
           int32_t maxPeak = 0;
-          for (int ch = 0; ch < 3; ++ch) {
+          for (int ch = 0; ch < 2; ++ch) {
               auto quantize = [&](double v) {
-                  double dither = noiseGens[ch].next() * 2.0; // Approx TPDF-like
+                  double dither = noiseGens[ch].next() * 2.0;
                   return static_cast<int_fast32_t>(std::clamp(std::round(v * pgaGain * scale + dither), -8388608.0, 8388607.0));
               };
-              pk.qsd[ch].i = quantize(filt_i[ch]);
-              pk.qsd[ch].q = quantize(filt_q[ch]);
-              maxPeak = std::max({maxPeak, std::abs(pk.qsd[ch].i), std::abs(pk.qsd[ch].q)});
+              pk.osd[ch].i = quantize(filt_i[ch]);
+              pk.osd[ch].q = quantize(filt_q[ch]);
+              maxPeak = std::max({maxPeak, std::abs(pk.osd[ch].i), std::abs(pk.osd[ch].q)});
           }
           
           // Update AGC with peak from this sample

@@ -6,17 +6,16 @@
 
 namespace nexrx {
 
-class QSDCapture {
+class OSDCapture {
 public:
-  static constexpr size_t samplesPerHalf = 256;
-  static constexpr size_t channelCount = 6;  // 3 * (I+Q)
+  static constexpr size_t samplesPerHalf = 384;
+  static constexpr size_t channelCount = 2; /* 1 * (I+Q) normalized stream */
   static constexpr size_t packetSize = sizeof(IQPacketHeader) + (samplesPerHalf * channelCount * 4);
 
   static void init();
   static void start();
   static void stop();
 
-  /* Fast internal state */
   static uint32_t laneBuffers[4][samplesPerHalf * 2];
   static uint8_t usbBufferA[packetSize];
   static uint8_t usbBufferB[packetSize];

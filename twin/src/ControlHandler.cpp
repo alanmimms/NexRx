@@ -7,7 +7,7 @@
 
 namespace nexrx {
 
-ControlHandler::ControlHandler(double f0, double f1, double f2, 
+ControlHandler::ControlHandler(double centerFreqHz, double offsetHz, 
                                AttenuatorModel* atten, 
                                FilterBankModel* filters, 
                                PGAModel* pga,
@@ -20,11 +20,10 @@ ControlHandler::ControlHandler(double f0, double f1, double f2,
   , running(false)
   , connected(false)
   , reconnected(false) {
-  vfoHz.store(f2);
-  qsdKHz.store(f1 - f2);
-  qsdFreqHz[0].store(f0, std::memory_order_relaxed);
-  qsdFreqHz[1].store(f1, std::memory_order_relaxed);
-  qsdFreqHz[2].store(f2, std::memory_order_relaxed);
+  vfoHz.store(centerFreqHz);
+  osdOffsetKHz.store(offsetHz / 1000.0);
+  osdFreqHz[0].store(centerFreqHz - offsetHz, std::memory_order_relaxed);
+  osdFreqHz[1].store(centerFreqHz + offsetHz, std::memory_order_relaxed);
   isgEnabled.store(false);
   isgFreqHz.store(14201000.0);
   agcMode.store(0);
@@ -35,27 +34,27 @@ ControlHandler::~ControlHandler() {
   stop();
 }
 
-void ControlHandler::start(TCPControlTransport* ctrl, bool verbose) {
-  control_ = ctrl;
-  verbose_ = verbose;
+void ControlHandler::start(TCPControlTransport* ctrl, bool verbosity) {
+  controlTransport = ctrl;
+  verbose = verbosity;
   running = true;
   connected = true;
-  thread_ = std::thread(&ControlHandler::run, this);
+  workerThread = std::thread(&ControlHandler::run, this);
 }
 
 void ControlHandler::stop() {
   running = false;
-  if (thread_.joinable()) {
-    thread_.join();
+  if (workerThread.joinable()) {
+    workerThread.join();
   }
 }
 
 void ControlHandler::run() {
   while (running) {
-    auto result = control_->receiveRequest(std::chrono::milliseconds(100));
+    auto result = controlTransport->receiveRequest(std::chrono::milliseconds(100));
     if (!result.ok()) {
       if (result.error == TransportError::Closed && connected.load()) {
-        if (verbose_) {
+        if (verbose) {
           std::cout << "[Control] Client connection closed" << std::endl;
         }
         connected.store(false, std::memory_order_release);
@@ -64,7 +63,7 @@ void ControlHandler::run() {
       continue;
     }
     std::vector<uint8_t> response = handleCborCommand(result.value);
-    control_->sendResponse(response);
+    controlTransport->sendResponse(response);
   }
 }
 
@@ -82,7 +81,7 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
   }
   cbor_value_advance(&arrayIt);
 
-  if (verbose_ && (uint32_t)cmdID != Control::CMD_GET_STATE) {
+  if (verbose && (uint32_t)cmdID != Control::CMD_GET_STATE) {
     char cmdChars[5] = {
       (char)((cmdID >> 24) & 0xFF),
       (char)((cmdID >> 16) & 0xFF),
@@ -92,32 +91,31 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
     };
     std::printf("[Control] Received command: %s", cmdChars);
     
-    // Log parameters without consuming them from the main iterator
     CborValue argIt = arrayIt;
     while (!cbor_value_at_end(&argIt)) {
-        CborType type = cbor_value_get_type(&argIt);
-        if (type == CborIntegerType) {
-            int64_t val;
-            cbor_value_get_int64(&argIt, &val);
-            std::printf(" %lld", (long long)val);
-        } else if (type == CborDoubleType) {
-            double val;
-            cbor_value_get_double(&argIt, &val);
-            std::printf(" %.6g", val);
-        } else if (type == CborBooleanType) {
-            bool val;
-            cbor_value_get_boolean(&argIt, &val);
-            std::printf(" %s", val ? "true" : "false");
-        } else if (type == CborTextStringType) {
-            size_t len;
-            cbor_value_get_string_length(&argIt, &len);
-            std::vector<char> buf(len + 1);
-            cbor_value_copy_text_string(&argIt, buf.data(), &len, nullptr);
-            std::printf(" \"%s\"", buf.data());
-        } else {
-            std::printf(" <type %d>", type);
-        }
-        cbor_value_advance(&argIt);
+      CborType type = cbor_value_get_type(&argIt);
+      if (type == CborIntegerType) {
+        int64_t val;
+        cbor_value_get_int64(&argIt, &val);
+        std::printf(" %lld", (long long)val);
+      } else if (type == CborDoubleType) {
+        double val;
+        cbor_value_get_double(&argIt, &val);
+        std::printf(" %.6g", val);
+      } else if (type == CborBooleanType) {
+        bool val;
+        cbor_value_get_boolean(&argIt, &val);
+        std::printf(" %s", val ? "true" : "false");
+      } else if (type == CborTextStringType) {
+        size_t len;
+        cbor_value_get_string_length(&argIt, &len);
+        std::vector<char> buf(len + 1);
+        cbor_value_copy_text_string(&argIt, buf.data(), &len, nullptr);
+        std::printf(" \"%s\"", buf.data());
+      } else {
+        std::printf(" <type %d>", type);
+      }
+      cbor_value_advance(&argIt);
     }
     std::printf("\n");
   }
@@ -130,11 +128,10 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       cbor_value_get_double(&arrayIt, &k);
       
       vfoHz.store(f);
-      qsdKHz.store(k);
+      osdOffsetKHz.store(k);
       
-      qsdFreqHz[0].store(f - k);
-      qsdFreqHz[1].store(f + k);
-      qsdFreqHz[2].store(f);
+      osdFreqHz[0].store(f - k * 1000.0);
+      osdFreqHz[1].store(f + k * 1000.0);
       return encodeResponse(0, "OK");
     } 
     case Control::CMD_SET_ATTEN: {
@@ -172,11 +169,11 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       return encodeResponse(0, "OK");
     }
     case Control::CMD_START_STREAM:
-      if (verbose_) std::cout << "[Control] STREAMING START requested" << std::endl;
+      if (verbose) std::cout << "[Control] STREAMING START requested" << std::endl;
       streaming.store(true);
       return encodeResponse(0, "OK");
     case Control::CMD_STOP_STREAM:
-      if (verbose_) std::cout << "[Control] STREAMING STOP requested" << std::endl;
+      if (verbose) std::cout << "[Control] STREAMING STOP requested" << std::endl;
       streaming.store(false);
       return encodeResponse(0, "OK");
     case Control::CMD_GET_TIMESTAMP:
@@ -258,14 +255,13 @@ std::vector<uint8_t> ControlHandler::handleCborCommand(const std::vector<uint8_t
       calStimFreqHz.store(f);
       calStimEnabled.store(true);
       
-      // Detached thread to turn off after duration
       std::thread([this, durationMs]() {
-          std::this_thread::sleep_for(std::chrono::milliseconds(durationMs));
-          calStimEnabled.store(false);
-          if (verbose_) std::cout << "[Control] Calibration stimulus timed out" << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(durationMs));
+        calStimEnabled.store(false);
+        if (verbose) std::cout << "[Control] Calibration stimulus timed out" << std::endl;
       }).detach();
       
-      if (verbose_) std::cout << "[Control] Calibration stimulus ENABLED at " << f << " Hz for " << durationMs << " ms" << std::endl;
+      if (verbose) std::cout << "[Control] Calibration stimulus ENABLED at " << f << " Hz for " << durationMs << " ms" << std::endl;
       return encodeResponse(0, "OK");
     }
     case Control::CMD_GBYE: {

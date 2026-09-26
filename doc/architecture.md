@@ -142,41 +142,47 @@ local oscillator signals.
 
 **Signal Path Components:**
 
-The **preselector** provides digitally-tuned input bandpass filtering
-ahead of the attenuators. Controlled via STM32 GPIO pins, it uses a
-bank of digitally switched binary weighted capacitors to optimize
-front-end selectivity based on the operating frequency. This reduces
-out-of-band interference and improves dynamic range.
+**Signal Path Components & Front-End Protection:**
 
-The **attenuator pad array** consists of multiple switched attenuator
-stages providing 0-63 dB of attenuation in 3 dB steps. The STM32
-calculates required attenuation based on signal strength measurements
-from the I/Q data, implementing automatic gain control (AGC). The
-attenuators prevent overload of the OSD/QSD mixers during strong
-signal conditions.
+1. **Input Protection & DC Blocking**:
+   - A series 1μF/100V C0G capacitor blocks external DC bias from damaging downstream components.
+   - Fast primary TVS protection diodes clip RF surges to 25V pk-pk (surviving up to +40 dBm inputs) to protect attenuator switches.
+   - Secondary TVS protection diodes clip signals to 13V pk-pk following the attenuators to protect BPF switches and OSD direct-conversion mixers.
 
+2. **Digital Attenuator Array**:
+   - Cascaded T-pad network (24 dB, 12 dB, 6 dB, 3 dB) providing 0 to 45 dB attenuation in 3 dB steps.
+   - Each stage utilizes an **AS183-92LF pHEMT SPDT switch chip** wired for true bypass when deactivated.
+
+3. **Bandpass Filter (BPF) Selection**:
+   - A bank of 4 octave bandpass filters (1.8-3.4 MHz, 3.2-7.5 MHz, 7.3-14.5 MHz, 21.8-30.0 MHz) paired with a broadcast AM high-pass filter (HPF).
+   - BPF selection is routed using **SP4T SKY13322-375LF switches** to select among the four BPF branches. This simplifies component count, eliminates an external inverter package, and reduces the STM32 GPIO control pin count by one.
+
+4. **MAX9939 Differential PGAs & Anti-Aliasing Filters**:
+   - Six MAX9939 differential PGAs (one per I/Q channel across the two OSD paths) provide fine analog gain control (-14 dB to +44 dB).
+   - Differential feedback network uses $10\text{k}\Omega \parallel 150\text{ pF}$ from OUTA/OUTB to INB to set bandwidth.
+   - Output RC network ($330\Omega + 3.3\text{ nF}$) forms a low-pass anti-aliasing filter with a cutoff frequency of $f_c \approx 145\text{ kHz}$ prior to the AK5578 audio ADCs.
+
+5. **Waterfall Viewport Mode Hysteresis**:
+   - Below 15 MHz, the dual iCE40 CPLDs run in 8-phase Octature mode (OSD). Above 15 MHz, they run in 4-phase Quadrature mode (QSD).
+   - To prevent visual display discontinuities when tuning across 15 MHz, mode switching is tied strictly to the active waterfall viewport bounds: switching to 4-phase occurs only when the active display viewport is *strictly above* 15 MHz, and switching to 8-phase occurs only when the active viewport is *strictly below* 15 MHz. When the viewport straddles 15 MHz, the active mode is retained.
+   - In 4-phase QSD mode, a +3 dB digital gain scaling is automatically applied in STM32 DSP to normalize the baseline noise floor level with 8-phase mode.
+
+**System Performance & Dynamic Range:**
+- **Sensitivity / MDS**: Thermal noise floor at 50Ω, 500 Hz bandwidth is $-141\text{ dBm}$. With a estimated system noise figure of $6\text{ dB}$, Minimum Detectable Signal (MDS) for 10 dB SNR is $\text{MDS} = -125\text{ dBm}$.
+- **Instantaneous Dynamic Range**: $\sim 100\text{ dB}$ (ADC limited).
+- **Blocking Dynamic Range (BDR)**: $142\text{ dB}$ (+17 dBm max input to -125 dBm MDS).
+- **Two-Tone IMD Dynamic Range**: $97\text{ dB}$ (QSD IP3 $+20\text{ dBm}$).
 
 **AGC Implementation:**
 
-AGC operates as a hybrid hardware/software system optimized for both
-fast protection and smooth user experience:
+AGC operates as a hybrid hardware/software system optimized for both fast protection and smooth user experience:
 
-1. **STM32 Fast Loop**: Measures I/Q signal strength every sample
-   period, switches attenuator pads within microseconds to prevent
-   overload
-2. **Host PC Smoothing**: Applies gain compensation in DSP so the
-   operator perceives smooth signal level changes rather than abrupt
-   attenuator switching
-3. **Attack/Decay**: Fast attack on strong signals (prevent overload),
-   slow decay to avoid pumping on fading signals
-4. **Setbox Control**: AGC characteristics (attack time, decay time,
-   hang time, target level) configurable via setbox inheritance
+1. **STM32 Fast Loop**: Measures I/Q signal strength every sample period, switches attenuator pads within microseconds to prevent overload.
+2. **Host PC Smoothing**: Applies gain compensation in DSP so the operator perceives smooth signal level changes rather than abrupt attenuator switching.
+3. **Attack/Decay**: Fast attack on strong signals (prevent overload), slow decay to avoid pumping on fading signals.
+4. **Setbox Control**: AGC characteristics (attack time, decay time, hang time, target level) configurable via setbox inheritance.
 
-Each QSD output feeds into a four-channel audio codec that digitizes
-the four audio-rate signals (two I/Q pairs) at 96 kS/s with 24-bit
-resolution. This baseband data flows to the STM32 for basic
-conditioning before transmission to the host PC as a single I/Q pair
-for more advanced DSP processing.
+Each OSD output feeds into a four-channel audio codec that digitizes the audio-rate signals at 96 kS/s with 24-bit resolution. This baseband data flows to the STM32 for basic conditioning before transmission to the host PC as a single pre-stitched 384 ksps I/Q pair for host PC DSP processing.
 
 ### OSD Mapping and QSD Mapping
 There are two complete implementations of the "OSD" schematic page,
@@ -257,6 +263,35 @@ The STM32 runs Zephyr RTOS managing multiple concurrent tasks:
 - Command processing from host PC
 
 ### Power Sequencing
+
+The NexRx receiver is powered from the USB VBUS supply (5V at 3A
+expected). This provides up to 15W of power, which is significantly
+more than required for the dual-OSD architecture, dual iCE40 CPLDs,
+and supporting digital logic.
+
+## Power Rail Summary
+
+| Rail | Voltage | Capacity | Control | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **VBUS** | 5.0V | 3.0A | Always On | Primary input power from USB-C. |
+| **+3.3V** | 3.3V | 3.0A | Automatic | Main digital logic supply (MCU, CPLDs, Si5351). |
+| **+5VA** | 5.0V | 300mA | Automatic | Analog supply for audio ADCs / Codecs. |
+| **+3.3VA** | 3.3V | 300mA | Automatic | Clean analog supply for RF front-end, PGAs, and buffers. |
+
+## Design Verification & Power Sequencing Notes
+
+1.  **Automatic Power Sequencing:** Subsystem power rails feature
+    hardware RC delay networks and automatic LDO/regulator sequencing.
+    MCU software control is not required to sequence power rails
+    during startup or shutdown.
+2.  **Input Protection:** The VBUS input includes ESD protection and a
+    TVS diode to clamp input surges.
+3.  **Conversion Efficiency:** The main 3.3V digital rail uses a
+    high-efficiency synchronous buck converter to minimize thermal
+    dissipation inside the enclosure.
+4.  **Analog Integrity:** Sensitive analog rails (+5VA, +3.3VA)
+    utilize ultra-high PSRR LDO regulators to preserve low noise floor
+    and high dynamic range.
 
 The STM32 manages power-up and power-down sequencing for all
 subsystems. Proper sequencing prevents damage and ensures reliable
