@@ -185,31 +185,32 @@ AGC operates as a hybrid hardware/software system optimized for both fast protec
 Each OSD output feeds into a four-channel audio codec that digitizes the audio-rate signals at 96 kS/s with 24-bit resolution. This baseband data flows to the STM32 for basic conditioning before transmission to the host PC as a single pre-stitched 384 ksps I/Q pair for host PC DSP processing.
 
 ### OSD Mapping and QSD Mapping
-There are two complete implementations of the "OSD" schematic page,
-each of which has its own audio codec, set of eight accumulator
-capacitors, set of four four-way switch chips, and cross-wiring to map
-the differential RF+/RF- signals to their switch chips as shown below.
-Each audio codec has its own TDM output serial line attached to the
-STM32, where these audio samples are reduced via DSP.
+There are two instances of the "OSD" schematic page, each of which has
+its own audio codec, set of eight accumulator capacitors, set of four
+four-way switch chips, and cross-wiring to map the differential
+RF+/RF- signals to their switch chips as shown below. Each audio codec
+has its own TDM output serial line attached to the STM32, where these
+audio samples are reduced via DSP.
 
 | Input Signal | Switch Instance | Clock Phase | Accumulator Capacitor | Codec Channel |
-| :---: | :---: | :---: | :---: | :---: |
+| --- | --- | --- | --- | --- |
 | RF+ | 0 | 0 | 0 | IN1+ |
 | RF+ | 0 | 1 | 1 | IN3+ |
 | RF+ | 0 | 2 | 2 | IN2+ |
 | RF+ | 0 | 3 | 3 | IN4+ |
 | RF+ | 1 | 4 | 4 | IN1- |
-| RF+ | 1 | 5 | 5 | IN2- |
-| RF+ | 1 | 6 | 6 | IN3- |
+| RF+ | 1 | 5 | 5 | IN3- |
+| RF+ | 1 | 6 | 6 | IN2- |
 | RF+ | 1 | 7 | 7 | IN4- |
 | RF- | 2 | 0 | 4 | IN1- |
-| RF- | 2 | 1 | 5 | IN2- |
-| RF- | 2 | 2 | 6 | IN3- |
+| RF- | 2 | 1 | 5 | IN3- |
+| RF- | 2 | 2 | 6 | IN2- |
 | RF- | 2 | 3 | 7 | IN4- |
 | RF- | 3 | 4 | 0 | IN1+ |
 | RF- | 3 | 5 | 1 | IN3+ |
 | RF- | 3 | 6 | 2 | IN2+ |
 | RF- | 3 | 7 | 3 | IN4+ |
+
 
 ### Two CPLD Subsystem
 
