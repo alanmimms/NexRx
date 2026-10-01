@@ -7306,7 +7306,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C2441365"
+		(property "LCSC_PN" "C1006"
 			(at 81.28 -52.07 0)
 			(effects
 				(font
@@ -13945,7 +13945,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C2868254"
+		(property "LCSC_PN" "C2862740"
 			(at 0 0 0)
 			(effects
 				(font

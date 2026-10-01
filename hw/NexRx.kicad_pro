@@ -5054,7 +5054,7 @@
           "show": true
         }
       ],
-      "filter_string": "",
+      "filter_string": "c",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
