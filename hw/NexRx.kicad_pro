@@ -1355,6 +1355,7 @@
         "rf50"
       ],
       "GND": [
+        "rf39-inner-layer",
         "rf50"
       ],
       "Net-(C101-Pad2)": [
@@ -5053,7 +5054,7 @@
           "show": true
         }
       ],
-      "filter_string": "",
+      "filter_string": "c",
       "group_symbols": true,
       "include_excluded_from_bom": true,
       "name": "",

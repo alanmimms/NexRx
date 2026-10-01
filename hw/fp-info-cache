@@ -1,4 +1,4 @@
-27360886295994002
+27362677110364116
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71770,6 +71770,13 @@ Connector
 0
 3
 3
+Library
+SAMESKY_UJ20-C-H-G-SMT-1-P16-TR
+
+
+0
+16
+14
 Library
 SDR0805100ML
 SDR0805-100ML-3

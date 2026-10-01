@@ -3494,7 +3494,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "ICE40LP384-SG32"
+		(property "Datasheet" "https://www.mouser.com/catalog/specsheets/Lattice_12-03-2025_Ice40.pdf"
 			(at 69.85 134.62 0)
 			(effects
 				(font
@@ -3538,6 +3538,30 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 107.95 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 107.95 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 107.95 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "33"
