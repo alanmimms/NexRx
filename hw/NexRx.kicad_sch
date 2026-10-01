@@ -3749,10 +3749,6 @@
 		(uuid "15bb44d7-8758-48d8-aa50-ae48c375b5f4")
 	)
 	(no_connect
-		(at 160.02 165.1)
-		(uuid "660ce7fb-02ad-4196-95a3-5b489d4adb0e")
-	)
-	(no_connect
 		(at 134.62 147.32)
 		(uuid "86f2e6b5-d943-45e0-a288-af30e6246236")
 	)
@@ -4830,6 +4826,16 @@
 	)
 	(wire
 		(pts
+			(xy 161.29 165.1) (xy 161.29 166.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9cc48362-b3ad-4f40-b219-938f8242a4e1")
+	)
+	(wire
+		(pts
 			(xy 175.26 133.35) (xy 182.88 133.35)
 		)
 		(stroke
@@ -5117,6 +5123,16 @@
 			(type default)
 		)
 		(uuid "cb79dd70-8073-4ea2-8db7-209ecbee455c")
+	)
+	(wire
+		(pts
+			(xy 160.02 165.1) (xy 161.29 165.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cb99ebaf-0545-43c1-936e-e894f1b9e851")
 	)
 	(wire
 		(pts
@@ -5977,7 +5993,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 81.28 160.02 0)
 			(effects
 				(font
@@ -6004,7 +6020,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at -125.73 123.19 0)
 			(effects
 				(font
@@ -6210,7 +6226,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 81.28 160.02 0)
 			(effects
 				(font
@@ -7809,6 +7825,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C12220"
+			(at 120.65 142.24 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "938dcaeb-1142-4414-ba29-d4f4349c77f0")
 		)
@@ -7851,7 +7876,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Library:S8401-46"
+		(property "Footprint" "Library:XDBS-CR2032-5"
 			(at 200.66 42.24 0)
 			(effects
 				(font
@@ -7880,7 +7905,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C5904513"
+		(property "LCSC" "C48687404"
 			(at 176.53 121.92 90)
 			(effects
 				(font
@@ -7984,6 +8009,31 @@
 			)
 		)
 		(property "MouserPN" ""
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC_PN" "C48687404"
 			(at 181.61 137.16 0)
 			(effects
 				(font
@@ -8297,7 +8347,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://content.u-blox.com/sites/default/files/documents/MAX-M10M-20B_DataSheet_UBXDOC-963802114-13063.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C90770.pdf"
 			(at 107.95 346.05 0)
 			(effects
 				(font
@@ -8316,7 +8366,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "MAX-M10M-20B"
+		(property "MPN" "ATGM336H-5N31"
 			(at 147.32 151.13 0)
 			(effects
 				(font
@@ -8325,7 +8375,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C5117921"
+		(property "LCSC" "C90770"
 			(at 147.32 151.13 0)
 			(effects
 				(font
@@ -8334,7 +8384,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG" "u-blox"
+		(property "MFG" "ZONGKEWEI"
 			(at 147.32 151.13 0)
 			(effects
 				(font
@@ -8343,7 +8393,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser_PN" "511-TESEO-LIV3R"
+		(property "Mouser_PN" ""
 			(at 147.32 151.13 0)
 			(effects
 				(font
@@ -8361,7 +8411,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSCMPN" "ATGM336H-5NR32"
+		(property "LCSCMPN" "ATGM336H-5N31"
 			(at 147.32 151.13 0)
 			(effects
 				(font
@@ -8417,6 +8467,39 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "cap-type" ""
+			(at 147.32 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "r-power" ""
+			(at 147.32 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "label" ""
+			(at 147.32 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC_PN" "C90770"
+			(at 147.32 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -9279,6 +9362,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C3272540"
+			(at 50.8 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "430a7076-b4eb-46f5-a7fb-842a8a6c7677")
 		)
@@ -9508,6 +9600,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C76991"
+			(at 175.26 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "b410459b-7da5-4bc9-ab93-0b504f4a5134")
 		)
@@ -9597,6 +9698,15 @@
 			)
 		)
 		(property "Mouser Part Number" "595-SN74LVC2G14DCKRE4"
+			(at 50.8 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C3272540"
 			(at 50.8 139.7 0)
 			(effects
 				(font
@@ -10912,6 +11022,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C60035"
+			(at 124.46 133.35 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "f98352dd-cf6b-4a32-b99f-e4937d03b108")
 		)
@@ -11037,7 +11156,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 88.9 144.78 0)
 			(effects
 				(font
@@ -11064,7 +11183,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at -118.11 107.95 0)
 			(effects
 				(font
@@ -11270,7 +11389,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 88.9 144.78 0)
 			(effects
 				(font
@@ -11571,7 +11690,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402"
+		(property "Description" "Resistor, 0.1%, 100k, 0402"
 			(at 96.52 33.02 0)
 			(effects
 				(font
@@ -11598,7 +11717,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C2077703"
+		(property "LCSC_PN" "C25741"
 			(at 152.4 -50.8 0)
 			(effects
 				(font
@@ -12243,6 +12362,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C76991"
+			(at 167.64 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "1ae0d2b0-a4ff-4570-ba3c-81acca8ed6d1")
 		)
@@ -12699,6 +12827,74 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "power:GND")
+		(at 161.29 166.37 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fe9ef247-005e-4077-b06d-b20feae6bf1f")
+		(property "Reference" "#PWR0123"
+			(at 161.29 172.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 161.29 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 161.29 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 161.29 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 161.29 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "951a026f-bb2c-4cb4-8fec-396d2a7482db")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
+					(reference "#PWR0123")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(sheet
 		(at 160.02 60.96)
 		(size 27.94 16.51)
@@ -12873,7 +13069,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeriesLCSC" "C852716"
+		(property "rSeriesLCSC" "C67234"
 			(at 31.75 36.83 0)
 			(effects
 				(font
@@ -12882,7 +13078,7 @@
 				(hide yes)
 			)
 		)
-		(property "rShuntLCSC" "C284468"
+		(property "rShuntLCSC" "C159056"
 			(at 31.75 36.83 0)
 			(effects
 				(font
@@ -13000,7 +13196,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeriesLCSC" "C477802"
+		(property "rSeriesLCSC" "C166423"
 			(at 31.75 59.69 0)
 			(effects
 				(font
@@ -13127,7 +13323,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeriesLCSC" "C852562"
+		(property "rSeriesLCSC" "C368412"
 			(at 31.75 48.26 0)
 			(effects
 				(font
@@ -13136,7 +13332,7 @@
 				(hide yes)
 			)
 		)
-		(property "rShuntLCSC" "C273725"
+		(property "rShuntLCSC" "C158993"
 			(at 31.75 48.26 0)
 			(effects
 				(font
@@ -13756,7 +13952,7 @@
 				(hide yes)
 			)
 		)
-		(property "rSeriesLCSC" "C284579"
+		(property "rSeriesLCSC" "C173939"
 			(at 31.75 25.4 0)
 			(effects
 				(font

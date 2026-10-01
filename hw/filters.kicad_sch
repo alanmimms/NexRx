@@ -3394,6 +3394,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C20882986"
+			(at 181.61 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "fdfb28bd-93c8-4bfb-8d2f-f7e1ec2314f6")
 		)
@@ -3511,6 +3520,15 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C151465"
+			(at 232.41 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -3695,6 +3713,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C53547"
+			(at 68.58 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e38c6dbc-d8dd-4ddd-884f-87afc487b963")
 		)
@@ -3828,6 +3855,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 189.23 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C12220"
 			(at 189.23 142.24 0)
 			(effects
 				(font
@@ -4334,6 +4370,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C126505"
+			(at 176.53 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "02f9fdcd-50ac-48f4-96ab-1356516679e2")
 		)
@@ -4625,6 +4670,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C113781"
+			(at 189.23 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "92ae0672-6baa-4c25-91ec-962e7b9778dc")
 		)
@@ -4780,6 +4834,15 @@
 			)
 		)
 		(property "MFG" "Coilcraft"
+			(at 181.61 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C52259879"
 			(at 181.61 80.01 90)
 			(effects
 				(font
@@ -5018,6 +5081,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C20882986"
+			(at 195.58 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "80eb37d1-b309-4475-8321-79557b9c06d0")
 		)
@@ -5173,6 +5245,15 @@
 			)
 		)
 		(property "MFG" "Coilcraft"
+			(at 181.61 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C54534441"
 			(at 181.61 110.49 90)
 			(effects
 				(font
@@ -5344,6 +5425,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C54534441"
+			(at 195.58 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "39fae96c-f6b0-47ae-963b-8f2ca2517b3d")
 		)
@@ -5490,6 +5580,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 201.93 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C12220"
 			(at 201.93 115.57 0)
 			(effects
 				(font
@@ -5786,6 +5885,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C53547"
+			(at 82.55 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a3345920-2fc3-432d-bd2a-e8cae0de2abc")
 		)
@@ -5972,6 +6080,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C151465"
+			(at 151.13 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "6"
 			(uuid "e79b1aef-657c-4a10-858b-f9a7631fe201")
 		)
@@ -6154,6 +6271,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C458911"
+			(at 176.53 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "baca813c-02fe-45db-b61f-30c2a9dc2d12")
 		)
@@ -6308,6 +6434,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C458911"
+			(at 201.93 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5bce5565-c334-46ca-9ff2-8656dc95a7cf")
 		)
@@ -6441,6 +6576,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 189.23 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C126505"
 			(at 189.23 115.57 0)
 			(effects
 				(font
@@ -6595,6 +6739,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 201.93 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C126505"
 			(at 201.93 85.09 0)
 			(effects
 				(font
@@ -7179,6 +7332,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C20882986"
+			(at 73.66 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9552a2e8-d237-4fd2-9958-58f8d11aa975")
 		)
@@ -7312,6 +7474,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 189.23 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C668348"
 			(at 189.23 58.42 0)
 			(effects
 				(font
@@ -7542,6 +7713,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C37809"
+			(at 176.53 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b97edbef-2024-455e-9658-399d524f2968")
 		)
@@ -7708,6 +7888,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C49241336"
+			(at 87.63 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "8d655aa6-41c9-4a27-b10a-ef36325b7e4e")
 		)
@@ -7766,7 +7955,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor, small symbol"
+		(property "Description" "Inductor, 330nH, 2929SQ"
 			(at 195.58 137.16 0)
 			(effects
 				(font
@@ -7871,6 +8060,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C19271242"
+			(at 195.58 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "e5a28741-354f-40a3-ab3d-2aa798532f6c")
 		)
@@ -7929,7 +8127,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 2.2uF, 0402"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 2.2nF, 0402"
 			(at 96.52 97.79 0)
 			(effects
 				(font
@@ -8017,6 +8215,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 96.52 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2167434"
 			(at 96.52 97.79 90)
 			(effects
 				(font
@@ -8247,6 +8454,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C12220"
+			(at 176.53 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "998f4db1-17de-450b-9a57-5155d69a2c9d")
 		)
@@ -8372,7 +8588,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Inductor, small symbol"
+		(property "Description" "Inductor, 330nH, 2929SQ"
 			(at 181.61 137.16 0)
 			(effects
 				(font
@@ -8469,6 +8685,15 @@
 			)
 		)
 		(property "MFG" "Coilcraft"
+			(at 181.61 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C19271242"
 			(at 181.61 137.16 90)
 			(effects
 				(font
@@ -8699,6 +8924,15 @@
 			)
 		)
 		(property "MFG" "Coilcraft"
+			(at 195.58 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C52259879"
 			(at 195.58 80.01 90)
 			(effects
 				(font
@@ -9007,6 +9241,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C49241336"
+			(at 58.42 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "816ace41-fd99-4625-b8a1-c7113117140c")
 		)
@@ -9153,6 +9396,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 201.93 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C37809"
 			(at 201.93 142.24 0)
 			(effects
 				(font
@@ -9420,7 +9672,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 2.2uF, 0402"
+		(property "Description" "Capacitor, MLCC, NP0, 25V, 5%, 2.2nF, 0402"
 			(at 53.34 97.79 0)
 			(effects
 				(font
@@ -9508,6 +9760,15 @@
 			)
 		)
 		(property "MFG" "KEMET"
+			(at 53.34 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C2167434"
 			(at 53.34 97.79 90)
 			(effects
 				(font

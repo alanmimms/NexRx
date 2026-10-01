@@ -2659,6 +2659,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C1557"
+			(at 146.05 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5d2cbc12-41a2-4f1c-988a-69d508fa61dd")
 		)
@@ -2783,7 +2792,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 130.81 66.04 0)
 			(effects
 				(font
@@ -2810,7 +2819,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at -50.8 -30.48 0)
 			(effects
 				(font
@@ -3016,7 +3025,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 130.81 66.04 0)
 			(effects
 				(font
@@ -3138,7 +3147,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 135.89 59.69 0)
 			(effects
 				(font
@@ -3165,7 +3174,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at 317.5 -36.83 0)
 			(effects
 				(font
@@ -3371,7 +3380,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 135.89 59.69 0)
 			(effects
 				(font
@@ -3494,7 +3503,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thick Film, 1%, 330, 0402"
+		(property "Description" "Resistor, 1%, 330 ohm, 0402"
 			(at 171.45 123.19 0)
 			(effects
 				(font
@@ -3728,6 +3737,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C25104"
+			(at 171.45 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "f9a993d7-6043-40e4-976d-0f194a995cef")
 		)
@@ -3952,7 +3970,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thick Film, 1%, 330, 0402"
+		(property "Description" "Resistor, 1%, 330 ohm, 0402"
 			(at 137.16 113.03 0)
 			(effects
 				(font
@@ -3979,7 +3997,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C854274"
+		(property "LCSC_PN" "C25104"
 			(at 241.3 190.5 0)
 			(effects
 				(font
@@ -4367,7 +4385,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402"
+		(property "Description" "Resistor, 0.1%, 100k, 0402"
 			(at 180.34 113.03 0)
 			(effects
 				(font
@@ -4413,6 +4431,15 @@
 			)
 		)
 		(property "Mouser Part Number" "603-RP0402BRD07100KL "
+			(at 180.34 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C25741"
 			(at 180.34 113.03 90)
 			(effects
 				(font
@@ -5018,7 +5045,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thick Film, 1%, 330, 0402"
+		(property "Description" "Resistor, 1%, 330 ohm, 0402"
 			(at 163.83 123.19 0)
 			(effects
 				(font
@@ -5252,6 +5279,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C25104"
+			(at 163.83 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "8787f353-e9dd-46d7-8f2d-d9ed12d0bdcd")
 		)
@@ -5399,6 +5435,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C1557"
+			(at 146.05 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "2a943e73-244e-4646-aec3-d4416e17f6e3")
 		)
@@ -5460,7 +5505,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 60.96 99.06 0)
 			(effects
 				(font
@@ -5487,7 +5532,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at 24.13 -43.18 0)
 			(effects
 				(font
@@ -5693,7 +5738,7 @@
 				)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 60.96 99.06 0)
 			(effects
 				(font
@@ -5949,7 +5994,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thick Film, 1%, 22, 0402"
+		(property "Description" "Resistor, Thick Film, 1%, 22 ohm, 0402"
 			(at 92.71 90.17 0)
 			(effects
 				(font
@@ -6029,6 +6074,15 @@
 			)
 		)
 		(property "Mouser Part Number" "710-560112110216"
+			(at 92.71 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C25092"
 			(at 92.71 90.17 90)
 			(effects
 				(font
@@ -6161,7 +6215,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402"
+		(property "Description" "Resistor, 0.1%, 100k, 0402"
 			(at 151.13 113.03 0)
 			(effects
 				(font
@@ -6207,6 +6261,15 @@
 			)
 		)
 		(property "Mouser Part Number" "603-RP0402BRD07100KL "
+			(at 151.13 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C25741"
 			(at 151.13 113.03 90)
 			(effects
 				(font
@@ -6428,6 +6491,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C1557"
+			(at 146.05 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "883e8e8a-773d-40ed-b604-ea0c65fa7df3")
 		)
@@ -6607,6 +6679,15 @@
 			)
 		)
 		(property "Mouser Part Number" "634-SI5351C-B-GM"
+			(at 116.84 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C3608122"
 			(at 116.84 95.25 0)
 			(effects
 				(font
@@ -6976,7 +7057,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 97.79 67.31 0)
 			(effects
 				(font
@@ -7003,7 +7084,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at 279.4 -29.21 0)
 			(effects
 				(font
@@ -7209,7 +7290,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 97.79 67.31 0)
 			(effects
 				(font
@@ -7396,7 +7477,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402"
+		(property "Description" "Resistor, 0.1%, 100k, 0402"
 			(at 171.45 113.03 0)
 			(effects
 				(font
@@ -7442,6 +7523,15 @@
 			)
 		)
 		(property "Mouser Part Number" "603-RP0402BRD07100KL "
+			(at 171.45 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC_PN" "C25741"
 			(at 171.45 113.03 90)
 			(effects
 				(font
@@ -7510,7 +7600,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thick Film, 1%, 5.1k, 0402"
+		(property "Description" "Resistor, 1%, 5.1k, 0402"
 			(at 82.55 106.68 0)
 			(effects
 				(font
@@ -7856,7 +7946,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thick Film, 1%, 330, 0402"
+		(property "Description" "Resistor, 1%, 330 ohm, 0402"
 			(at 156.21 123.19 0)
 			(effects
 				(font
@@ -8090,6 +8180,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC_PN" "C25104"
+			(at 156.21 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "3862e9e6-5fc2-411b-899d-e4b07b32ac71")
 		)
@@ -8215,7 +8314,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 100k, 0402"
+		(property "Description" "Resistor, 0.1%, 100k, 0402"
 			(at 162.56 113.03 0)
 			(effects
 				(font
@@ -8242,7 +8341,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C728576"
+		(property "LCSC_PN" "C25741"
 			(at 245.11 35.56 0)
 			(effects
 				(font
@@ -8345,7 +8444,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 92.71 60.96 0)
 			(effects
 				(font
@@ -8372,7 +8471,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at -88.9 -35.56 0)
 			(effects
 				(font
@@ -8578,7 +8677,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 92.71 60.96 0)
 			(effects
 				(font
@@ -8699,7 +8798,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, MLCC, X7R, 50V, 5%, 100nF, 0402"
+		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
 			(at 85.09 54.61 0)
 			(effects
 				(font
@@ -8726,7 +8825,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C24452"
+		(property "LCSC_PN" "C96446"
 			(at -96.52 -41.91 0)
 			(effects
 				(font
@@ -8932,7 +9031,7 @@
 				(hide yes)
 			)
 		)
-		(property "working-voltage" "50V"
+		(property "working-voltage" "25V"
 			(at 85.09 54.61 0)
 			(effects
 				(font
