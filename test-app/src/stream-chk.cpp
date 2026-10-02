@@ -23,10 +23,11 @@ TestStatus stream_chk(RemoteDevice& device, std::string& message) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     
     uint64_t frames = conn.getFramesReceived();
-    uint64_t dropped = 0;
-    uint64_t overruns = 0;
+    uint64_t dropped = conn.getFramesDropped();
+    uint64_t overruns = conn.getBufferOverruns();
     
     conn.stopStream();
+    conn.stopReceiving();
     
     if (frames == 0) {
         message = "No frames received over UDP";

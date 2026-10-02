@@ -50,6 +50,8 @@ namespace nexrx {
     bool swapIQ = false;
     bool noStimulus = false;
     bool noCal = false;
+    bool singleSession = false;
+    double timeoutSec = 0.0;
     std::string calFile = "";
     double durationMS = 0.0;
     double rfFreqMHz = 14.120; 
@@ -85,6 +87,8 @@ namespace nexrx {
 	      << "  --swap-iq        Swap I and Q channels for WAV stimulus\n"
 	      << "  --headless       Run simulation immediately without waiting for a client\n"
 	      << "  --duration MS    Run for specific duration in ms (default: forever)\n"
+	      << "  --timeout SEC    Exit after SEC seconds total or idle waiting (default: forever)\n"
+	      << "  --single-session Exit after first client session ends\n"
 	      << "  --port PORT      Set TCP control port (default: 5000)\n"
 	      << std::endl;
   }
@@ -128,6 +132,10 @@ namespace nexrx {
 	opts.headless = true;
       } else if (arg == "--duration" && i + 1 < argc) {
 	opts.durationMS = std::stod(argv[++i]);
+      } else if (arg == "--timeout" && i + 1 < argc) {
+	opts.timeoutSec = std::stod(argv[++i]);
+      } else if (arg == "--single-session") {
+	opts.singleSession = true;
       } else if (arg == "--port" && i + 1 < argc) {
 	opts.controlPort = (uint16_t)std::stoi(argv[++i]);
       } else {
@@ -209,10 +217,22 @@ namespace nexrx {
 
   int runFunctionalMode(const Options& opts) {
     std::cout << "=== NexRx Digital Twin - Persistent Functional Mode ===" << std::endl;
+    auto programStartTime = std::chrono::steady_clock::now();
   
     std::shared_ptr<StimulusManager> stimulusManager;
     std::unique_ptr<sol::state> lua;
-    std::string stimulusPath = opts.stimulus.empty() ? "config/stimuli/default.lua" : opts.stimulus;
+    std::string stimulusPath = opts.stimulus;
+    if (stimulusPath.empty()) {
+      if (std::ifstream("config/stimuli/default.lua").good()) {
+        stimulusPath = "config/stimuli/default.lua";
+      } else if (std::ifstream("twin/config/stimuli/default.lua").good()) {
+        stimulusPath = "twin/config/stimuli/default.lua";
+      } else {
+        stimulusPath = "config/stimuli/default.lua";
+      }
+    } else if (!std::ifstream(stimulusPath).good() && std::ifstream("twin/" + stimulusPath).good()) {
+      stimulusPath = "twin/" + stimulusPath;
+    }
   
     if (!opts.noStimulus && std::ifstream(stimulusPath).good()) {
       lua = std::make_unique<sol::state>();
@@ -233,11 +253,15 @@ namespace nexrx {
         stimulusManager = std::make_shared<StimulusManager>();
       }
       auto player = std::make_shared<RFCapturePlayer>();
-      if (player->loadWav(opts.wavIQ)) {
+      std::string wavPath = opts.wavIQ;
+      if (!std::ifstream(wavPath).good() && std::ifstream("twin/" + opts.wavIQ).good()) {
+        wavPath = "twin/" + opts.wavIQ;
+      }
+      if (player->loadWav(wavPath)) {
         double freq = opts.wavFreqMHz * 1e6;
         if (freq == 0) {
           // Attempt to extract frequency from filename (SDRuno style: _7150kHz.wav)
-          size_t pos = opts.wavIQ.find_last_of("_");
+          size_t pos = wavPath.find_last_of("_");
           if (pos != std::string::npos) {
             try {
               // Extract numeric part before "kHz"
@@ -284,8 +308,15 @@ namespace nexrx {
     while (true) {
       if (!opts.headless) {
         std::cout << "[Twin] Waiting for control connection on port " << opts.controlPort << "..." << std::endl;
+        auto waitStart = std::chrono::steady_clock::now();
         while (!control->acceptClient(std::chrono::milliseconds(100))) {
-          // Idle wait
+          if (opts.timeoutSec > 0.0) {
+            double waitElapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - waitStart).count();
+            if (waitElapsed >= opts.timeoutSec) {
+              std::cout << "[Twin] Timeout waiting for client connection (" << opts.timeoutSec << " s reached)." << std::endl;
+              return 0;
+            }
+          }
         }
         std::cout << "[Twin] Control client connected from " << control->peerIP() << std::endl;
       }
@@ -389,6 +420,15 @@ namespace nexrx {
     double current_k = opts.osdOffsetKHz * 1000.0;
     updateLOs(current_lo, current_k);
 
+    double recombCos = 1.0, recombSin = 0.0;
+    double recombCos_d = 1.0, recombSin_d = 0.0;
+    auto updateRecomb = [&](double k) {
+      double delta = 2.0 * M_PI * k / sampleRate;
+      recombCos_d = std::cos(delta);
+      recombSin_d = std::sin(delta);
+    };
+    updateRecomb(current_k);
+
     std::vector<double> antBufferIQ(3840 * OVERSAMPLE_RATIO * 2);
 
     #ifndef _WIN32
@@ -403,8 +443,16 @@ namespace nexrx {
 
     while (opts.headless || (controlHandler && controlHandler->isConnected())) {
       if (opts.durationMS > 0 && (outputSample * 1000.0 / sampleRate) >= opts.durationMS) {
-          std::cout << "[Twin] Requested duration (" << opts.durationMS << " ms) reached, closing session." << std::endl;
+        std::cout << "[Twin] Requested duration (" << opts.durationMS << " ms) reached, closing session." << std::endl;
+        break;
+      }
+
+      if (opts.timeoutSec > 0.0) {
+        double totalElapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - programStartTime).count();
+        if (totalElapsed >= opts.timeoutSec) {
+          std::cout << "[Twin] Timeout (" << opts.timeoutSec << " s) reached, closing session." << std::endl;
           break;
+        }
       }
 
       if (!headlessStreaming && !controlHandler->isStreaming()) {
@@ -425,6 +473,7 @@ namespace nexrx {
       double osdK = controlHandler->getOSDOffset() * 1000.0;
       if (std::abs(baseVFO - current_lo) > 0.1 || std::abs(osdK - current_k) > 0.1) {
         updateLOs(baseVFO, osdK);
+        updateRecomb(osdK);
         current_lo = baseVFO; current_k = osdK;
         constexpr double streamSampleRateHz = 384000.0; // 384 k samples/sec
         constexpr double halfSpanHz = streamSampleRateHz / 2.0;
@@ -457,12 +506,12 @@ namespace nexrx {
               double antQ = antBufferIQ[bufIdx + 1];
               double t = chunkStartTime + (s * OVERSAMPLE_RATIO + i) * oversamplePeriod;
               
-              if (controlHandler->isCalStimActive()) {
-                  double fStim = controlHandler->getCalStimFreq();
-                  double pgStim = getFilterBankGain(fStim, filters);
-                  double phaseStim = 2.0 * M_PI * std::fmod(fStim * t, 1.0);
-                  antI = 0.010 * std::cos(phaseStim) * pgStim;
-                  antQ = 0.010 * std::sin(phaseStim) * pgStim;
+              if (controlHandler->isCalStimActive() || controlHandler->isISGEnabled()) {
+                double fStim = controlHandler->isISGEnabled() ? controlHandler->getISGFreq() : controlHandler->getCalStimFreq();
+                double pgStim = getFilterBankGain(fStim, filters);
+                double phaseStim = 2.0 * M_PI * std::fmod(fStim * t, 1.0);
+                antI = 0.010 * std::cos(phaseStim) * pgStim;
+                antQ = 0.010 * std::sin(phaseStim) * pgStim;
               }
 
               antI *= attenGain * modeGainScale; 
@@ -509,24 +558,42 @@ namespace nexrx {
                   double m = 1.0 / std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
                   lo_cos[ch] *= m; lo_sin[ch] *= m;
               }
+              double rm = 1.0 / std::sqrt(recombCos * recombCos + recombSin * recombSin);
+              recombCos *= rm; recombSin *= rm;
           }
+
+          // STM32 on-chip recombination:
+          // Shift OSD0 DOWN by k: (i + j*q) * (cos - j*sin)
+          double s0_s_i = filt_i[0] * recombCos + filt_q[0] * recombSin;
+          double s0_s_q = filt_q[0] * recombCos - filt_i[0] * recombSin;
+
+          // Shift OSD1 UP by k: (i + j*q) * (cos + j*sin)
+          double s1_s_i = filt_i[1] * recombCos - filt_q[1] * recombSin;
+          double s1_s_q = filt_q[1] * recombCos + filt_i[1] * recombSin;
+
+          // Coherently sum both OSDs into a single orthogonal I/Q pair
+          double comb_i = (s0_s_i + s1_s_i) * 0.5;
+          double comb_q = (s0_s_q + s1_s_q) * 0.5;
+
+          // Advance recombination phasor
+          double nextRCos = recombCos * recombCos_d - recombSin * recombSin_d;
+          double nextRSin = recombSin * recombCos_d + recombCos * recombSin_d;
+          recombCos = nextRCos;
+          recombSin = nextRSin;
 
           IQFrame pk;
           pk.sequence = (uint32_t)outputSample;
           pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
           
           constexpr double scale = 8388607.0 / 1.65;
+          auto quantize = [&](double v) {
+              double dither = noiseGens[0].next() * 2.0;
+              return static_cast<int_fast32_t>(std::clamp(std::round(v * pgaGain * scale + dither), -8388608.0, 8388607.0));
+          };
 
-          int32_t maxPeak = 0;
-          for (int ch = 0; ch < 2; ++ch) {
-              auto quantize = [&](double v) {
-                  double dither = noiseGens[ch].next() * 2.0;
-                  return static_cast<int_fast32_t>(std::clamp(std::round(v * pgaGain * scale + dither), -8388608.0, 8388607.0));
-              };
-              pk.osd[ch].i = quantize(filt_i[ch]);
-              pk.osd[ch].q = quantize(filt_q[ch]);
-              maxPeak = std::max({maxPeak, std::abs(pk.osd[ch].i), std::abs(pk.osd[ch].q)});
-          }
+          pk.sample.i = quantize(comb_i);
+          pk.sample.q = quantize(comb_q);
+          int32_t maxPeak = std::max(std::abs(pk.sample.i), std::abs(pk.sample.q));
           
           // Update AGC with peak from this sample
           agc.processReflex(maxPeak);
@@ -565,8 +632,8 @@ namespace nexrx {
         control->closeConnection();
       }
 
-      if (opts.durationMS > 0) {
-          break;
+      if (opts.durationMS > 0 || opts.singleSession || opts.timeoutSec > 0.0) {
+        break;
       }
     }
     return 0;

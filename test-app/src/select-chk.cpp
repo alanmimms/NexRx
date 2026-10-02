@@ -59,7 +59,7 @@ TestStatus select_chk(RemoteDevice& device, std::string& message) {
             std::vector<std::complex<double>> buffer;
             auto callback = [&](const IQFrame& frame) {
                 if (buffer.size() < FFT_SIZE) {
-                    buffer.push_back({(double)frame.osd[0].i, (double)frame.osd[0].q});
+                    buffer.push_back({(double)frame.sample.i, (double)frame.sample.q});
                 }
             };
             conn.setFrameCallback(callback);

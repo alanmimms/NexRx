@@ -21,9 +21,16 @@ SMeter.DBM_FLOOR = -127.0     -- Minimum dBm (noise floor)
 SMeter.RMS_FLOOR = 1e-9       -- Minimum RMS threshold
 SMeter.RMS_TO_DBM_OFFSET = 13.0 - 40.0
 
+local function log10(x)
+    if math.log10 then
+        return math.log10(x)
+    end
+    return math.log(x) / math.log(10)
+end
+
 function SMeter.rmsTodBm(rms)
     if rms <= SMeter.RMS_FLOOR then return SMeter.DBM_FLOOR end
-    return 20.0 * math.log10(rms) + SMeter.RMS_TO_DBM_OFFSET
+    return 20.0 * log10(rms) + SMeter.RMS_TO_DBM_OFFSET
 end
 
 function SMeter.dBmToSUnits(dBm)

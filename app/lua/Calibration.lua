@@ -5,7 +5,7 @@
 
 local Calibration = {}
 
-local CAL_FILE = "config/calibration.lua"
+local CAL_FILE = (_G.appPrefix or "") .. "config/calibration.lua"
 
 function Calibration.init()
     -- Load existing calibration if present
@@ -22,7 +22,9 @@ function Calibration.init()
         for i = 0, 1 do
             local ch = calData[i+1]
             if ch then
-                hw.setCalibration(i, ch.gain or 0, ch.phase or 0, ch.align_r or 1.0, ch.align_i or 0.0)
+                if hw and hw.setCalibration then
+                    hw.setCalibration(i, ch.gain or 0, ch.phase or 0, ch.align_r or 1.0, ch.align_i or 0.0)
+                end
                 print(string.format("  OSD%d: %+.3f dB, %+.2f deg | Align: %.4f + j%.4f", 
                     i, ch.gain or 0, ch.phase or 0, ch.align_r or 1.0, ch.align_i or 0.0))
             end
@@ -51,7 +53,9 @@ function Calibration.addResults(results)
             f:write(string.format("  { gain = %.3f, phase = %.2f, align_r = %.4f, align_i = %.4f }, -- OSD%d\n", 
                 res.gain, res.phase, res.align_r or 1.0, res.align_i or 0.0, i-1))
             -- Apply immediately
-            hw.setCalibration(i-1, res.gain, res.phase, res.align_r or 1.0, res.align_i or 0.0)
+            if hw and hw.setCalibration then
+                hw.setCalibration(i-1, res.gain, res.phase, res.align_r or 1.0, res.align_i or 0.0)
+            end
         end
         f:write("}\n")
         f:close()

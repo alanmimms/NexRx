@@ -48,7 +48,9 @@ public:
     float magSq = i * i + q * q;
     rmsAccum += magSq;
     sampleAccum++;
-    if (sampleAccum >= 960) {
+    // RMS accumulation window of ~10ms (48000.0 * 0.010 = 480 samples)
+    static constexpr int rmsWindowSamples = static_cast<int>(48000.0 * 0.010);
+    if (sampleAccum >= rmsWindowSamples) {
       signalLevelRMS.store(std::sqrt(rmsAccum / sampleAccum), std::memory_order_relaxed);
       rmsAccum = 0;
       sampleAccum = 0;
@@ -122,7 +124,7 @@ public:
 private:
   Mode mode = Mode::USB;
   float bfoOffset = 700.0f;
-  float sampleRate = 384000.0f;
+  float sampleRate = 48000.0f;
   float bfoPhase = 0.0f;
   float amDcOffset = 0.0f;
   bool filterEnabled = true;

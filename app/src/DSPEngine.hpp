@@ -120,10 +120,21 @@ private:
   float dc0_i = 0.0f, dc0_q = 0.0f;
   float dc1_i = 0.0f, dc1_q = 0.0f;
 
-  bool audioDecimateSkip = false;
+  static constexpr double inputSampleRate = 384000.0;
+  static constexpr double outputAudioRate = 48000.0;
+  static constexpr int audioDecimationFactor = static_cast<int>(inputSampleRate / outputAudioRate);
+
+  static constexpr int decimTaps = 25;
+  static constexpr int decimBufSize = 32;
+  static constexpr int decimBufMask = decimBufSize - 1;
+
+  float decimHistoryI[decimBufSize] = {};
+  float decimHistoryQ[decimBufSize] = {};
+  int decimRingPos = 0;
+  int decimPhase = 0;
 
   Demodulator demod;
-  BasebandFilter basebandFilter{384000};
+  BasebandFilter basebandFilter{48000};
   DSPDiagnostics dspDiag;
   RateAdaptiveBuffer<float> audioBuffer;
 };

@@ -8,14 +8,14 @@
 
 namespace nexrx {
 
-// Helper to measure RMS power on a specific channel
-static double measureChannelRms(RemoteDevice& device, int channel, int durationMs) {
+// Helper to measure RMS power on the receiver stream
+static double measureChannelRms(RemoteDevice& device, int /*channel*/, int durationMs) {
     auto& conn = device.conn();
     double sumSq = 0;
     uint64_t count = 0;
     auto callback = [&](const IQFrame& frame) {
-        double i = (double)frame.osd[channel].i;
-        double q = (double)frame.osd[channel].q;
+        double i = (double)frame.sample.i;
+        double q = (double)frame.sample.q;
         sumSq += (i * i + q * q);
         count++;
     };
@@ -28,7 +28,7 @@ static double measureChannelRms(RemoteDevice& device, int channel, int durationM
 TestStatus pga_chk(RemoteDevice& device, std::string& message) {
     auto& conn = device.conn();
     std::cout << "\n[PGA] Verifying global gain control (all stages)..." << std::endl;
-    std::cout << "OSD Ch  | Gain 0dB | Gain 20dB | Status" << std::endl;
+    std::cout << "Channel | Gain 0dB | Gain 20dB | Status" << std::endl;
     std::cout << "--------+----------+-----------+--------" << std::endl;
 
     conn.setAtten(45);
@@ -47,29 +47,26 @@ TestStatus pga_chk(RemoteDevice& device, std::string& message) {
     // Baseline: 0dB
     conn.setPGAGain(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    double p0[2];
-    for (int ch = 0; ch < 2; ++ch) p0[ch] = measureChannelRms(device, ch, 50);
+    double p0 = measureChannelRms(device, 0, 50);
 
     // Boost: 20dB
     conn.setPGAGain(5);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    double p20[2];
-    for (int ch = 0; ch < 2; ++ch) p20[ch] = measureChannelRms(device, ch, 50);
+    double p20 = measureChannelRms(device, 0, 50);
 
-    for (int ch = 0; ch < 2; ++ch) {
-        // Expect ~10x voltage increase for 20dB
-        bool ok = (p20[ch] > p0[ch] * 8.0 && p20[ch] < p0[ch] * 12.0); 
-        std::cout << std::setw(7) << ch << " | "
-                  << std::fixed << std::setprecision(1) << std::setw(8) << p0[ch] << " | "
-                  << std::setw(9) << p20[ch] << " | "
-                  << (ok ? "PASSED" : "FAILED") << std::endl;
-        
-        if (!ok) allPassed = false;
-    }
+    // Expect ~10x voltage increase for 20dB
+    bool ok = (p20 > p0 * 8.0 && p20 < p0 * 12.0); 
+    std::cout << "Combined| "
+              << std::fixed << std::setprecision(1) << std::setw(8) << p0 << " | "
+              << std::setw(9) << p20 << " | "
+              << (ok ? "PASSED" : "FAILED") << std::endl;
+    
+    if (!ok) allPassed = false;
 
     conn.setPGAGain(0); // Reset
     conn.setISGEnable(false);
     conn.stopStream();
+    conn.stopReceiving();
 
     if (allPassed) {
         message = "Global PGA gain control verified across all channels";

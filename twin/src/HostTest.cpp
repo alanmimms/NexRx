@@ -59,11 +59,8 @@ IQFrame generateTestFrame(const ToneGenerator& rf, const ToneGenerator& lo,
         return static_cast<int32_t>(std::clamp(scaled, -8388608.0, 8388607.0));
     };
 
-    // Both OSDs get same signal for this test
-    for (int ch = 0; ch < 2; ++ch) {
-        frame.osd[ch].i = toAdc(i_val);
-        frame.osd[ch].q = toAdc(q_val);
-    }
+    frame.sample.i = toAdc(i_val);
+    frame.sample.q = toAdc(q_val);
 
     return frame;
 }

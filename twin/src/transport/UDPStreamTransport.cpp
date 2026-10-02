@@ -13,8 +13,8 @@ UDPStreamTransport::UDPStreamTransport(const UDPStreamConfig& cfg)
   if (!config.server) {
     receiveBuffer.resize(config.receiveBufferSize);
   } else {
-    // Pre-allocate for the largest possible batch
-    preallocatedPacket.resize(sizeof(IQPacketHeader) + 128 * 6 * 4);
+    // Pre-allocate for the largest possible batch (2 channels per frame)
+    preallocatedPacket.resize(sizeof(IQPacketHeader) + 128 * 2 * sizeof(int32_t));
   }
 }
 
@@ -41,6 +41,11 @@ bool UDPStreamTransport::connect() {
       socketFD = -1;
       return false;
     }
+    struct timeval tv{};
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000;
+    setsockopt(socketFD, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
     running = true;
     receiveThread = std::thread(&UDPStreamTransport::receiveLoop, this);
   }
@@ -50,6 +55,7 @@ bool UDPStreamTransport::connect() {
 void UDPStreamTransport::disconnect() {
   running = false;
   if (socketFD >= 0) {
+    shutdown(socketFD, SHUT_RDWR);
     close(socketFD);
     socketFD = -1;
   }
@@ -71,7 +77,7 @@ TransportError UDPStreamTransport::writeBatch(std::span<const IQFrame> frames) {
     return TransportError::Closed;
   }
 
-  const size_t packetSize = sizeof(IQPacketHeader) + frames.size() * 4 * 4;
+  const size_t packetSize = sizeof(IQPacketHeader) + frames.size() * 2 * sizeof(int32_t);
   if (packetSize > preallocatedPacket.size()) {
       preallocatedPacket.resize(packetSize);
   }
@@ -88,10 +94,8 @@ TransportError UDPStreamTransport::writeBatch(std::span<const IQFrame> frames) {
 
   int32_t* samples = reinterpret_cast<int32_t*>(data + sizeof(IQPacketHeader));
   for (size_t i = 0; i < frames.size(); i++) {
-    samples[i*4 + 0] = frames[i].osd[0].i;
-    samples[i*4 + 1] = frames[i].osd[0].q;
-    samples[i*4 + 2] = frames[i].osd[1].i;
-    samples[i*4 + 3] = frames[i].osd[1].q;
+    samples[i*2 + 0] = frames[i].sample.i;
+    samples[i*2 + 1] = frames[i].sample.q;
   }
 
   std::lock_guard<std::mutex> lock(destMutex);
@@ -113,6 +117,9 @@ void UDPStreamTransport::receiveLoop() {
   uint8_t buffer[65536];
   while (running) {
     ssize_t len = recv(socketFD, buffer, sizeof(buffer), 0);
+    if (len < 0) {
+      continue;
+    }
     if (len < (ssize_t)sizeof(IQPacketHeader)) {
       continue;
     }
@@ -129,10 +136,8 @@ void UDPStreamTransport::receiveLoop() {
       IQFrame frame;
       frame.sequence = header->sequence;
       frame.timestampNS = header->timestampNS;
-      frame.osd[0].i = samples[i*4 + 0];
-      frame.osd[0].q = samples[i*4 + 1];
-      frame.osd[1].i = samples[i*4 + 2];
-      frame.osd[1].q = samples[i*4 + 3];
+      frame.sample.i = samples[i*2 + 0];
+      frame.sample.q = samples[i*2 + 1];
 
       size_t nextWrite = (writePos.load() + 1) % config.receiveBufferSize;
       if (nextWrite == readPos.load()) {

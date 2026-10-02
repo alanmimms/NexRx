@@ -22,6 +22,11 @@ bool UDPStreamClient::connect() {
     return false;
   }
   
+  struct timeval tv{};
+  tv.tv_sec = 0;
+  tv.tv_usec = 100000;
+  ::setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
   sockaddr_in addr{};
   addr.sin_family = AF_INET;
   addr.sin_port = htons(config.port);
@@ -43,6 +48,7 @@ bool UDPStreamClient::connect() {
 void UDPStreamClient::disconnect() {
   running = false;
   if (socket != SOCKET_INVALID) {
+    ::shutdown(socket, SHUT_RDWR);
     socket_close(socket);
     socket = SOCKET_INVALID;
   }
@@ -72,6 +78,9 @@ void UDPStreamClient::receiveLoop() {
   bool firstLog = true;
   while (running) {
     int len = ::recv(socket, reinterpret_cast<char*>(buffer), sizeof(buffer), 0);
+    if (len < 0) {
+      continue;
+    }
     if (len < static_cast<int>(sizeof(IQPacketHeader))) {
       continue;
     }
@@ -92,10 +101,8 @@ void UDPStreamClient::receiveLoop() {
       IQFrame frame;
       frame.sequence = header->sequence;
       frame.timestampNS = header->timestampNS;
-      frame.osd[0].i = samples[i*4 + 0];
-      frame.osd[0].q = samples[i*4 + 1];
-      frame.osd[1].i = samples[i*4 + 2];
-      frame.osd[1].q = samples[i*4 + 3];
+      frame.sample.i = samples[i*2 + 0];
+      frame.sample.q = samples[i*2 + 1];
 
       size_t nextWrite = (writePos.load() + 1) % config.receiveBufferSize;
       if (nextWrite == readPos.load()) {

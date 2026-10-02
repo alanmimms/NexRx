@@ -162,9 +162,13 @@ std::optional<std::vector<uint8_t>> TCPControlTransport::receiveMessage(int fd, 
   
   setSocketTimeout(fd, timeout);
   
+  errno = 0;
   uint32_t len;
   int r = recv(fd, &len, 4, 0);
   if (r <= 0) {
+    if (r == 0) {
+      errno = 0;
+    }
     return std::nullopt; // Closed or Error
   }
   if (r != 4) {

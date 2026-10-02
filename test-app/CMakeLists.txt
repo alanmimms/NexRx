@@ -17,25 +17,25 @@ set(TWIN_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../twin/src")
 include(FetchContent)
 
 # tinycbor
-FetchContent_Declare(
-    tinycbor
-    GIT_REPOSITORY https://github.com/intel/tinycbor.git
-    GIT_TAG v0.6.0
-)
-FetchContent_MakeAvailable(tinycbor)
-
-# Build tinycbor as a static library
-FetchContent_GetProperties(tinycbor)
-if(NOT tinycbor_POPULATED)
-    FetchContent_Populate(tinycbor)
+if(NOT TARGET tinycbor AND NOT TARGET tinycbor_lib)
+  FetchContent_Declare(
+      tinycbor
+      GIT_REPOSITORY https://github.com/intel/tinycbor.git
+      GIT_TAG v0.6.0
+  )
+  FetchContent_MakeAvailable(tinycbor)
+  FetchContent_GetProperties(tinycbor)
+  if(NOT tinycbor_POPULATED)
+      FetchContent_Populate(tinycbor)
+  endif()
+  add_library(tinycbor_lib STATIC
+      ${tinycbor_SOURCE_DIR}/src/cborencoder.c
+      ${tinycbor_SOURCE_DIR}/src/cborparser.c
+      ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
+      ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
+  )
+  target_include_directories(tinycbor_lib PUBLIC ${tinycbor_SOURCE_DIR}/src)
 endif()
-add_library(tinycbor_lib STATIC
-    ${tinycbor_SOURCE_DIR}/src/cborencoder.c
-    ${tinycbor_SOURCE_DIR}/src/cborparser.c
-    ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
-    ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
-)
-target_include_directories(tinycbor_lib PUBLIC ${tinycbor_SOURCE_DIR}/src)
 
 # Threads
 find_package(Threads REQUIRED)
@@ -62,11 +62,19 @@ target_include_directories(nexrx-test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${APP_SRC_DIR}
     ${TWIN_SRC_DIR}
-    ${tinycbor_SOURCE_DIR}/src
 )
+if(DEFINED tinycbor_SOURCE_DIR)
+    target_include_directories(nexrx-test PRIVATE ${tinycbor_SOURCE_DIR}/src)
+endif()
+
+if(TARGET tinycbor)
+    set(TINYCBOR_TARGET tinycbor)
+else()
+    set(TINYCBOR_TARGET tinycbor_lib)
+endif()
 
 target_link_libraries(nexrx-test PRIVATE
-    tinycbor_lib
+    ${TINYCBOR_TARGET}
     Threads::Threads
 )
 

@@ -1,6 +1,7 @@
 #include "GUIEngine.hpp"
 #include "AppLuaBridge.hpp"
 #include <iostream>
+#include <fstream>
 #include <csignal>
 #include <cbor.h>
 
@@ -18,6 +19,7 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
 
   // 2. Load Font
   Font font = LoadFontEx("fonts/DejaVuSans.ttf", 32, NULL, 0);
+  if (font.texture.id == 0) font = LoadFontEx("app/fonts/DejaVuSans.ttf", 32, NULL, 0);
   if (font.texture.id == 0) font = LoadFontEx("../fonts/DejaVuSans.ttf", 32, NULL, 0);
   if (font.texture.id == 0) font = LoadFontEx("uitest/fonts/DejaVuSans.ttf", 32, NULL, 0);
   if (font.texture.id == 0) font = LoadFontEx("../uitest/fonts/DejaVuSans.ttf", 32, NULL, 0);
@@ -51,18 +53,25 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
   });
 
   // 4. Lua Setup
+  std::string prefix = "";
+  if (!std::ifstream("lua/SetBox.lua").good() && std::ifstream("app/lua/SetBox.lua").good()) {
+    prefix = "app/";
+  }
+
   lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math, sol::lib::os, sol::lib::debug, sol::lib::io);
-  lua["basePath"] = "lua/";
-  lua["package"]["path"] = "lua/?.lua;lua/?/init.lua";
+  lua["appPrefix"] = prefix;
+  lua["basePath"] = prefix + "lua/";
+  std::string pkgPath = prefix + "lua/?.lua;" + prefix + "lua/?/init.lua;" + prefix + "?.lua;" + prefix + "?/init.lua;lua/?.lua;lua/?/init.lua";
+  lua["package"]["path"] = pkgPath;
   
   AppLuaBridge::registerWithLua(lua, this);
 
   try {
     // Load SetBox first as it's a core dependency
-    lua.safe_script_file("lua/SetBox.lua");
+    lua.safe_script_file(prefix + "lua/SetBox.lua");
     
     // Load the main entry point
-    lua.safe_script_file("lua/Main.lua");
+    lua.safe_script_file(prefix + "lua/Main.lua");
     
     // In our new architecture, Main.lua should return the UI module with standard hooks
     uiModule = lua["UI"]; 

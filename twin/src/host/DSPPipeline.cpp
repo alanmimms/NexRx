@@ -61,16 +61,7 @@ std::vector<Complex> DSPPipeline::processBatch(const std::vector<IQFrame>& frame
 }
 
 Complex DSPPipeline::combineOsd(const IQFrame& frame) {
-    // Convert each OSD output to complex
-    Complex o0 = sampleToComplex(frame.osd[0]);
-    Complex o1 = sampleToComplex(frame.osd[1]);
-
-    // Apply weights
-    o0 *= config_.osdWeights[0];
-    o1 *= config_.osdWeights[1];
-
-    // Combine OSD0 and OSD1
-    return (o0 + o1) / 2.0;
+    return sampleToComplex(frame.sample);
 }
 
 Complex DSPPipeline::removeDc(const Complex& sample) {

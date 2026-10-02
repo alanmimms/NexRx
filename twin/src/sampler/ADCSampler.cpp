@@ -97,16 +97,16 @@ std::optional<IQFrame> ADCSampler::sample() {
   frame.sequence = sequence;
   frame.flags = 0;
 
-  // Sample dual OSD channels
+  // Sample combined OSD channels
   bool allValid = true;
-  for (size_t i = 0; i < 2; ++i) {
-    auto sampleVal = sampleChannel(i);
-    if (sampleVal) {
-      frame.osd[i] = *sampleVal;
-    } else {
-      frame.osd[i] = IQSample{0, 0};
-      allValid = false;
-    }
+  auto s0 = sampleChannel(0);
+  auto s1 = sampleChannel(1);
+  if (s0 && s1) {
+    frame.sample.i = (s0->i + s1->i) / 2;
+    frame.sample.q = (s0->q + s1->q) / 2;
+  } else {
+    frame.sample = IQSample{0, 0};
+    allValid = false;
   }
 
   // Update timing for next sample

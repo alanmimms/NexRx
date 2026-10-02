@@ -538,14 +538,26 @@ function SetBox.optString(name, default) return globalCtx:optString(name, defaul
 -- =============================================================================
 
 function SetBox.loadFile(path)
-    local chunk, err = loadfile(path, "t", _G)
+    local resolvedPath = path
+    local f = io.open(resolvedPath, "r")
+    if not f and _G.appPrefix and _G.appPrefix ~= "" then
+        local candidate = _G.appPrefix .. path
+        local f2 = io.open(candidate, "r")
+        if f2 then
+            f2:close()
+            resolvedPath = candidate
+        end
+    else
+        if f then f:close() end
+    end
+    local chunk, err = loadfile(resolvedPath, "t", _G)
     if not chunk then
-        print("[SetBox] Error loading " .. path .. ": " .. tostring(err))
+        print("[SetBox] Error loading " .. resolvedPath .. ": " .. tostring(err))
         return false
     end
     local ok, result = pcall(chunk)
     if not ok then
-        print("[SetBox] Error executing " .. path .. ": " .. tostring(result))
+        print("[SetBox] Error executing " .. resolvedPath .. ": " .. tostring(result))
         return false
     end
     return true

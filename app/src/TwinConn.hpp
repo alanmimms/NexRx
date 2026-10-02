@@ -79,6 +79,8 @@ public:
 
   [[nodiscard]] uint64_t getFramesReceived() const { return framesReceivedCount; }
   [[nodiscard]] uint64_t getLastSequence() const { return lastSequenceReceived; }
+  [[nodiscard]] uint64_t getBufferOverruns() const;
+  [[nodiscard]] uint64_t getFramesDropped() const;
 
 private:
   void receiveLoop();

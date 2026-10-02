@@ -39,7 +39,13 @@ bool TwinConn::initialize(const TwinConfig& cfg) {
 void TwinConn::shutdown() {
   stopReceiving();
   if (control && connected) {
-    sendCBORRequest(Control::CMD_GBYE, {});
+    uint8_t buf[64];
+    CborEncoder enc, arr;
+    cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+    cbor_encoder_create_array(&enc, &arr, 1);
+    cbor_encode_uint(&arr, Control::CMD_GBYE);
+    cbor_encoder_close_container(&enc, &arr);
+    sendCBORRequest(Control::CMD_GBYE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)});
     control->disconnect();
   }
   if (stream) {
@@ -49,8 +55,11 @@ void TwinConn::shutdown() {
 }
 
 bool TwinConn::startReceiving() {
-  if (!connected || receiving) {
+  if (!connected) {
     return false;
+  }
+  if (receiving) {
+    return true;
   }
   stopRequested = false;
   receiving = true;
@@ -87,22 +96,25 @@ size_t TwinConn::pollFrames(size_t maxFrames) {
     ++framesReceivedCount;
     ++count;
     frameBuffer.push_back(frame);
+  }
 
+  if (count > 0) {
     std::lock_guard<std::mutex> lock(callbackMutex);
     if (frameCallback) {
-      frameCallback(frame);
+      for (const auto& frame : frameBuffer) {
+        frameCallback(frame);
+      }
     }
-  }
-  std::lock_guard<std::mutex> lock(callbackMutex);
-  if (!frameBuffer.empty() && batchCallback) {
-    batchCallback(frameBuffer);
+    if (batchCallback) {
+      batchCallback(frameBuffer);
+    }
   }
   return count;
 }
 
 void TwinConn::receiveLoop() {
   while (!stopRequested) {
-    if (pollFrames(100) == 0) {
+    if (pollFrames(512) == 0) {
       std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
   }
@@ -309,6 +321,14 @@ uint64_t TwinConn::getTimestamp() {
 std::vector<uint8_t> TwinConn::getState() {
   std::lock_guard<std::mutex> lock(stateMutex);
   return cachedStateCBOR;
+}
+
+uint64_t TwinConn::getBufferOverruns() const {
+  return stream ? stream->bufferOverruns() : 0;
+}
+
+uint64_t TwinConn::getFramesDropped() const {
+  return stream ? stream->framesDropped() : 0;
 }
 
 } // namespace nexrx

@@ -15,7 +15,7 @@ DSPEngine::DSPEngine() {
   iqBuffer.assign(FFT_SIZE * 2, 0.0f);
   spectrumData.assign(FFT_SIZE, -100.0f);
   audioBuffer.configure(nexrx::BufferConfig{32768});
-  demod.setSampleRate(384000.0f);
+  demod.setSampleRate(48000.0f);
   
   // Default alignment for Dual-OSD
   staticCal[0].alignR = 1.0f; staticCal[0].alignI = 0.0f;
@@ -91,125 +91,42 @@ std::vector<float> DSPEngine::getSpectrumData() {
 
 using Complex = std::complex<float>;
 
+// 25-tap anti-aliasing FIR filter coefficients for 8:1 decimation (384ksps -> 48ksps, fc = 18 kHz)
+static constexpr float decimCoeffs[25] = {
+  -0.00090794f, -0.00030340f,  0.00098332f,  0.00400265f,  0.00975136f,
+   0.01887400f,  0.03141413f,  0.04668369f,  0.06329286f,  0.07934581f,
+   0.09276679f,  0.10168846f,  0.10481654f,  0.10168846f,  0.09276679f,
+   0.07934581f,  0.06329286f,  0.04668369f,  0.03141413f,  0.01887400f,
+   0.00975136f,  0.00400265f,  0.00098332f, -0.00030340f, -0.00090794f
+};
+
 void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
-  float i0, q0, i1, q1;
-  frame.osd[0].toFloat(i0, q0); 
-  frame.osd[1].toFloat(i1, q1); 
+  float iF, qF;
+  frame.toFloat(iF, qF);
   
   // DC Offset Correction
   constexpr float dcAlphaFast = 0.00025f; // ~15Hz cutoff at 384ksps
-  
-  dc0_i = (1.0f - dcAlphaFast) * dc0_i + dcAlphaFast * i0;
-  dc0_q = (1.0f - dcAlphaFast) * dc0_q + dcAlphaFast * q0;
-  dc1_i = (1.0f - dcAlphaFast) * dc1_i + dcAlphaFast * i1;
-  dc1_q = (1.0f - dcAlphaFast) * dc1_q + dcAlphaFast * q1;
+  dc0_i = (1.0f - dcAlphaFast) * dc0_i + dcAlphaFast * iF;
+  dc0_q = (1.0f - dcAlphaFast) * dc0_q + dcAlphaFast * qF;
+  iF -= dc0_i;
+  qF -= dc0_q;
 
-  i0 -= dc0_i; q0 -= dc0_q;
-  i1 -= dc1_i; q1 -= dc1_q;
-
-  // 1. Independent Blind I/Q Correction for both mixers
-  // S_corr = S - w*conj(S)
-  Complex s0(i0, q0), s1(i1, q1);
-  Complex wIQ0(wIQ0_r, wIQ0_i), wIQ1(wIQ1_r, wIQ1_i);
-  
-  Complex s0_c = s0 - wIQ0 * std::conj(s0);
-  Complex s1_c = s1 - wIQ1 * std::conj(s1);
-
-  // 2. High-Precision Frequency Alignment
-  // Use incremental rotation (phasors) to avoid trig calls per sample
-  constexpr double sampleRate = 384000.0;
-  double k_hz = osdOffsetKhz * 1000.0;
-  
-  if (std::abs(k_hz - lastK_hz) > 0.1) {
-    double phaseInc = 2.0 * M_PI * k_hz / sampleRate;
-    shiftCos_d = std::cos(phaseInc);
-    shiftSin_d = std::sin(phaseInc);
-    lastK_hz = k_hz;
-  }
-
-  // Shift OSD0 DOWN by k: (i + j*q) * (cos - j*sin)
-  Complex s0_s(s0_c.real() * shiftCos + s0_c.imag() * shiftSin, s0_c.imag() * shiftCos - s0_c.real() * shiftSin);
-  // Shift OSD1 UP by k: (i + j*q) * (cos + j*sin)
-  Complex s1_s(s1_c.real() * shiftCos - s1_c.imag() * shiftSin, s1_c.imag() * shiftCos + s1_c.real() * shiftSin);
-
-  // 3. Dual-OSD Coherent Summation
-  Complex wA0(wA0_r, wA0_i);
-  Complex combined = (wA0 * s0_s + s1_s) * 0.5f;
-  
-  // Final combined signal
-  Complex err = matrixBypass.load() ? s0_s : combined;
-
-  // Update diagnostics for UI
-  dspDiag.lmsWeightR.store(std::abs(Complex(wA0_r, wA0_i)));
-  dspDiag.lmsWeightI.store(0.0f);
-
-  // 4. Update Calibration (only if active)
-  if (calibrationActive.load()) {
-    // Accumulate for I/Q Correctors (S_corr = S - w S*)
-    auto accIQ = [](Complex s, float& ar, float& ai, float& p) {
-        Complex u = s * s; ar += u.real(); ai += u.imag(); p += std::norm(s);
-    };
-    accIQ(s0, accIQ0_r, accIQ0_i, pIQ0);
-    accIQ(s1, accIQ1_r, accIQ1_i, pIQ1);
-    
-    // Accumulate for Alignment (Match shifted OSD0 to OSD1 reference)
-    auto accA = [](Complex ref, Complex s_s, float& ar, float& ai, float& p) {
-        Complex u = ref * std::conj(s_s); ar += u.real(); ai += u.imag(); p += std::norm(s_s);
-    };
-    Complex s0_raw_s(s0.real() * shiftCos + s0.imag() * shiftSin, s0.imag() * shiftCos - s0.real() * shiftSin);
-    accA(s1, s0_raw_s, accA0_r, accA0_i, pA0);
-
-    if (++sampleBlockCounter >= 4093 * 8) { // 32,744 samples (~340ms)
-      auto solveW = [](float ar, float ai, float p, float& wr, float& wi) {
-          if (p > 1e-10f) { wr = 0.5f * ar / p; wi = 0.5f * ai / p; }
-      };
-      solveW(accIQ0_r, accIQ0_i, pIQ0, wIQ0_r, wIQ0_i);
-      solveW(accIQ1_r, accIQ1_i, pIQ1, wIQ1_r, wIQ1_i);
-      
-      auto solveWA = [](float ar, float ai, float p, float& wr, float& wi) {
-          if (p > 1e-10f) { wr = ar / p; wi = ai / p; }
-      };
-      solveWA(accA0_r, accA0_i, pA0, wA0_r, wA0_i);
-
-      // Final Diagnostics / Results
-      auto toGain = [](float r) { return 20.0f * std::log10(std::max(0.1f, 1.0f - 2.0f * r)); };
-      auto toPhase = [](float i) { return -2.0f * i * 180.0f / M_PI; };
-      
-      float g0 = toGain(wIQ0_r), p0 = toPhase(wIQ0_i);
-      float g1 = toGain(wIQ1_r), p1 = toPhase(wIQ1_i);
-
-      std::cout << "\n[DSP] Calibration Complete. Append to config/calibration.lua:" << std::endl;
-      printf("calibration.addResults({\n"
-             "  { gain=%+.3f, phase=%+.2f, align_r=%.4f, align_i=%.4f }, -- OSD0\n"
-             "  { gain=%+.3f, phase=%+.2f, align_r=1.0000, align_i=0.0000 }  -- OSD1\n"
-             "})\n",
-             g0, p0, wA0_r, wA0_i, 
-             g1, p1);
-
-      calibrationActive.store(false);
-      sampleBlockCounter = 0;
-      
-      dspDiag.gainErr0.store(g0); dspDiag.phaseErr0.store(p0);
-      dspDiag.gainErr1.store(g1); dspDiag.phaseErr1.store(p1);
-      dspDiag.alignPhase0.store(std::arg(Complex(wA0_r, wA0_i)) * 180.0f / M_PI);
-    }
-  }
-
-  // 1. Write to spectrum buffer BEFORE gain/filtering (Raw combined signal)
+  // 1. Write to spectrum buffer BEFORE tuning/gain (Raw 384ksps input around VFO)
   size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 
-  iqBuffer[pos*2] = err.real(); iqBuffer[pos*2+1] = err.imag();
-  iqBufferWritePos.store((pos+1)%FFT_SIZE, std::memory_order_release);
+  iqBuffer[pos * 2] = iF;
+  iqBuffer[pos * 2 + 1] = qF;
+  iqBufferWritePos.store((pos + 1) % FFT_SIZE, std::memory_order_release);
 
   // 2. Apply digital gain and RF metering
-  float iF = err.real();
-  float qF = err.imag();
-  
   float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
-  iF *= rfGain; qF *= rfGain;
+  iF *= rfGain;
+  qF *= rfGain;
   float maxR = std::max(std::abs(iF), std::abs(qF));
-  if (maxR > dspDiag.maxRaw.load()) dspDiag.maxRaw.store(maxR);
+  if (maxR > dspDiag.maxRaw.load()) {
+    dspDiag.maxRaw.store(maxR);
+  }
 
-  // 4. Digital Tuning Shift (to bring selected signalbox to DC for demod)
+  // 3. Digital Tuning Shift (to bring selected frequency to DC for demod)
   if (std::abs(tuningOffsetHz - lastTune_hz) > 0.1) {
     constexpr double sampleRate = 384000.0;
     double phaseInc = -2.0 * M_PI * tuningOffsetHz / sampleRate;
@@ -219,32 +136,48 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   }
   float iT = iF * (float)tuneCos - qF * (float)tuneSin;
   float qT = qF * (float)tuneCos + iF * (float)tuneSin;
-  iF = iT; qF = qT;
+  iF = iT;
+  qF = qT;
 
-  basebandFilter.process(iF, qF);
-
-  // Advance phasors for next sample
-  double nextCos = shiftCos * shiftCos_d - shiftSin * shiftSin_d;
-  double nextSin = shiftSin * shiftCos_d + shiftCos * shiftSin_d;
-  shiftCos = nextCos; shiftSin = nextSin;
-  
+  // Advance tuning phasors
   double nextTuneCos = tuneCos * tuneCos_d - tuneSin * tuneSin_d;
   double nextTuneSin = tuneSin * tuneCos_d + tuneCos * tuneSin_d;
-  tuneCos = nextTuneCos; tuneSin = nextTuneSin;
+  tuneCos = nextTuneCos;
+  tuneSin = nextTuneSin;
 
   if ((totalSamplesProcessed & 0x3FFF) == 0) {
-    double mag = std::sqrt(shiftCos * shiftCos + shiftSin * shiftSin);
-    shiftCos /= mag; shiftSin /= mag;
     double tMag = std::sqrt(tuneCos * tuneCos + tuneSin * tuneSin);
-    tuneCos /= tMag; tuneSin /= tMag;
+    tuneCos /= tMag;
+    tuneSin /= tMag;
   }
-  
-  float aOut = demod.process(iF, qF);
-  dspDiag.signalRms.store(demod.getSignalLevelRMS());
-  if (std::abs(aOut) > dspDiag.maxAudio.load()) dspDiag.maxAudio.store(std::abs(aOut));
-  
-  if (!audioDecimateSkip) audioBuffer.write(aOut);
-  audioDecimateSkip = !audioDecimateSkip;
+
+  // Push tuned 384ksps sample into decimation delay line
+  decimHistoryI[decimRingPos] = iF;
+  decimHistoryQ[decimRingPos] = qF;
+  decimRingPos = (decimRingPos + 1) & decimBufMask;
+
+  // 8:1 decimation from 384ksps to 48ksps
+  if (++decimPhase >= audioDecimationFactor) {
+    decimPhase = 0;
+
+    // 25-tap anti-aliasing FIR filter (fc = 18 kHz)
+    float i48 = 0.0f;
+    float q48 = 0.0f;
+    for (int tap = 0; tap < decimTaps; ++tap) {
+      int idx = (decimRingPos - 1 - tap) & decimBufMask;
+      float c = decimCoeffs[tap];
+      i48 += decimHistoryI[idx] * c;
+      q48 += decimHistoryQ[idx] * c;
+    }
+
+    basebandFilter.process(i48, q48);
+    float aOut = demod.process(i48, q48);
+
+    dspDiag.signalRms.store(demod.getSignalLevelRMS());
+    if (std::abs(aOut) > dspDiag.maxAudio.load()) dspDiag.maxAudio.store(std::abs(aOut));
+
+    audioBuffer.write(aOut);
+  }
   totalSamplesProcessed++;
   dspDiag.framesProcessed++;
 }

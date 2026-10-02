@@ -126,12 +126,20 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   hwTable["setOSDOffset"] = setOsdOffsetFn;
   hwTable["setQSDOffset"] = setOsdOffsetFn;
+  hwTable["setCalibration"] = [engine](int ch, double gainDB, double phaseDeg, sol::optional<double> alignR, sol::optional<double> alignI) {
+    engine->getDSP().setCalibration(ch, static_cast<float>(gainDB), static_cast<float>(phaseDeg),
+                                    static_cast<float>(alignR.value_or(1.0)),
+                                    static_cast<float>(alignI.value_or(0.0)));
+  };
+  hwTable["setRFAttenuation"] = hwTable["setAttenuation"];
   
   lua["hw"] = hwTable;
 
   // 3. RX Control (rx table)
   sol::table rxTable = lua.create_table();
   rxTable["setModeId"] = [engine](int id) { engine->getDSP().setModeId(id); };
+  rxTable["getModeId"] = [engine]() { return engine->getDSP().getModeId(); };
+  rxTable["getSignalRms"] = [engine]() { return engine->getDSP().getDiagnostics().signalRms.load(); };
   rxTable["setBfoOffset"] = [engine](float hz) { engine->getDSP().getDemod().setBfoOffset(hz); };
   rxTable["setBandpassEnabled"] = [engine](bool en) { engine->getDSP().getFilter().setBandpassEnabled(en); };
   rxTable["setBandpassCenter"] = [engine](float hz) { engine->getDSP().getFilter().setBandpassCenter(hz); };

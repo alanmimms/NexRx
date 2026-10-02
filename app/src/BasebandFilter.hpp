@@ -18,7 +18,7 @@ namespace nexrx {
 
 class BasebandFilter {
 public:
-  explicit BasebandFilter(float sampleRate = 384000.0f);
+  explicit BasebandFilter(float sampleRate = 48000.0f);
 
   // Process complex I/Q sample (in-place)
   void process(float& i, float& q);

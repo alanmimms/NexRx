@@ -41,7 +41,7 @@ local Spectrum = require("ui.Spectrum")
 
 _G.lowestFreq = 100.0e3
 _G.highestFreq = 30.0e6
-_G.sampleRate = 96.0e3
+_G.sampleRate = 384.0e3
 _G.lastSpectrumData = {}
 local frameCount = 0
 local fps = 0

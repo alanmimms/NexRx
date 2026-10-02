@@ -38,29 +38,27 @@ TestStatus iq_bal(RemoteDevice& device, std::string& message) {
     conn.startReceiving();
 
     bool allOk = true;
-    double fs = 96000.0;
+    double fs = 384000.0;
     double offset = 5000.0;
 
     std::cout << "Channel | Rejection | Derived Gain Err   | Derived Phase Err  " << std::endl;
     std::cout << "--------+-----------+--------------------+--------------------" << std::endl;
 
-    for (int ch = 0; ch < 2; ++ch) {
-        std::vector<double> i_samples, q_samples;
-        auto callback = [&](const IQFrame& frame) {
-            if (i_samples.size() < 8192) {
-                i_samples.push_back((double)frame.osd[ch].i);
-                q_samples.push_back((double)frame.osd[ch].q);
-            }
-        };
-        conn.setFrameCallback(callback);
-        for (int i=0; i<100 && i_samples.size() < 8192; ++i) std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        conn.setFrameCallback(nullptr);
-
+    std::vector<double> i_samples, q_samples;
+    auto callback = [&](const IQFrame& frame) {
         if (i_samples.size() < 8192) {
-            std::cout << std::setw(7) << ch << " | NO DATA" << std::endl;
-            allOk = false; continue;
+            i_samples.push_back((double)frame.sample.i);
+            q_samples.push_back((double)frame.sample.q);
         }
+    };
+    conn.setFrameCallback(callback);
+    for (int i=0; i<100 && i_samples.size() < 8192; ++i) std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    conn.setFrameCallback(nullptr);
 
+    if (i_samples.size() < 8192) {
+        std::cout << "Receiver| NO DATA" << std::endl;
+        allOk = false;
+    } else {
         double ic, is, qc, qs;
         computeRealCoefs(i_samples, offset, fs, ic, is);
         computeRealCoefs(q_samples, offset, fs, qc, qs);
@@ -69,39 +67,40 @@ TestStatus iq_bal(RemoteDevice& device, std::string& message) {
         double q_mag = std::sqrt(qc*qc + qs*qs);
         
         if (i_mag < 1000.0) {
-            std::cout << std::setw(7) << ch << " | SIGNAL TOO WEAK (" << i_mag << ")" << std::endl;
-            allOk = false; continue;
+            std::cout << "Receiver| SIGNAL TOO WEAK (" << i_mag << ")" << std::endl;
+            allOk = false;
+        } else {
+            // Gain Imbalance
+            double g_err = q_mag / i_mag;
+            double g_err_db = 20.0 * std::log10(g_err);
+
+            // Phase Error: Difference from 90 degrees
+            double i_phase = std::atan2(-is, ic);
+            double q_phase = std::atan2(-qs, qc);
+            
+            // Relative phase: Q leads I by (q_phase - i_phase)
+            double phi_err_deg = -((q_phase - i_phase) * (180.0 / M_PI) + 90.0);
+            while (phi_err_deg > 180.0) phi_err_deg -= 360.0;
+            while (phi_err_deg < -180.0) phi_err_deg += 360.0;
+
+            // Image Rejection Ratio (IRR)
+            double phi_rad = phi_err_deg * (M_PI / 180.0);
+            double rej_num = 1.0 + g_err*g_err + 2.0*g_err*std::cos(phi_rad);
+            double rej_den = 1.0 + g_err*g_err - 2.0*g_err*std::cos(phi_rad);
+            double rej = 10.0 * std::log10(rej_num / std::max(1e-10, rej_den));
+
+            std::cout << "Receiver| "
+                      << std::fixed << std::setprecision(1) << std::setw(7) << rej << " dBc | "
+                      << std::setw(15) << std::setprecision(3) << g_err_db << " dB | "
+                      << std::setw(15) << std::setprecision(2) << phi_err_deg << " deg" << std::endl;
+
+            if (rej < 25.0) allOk = false; 
         }
-
-        // Gain Imbalance
-        double g_err = q_mag / i_mag;
-        double g_err_db = 20.0 * std::log10(g_err);
-
-        // Phase Error: Difference from 90 degrees
-        double i_phase = std::atan2(-is, ic);
-        double q_phase = std::atan2(-qs, qc);
-        
-        // Relative phase: Q leads I by (q_phase - i_phase)
-        double phi_err_deg = -((q_phase - i_phase) * (180.0 / M_PI) + 90.0);
-        while (phi_err_deg > 180.0) phi_err_deg -= 360.0;
-        while (phi_err_deg < -180.0) phi_err_deg += 360.0;
-
-        // Image Rejection Ratio (IRR)
-        double phi_rad = phi_err_deg * (M_PI / 180.0);
-        double rej_num = 1.0 + g_err*g_err + 2.0*g_err*std::cos(phi_rad);
-        double rej_den = 1.0 + g_err*g_err - 2.0*g_err*std::cos(phi_rad);
-        double rej = 10.0 * std::log10(rej_num / std::max(1e-10, rej_den));
-
-        std::cout << std::setw(7) << ch << " | "
-                  << std::fixed << std::setprecision(1) << std::setw(7) << rej << " dBc | "
-                  << std::setw(15) << std::setprecision(3) << g_err_db << " dB | "
-                  << std::setw(15) << std::setprecision(2) << phi_err_deg << " deg" << std::endl;
-
-        if (rej < 25.0) allOk = false; 
     }
 
     conn.setISGEnable(false);
     conn.stopStream();
+    conn.stopReceiving();
     if (allOk) { message = "Errors derived using real-component analysis"; return TestStatus::Passed; }
     return TestStatus::Failed;
 }

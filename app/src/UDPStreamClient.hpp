@@ -17,7 +17,7 @@ namespace nexrx {
 
 struct UDPStreamClientConfig {
     uint16_t port = 5001;
-    size_t receiveBufferSize = 8192;
+    size_t receiveBufferSize = 65536;
 };
 
 class UDPStreamClient : public StreamTransport {
