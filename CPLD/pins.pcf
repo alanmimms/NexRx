@@ -4,10 +4,10 @@ set_io tcxo 29
 set_io gnssPPS 32
 
 # SPI Interface
-set_io fpgaMISO 12
-set_io fpgaSCK 15
-set_io fpgaNSS 14
-set_io fpgaMOSI 13
+set_io cpldMISO 12
+set_io cpldSCK 15
+set_io cpldNSS 14
+set_io cpldMOSI 13
 
 # Octature clock outputs
 set_io nPh[0] 1

@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 -m venv --system-site-packages ./.venv
+python3 -m venv ./.venv

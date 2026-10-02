@@ -6,11 +6,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Hardware subprojects
-add_subdirectory(fpga)
+add_subdirectory(CPLD)
 
-# Future software subprojects (to be uncommented as they are integrated)
-# add_subdirectory(app)
-# add_subdirectory(fw)
-# add_subdirectory(test-app)
-# add_subdirectory(twin)
+add_subdirectory(app)
+add_subdirectory(twin)
+
+add_custom_target(fw ALL
+    COMMAND west build -d build 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/fw
+    COMMENT "Building Zephyr firmware via West"
+  )

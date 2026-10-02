@@ -1,0 +1,11 @@
+# Zephyr core requirements (you can point this to the specific Zephyr version you pin)
+-r zephyr/scripts/requirements.txt
+
+# CPLD Register Generation & Tools
+jsonschema
+pyserial
+
+# Host App / Digital Twin Testing Tools
+pytest
+numpy
+matplotlib

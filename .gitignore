@@ -24,3 +24,6 @@ fpga/nexrx-sim
 fpga/*.vcd
 **/__pycache__/
 BOM/
+zephyr/
+modules/
+.west/
