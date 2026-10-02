@@ -23,9 +23,9 @@ struct IQSample {
     int32_t q;  /* Quadrature (24-bit signed) */
 };
 
-/* I/Q Frame - one sample from all three QSDs */
+/* I/Q Frame - one sample from dual OSDs */
 struct IQFrame {
-    struct IQSample qsd[3];  /* QSD0, QSD1, QSD2 */
+    struct IQSample osd[2];  /* OSD0, OSD1 */
     uint64_t timestamp_ns;   /* Simulation timestamp */
     uint32_t sequence;       /* Frame sequence number */
     uint32_t flags;          /* Status flags */

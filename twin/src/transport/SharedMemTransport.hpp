@@ -21,7 +21,7 @@ namespace nexrx {
 //======================================================================
 struct SharedMemConfig {
   std::string name = "/nexrx_iq";     // Shared memory name (must start with /)
-  size_t capacity = 8192;              // Number of frames (8192 = ~85ms at 96kHz)
+  size_t capacity = 8192;              // Number of frames (8192 = ~21ms at 384ksps)
   bool create = false;                 // true = create (producer), false = open (consumer)
 };
 

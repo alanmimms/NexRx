@@ -3,8 +3,8 @@
 ## Overview
 
 NexRx is a high-frequency (HF) amateur radio receiver built on a novel
-hardware design. It streams six channels of I/Q samples at 96kS/s (or
-higher) via a 480Mb/s USB connection to a host PC.
+hardware design. It streams dual OSD I/Q samples (up to 384 kS/s)
+via a 480Mb/s USB connection to a host PC.
 
 The software architecture divides responsibilities strictly to
 maintain high performance while offering maximum flexibility. The host

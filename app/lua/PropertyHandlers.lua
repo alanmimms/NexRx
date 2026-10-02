@@ -131,11 +131,16 @@ end
 -- Hardware Handlers
 -- =============================================================================
 
-handlers.qsdOffsetK = function(value)
-    if hw and hw.setQsdOffset then
-        hw.setQsdOffset(value)
+handlers.osdOffsetK = function(value)
+    if hw then
+        if hw.setOSDOffset then
+            hw.setOSDOffset(value)
+        elseif hw.setQSDOffset then
+            hw.setQSDOffset(value)
+        end
     end
 end
+handlers.qsdOffsetK = handlers.osdOffsetK
 
 handlers.rfAttenuation = function(value)
     if hw and hw.setAttenuation then

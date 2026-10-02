@@ -16,8 +16,8 @@
         compatible = "nexrx,virtual-nco";
         label = "NEXRX_NCO";
         status = "okay";
-        /* Three NCO channels for triple-QSD */
-        num-channels = <3>;
+        /* Two NCO channels for dual-OSD */
+        num-channels = <2>;
     };
 
     /* Virtual ADC interface (I/Q from simulation) */
@@ -25,9 +25,9 @@
         compatible = "nexrx,virtual-adc";
         label = "NEXRX_ADC";
         status = "okay";
-        /* 6 channels: I0, Q0, I1, Q1, I2, Q2 */
-        num-channels = <6>;
-        sample-rate = <96000>;
+        /* 4 channels: I0, Q0, I1, Q1 */
+        num-channels = <4>;
+        sample-rate = <384000>;
         resolution = <24>;
     };
 

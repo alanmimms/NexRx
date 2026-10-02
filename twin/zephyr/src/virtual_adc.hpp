@@ -21,8 +21,8 @@ class TwinTransport;
 
 class VirtualAdc {
 public:
-    static constexpr int NUM_CHANNELS = 6;  // I0, Q0, I1, Q1, I2, Q2
-    static constexpr uint32_t SAMPLE_RATE = 96000;
+    static constexpr int NUM_CHANNELS = 4;  // I0, Q0, I1, Q1
+    static constexpr uint32_t SAMPLE_RATE = 384000;
     static constexpr int RESOLUTION_BITS = 24;
 
     VirtualAdc() = default;

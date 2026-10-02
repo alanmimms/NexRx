@@ -5,7 +5,7 @@
 #include <zcbor_encode.h>
 #include <cmath>
 
-#include "MAX9939.hpp"
+#include "TLV320ADC5140.hpp"
 #include "Si5351Driver.hpp"
 #include "CPLDDriver.hpp"
 #include "AGCManager.hpp"
@@ -108,7 +108,7 @@ void ControlHandler::process(ITransport& transport) {
     case Control::CMD_SET_PGA_GAIN: {
       int32_t code = 0;
       if (zcbor_int32_decode(state, &code)) {
-        MAX9939::setGain(static_cast<uint8_t>(code));
+        TLV320ADC5140::setPGAGain(static_cast<uint8_t>(code));
         handled = true;
       }
       break;

@@ -19,7 +19,7 @@
      triggers upon arrival of network IQ frames.
 
    * *Responsibilities*: Performs frequency shifting (LO rotation),
-	 Triple-QSD combination, LMS balancing, baseband filtering, and
+	 Dual-OSD combination, LMS balancing, baseband filtering, and
 	 demodulation.
 
    * *Constraints*: Strictly No-Blocking. No std::cout, no printf, no

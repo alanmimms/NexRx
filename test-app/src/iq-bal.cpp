@@ -24,7 +24,7 @@ static void computeRealCoefs(const std::vector<double>& samples, double freqHz, 
 
 TestStatus iq_bal(RemoteDevice& device, std::string& message) {
     auto& conn = device.conn();
-    std::cout << "\n[IQ Bal] Measuring QSD Image Rejection & Deriving Errors..." << std::endl;
+    std::cout << "\n[IQ Bal] Measuring OSD Image Rejection & Deriving Errors..." << std::endl;
     
     conn.setAtten(45);
     conn.setHpfBypass(false);
@@ -44,12 +44,12 @@ TestStatus iq_bal(RemoteDevice& device, std::string& message) {
     std::cout << "Channel | Rejection | Derived Gain Err   | Derived Phase Err  " << std::endl;
     std::cout << "--------+-----------+--------------------+--------------------" << std::endl;
 
-    for (int ch = 0; ch < 3; ++ch) {
+    for (int ch = 0; ch < 2; ++ch) {
         std::vector<double> i_samples, q_samples;
         auto callback = [&](const IQFrame& frame) {
             if (i_samples.size() < 8192) {
-                i_samples.push_back((double)frame.qsd[ch].i);
-                q_samples.push_back((double)frame.qsd[ch].q);
+                i_samples.push_back((double)frame.osd[ch].i);
+                q_samples.push_back((double)frame.osd[ch].q);
             }
         };
         conn.setFrameCallback(callback);

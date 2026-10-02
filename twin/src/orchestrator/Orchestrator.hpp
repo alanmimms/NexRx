@@ -16,7 +16,7 @@ namespace nexrx {
 struct OrchestratorConfig {
   std::string netlistPath;
   double durationS = 1.0;
-  double adcSampleRateHz = 96000.0;
+  double adcSampleRateHz = 384000.0;
   bool verbose = true;
   bool realTimeMode = false;
   double simulationTimeStepNS = 10.0;

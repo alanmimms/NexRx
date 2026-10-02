@@ -73,11 +73,11 @@ A response is a CBOR array:
 
 | Command | ID (String) | Args | Description |
 | :--- | :--- | :--- | :--- |
-| `SET_QSD_VFO` | `SVFO` | `[index, freq_hz]` | Sets the NCO frequency for QSD 0, 1, or 2. |
+| `SET_OSD_VFO` | `SVFO` | `[index, freq_hz]` | Sets the NCO frequency for OSD 0 or 1. |
 | `SET_ATTEN` | `SATT` | `[db_value, enabled]` | Enables/disables a specific attenuator stage (3, 6, 12, or 24 dB). |
 | `SET_HPF_BYPASS` | `SHPB` | `[bypass]` | Bypasses the 1.75 MHz AM reject High Pass Filter if true. |
 | `SET_BPF_SELECT` | `SBPF` | `[index]` | Selects one of the 5 BPFs (1=1.8-3.4, 2=3.2-7.5, 3=7.3-14.5, 4=14.3-22, 5=21.8-30). 0 for bypass. |
-| `SET_PGA_GAIN` | `SPGA` | `[gain_db]` | Sets the gain for all 6 MAX9939 PGAs. |
+| `SET_PGA_GAIN` | `SPGA` | `[gain_db]` | Sets the gain for TLV320ADC5140 audio ADC PGAs across both OSD converters. |
 | `SET_TR_MODE`  | `STRM` | `[mode]` | Sets T/R mode: 0=RX (default), 1=TX. |
 
 ### 5.3 Internal Signal Generator (ISG)
@@ -98,13 +98,13 @@ Calibration data is stored as JSON strings.
 | `SET_CALIBRATION`| `SCAL` | `[type, json_data]` | Stores a JSON calibration string for a specific type. |
 | `GET_CALIBRATION`| `GCAL` | `[type]` | Retrieves a JSON calibration string. |
 
-### 5.5 Audio Codec (AK5578)
+### 5.5 Audio ADC (TLV320ADC5140)
 
-Configures the AK5578 audio codec parameters. Note that all 8 channels share a single sample rate.
+Configures the TLV320ADC5140 audio ADC parameters across both OSD converters (four 24-bit channels at 384ksps per OSD).
 
 | Command | ID (String) | Args | Description |
 | :--- | :--- | :--- | :--- |
-| `SET_CODEC` | `SCOD` | `[rate, [ch_map...], gain, filter]` | Configures sample rate, 8-channel TDM mapping, gain, and filter type. |
+| `SET_CODEC` | `SCOD` | `[rate, [ch_map...], gain, filter]` | Configures sample rate, channel mapping, gain, and filter type. |
 
 ## 6. Philosophy
 
@@ -140,10 +140,10 @@ header for USB Bulk transfers.
 | 4 | 4 | uint32 | **Version**: `2` (Binary Format) |
 | 8 | 4 | uint32 | **Sequence**: 32-bit packet counter |
 | 12 | 8 | uint64 | **Timestamp**: 64-bit nanosecond timer |
-| 20 | 4 | uint32 | **Frame Count**: Number of I/Q frames (6 channels/frame) |
-| 24 | N | int32[] | **Samples**: Interleaved `[i0, q0, i1, q1, i2, q2, ...]` |
+| 20 | 4 | uint32 | **Frame Count**: Number of I/Q frames (4 channels/frame) |
+| 24 | N | int32[] | **Samples**: Interleaved `[i0, q0, i1, q1, ...]` |
 
 *   **Sample Alignment**: Each sample is a 32-bit signed integer (S24 sign-
     extended to S32).
-*   **Frame Structure**: A single "frame" consists of 6 samples (I/Q for three
-    QSD stages).
+*   **Frame Structure**: A single "frame" consists of 4 samples (I/Q for two
+    OSD stages).

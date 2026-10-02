@@ -6,7 +6,7 @@ LOG_MODULE_REGISTER(si5351, LOG_LEVEL_INF);
 namespace nexrx {
 
 const struct device* Si5351Driver::getI2CDevice() {
-  static const struct device* dev = DEVICE_DT_GET(DT_NODELABEL(i2c4));
+  static const struct device* dev = DEVICE_DT_GET(DT_NODELABEL(i2c1));
   return dev;
 }
 

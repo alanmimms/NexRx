@@ -157,10 +157,9 @@ local oscillator signals.
    - A bank of 4 octave bandpass filters (1.8-3.4 MHz, 3.2-7.5 MHz, 7.3-14.5 MHz, 21.8-30.0 MHz) paired with a broadcast AM high-pass filter (HPF).
    - BPF selection is routed using **SP4T SKY13322-375LF switches** to select among the four BPF branches. This simplifies component count, eliminates an external inverter package, and reduces the STM32 GPIO control pin count by one.
 
-4. **MAX9939 Differential PGAs & Anti-Aliasing Filters**:
-   - Six MAX9939 differential PGAs (one per I/Q channel across the two OSD paths) provide fine analog gain control (-14 dB to +44 dB).
-   - Differential feedback network uses $10\text{k}\Omega \parallel 150\text{ pF}$ from OUTA/OUTB to INB to set bandwidth.
-   - Output RC network ($330\Omega + 3.3\text{ nF}$) forms a low-pass anti-aliasing filter with a cutoff frequency of $f_c \approx 145\text{ kHz}$ prior to the AK5578 audio ADCs.
+4. **TLV320ADC5140 Integrated PGAs & Anti-Aliasing Filters**:
+   - Each TLV320ADC5140 quad-channel audio ADC incorporates programmable gain amplifiers (PGA) providing 0 dB to 42 dB of analog gain control per channel, configured directly via SPI (SPI4).
+   - Differential input low-pass anti-aliasing filtering prior to ADC conversion protects baseband Nyquist boundaries.
 
 5. **Waterfall Viewport Mode Hysteresis**:
    - Below 15 MHz, the dual iCE40 CPLDs run in 8-phase Octature mode (OSD). Above 15 MHz, they run in 4-phase Quadrature mode (QSD).
@@ -171,7 +170,7 @@ local oscillator signals.
 - **Sensitivity / MDS**: Thermal noise floor at 50Ω, 500 Hz bandwidth is $-141\text{ dBm}$. With a estimated system noise figure of $6\text{ dB}$, Minimum Detectable Signal (MDS) for 10 dB SNR is $\text{MDS} = -125\text{ dBm}$.
 - **Instantaneous Dynamic Range**: $\sim 100\text{ dB}$ (ADC limited).
 - **Blocking Dynamic Range (BDR)**: $142\text{ dB}$ (+17 dBm max input to -125 dBm MDS).
-- **Two-Tone IMD Dynamic Range**: $97\text{ dB}$ (QSD IP3 $+20\text{ dBm}$).
+- **Two-Tone IMD Dynamic Range**: $97\text{ dB}$ (OSD IP3 $+20\text{ dBm}$).
 
 **AGC Implementation:**
 
@@ -242,7 +241,7 @@ serves as the bridge between RF hardware and host PC.
 **Peripheral Usage:**
 
 **I2C Buses:**
-- **Audio Codec Configuration**: Sets up the 6-channel audio codec
+- **Audio Codec Configuration**: Sets up the audio codecs (eight baseband channels across dual OSDs)
 
 **SPI Interfaces:**
 

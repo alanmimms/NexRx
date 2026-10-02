@@ -251,9 +251,13 @@ bool TwinConn::setTrMode(int mode) {
   return !sendCBORRequest(Control::CMD_SET_TR_MODE, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)}).empty();
 }
 
-bool TwinConn::setQsdOffsetKHz(double khz) {
+bool TwinConn::setOSDOffsetKHz(double khz) {
   (void)khz;
   return true;
+}
+
+bool TwinConn::setQsdOffsetKHz(double khz) {
+  return setOSDOffsetKHz(khz);
 }
 
 bool TwinConn::sendCalibrationStimulus(double freqHz, uint64_t durationMs) {

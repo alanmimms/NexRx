@@ -29,8 +29,8 @@ void DSPPipeline::reset() {
 }
 
 Complex DSPPipeline::process(const IQFrame& frame) {
-    // Combine QSD outputs
-    Complex combined = combineQsd(frame);
+    // Combine OSD outputs
+    Complex combined = combineOsd(frame);
 
     // Remove DC offset
     Complex dcRemoved = removeDc(combined);
@@ -60,35 +60,17 @@ std::vector<Complex> DSPPipeline::processBatch(const std::vector<IQFrame>& frame
     return output;
 }
 
-Complex DSPPipeline::combineQsd(const IQFrame& frame) {
-    // Convert each QSD output to complex
-    Complex q0 = sampleToComplex(frame.qsd[0]);
-    Complex q1 = sampleToComplex(frame.qsd[1]);
-    Complex q2 = sampleToComplex(frame.qsd[2]);
+Complex DSPPipeline::combineOsd(const IQFrame& frame) {
+    // Convert each OSD output to complex
+    Complex o0 = sampleToComplex(frame.osd[0]);
+    Complex o1 = sampleToComplex(frame.osd[1]);
 
     // Apply weights
-    q0 *= config_.qsdWeights[0];
-    q1 *= config_.qsdWeights[1];
-    q2 *= config_.qsdWeights[2];
+    o0 *= config_.osdWeights[0];
+    o1 *= config_.osdWeights[1];
 
-    // Basic combining strategy:
-    // QSD0 and QSD1 are standard quadrature (4-phase)
-    // QSD2 is sextature (6-phase) for enhanced image rejection
-
-    Complex combined;
-
-    if (config_.useSextature && config_.qsdWeights[2] > 0) {
-        // Weighted combination of all three
-        // The sextature provides additional image rejection
-        // Simple average for now - more sophisticated combining
-        // would use phase-aligned weighting
-        combined = (q0 + q1 + q2) / 3.0;
-    } else {
-        // Use only QSD0 and QSD1
-        combined = (q0 + q1) / 2.0;
-    }
-
-    return combined;
+    // Combine OSD0 and OSD1
+    return (o0 + o1) / 2.0;
 }
 
 Complex DSPPipeline::removeDc(const Complex& sample) {

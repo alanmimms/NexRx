@@ -9,11 +9,10 @@ details discovered during schematic analysis.
 
 ### Design Choice
 The receiver uses an **OPA1692** operational amplifier to buffer
-resistive voltage dividers, creating the `+1.65V` (QSD) and `+2.5V`
-(PGA) bias references.
+resistive voltage dividers, creating the `+1.65V` (OSD) reference.
 
 ### Rationale
-*   **Low Source Impedance**: The QSD sampling capacitors (470pF)
+*   **Low Source Impedance**: The OSD sampling capacitors (8.2nF)
     charge at frequencies up to 120 MHz. An active buffer ensures the
     bias point remains stable during these rapid switching events,
     preventing "bias sag" that would degrade I/Q balance.
@@ -22,16 +21,16 @@ resistive voltage dividers, creating the `+1.65V` (QSD) and `+2.5V`
     digital power rails that might leak through the resistive
     dividers.
 *   **Multiple Load Driving**: A single buffered reference can drive
-    all three QSD channels and six PGA channels without crosstalk or
-    voltage variation between channels.
+    both OSD channels crosstalk or voltage variation between channels.
 
 ---
 
 ## 2. RF Switching with pHEMTs
 
 ### Design Choice
-The preselector and attenuator stages utilize **AS183-92LF** pHEMT
-(pseudomorphic High Electron Mobility Transistor) switches.
+The preselector and attenuator stages utilize **AS183-92LF** -- and
+their relatives, **SKY13322-375LF** -- pHEMT (pseudomorphic High
+Electron Mobility Transistor) switches.
 
 ### Rationale
 *   **High Linearity**: With an Input IP3 of +43 dBm, these switches
@@ -57,9 +56,9 @@ survivability in harsh RF environments:
     attenuators. Protects the attenuator switch chips from nearby
     high-power transmitters (+40 dBm survival).
 3.  **13V pk-pk Limiter**: A second stage before the preselector.
-    Protects the sensitive QSD analog switches from transients that
+    Protects the sensitive OSD analog switches from transients that
     bypass the primary limiter.
-4.  **ADC Input Diodes**: Final BAV99-style clamping at the AK5578
+4.  **ADC Input Diodes**: Final BAV99-style clamping at the TLV320ADC5140
     inputs to ensure signals never exceed the ADC's power rails.
 
 ---
@@ -71,21 +70,21 @@ The 200Ω to 3x22Ω output transformer uses **hexafilar winding** on a
 BN-43-202 binocular core.
 
 ### Rationale
-*   **Phase/Amplitude Matching**: The triple-QSD architecture relies
-    on mathematical cancellation of harmonics. This requires the
-    three RF inputs to the QSDs to be as identical as possible.
+*   **Phase/Amplitude Matching**: The dual-OSD architecture relies
+    on mathematical cancellation of images and harmonics. This requires the
+    two RF inputs to the OSDs to be as identical as possible.
 *   **Magnetic Coupling**: Hexafilar winding (twisting all six wires
     together before winding) ensures that leakage inductance and
     coupling coefficients are perfectly matched across all channels.
 
-## 5. QSD Biasing Implementation
+## 5. OSD Biasing Implementation
 
 ### Design Choice
-The final implementation uses **10kΩ** bias resistors for the QSD inputs (instead of the 100kΩ originally considered).
+The final implementation uses **10kΩ** bias resistors for the OSD inputs (instead of the 100kΩ originally considered).
 
 ### Rationale
 *   **Thermal Noise Reduction**: Lower resistance values reduce the
-    Johnson-Nyquist noise contribution at the sensitive QSD input stage.
+    Johnson-Nyquist noise contribution at the sensitive OSD input stage.
 *   **Improved Settling Time**: 10kΩ provides a faster RC time constant
     with the AC coupling capacitors, ensuring the DC bias point settles
     quickly during power-up or rapid signal transients.
@@ -101,8 +100,8 @@ The receiver utilizes an external **USB3343** ULPI (UTMI+ Low Pin Interface)
 transceiver instead of the STM32's internal Full-Speed PHY.
 
 ### Rationale
-*   **High-Speed Data Rates**: The NexRx streams six channels of 24-bit,
-    96 kHz I/Q data. At 15-20 Mbps of raw throughput (plus overhead),
+*   **High-Speed Data Rates**: The NexRx streams two channels of 24-bit
+    baseband data (streamed at 384 ksps). At ~12.25 Mbps of raw throughput (plus overhead),
     this exceeds the reliable capacity of standard 12 Mbps Full-Speed USB.
 *   **480 Mbps Capability**: The USB3343 provides a true High-Speed (480 Mbps)
     interface, ensuring that the USB bus is never a bottleneck for

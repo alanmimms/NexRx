@@ -5,43 +5,115 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_definitions(SOL_HAS_STD_OPTIONAL=1 SOL_USE_STD_OPTIONAL=1)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-Wno-template-body COMPILER_SUPPORTS_WNO_TEMPLATE_BODY)
+if(COMPILER_SUPPORTS_WNO_TEMPLATE_BODY)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-template-body>)
+endif()
+
 include(FetchContent)
 
 # tinycbor - lightweight CBOR encoder/decoder
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/tinycbor-src")
-  set(tinycbor_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/tinycbor-src")
-else()
-  FetchContent_Declare(
-    tinycbor
-    GIT_REPOSITORY https://github.com/intel/tinycbor.git
-    GIT_TAG v0.6.0
+if(NOT TARGET tinycbor)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/tinycbor-src")
+    set(tinycbor_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/tinycbor-src")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../test-app/build/_deps/tinycbor-src")
+    set(tinycbor_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../test-app/build/_deps/tinycbor-src")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/tinycbor-src")
+    set(tinycbor_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/tinycbor-src")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/tinycbor-src")
+    set(tinycbor_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/tinycbor-src")
+  else()
+    FetchContent_Declare(
+      tinycbor
+      GIT_REPOSITORY https://github.com/intel/tinycbor.git
+      GIT_TAG v0.6.0
+    )
+    FetchContent_GetProperties(tinycbor)
+    if(NOT tinycbor_POPULATED)
+      FetchContent_Populate(tinycbor)
+    endif()
+  endif()
+
+  add_library(tinycbor STATIC
+    ${tinycbor_SOURCE_DIR}/src/cborencoder.c
+    ${tinycbor_SOURCE_DIR}/src/cborparser.c
+    ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
+    ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
   )
-  FetchContent_GetProperties(tinycbor)
-  if(NOT tinycbor_POPULATED)
-    FetchContent_Populate(tinycbor)
+  target_include_directories(tinycbor PUBLIC ${tinycbor_SOURCE_DIR}/src)
+endif()
+
+# sol2 is header-only, for Lua bindings
+if(NOT TARGET sol2)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/sol2-src")
+    add_library(sol2 INTERFACE)
+    add_library(sol2::sol2 ALIAS sol2)
+    target_include_directories(sol2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/sol2-src/include")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../uitest/build/_deps/sol2-src")
+    add_library(sol2 INTERFACE)
+    add_library(sol2::sol2 ALIAS sol2)
+    target_include_directories(sol2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/../uitest/build/_deps/sol2-src/include")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/sol2-src")
+    add_library(sol2 INTERFACE)
+    add_library(sol2::sol2 ALIAS sol2)
+    target_include_directories(sol2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/sol2-src/include")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/sol2-src")
+    add_library(sol2 INTERFACE)
+    add_library(sol2::sol2 ALIAS sol2)
+    target_include_directories(sol2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/sol2-src/include")
+  else()
+    FetchContent_Declare(
+      sol2
+      GIT_REPOSITORY https://github.com/ThePhD/sol2.git
+      GIT_TAG v3.3.0
+    )
+    FetchContent_MakeAvailable(sol2)
   endif()
 endif()
 
-add_library(tinycbor STATIC
-  ${tinycbor_SOURCE_DIR}/src/cborencoder.c
-  ${tinycbor_SOURCE_DIR}/src/cborparser.c
-  ${tinycbor_SOURCE_DIR}/src/cborerrorstrings.c
-  ${tinycbor_SOURCE_DIR}/src/cborvalidation.c
-)
-target_include_directories(tinycbor PUBLIC ${tinycbor_SOURCE_DIR}/src)
-
-# sol2 is header-only, for Lua bindings
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/sol2-src")
-  add_library(sol2 INTERFACE)
-  add_library(sol2::sol2 ALIAS sol2)
-  target_include_directories(sol2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/sol2-src/include")
+# Lua 5.4 - FetchContent pinned to v5.4.8
+if(TARGET lua)
+  # Target already defined
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/lua-src")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../uitest/build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../uitest/build/_deps/lua-src")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/lua-src")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/lua-src")
 else()
   FetchContent_Declare(
-    sol2
-    GIT_REPOSITORY https://github.com/ThePhD/sol2.git
-    GIT_TAG v3.3.0
+    lua
+    GIT_REPOSITORY https://github.com/lua/lua.git
+    GIT_TAG v5.4.8
   )
-  FetchContent_MakeAvailable(sol2)
+  FetchContent_GetProperties(lua)
+  if(NOT lua_POPULATED)
+    FetchContent_Populate(lua)
+  endif()
+endif()
+
+if(NOT TARGET lua)
+  if(EXISTS "${lua_SOURCE_DIR}/onelua.c")
+    add_library(lua STATIC ${lua_SOURCE_DIR}/onelua.c)
+    target_compile_definitions(lua PRIVATE MAKE_LIB)
+  else()
+    file(GLOB LUA_SOURCES "${lua_SOURCE_DIR}/*.c")
+    list(FILTER LUA_SOURCES EXCLUDE REGEX ".*(lua|luac|ltests)\\.c$")
+    add_library(lua STATIC ${LUA_SOURCES})
+  endif()
+  add_library(lua::lua ALIAS lua)
+  set_target_properties(lua PROPERTIES C_STANDARD 99)
+  target_include_directories(lua PUBLIC ${lua_SOURCE_DIR})
+  if(UNIX AND NOT APPLE)
+    target_compile_definitions(lua PRIVATE LUA_USE_LINUX)
+    target_link_libraries(lua PUBLIC m dl)
+  elseif(APPLE)
+    target_compile_definitions(lua PRIVATE LUA_USE_MACOSX)
+    target_link_libraries(lua PUBLIC m)
+  endif()
 endif()
 
 # Xyce paths
@@ -166,31 +238,17 @@ add_executable(nexrx-signalgen
 # Libraries
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
-  pkg_check_modules(LUA54 lua5.4)
   pkg_check_modules(ESPEAK espeak-ng)
-endif()
-
-# Fallback for Lua
-if(NOT LUA54_FOUND)
-  if(EXISTS "/home/alan/ham/vcpkg/installed/x64-linux/lib/libluajit-5.1.a")
-    set(LUA54_LIBRARIES "/home/alan/ham/vcpkg/installed/x64-linux/lib/libluajit-5.1.a")
-    set(LUA54_INCLUDE_DIRS "/home/alan/ham/vcpkg/installed/x64-linux/include/luajit-2.1")
-  else()
-    find_package(Lua REQUIRED)
-    set(LUA54_LIBRARIES ${LUA_LIBRARIES})
-    set(LUA54_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
-  endif()
 endif()
 
 target_link_libraries(nexrx-signalgen PRIVATE 
   tinycbor
   sol2::sol2
-  ${LUA54_LIBRARIES}
+  lua
   pthread 
   dl
   m
 )
-target_include_directories(nexrx-signalgen PRIVATE ${LUA54_INCLUDE_DIRS})
 
 if(ESPEAK_FOUND)
   target_link_libraries(nexrx-signalgen PRIVATE ${ESPEAK_LIBRARIES})
@@ -205,7 +263,7 @@ if(BUILD_TWIN_XYCE AND EXISTS "${XYCE_LIBRARY}")
   target_link_libraries(nexrx-twin PRIVATE 
     tinycbor
     sol2::sol2
-    ${LUA54_LIBRARIES}
+    lua
     ${XYCE_LIBRARY}
     ${TRILINOS_LIBRARIES}
     ${FFTW3_LIBRARY}
@@ -218,5 +276,4 @@ if(BUILD_TWIN_XYCE AND EXISTS "${XYCE_LIBRARY}")
     dl
     m
   )
-  target_include_directories(nexrx-twin PRIVATE ${LUA54_INCLUDE_DIRS})
 endif()

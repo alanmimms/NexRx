@@ -220,8 +220,8 @@ void testRfCapturePlayer() {
     // Create synthetic I/Q data: 10kHz baseband tone
     std::vector<float> i_samples, q_samples;
     constexpr double baseband_freq = 10000.0;  // 10 kHz
-    constexpr double sampleRate = 96000.0;    // 96 kHz
-    constexpr int num_samples = 960;           // 10ms of data
+    constexpr double sampleRate = 384000.0;    // 384ksps
+    constexpr int num_samples = 3840;          // 10ms of data
 
     for (int i = 0; i < num_samples; ++i) {
         double t = i / sampleRate;

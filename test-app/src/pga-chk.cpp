@@ -14,8 +14,8 @@ static double measureChannelRms(RemoteDevice& device, int channel, int durationM
     double sumSq = 0;
     uint64_t count = 0;
     auto callback = [&](const IQFrame& frame) {
-        double i = (double)frame.qsd[channel].i;
-        double q = (double)frame.qsd[channel].q;
+        double i = (double)frame.osd[channel].i;
+        double q = (double)frame.osd[channel].q;
         sumSq += (i * i + q * q);
         count++;
     };
@@ -28,7 +28,7 @@ static double measureChannelRms(RemoteDevice& device, int channel, int durationM
 TestStatus pga_chk(RemoteDevice& device, std::string& message) {
     auto& conn = device.conn();
     std::cout << "\n[PGA] Verifying global gain control (all stages)..." << std::endl;
-    std::cout << "QSD Ch  | Gain 0dB | Gain 20dB | Status" << std::endl;
+    std::cout << "OSD Ch  | Gain 0dB | Gain 20dB | Status" << std::endl;
     std::cout << "--------+----------+-----------+--------" << std::endl;
 
     conn.setAtten(45);
@@ -47,16 +47,16 @@ TestStatus pga_chk(RemoteDevice& device, std::string& message) {
     // Baseline: 0dB
     conn.setPGAGain(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    double p0[3];
-    for (int ch=0; ch<3; ++ch) p0[ch] = measureChannelRms(device, ch, 50);
+    double p0[2];
+    for (int ch = 0; ch < 2; ++ch) p0[ch] = measureChannelRms(device, ch, 50);
 
     // Boost: 20dB
     conn.setPGAGain(5);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    double p20[3];
-    for (int ch=0; ch<3; ++ch) p20[ch] = measureChannelRms(device, ch, 50);
+    double p20[2];
+    for (int ch = 0; ch < 2; ++ch) p20[ch] = measureChannelRms(device, ch, 50);
 
-    for (int ch=0; ch<3; ++ch) {
+    for (int ch = 0; ch < 2; ++ch) {
         // Expect ~10x voltage increase for 20dB
         bool ok = (p20[ch] > p0[ch] * 8.0 && p20[ch] < p0[ch] * 12.0); 
         std::cout << std::setw(7) << ch << " | "

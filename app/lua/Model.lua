@@ -142,8 +142,11 @@ Model.rx = {
         gainDB = projection("rx.RF.gainDB", Types.Number, 0),
         attenuationDB = projection("rx.RF.attenuationDB", Types.Number, 0)
     },
+    OSD = {
+        offsetK = projection("rx.OSD.offsetK", Types.Number, 0)
+    },
     QSD = {
-        offsetK = projection("rx.QSD.offsetK", Types.Number, 0)
+        offsetK = projection("rx.OSD.offsetK", Types.Number, 0)
     },
     DSP = {
         NR = { enabled = projection("rx.NR.enabled", Types.Bool, false) },

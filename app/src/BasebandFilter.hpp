@@ -18,7 +18,7 @@ namespace nexrx {
 
 class BasebandFilter {
 public:
-  explicit BasebandFilter(float sampleRate = 96000.0f);
+  explicit BasebandFilter(float sampleRate = 384000.0f);
 
   // Process complex I/Q sample (in-place)
   void process(float& i, float& q);
@@ -76,7 +76,7 @@ private:
   bool notchCoeffsDirty = true;
 
   // Crossfade state for smooth transitions
-  static constexpr int kCrossfadeSamples = 960;  // 10ms at 96kHz
+  static constexpr int kCrossfadeSamples = 3840;  // 10ms at 384ksps
   bool bandpassCrossfading = false;
   int bandpassCrossfadePos = 0;
   std::vector<float> bandpassOldCoeffsI;

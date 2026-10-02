@@ -67,28 +67,40 @@ set(SYNTH_JSON "${CMAKE_CURRENT_BINARY_DIR}/top.json")
 set(SYNTH_ASC "${CMAKE_CURRENT_BINARY_DIR}/top.asc")
 set(SYNTH_BIN "${CMAKE_CURRENT_BINARY_DIR}/top.bin")
 
-add_custom_command(
-  OUTPUT ${SYNTH_JSON}
-  COMMAND yosys -p "read_verilog -sv ${RTL_SOURCES}; synth_ice40 -top top -json ${SYNTH_JSON}"
-  DEPENDS ${RTL_SOURCES} # Natively waits for regs.sv because it is in the binary dir
-  COMMENT "Synthesizing RTL with Yosys"
-)
+find_program(YOSYS_EXECUTABLE yosys)
+find_program(NEXTPNR_ICE40_EXECUTABLE nextpnr-ice40)
+find_program(ICEPACK_EXECUTABLE icepack)
 
-add_custom_command(
-  OUTPUT ${SYNTH_ASC}
-  COMMAND nextpnr-ice40 --lp384 --package sg32 --json ${SYNTH_JSON} --pcf ${PCF_FILE} --asc ${SYNTH_ASC}
-  DEPENDS ${SYNTH_JSON} ${PCF_FILE}
-  COMMENT "Placing and routing with nextpnr-ice40"
-)
+if(YOSYS_EXECUTABLE AND NEXTPNR_ICE40_EXECUTABLE AND ICEPACK_EXECUTABLE)
+  add_custom_command(
+    OUTPUT ${SYNTH_JSON}
+    COMMAND ${YOSYS_EXECUTABLE} -p "read_verilog -sv ${RTL_SOURCES}" -p "synth_ice40 -top top -json ${SYNTH_JSON}"
+    DEPENDS ${RTL_SOURCES} # Natively waits for regs.sv because it is in the binary dir
+    COMMENT "Synthesizing RTL with Yosys"
+  )
 
-add_custom_command(
-  OUTPUT ${SYNTH_BIN}
-  COMMAND icepack ${SYNTH_ASC} ${SYNTH_BIN}
-  DEPENDS ${SYNTH_ASC}
-  COMMENT "Generating FPGA bitstream"
-)
+  add_custom_command(
+    OUTPUT ${SYNTH_ASC}
+    COMMAND ${NEXTPNR_ICE40_EXECUTABLE} --lp384 --package sg32 --json ${SYNTH_JSON} --pcf ${PCF_FILE} --asc ${SYNTH_ASC}
+    DEPENDS ${SYNTH_JSON} ${PCF_FILE}
+    COMMENT "Placing and routing with nextpnr-ice40"
+  )
 
-add_custom_target(bitstream ALL DEPENDS ${SYNTH_BIN})
+  add_custom_command(
+    OUTPUT ${SYNTH_BIN}
+    COMMAND ${ICEPACK_EXECUTABLE} ${SYNTH_ASC} ${SYNTH_BIN}
+    DEPENDS ${SYNTH_ASC}
+    COMMENT "Generating FPGA bitstream"
+  )
+
+  add_custom_target(bitstream ALL DEPENDS ${SYNTH_BIN})
+else()
+  message(STATUS "Yosys, nextpnr-ice40, or icepack not found. Target 'bitstream' will not be built as part of ALL.")
+  add_custom_target(bitstream
+    COMMAND ${CMAKE_COMMAND} -E echo "Error: yosys, nextpnr-ice40, and icepack are required to build bitstream"
+    COMMAND ${CMAKE_COMMAND} -E false
+  )
+endif()
 
 # ------------------------------------------------------------------------------
 # Verilator CPLD Simulation (Target: sim)

@@ -106,7 +106,7 @@ R_LOAD_Q2_I Q2_I 0 10k
 R_LOAD_Q2_Q Q2_Q 0 10k
 
 *======================================================================
-* Analysis - 1ms simulation (96 samples at 96kHz)
+* Analysis - 1ms simulation (384 samples at 384kHz)
 * Use 5ns max timestep to capture 14MHz RF
 *======================================================================
 .TRAN 0 1m 0 5n

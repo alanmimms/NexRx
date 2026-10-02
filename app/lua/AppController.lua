@@ -22,6 +22,7 @@ local dirty = {
     preselector = false,
     AGC = false,
     RF = false,
+    OSD = false,
     QSD = false,
     volume = false
 }
@@ -310,9 +311,14 @@ function AppController.init()
         dirty.VFO = true
     end)
     
-    -- Watch QSD changes
+    -- Watch OSD changes
     R.watch(function()
-        Model.rx.QSD.offsetK:get()
+        if Model.rx.OSD then
+            Model.rx.OSD.offsetK:get()
+        elseif Model.rx.QSD then
+            Model.rx.QSD.offsetK:get()
+        end
+        dirty.OSD = true
         dirty.QSD = true
     end)
 
@@ -439,10 +445,18 @@ function AppController.sync()
         anyDirty = true
     end
 
-    if dirty.QSD then
-        commands.QSD = {
-            offsetK = Model.rx.QSD.offsetK:peek()
+    if dirty.OSD or dirty.QSD then
+        local offset = 0
+        if Model.rx.OSD then
+            offset = Model.rx.OSD.offsetK:peek()
+        elseif Model.rx.QSD then
+            offset = Model.rx.QSD.offsetK:peek()
+        end
+        commands.OSD = {
+            offsetK = offset
         }
+        commands.QSD = commands.OSD
+        dirty.OSD = false
         dirty.QSD = false
         anyDirty = true
     end

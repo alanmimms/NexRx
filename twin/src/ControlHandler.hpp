@@ -63,7 +63,7 @@ private:
 };
 
 struct CodecConfig {
-  std::atomic<int> sampleRate{96000};
+  std::atomic<int> sampleRate{384000};
   std::atomic<int> channelMap[8];
   std::atomic<double> gain{0.0};
   std::atomic<int> filterType{0};

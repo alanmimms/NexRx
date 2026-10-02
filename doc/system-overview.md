@@ -56,32 +56,26 @@ switches, with all parameters managed intelligently by the software.
 
 ## Key Innovations
 
-### Triple-QSD Receiver Architecture
+### Dual-OSD Receiver Architecture
 
-NexRx's receiver uses three independent Quadrature Sampling Detectors
-(QSDs) operating simultaneously to achieve superior harmonic rejection
-without traditional image frequency problems.
+NexRx's receiver uses two independent Octature/Quadrature Synchronous Detectors
+(OSDs) operating simultaneously to achieve superior image rejection and harmonic
+attenuation.
 
-**QSD0** operates at frequency offset *f-k*, providing the primary
+**OSD0** operates at frequency offset *f-k*, providing the first
 receive signal path with excellent sensitivity.
 
-**QSD1** operates at frequency offset *f+k*, enabling image rejection
-through complex signal combining with QSD0. The complementary
-frequency offsets allow software to separate desired signals from
-images that would plague traditional superheterodyne architectures.
+**OSD1** operates at frequency offset *f+k*, enabling image cancellation
+and passband stitching through complex signal combining with OSD0. The complementary
+frequency offsets allow DSP software to separate desired signals from
+images and achieve high dynamic range image rejection.
 
-**QSD2** operates directly at frequency *f* with a specialized 33.33%
-duty cycle clock (6× oversampling). This unusual duty cycle provides
-greater than 40 dB rejection of third-harmonic responses, effectively
-eliminating a major spurious response mechanism in direct-conversion
-receivers.
-
-The three QSD paths feed six channels (I and Q for each QSD) all
-synchronized to a common clock into MAX9939 programmable gain
-amplifiers and then into an AK5578 eight-channel audio codec sampling
-at 96 kHz. The STM32 combines the three complex baseband signals in
-software, creating a receiver with exceptional dynamic range and
-spurious-free response.
+The dual OSD paths feed eight ADC channels (four 24-bit channels at 384 ksps
+per OSD) with integrated programmable gain amplifiers in dual TLV320ADC5140 audio converters.
+The STM32 performs on-chip DSP to correlate and combine these into two 384 ksps streams
+(I and Q) sent over USB to the host PC for advanced DSP processing. Below 15 MHz, the
+CPLDs run the detector switches in 8-phase octature mode (OSD); above 15 MHz,
+they run in 4-phase quadrature mode (QSD) with automatic +3 dB digital normalization.
 
 
 ### SetBox Configuration Paradigm
@@ -121,10 +115,9 @@ adjust individual parameters.
 ### Data Streams
 
 **Receive I/Q Data** (STM32 → Host):
-- Six channels (I and Q for QSD0, QSD1, QSD2)
-- 96 kHz sample rate per channel (after decimation from 96 kHz AK5578)
-- 24-bit samples (3 bytes per sample)
-- Total data rate: 6 channels × 96,000 samples/sec × 3 bytes = ~1.7 MB/s (13.8 Mbps)
+- Four baseband channels (I and Q for OSD0 and OSD1), pre-stitched into a 384 ksps stream
+- 24-bit samples packed into 32-bit words
+- Total data rate: 2 channels × 384,000 samples/sec × 4 bytes = ~3.07 MB/s (24.576 Mbps continuous payload)
 - Transport must deliver minimal latency
 
 **Control/Status Messages** (Bidirectional):
@@ -174,9 +167,9 @@ The application is packaged as a standalone binary with embedded Lua scripts and
 The host application performs **computationally intensive DSP**
 unsuitable for real-time embedded processing:
 
-**Triple-QSD Combining**: The three complex baseband signals (from
-QSD0, QSD1, QSD2) are combined with calibrated weights to maximize
-signal and reject images/harmonics.
+**Dual-OSD Combining**: The two complex baseband signals (from
+OSD0 and OSD1) are combined with calibrated weights and phase alignment
+to maximize desired signals and cancel images.
 
 **Demodulation**: SSB, CW, AM, FM, and digital mode (PSK, FT8, RTTY)
 demodulation algorithms.
@@ -338,15 +331,15 @@ benefit the entire community.
 
 ### Receiver Performance
 
-**Architecture**: Triple-QSD direct conversion with complementary harmonic rejection
+**Architecture**: Dual-OSD direct conversion with complementary image rejection
 
 **Preselection**: Band pass filters with overlapping ranges for full
 HF coverage and an additional high pass filter to reject the AM
 broadcast band.
 
-**Sampling Rate**: 96 kHz (six channels: I/Q for each of three QSDs)
-**ADC Resolution**: 24-bit (AK5578)
-**Dynamic Range**: >100 dB (achievable with triple-QSD combining and gain ranging)
+**Sampling Rate**: 96 kHz per channel (four channels: I/Q for each of two OSDs), pre-stitched into 384 ksps
+**ADC Resolution**: 24-bit
+**Dynamic Range**: >100 dB (achievable with dual-OSD combining and gain ranging)
 **MDS (Minimum Detectable Signal)**: Better than -130 dBm (estimated, 500 Hz BW, 10 dB SNR)
 
 ### Physical Interfaces
@@ -367,7 +360,7 @@ broadcast band.
 
 NexRx represents a modern approach to amateur radio receiver
 design, combining sophisticated RF engineering with flexible software
-control. The triple-QSD receiver architecture and SetBox configuration
+control. The dual-OSD receiver architecture and SetBox configuration
 system provide capabilities typically found only in commercial
 equipment costing thousands of dollars.
 
@@ -377,7 +370,7 @@ contribution.
 
 The following documents provide detailed technical information:
 
-- **RX-ARCHITECTURE.md**: Complete receiver design (preselector, QSDs, PGAs, ADC, AGC)
+- **RX-ARCHITECTURE.md**: Complete receiver design (preselector, OSDs, PGAs, ADC, AGC)
 - **SYSTEM-INTEGRATION.md**: Power system, connectivity, protocols, firmware/FPGA design, calibration
 - **CONSTRUCTION-TESTING.md**: Assembly procedures, testing, calibration, validation
 

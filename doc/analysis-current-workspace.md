@@ -17,13 +17,13 @@
 
 ## App Receive Path DSP (DspEngine.cpp)
 - **Frequency Alignment**: Uses `std::fmod`, `std::cos`, and `std::sin` every sample based on `totalSamplesProcessed`. This is expensive and susceptible to phase jumps if packets are dropped.
-- **Image Rejection (LMS)**:
-  - Uses a hard-coded "Triple-QSD Matrix" (1-2-1): `output = 0.5 * (w0*S0' + w1*S1') + 0.5 * S2`.
+- **Image Rejection (LMS / Calibration)**:
+  - Uses Dual-OSD Coherent Summation: `combined = 0.5 * (wA0 * S0' + S1')`.
   - Learning Rate (`mu`): 0.05 (50x larger than gemini-app-start). This high rate likely causes the LMS to correlate on noise and "chatter," creating the reported noise floor artifacts.
   - Leaky LMS: Adds a `1.0 - leak` term which can also add noise if not tuned carefully.
-- **Matrix Bypass**: Allows raw S2 output.
+- **Matrix Bypass**: Allows raw S0' output.
 
 ## Root Cause Comparison
-1. **Noise Floor**: Highly likely caused by the high LMS learning rate (0.05) and the 1-2-1 matrix combination which spreads LMS chatter across the spectrum.
+1. **Noise Floor**: Highly likely caused by the high LMS learning rate (0.05) and matrix combination which spreads LMS chatter across the spectrum.
 2. **Tuning Glitches**: Not present in Twin (incremental rotation is smooth), but potential timing issues in App due to `totalSamplesProcessed` reference.
 3. **VFO Command Failure**: Likely a Lua-to-C++ binding or Model update synchronization issue.

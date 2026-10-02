@@ -92,32 +92,25 @@ struct AttenuatorConfig {
 //======================================================================
 // VFO Configuration
 //
-// Three independent NCOs for the three QSDs.
-// QSD0/QSD1: 4-phase quadrature (standard I/Q)
-// QSD2: 6-phase sextature (for image rejection)
+// Two independent NCOs for the two OSDs.
+// OSD0/OSD1: Dual OSD operating at offsets -k and +k
 //======================================================================
 struct VFOConfig {
-  std::array<uint64_t, 3> freqHz = {14000000, 14000000, 14000000};
+  std::array<uint64_t, 2> freqHz = {14000000, 14000000};
 
-  // Phase offset in degrees for each QSD
-  // QSD0/QSD1 use 0°, 90°, 180°, 270° (derived from freq)
-  // QSD2 uses 0°, 60°, 120°, 180°, 240°, 300°
-
-  // Preset for 14 MHz with 10kHz offset between QSD0 and QSD1
+  // Preset for 14 MHz with 10kHz offset between OSD0 and OSD1
   static VFOConfig preset14MHz() {
     VFOConfig cfg;
     cfg.freqHz[0] = 13990000;  // f - 10kHz
     cfg.freqHz[1] = 14010000;  // f + 10kHz
-    cfg.freqHz[2] = 14000000;  // f (sextature)
     return cfg;
   }
 
-  // All QSDs at same frequency
+  // Both OSDs at same frequency
   static VFOConfig atFreq(uint64_t freq) {
     VFOConfig cfg;
     cfg.freqHz[0] = freq;
     cfg.freqHz[1] = freq;
-    cfg.freqHz[2] = freq;
     return cfg;
   }
 };

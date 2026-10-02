@@ -122,7 +122,7 @@ public:
 private:
   Mode mode = Mode::USB;
   float bfoOffset = 700.0f;
-  float sampleRate = 96000.0f;
+  float sampleRate = 384000.0f;
   float bfoPhase = 0.0f;
   float amDcOffset = 0.0f;
   bool filterEnabled = true;
@@ -131,9 +131,7 @@ private:
   double rmsAccum = 0;
   int sampleAccum = 0;
 
-  // Hilbert for phasing
-  // 31 was too short for 96kHz (transition width ~12kHz). 
-  // 255 at 96kHz gives transition width ~1.5kHz, enabling SSB audio.
+  // Hilbert for phasing (transition width tuned for 384ksps)
   static constexpr int hilbertTaps = 255;
   std::vector<float> hilbertHistoryI;
   std::vector<float> hilbertHistoryQ;

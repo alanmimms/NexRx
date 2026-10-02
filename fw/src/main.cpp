@@ -3,8 +3,7 @@
 
 #include "Si5351Driver.hpp"
 #include "CPLDDriver.hpp"
-#include "AK5578.hpp"
-#include "MAX9939.hpp"
+#include "TLV320ADC5140.hpp"
 #include "DisplayManager.hpp"
 #include "USBManager.hpp"
 #include "OSDCapture.hpp"
@@ -26,9 +25,8 @@ int main() {
   nexrx::Si5351Driver::init();
   nexrx::CPLDDriver::init();
 
-  /* 4. Configure Analog Front End */
-  nexrx::AK5578::init();
-  nexrx::MAX9939::init();
+  /* 4. Configure Dual TLV320ADC5140 Audio ADCs with Integrated PGAs */
+  nexrx::TLV320ADC5140::init();
 
   /* 5. Initialize OSD Audio DMA Data Capture */
   nexrx::OSDCapture::init();

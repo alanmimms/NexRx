@@ -45,7 +45,7 @@
     bfoOffset           -- BFO/sidetone frequency in Hz
 
   Hardware:
-    qsdOffsetK          -- QSD offset in kHz
+    osdOffsetK          -- OSD offset in kHz
     rfAttenDb           -- RF attenuator in dB
 
   Display:

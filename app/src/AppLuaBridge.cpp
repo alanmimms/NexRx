@@ -120,10 +120,12 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
         engine->getTwinConn().setPGAGain(code); 
     }); 
   };
-  hwTable["setQSDOffset"] = [engine](double k) { 
-    engine->getDSP().setQsdOffset(k); 
+  auto setOsdOffsetFn = [engine](double k) { 
+    engine->getDSP().setOSDOffset(k); 
     engine->postTwinCommand("VFO", [engine, k]() { engine->getTwinConn().setVFO(engine->getLastVFOHz(), k * 1000.0); }); 
   };
+  hwTable["setOSDOffset"] = setOsdOffsetFn;
+  hwTable["setQSDOffset"] = setOsdOffsetFn;
   
   lua["hw"] = hwTable;
 
@@ -139,7 +141,7 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   rxTable["setVFO"] = [engine](double f) {
     engine->setLastVFOHz(f);
     engine->getDSP().setVfo(f);
-    engine->postTwinCommand("VFO", [engine, f]() { engine->getTwinConn().setVFO(f, engine->getDSP().getQsdOffset() * 1000.0); });
+    engine->postTwinCommand("VFO", [engine, f]() { engine->getTwinConn().setVFO(f, engine->getDSP().getOSDOffset() * 1000.0); });
   };
   rxTable["getStats"] = [engine](sol::this_state s) {
     auto& d = engine->getDSP().getDiagnostics();

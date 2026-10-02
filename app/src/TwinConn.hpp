@@ -66,6 +66,7 @@ public:
   bool setHpfBypass(bool bypass);
   bool setBpfIndex(int index);
   bool setTrMode(int mode);
+  bool setOSDOffsetKHz(double khz);
   bool setQsdOffsetKHz(double khz);
   bool startStream();
   bool stopStream();

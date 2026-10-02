@@ -43,8 +43,12 @@ public:
   
   // Property controls
   void setVfo(double freqHz);
-  void setQsdOffset(double offsetKhz);
-  double getQsdOffset() const { return qsdOffsetKhz; }
+  void setOSDOffset(double offsetKhz);
+  double getOSDOffset() const { return osdOffsetKhz; }
+  void setOsdOffset(double offsetKhz) { setOSDOffset(offsetKhz); }
+  double getOsdOffset() const { return getOSDOffset(); }
+  void setQsdOffset(double offsetKhz) { setOSDOffset(offsetKhz); }
+  double getQsdOffset() const { return getOSDOffset(); }
   void setRfGain(float db) { rfGainDB.store(db); }
   void setLmsMu(float mu) { lmsMu = mu; }
   void setLmsEnabled(bool en) { lmsEnabled.store(en); }
@@ -55,7 +59,7 @@ public:
   double getTuningOffset() const { return tuningOffsetHz; }
   
   // Calibration
-  void setCalibration(int ch, float gainDB, float phaseDeg, float alignR = 0.5f, float alignI = 0.0f);
+  void setCalibration(int ch, float gainDB, float phaseDeg, float alignR = 1.0f, float alignI = 0.0f);
   void startManualCalibration();
   bool isCalibrating() const { return calibrationActive.load(); }
 
@@ -76,7 +80,7 @@ private:
   std::atomic<size_t> iqBufferWritePos{0};
 
   std::atomic<float> rfGainDB{20.0f};
-  double qsdOffsetKhz = 12.0;
+  double osdOffsetKhz = 12.0;
   double tuningOffsetHz = 0.0;
   double lastK_hz = -1.0;
   double shiftCos = 1.0, shiftSin = 0.0;
@@ -90,41 +94,36 @@ private:
   std::atomic<bool> matrixBypass{false};
   std::atomic<bool> calibrationActive{false};
   
-  struct QsdCal {
+  struct OsdCal {
     float gainErrDB = 0.0f;
     float phaseErrDeg = 0.0f;
-    float alignR = 0.5f;
+    float alignR = 1.0f;
     float alignI = 0.0f;
   };
-  QsdCal staticCal[3];
+  OsdCal staticCal[2];
   
-  // Independent I/Q correction weights for each QSD
+  // Independent I/Q correction weights for each OSD
   float wIQ0_r = 0, wIQ0_i = 0;
   float wIQ1_r = 0, wIQ1_i = 0;
-  float wIQ2_r = 0, wIQ2_i = 0;
   
-  // Alignment weights (to match QSD0/1 to QSD2 reference)
-  float wA0_r = 0.5f, wA0_i = 0;
-  float wA1_r = 0.5f, wA1_i = 0;
+  // Alignment weights (to match OSD0 to OSD1 reference)
+  float wA0_r = 1.0f, wA0_i = 0;
 
   // Accumulators
   float accIQ0_r = 0, accIQ0_i = 0, pIQ0 = 0;
   float accIQ1_r = 0, accIQ1_i = 0, pIQ1 = 0;
-  float accIQ2_r = 0, accIQ2_i = 0, pIQ2 = 0;
   float accA0_r = 0, accA0_i = 0, pA0 = 0;
-  float accA1_r = 0, accA1_i = 0, pA1 = 0;
 
   uint64_t totalSamplesProcessed = 0;
   uint32_t sampleBlockCounter = 0;
 
   float dc0_i = 0.0f, dc0_q = 0.0f;
   float dc1_i = 0.0f, dc1_q = 0.0f;
-  float dc2_i = 0.0f, dc2_q = 0.0f;
 
   bool audioDecimateSkip = false;
 
   Demodulator demod;
-  BasebandFilter basebandFilter{96000};
+  BasebandFilter basebandFilter{384000};
   DSPDiagnostics dspDiag;
   RateAdaptiveBuffer<float> audioBuffer;
 };

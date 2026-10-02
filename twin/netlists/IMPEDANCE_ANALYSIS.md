@@ -75,7 +75,7 @@ For the digital twin:
 1. The current models accurately represent the real-world impedance mismatch
 2. Continue with current model for accurate simulation
 3. Add downstream gain stages to model complete signal chain
-4. Consider modeling the MAX9939 differential amplifier stage
+4. Consider modeling the TLV320ADC5140 integrated PGA stage
 
 For hardware design review:
 1. Verify actual QSD conversion gain matches simulation

@@ -59,10 +59,10 @@ IQFrame generateTestFrame(const ToneGenerator& rf, const ToneGenerator& lo,
         return static_cast<int32_t>(std::clamp(scaled, -8388608.0, 8388607.0));
     };
 
-    // All three QSDs get same signal for this test
-    for (int ch = 0; ch < 3; ++ch) {
-        frame.qsd[ch].i = toAdc(i_val);
-        frame.qsd[ch].q = toAdc(q_val);
+    // Both OSDs get same signal for this test
+    for (int ch = 0; ch < 2; ++ch) {
+        frame.osd[ch].i = toAdc(i_val);
+        frame.osd[ch].q = toAdc(q_val);
     }
 
     return frame;
@@ -89,9 +89,9 @@ void runSyntheticTest() {
     Visualizer viz;
 
     // Generate and process samples
-    constexpr double sampleRate = 96000.0;
+    constexpr double sampleRate = 384000.0;
     constexpr double samplePeriod = 1.0 / sampleRate;
-    constexpr int numSamples = 9600;  // 100ms of data
+    constexpr int numSamples = 38400;  // 100ms of data
 
     std::vector<Complex> outputs;
     outputs.reserve(numSamples);

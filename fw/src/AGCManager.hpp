@@ -26,7 +26,7 @@ public:
 
   /**
    * @brief Sets total system gain in dB.
-   * Internal logic coordinates NexBus pads and MAX9939 code.
+   * Internal logic coordinates attenuator pads and TLV320ADC5140 PGA gain.
    * @param totalGainDB Total gain relative to MDS.
    */
   static void setTotalGain(float totalGainDB);

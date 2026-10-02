@@ -31,7 +31,7 @@ void printUsage(const char* progName) {
             << "  -v, --verbose        Enable verbose output\n"
             << "  -r, --realtime       Run in real-time mode (sync with wall clock)\n"
             << "  -t, --timestep NS    Set simulation time step in ns (default: 10)\n"
-            << "  -s, --samplerate HZ  Set ADC sample rate in Hz (default: 96000)\n"
+            << "  -s, --samplerate HZ  Set ADC sample rate in Hz (default: 384000)\n"
             << "  -d, --duration S     Set simulation duration in seconds\n";
 }
 

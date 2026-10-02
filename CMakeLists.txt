@@ -10,9 +10,10 @@ add_subdirectory(CPLD)
 
 add_subdirectory(app)
 add_subdirectory(twin)
+add_subdirectory(uitest)
 
 add_custom_target(fw ALL
-    COMMAND west build -d build 
+    COMMAND west build -b nexrx -d build 
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/fw
     COMMENT "Building Zephyr firmware via West"
   )

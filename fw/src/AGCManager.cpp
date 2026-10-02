@@ -2,7 +2,7 @@
 #include <zephyr/logging/log.h>
 #include <cmath>
 #include <algorithm>
-#include "MAX9939.hpp"
+#include "TLV320ADC5140.hpp"
 
 LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
 
@@ -72,7 +72,7 @@ void AGCManager::setTotalGain(float totalGainDB) {
   newAtten = std::clamp(newAtten, 0, 45);
 
   int32_t newPGA = static_cast<int32_t>(totalGainDB - newAtten);
-  newPGA = std::clamp(newPGA, 0, 11);
+  newPGA = std::clamp(newPGA, 0, 42);
 
   currentAttenDB = newAtten;
   currentPGACode = newPGA;
@@ -81,7 +81,7 @@ void AGCManager::setTotalGain(float totalGainDB) {
 }
 
 void AGCManager::applyHardwareGain() {
-  MAX9939::setGain(static_cast<uint8_t>(currentPGACode));
+  TLV320ADC5140::setPGAGain(static_cast<uint8_t>(currentPGACode));
 }
 
 } // namespace nexrx

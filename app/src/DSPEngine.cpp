@@ -15,12 +15,11 @@ DSPEngine::DSPEngine() {
   iqBuffer.assign(FFT_SIZE * 2, 0.0f);
   spectrumData.assign(FFT_SIZE, -100.0f);
   audioBuffer.configure(nexrx::BufferConfig{32768});
-  demod.setSampleRate(96000.0f);
+  demod.setSampleRate(384000.0f);
   
-  // Default alignment for Triple-QSD (1-2-1 matrix)
-  staticCal[0].alignR = 0.5f; staticCal[0].alignI = 0.0f;
-  staticCal[1].alignR = 0.5f; staticCal[1].alignI = 0.0f;
-  staticCal[2].alignR = 1.0f; staticCal[2].alignI = 0.0f;
+  // Default alignment for Dual-OSD
+  staticCal[0].alignR = 1.0f; staticCal[0].alignI = 0.0f;
+  staticCal[1].alignR = 1.0f; staticCal[1].alignI = 0.0f;
 }
 
 void DSPEngine::setVfo(double freqHz) {
@@ -50,7 +49,7 @@ void DSPEngine::setModeId(int id) {
 }
 
 void DSPEngine::setCalibration(int ch, float gainDB, float phaseDeg, float alignR, float alignI) {
-  if (ch < 0 || ch > 2) return;
+  if (ch < 0 || ch > 1) return;
   staticCal[ch] = {gainDB, phaseDeg, alignR, alignI};
   
   // Apply I/Q correction weights
@@ -60,29 +59,26 @@ void DSPEngine::setCalibration(int ch, float gainDB, float phaseDeg, float align
   float wi = p/2.0f;
   
   if (ch == 0) { wIQ0_r = wr; wIQ0_i = wi; wA0_r = alignR; wA0_i = alignI; }
-  else if (ch == 1) { wIQ1_r = wr; wIQ1_i = wi; wA1_r = alignR; wA1_i = alignI; }
-  else if (ch == 2) { wIQ2_r = wr; wIQ2_i = wi; }
+  else if (ch == 1) { wIQ1_r = wr; wIQ1_i = wi; }
 }
 
 void DSPEngine::startManualCalibration() {
   std::cout << "[DSP] Starting high-precision calibration sequence..." << std::endl;
   // Reset weights to "raw" state for discovery
-  wIQ0_r = wIQ0_i = wIQ1_r = wIQ1_i = wIQ2_r = wIQ2_i = 0;
-  wA0_r = wA1_r = 0.5f; wA0_i = wA1_i = 0;
+  wIQ0_r = wIQ0_i = wIQ1_r = wIQ1_i = 0;
+  wA0_r = 1.0f; wA0_i = 0;
   
   // Clear accumulators
   accIQ0_r = accIQ0_i = pIQ0 = 0;
   accIQ1_r = accIQ1_i = pIQ1 = 0;
-  accIQ2_r = accIQ2_i = pIQ2 = 0;
   accA0_r = accA0_i = pA0 = 0;
-  accA1_r = accA1_i = pA1 = 0;
   
   sampleBlockCounter = 0;
   calibrationActive.store(true);
 }
 
-void DSPEngine::setQsdOffset(double offsetKhz) {
-  qsdOffsetKhz = offsetKhz;
+void DSPEngine::setOSDOffset(double offsetKhz) {
+  osdOffsetKhz = offsetKhz;
   basebandFilter.recompute();
 }
 
@@ -96,15 +92,12 @@ std::vector<float> DSPEngine::getSpectrumData() {
 using Complex = std::complex<float>;
 
 void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
-  float i0, q0, i1, q1, i2, q2;
-  frame.qsd[0].toFloat(i0, q0); 
-  frame.qsd[1].toFloat(i1, q1); 
-  frame.qsd[2].toFloat(i2, q2);
+  float i0, q0, i1, q1;
+  frame.osd[0].toFloat(i0, q0); 
+  frame.osd[1].toFloat(i1, q1); 
   
   // DC Offset Correction
-  // Side channels (S0, S1) always track fast. Their carriers are at 12kHz, so DC is hardware-only.
-  constexpr float dcAlphaFast = 0.001f; // ~15Hz cutoff at 96kHz
-  constexpr float dcAlphaSlow = 1e-6f;  // Very slow for AM carrier preservation
+  constexpr float dcAlphaFast = 0.00025f; // ~15Hz cutoff at 384ksps
   
   dc0_i = (1.0f - dcAlphaFast) * dc0_i + dcAlphaFast * i0;
   dc0_q = (1.0f - dcAlphaFast) * dc0_q + dcAlphaFast * q0;
@@ -114,32 +107,18 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   i0 -= dc0_i; q0 -= dc0_q;
   i1 -= dc1_i; q1 -= dc1_q;
 
-  if (getModeId() == static_cast<int>(Demodulator::Mode::AM)) {
-    // In AM, preserve the carrier at DC in the center channel.
-    // We update the estimate slowly in the background but do NOT subtract it.
-    dc2_i = (1.0f - dcAlphaSlow) * dc2_i + dcAlphaSlow * i2;
-    dc2_q = (1.0f - dcAlphaSlow) * dc2_q + dcAlphaSlow * q2;
-    // s2_c = s2; (No subtraction)
-  } else {
-    // In SSB/CW/BYPASS, track and subtract fast to kill DC leakage and carrier tones.
-    dc2_i = (1.0f - dcAlphaFast) * dc2_i + dcAlphaFast * i2;
-    dc2_q = (1.0f - dcAlphaFast) * dc2_q + dcAlphaFast * q2;
-    i2 -= dc2_i; q2 -= dc2_q;
-  }
-
-  // 1. Independent Blind I/Q Correction for all 3 mixers
+  // 1. Independent Blind I/Q Correction for both mixers
   // S_corr = S - w*conj(S)
-  Complex s0(i0, q0), s1(i1, q1), s2(i2, q2);
-  Complex wIQ0(wIQ0_r, wIQ0_i), wIQ1(wIQ1_r, wIQ1_i), wIQ2(wIQ2_r, wIQ2_i);
+  Complex s0(i0, q0), s1(i1, q1);
+  Complex wIQ0(wIQ0_r, wIQ0_i), wIQ1(wIQ1_r, wIQ1_i);
   
   Complex s0_c = s0 - wIQ0 * std::conj(s0);
   Complex s1_c = s1 - wIQ1 * std::conj(s1);
-  Complex s2_c = s2 - wIQ2 * std::conj(s2);
 
   // 2. High-Precision Frequency Alignment
   // Use incremental rotation (phasors) to avoid trig calls per sample
-  constexpr double sampleRate = 96000.0;
-  double k_hz = qsdOffsetKhz * 1000.0;
+  constexpr double sampleRate = 384000.0;
+  double k_hz = osdOffsetKhz * 1000.0;
   
   if (std::abs(k_hz - lastK_hz) > 0.1) {
     double phaseInc = 2.0 * M_PI * k_hz / sampleRate;
@@ -148,57 +127,37 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     lastK_hz = k_hz;
   }
 
-  // Shift QSD0 DOWN by k: (i + j*q) * (cos - j*sin)
+  // Shift OSD0 DOWN by k: (i + j*q) * (cos - j*sin)
   Complex s0_s(s0_c.real() * shiftCos + s0_c.imag() * shiftSin, s0_c.imag() * shiftCos - s0_c.real() * shiftSin);
-  // Shift QSD1 UP by k: (i + j*q) * (cos + j*sin)
+  // Shift OSD1 UP by k: (i + j*q) * (cos + j*sin)
   Complex s1_s(s1_c.real() * shiftCos - s1_c.imag() * shiftSin, s1_c.imag() * shiftCos + s1_c.real() * shiftSin);
 
-
-  // 3. Triple-QSD Image Rejection (Averaging Matrix)
-  // By aligning fundamentals and averaging all three mixers, we achieve:
-  // 1. Signal coherent summing (better SNR)
-  // 2. Image components are modulated to +/- 2k (24kHz)
-  // 3. Baseband filter (10kHz) naturally rejects these image components.
-  // We use a 1-2-1 weighting to favor the high-performance 6f-QSD (s2).
-  
-  Complex wA0(wA0_r, wA0_i), wA1(wA1_r, wA1_i);
-  
-  // The matrix nulling is now a robust weighted average.
-  // Normalized for unity signal gain: (0.25*s0 + 0.5*s2 + 0.25*s1) * 2 = (0.5*s0 + s2 + 0.5*s1) / 2
-  // We use wA0 and wA1 to match s0 and s1 to the s2 reference.
-  Complex combined = (wA0 * s0_s + wA1 * s1_s + s2_c) * 0.5f;
+  // 3. Dual-OSD Coherent Summation
+  Complex wA0(wA0_r, wA0_i);
+  Complex combined = (wA0 * s0_s + s1_s) * 0.5f;
   
   // Final combined signal
-  Complex err = matrixBypass.load() ? s2_c : combined;
+  Complex err = matrixBypass.load() ? s0_s : combined;
 
   // Update diagnostics for UI
   dspDiag.lmsWeightR.store(std::abs(Complex(wA0_r, wA0_i)));
-  dspDiag.lmsWeightI.store(std::abs(Complex(wA1_r, wA1_i)));
+  dspDiag.lmsWeightI.store(0.0f);
 
   // 4. Update Calibration (only if active)
   if (calibrationActive.load()) {
     // Accumulate for I/Q Correctors (S_corr = S - w S*)
-    // Target w = 0.5 * E[s^2] / E[|s|^2]
     auto accIQ = [](Complex s, float& ar, float& ai, float& p) {
         Complex u = s * s; ar += u.real(); ai += u.imag(); p += std::norm(s);
     };
     accIQ(s0, accIQ0_r, accIQ0_i, pIQ0);
     accIQ(s1, accIQ1_r, accIQ1_i, pIQ1);
-    accIQ(s2, accIQ2_r, accIQ2_i, pIQ2);
     
-    // Accumulate for Alignment (Match shifted fundamental to reference)
-    // Target wA = E[S2 * S_shifted^*] / E[|S_shifted|^2]
+    // Accumulate for Alignment (Match shifted OSD0 to OSD1 reference)
     auto accA = [](Complex ref, Complex s_s, float& ar, float& ai, float& p) {
         Complex u = ref * std::conj(s_s); ar += u.real(); ai += u.imag(); p += std::norm(s_s);
     };
-    // Frequency shifts WITHOUT current weights for discovery
-    // Use the same phasors as the main DSP path (Fundamentals-aligned)
-    // S0 shifted DOWN by k
     Complex s0_raw_s(s0.real() * shiftCos + s0.imag() * shiftSin, s0.imag() * shiftCos - s0.real() * shiftSin);
-    // S1 shifted UP by k
-    Complex s1_raw_s(s1.real() * shiftCos - s1.imag() * shiftSin, s1.imag() * shiftCos + s1.real() * shiftSin);
-    accA(s2, s0_raw_s, accA0_r, accA0_i, pA0);
-    accA(s2, s1_raw_s, accA1_r, accA1_i, pA1);
+    accA(s1, s0_raw_s, accA0_r, accA0_i, pA0);
 
     if (++sampleBlockCounter >= 4093 * 8) { // 32,744 samples (~340ms)
       auto solveW = [](float ar, float ai, float p, float& wr, float& wi) {
@@ -206,13 +165,11 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
       };
       solveW(accIQ0_r, accIQ0_i, pIQ0, wIQ0_r, wIQ0_i);
       solveW(accIQ1_r, accIQ1_i, pIQ1, wIQ1_r, wIQ1_i);
-      solveW(accIQ2_r, accIQ2_i, pIQ2, wIQ2_r, wIQ2_i);
       
       auto solveWA = [](float ar, float ai, float p, float& wr, float& wi) {
           if (p > 1e-10f) { wr = ar / p; wi = ai / p; }
       };
       solveWA(accA0_r, accA0_i, pA0, wA0_r, wA0_i);
-      solveWA(accA1_r, accA1_i, pA1, wA1_r, wA1_i);
 
       // Final Diagnostics / Results
       auto toGain = [](float r) { return 20.0f * std::log10(std::max(0.1f, 1.0f - 2.0f * r)); };
@@ -220,26 +177,21 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
       
       float g0 = toGain(wIQ0_r), p0 = toPhase(wIQ0_i);
       float g1 = toGain(wIQ1_r), p1 = toPhase(wIQ1_i);
-      float g2 = toGain(wIQ2_r), p2 = toPhase(wIQ2_i);
 
       std::cout << "\n[DSP] Calibration Complete. Append to config/calibration.lua:" << std::endl;
       printf("calibration.addResults({\n"
-             "  { gain=%+.3f, phase=%+.2f, align_r=%.4f, align_i=%.4f }, -- QSD0\n"
-             "  { gain=%+.3f, phase=%+.2f, align_r=%.4f, align_i=%.4f }, -- QSD1\n"
-             "  { gain=%+.3f, phase=%+.2f }  -- QSD2\n"
+             "  { gain=%+.3f, phase=%+.2f, align_r=%.4f, align_i=%.4f }, -- OSD0\n"
+             "  { gain=%+.3f, phase=%+.2f, align_r=1.0000, align_i=0.0000 }  -- OSD1\n"
              "})\n",
              g0, p0, wA0_r, wA0_i, 
-             g1, p1, wA1_r, wA1_i,
-             g2, p2);
+             g1, p1);
 
       calibrationActive.store(false);
       sampleBlockCounter = 0;
       
       dspDiag.gainErr0.store(g0); dspDiag.phaseErr0.store(p0);
       dspDiag.gainErr1.store(g1); dspDiag.phaseErr1.store(p1);
-      dspDiag.gainErr2.store(g2); dspDiag.phaseErr2.store(p2);
       dspDiag.alignPhase0.store(std::arg(Complex(wA0_r, wA0_i)) * 180.0f / M_PI);
-      dspDiag.alignPhase1.store(std::arg(Complex(wA1_r, wA1_i)) * 180.0f / M_PI);
     }
   }
 
@@ -259,7 +211,8 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
 
   // 4. Digital Tuning Shift (to bring selected signalbox to DC for demod)
   if (std::abs(tuningOffsetHz - lastTune_hz) > 0.1) {
-    double phaseInc = -2.0 * M_PI * tuningOffsetHz / 96000.0;
+    constexpr double sampleRate = 384000.0;
+    double phaseInc = -2.0 * M_PI * tuningOffsetHz / sampleRate;
     tuneCos_d = std::cos(phaseInc);
     tuneSin_d = std::sin(phaseInc);
     lastTune_hz = tuningOffsetHz;

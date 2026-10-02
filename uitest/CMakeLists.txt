@@ -4,37 +4,83 @@ project(uitest)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-Wno-template-body COMPILER_SUPPORTS_WNO_TEMPLATE_BODY)
+if(COMPILER_SUPPORTS_WNO_TEMPLATE_BODY)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-template-body>)
+endif()
+
 include(FetchContent)
 
 # sol2
-FetchContent_Declare(
-  sol2
-  GIT_REPOSITORY https://github.com/ThePhD/sol2.git
-  GIT_TAG v3.3.0
-)
-FetchContent_MakeAvailable(sol2)
+if(NOT TARGET sol2)
+  FetchContent_Declare(
+    sol2
+    GIT_REPOSITORY https://github.com/ThePhD/sol2.git
+    GIT_TAG v3.3.0
+  )
+  FetchContent_MakeAvailable(sol2)
+endif()
 
 # raylib
-FetchContent_Declare(
-  raylib
-  GIT_REPOSITORY https://github.com/raysan5/raylib.git
-  GIT_TAG 6.0
-)
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(raylib)
+if(NOT TARGET raylib)
+  FetchContent_Declare(
+    raylib
+    GIT_REPOSITORY https://github.com/raysan5/raylib.git
+    GIT_TAG 6.0
+  )
+  set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable(raylib)
+endif()
+
+# Lua 5.4 - FetchContent pinned to v5.4.8
+if(TARGET lua)
+  # Target already defined
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../app/build/_deps/lua-src")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../twin/build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../twin/build/_deps/lua-src")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/lua-src")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/lua-src")
+  set(lua_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/_deps/lua-src")
+else()
+  FetchContent_Declare(
+    lua
+    GIT_REPOSITORY https://github.com/lua/lua.git
+    GIT_TAG v5.4.8
+  )
+  FetchContent_GetProperties(lua)
+  if(NOT lua_POPULATED)
+    FetchContent_Populate(lua)
+  endif()
+endif()
+
+if(NOT TARGET lua)
+  if(EXISTS "${lua_SOURCE_DIR}/onelua.c")
+    add_library(lua STATIC ${lua_SOURCE_DIR}/onelua.c)
+    target_compile_definitions(lua PRIVATE MAKE_LIB)
+  else()
+    file(GLOB LUA_SOURCES "${lua_SOURCE_DIR}/*.c")
+    list(FILTER LUA_SOURCES EXCLUDE REGEX ".*(lua|luac|ltests)\\.c$")
+    add_library(lua STATIC ${LUA_SOURCES})
+  endif()
+  add_library(lua::lua ALIAS lua)
+  set_target_properties(lua PROPERTIES C_STANDARD 99)
+  target_include_directories(lua PUBLIC ${lua_SOURCE_DIR})
+  if(UNIX AND NOT APPLE)
+    target_compile_definitions(lua PRIVATE LUA_USE_LINUX)
+    target_link_libraries(lua PUBLIC m dl)
+  elseif(APPLE)
+    target_compile_definitions(lua PRIVATE LUA_USE_MACOSX)
+    target_link_libraries(lua PUBLIC m)
+  endif()
+endif()
 
 # Find Dependencies
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
-  pkg_check_modules(LUA54 lua5.4)
   pkg_check_modules(SDL2 sdl2)
-endif()
-
-# Fallback for Lua
-if(NOT LUA54_FOUND)
-  find_package(Lua REQUIRED)
-  set(LUA54_LIBRARIES ${LUA_LIBRARIES})
-  set(LUA54_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
 endif()
 
 # Fallback for SDL2
@@ -59,7 +105,6 @@ add_executable(uitest
 
 target_include_directories(uitest PRIVATE
   src
-  ${LUA54_INCLUDE_DIRS}
   ${SDL2_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
 )
@@ -67,7 +112,7 @@ target_include_directories(uitest PRIVATE
 target_link_libraries(uitest PRIVATE
   raylib
   sol2::sol2
-  ${LUA54_LIBRARIES}
+  lua
   ${SDL2_LIBRARIES}
   ${OPENGL_LIBRARIES}
   Threads::Threads

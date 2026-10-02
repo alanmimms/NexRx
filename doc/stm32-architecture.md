@@ -6,94 +6,115 @@ This document details the hardware allocation for the
 ## Peripheral Allocation Summary
 
 ### SPI Controllers
-* **SPI2**: ST7789V Display Interface (`disp`)
-* **SPI3**: Dual CPLD Interface (`CPLD0`, `CPLD1`)
-* **SPI4**: Analog Front-End / PGA Control (`pga`)
+* **SPI2**: ST7789V Display Interface (`dispNSS` PA11, `dispSCK` PA9, `dispMOSI` PC1, `dispDC` PE13, `dispRESET` PE12)
+* **SPI3**: Dual CPLD Interface (`cpld0NCS` PA4, `cpld1NCS` PA15, `cpldSCK` PC10, `cpldMISO` PC11, `cpldMOSI` PB2, `cpldDONE` PE0, `cpldCRESET` PE1)
+* **SPI4**: Dual TLV320ADC5140 ADC Control Bus (`osd0NSS` PE3, `osd1NSS` PE4, `osdSCK` PE2, `osdMOSI` PE14, `osdMISO` PE5, `adcReset` PA6)
 
 ### I2C Controllers
-* **I2C1**: Si5351 Synthesizer Configuration & Status (`si5351`)
-* **I2C4**: Audio Codec Configuration (`audioCodec`)
+* **I2C1**: Si5351 Synthesizer Configuration & Status (`si5351SCL` PB6, `si5351SDA` PB7, `si5351OE` PB4)
 
 ### USART / UART Mapping
-* **UART7**: GNSS Receiver Interface (RX = PE8, TX = PE9)
-* **USART6**: Debug Console / Tuning Output (`usart6`)
+* **UART7**: GNSS Receiver Interface (`gnssRX` PE8, `gnssTX` PE9, `gnssNRESET` PB3)
 
 ### SAI (Serial Audio Interface) Mapping
-* **SAI2**: Sync Slave (OSD0 / OSD1 Audio Data Channels)
-* **SAI3**: Master + Clock (Audio Channel 1 + BCLK / WCLK / MCLK)
-* **SAI4**: Sync Slave (Audio Channel 4)
+* **SAI2a (Master)**: OSD0 audio serial link (`osd0` PA0 data, `osdMCLK` PA1, `osdBCLK` PA2, `osdWCLK` PA12)
+* **SAI2b (Slave)**: OSD1 audio serial link (`osd1` PD11 data; synchronous to SAI2a clocks)
 
-| SAI Channel | Function | Pin | Label | Description |
-|-------------|----------|-----|-------|-------------|
-| SAI3_A | Master Data 1 | PD1 | `Ctrl.osdData1` | OSD0 Channel 1 Data |
-| SAI2_B | Slave Data 2 | PA0 | `Ctrl.osdData2` | OSD0 Channel 2 Data |
-| SAI2_A | Slave Data 3 | PD11 | `Ctrl.osdData3` | OSD1 Channel 1 Data |
-| SAI4_A | Slave Data 4 | PE6 | `Ctrl.osdData4` | OSD1 Channel 2 Data |
-| SAI3_SCK_A | Bit Clock | PD0 | `Ctrl.osdBCLK` | Codec Audio Bit Clock |
-| SAI3_FS_A | Word Clock | PD4 | `Ctrl.osdWCLK` | Codec Audio Frame Sync (LRCLK) |
-| SAI3_MCLK_A | Master Clock | PD15 | `Ctrl.osdMCLK` | Codec Audio Master Clock |
+Each TLV320ADC5140 ADC provides four 24-bit samples at 384ksps per OSD over its serial audio link to the STM32. The STM32 performs on-chip DSP to combine and correlate these into two 384ksps streams (I and Q) sent over USB Bulk (`iq_data_pump`) to the host application.
 
-## Pin Allocation Table
+### ADC Channels
+* **ADC1**: USB Type-C CC pin monitoring (`cc1ADC` PC5, `cc2ADC` PA7) for power source validation.
 
-| Pin | Function | Label | Description |
-|-----|----------|-------|-------------|
-| PH0 | RCC_OSC_IN | `STM32Clock` | 26MHz Crystal Resonator (HSE) |
-| PA0 | SAI2_SD_B | `Ctrl.osdData2` | OSD Audio Data Channel 2 |
-| PA3 | USB_OTG_HS_ULPI_D0 | `usbDATA0` | USB High-Speed PHY Data 0 |
-| PA4 | SPI3_NSS | `CPLD.NSS` | Dual CPLD SPI Chip Select |
-| PA5 | USB_OTG_HS_ULPI_CK | `usbCLKOUT` | USB High-Speed PHY Clock |
-| PA6 | GPIO_Output | `Ctrl.audioReset` | Audio Codec Reset Line |
-| PA7 | ADC1_INP7 | `Ctrl.usbCC2adc` | USB-C CC2 Voltage Monitoring |
-| PA9 | SPI2_SCK | `dispSCK` | Display SPI Clock |
-| PA11 | SPI2_NSS | `dispNSS` | Display SPI Chip Select |
-| PA13 | SWDIO | `SWDIO` | SWD Debug Data |
-| PA14 | SWCLK | `SWCLK` | SWD Debug Clock |
-| PB0 | USB_OTG_HS_ULPI_D1 | `usbDATA1` | USB High-Speed PHY Data 1 |
-| PB1 | USB_OTG_HS_ULPI_D2 | `usbDATA2` | USB High-Speed PHY Data 2 |
-| PB2 | SPI3_MOSI | `CPLD.MOSI` | CPLD SPI MOSI |
-| PB5 | USB_OTG_HS_ULPI_D7 | `usbDATA7` | USB High-Speed PHY Data 7 |
-| PB10 | USB_OTG_HS_ULPI_D3 | `usbDATA3` | USB High-Speed PHY Data 3 |
-| PB11 | USB_OTG_HS_ULPI_D4 | `usbDATA4` | USB High-Speed PHY Data 4 |
-| PB12 | USB_OTG_HS_ULPI_D5 | `usbDATA5` | USB High-Speed PHY Data 5 |
-| PB13 | USB_OTG_HS_ULPI_D6 | `usbDATA6` | USB High-Speed PHY Data 6 |
-| PC0 | USB_OTG_HS_ULPI_STP | `usbSTP` | USB High-Speed PHY Stop |
-| PC1 | SPI2_MOSI | `dispMOSI` | Display SPI MOSI |
-| PC2_C | USB_OTG_HS_ULPI_DIR | `usbDIR` | USB High-Speed PHY Direction |
-| PC3_C | USB_OTG_HS_ULPI_NXT | `usbNXT` | USB High-Speed PHY Next |
-| PC5 | ADC1_INP8 | `Ctrl.usbCC1adc` | USB-C CC1 Voltage Monitoring |
-| PC6 | USART6_TX | `Tune.txrx` | Tuning Serial Interface / Debug |
-| PC10 | SPI3_SCK | `CPLD.SCK` | CPLD SPI Clock |
-| PC11 | SPI3_MISO | `CPLD.MISO` | CPLD SPI MISO |
-| PD0 | SAI3_SCK_A | `Ctrl.osdBCLK` | Codec Bit Clock |
-| PD1 | SAI3_SD_A | `Ctrl.osdData1` | OSD Audio Data Channel 1 |
-| PD4 | SAI3_FS_A | `Ctrl.osdWCLK` | Codec Word Clock (LRCLK) |
-| PD11 | SAI2_SD_A | `Ctrl.osdData3` | OSD Audio Data Channel 3 |
-| PD12 | I2C4_SCL | `Ctrl.audioSCL` | Audio Control I2C SCL |
-| PD13 | I2C4_SDA | `Ctrl.audioSDA` | Audio Control I2C SDA |
-| PD15 | SAI3_MCLK_A | `Ctrl.osdMCLK` | Codec Master Clock |
-| PE6 | SAI4_SD_A | `Ctrl.osdData4` | OSD Audio Data Channel 4 |
-| PE8 | UART7_RX | `gnssRX` | GNSS Receiver Serial RX |
-| PE9 | UART7_TX | `gnssTX` | GNSS Receiver Serial TX |
-| PE12 | GPIO_Output | `dispRESET` | Display Reset Line |
-| PE13 | GPIO_Output | `dispDC` | Display Data/Command Select |
-| PE14 | SPI4_MOSI | `Ctrl.pgaMOSI` | PGA SPI MOSI |
+### USB Interface
+* **USB_OTG_HS**: High-Speed ULPI interface (480 Mbps) to external USB3343 transceiver.
 
-## Firmware Integration (Zephyr RTOS v4.1)
+---
+
+## Hardware Pin Allocation Table
+
+| Symbol | Peripheral | Pin | Type | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| `osd0` | SAI2a | PA0 | input | Master audio data (OSD0) |
+| `osdMCLK` | SAI2a | PA1 | output | Master clock |
+| `osdBCLK` | SAI2a | PA2 | output | Bit clock |
+| `osdWCLK` | SAI2a | PA12 | output | Word clock (Frame Sync) |
+| `osd1` | SAI2b | PD11 | input | Slave audio data (OSD1) |
+| `dispNSS` | SPI2 | PA11 | output | Display chip select |
+| `dispSCK` | SPI2 | PA9 | output | Display SPI clock |
+| `dispMOSI` | SPI2 | PC1 | output | Display SPI MOSI |
+| `dispDC` | GPIO | PE13 | output | Display data/command select |
+| `dispRESET` | GPIO | PE12 | output | Display reset |
+| `cpld0NCS` | SPI3 | PA4 | output | CPLD0 SPI chip select |
+| `cpld1NCS` | SPI3 | PA15 | output | CPLD1 SPI chip select |
+| `cpldSCK` | SPI3 | PC10 | output | CPLD SPI clock |
+| `cpldMISO` | SPI3 | PC11 | input | CPLD SPI MISO |
+| `cpldMOSI` | SPI3 | PB2 | output | CPLD SPI MOSI |
+| `cpldDONE` | GPIO | PE0 | input | CPLD configuration done |
+| `cpldCRESET` | GPIO | PE1 | output | CPLD configuration reset |
+| `osd0NSS` | SPI4 | PE3 | output | OSD0 ADC (TLV320ADC5140) SPI select |
+| `osd1NSS` | SPI4 | PE4 | output | OSD1 ADC (TLV320ADC5140) SPI select |
+| `osdSCK` | SPI4 | PE2 | output | OSD ADC SPI clock |
+| `osdMOSI` | SPI4 | PE14 | output | OSD ADC SPI MOSI |
+| `osdMISO` | SPI4 | PE5 | input | OSD ADC SPI MISO |
+| `adcReset` | GPIO | PA6 | output | Reset line for ADCs |
+| `bpf2` | GPIO | PD0 | output | Filter selection (BPF branch 2) |
+| `bpf1` | GPIO | PD1 | output | Filter selection (BPF branch 1) |
+| `hpf` | GPIO | PD2 | output | Filter selection (HPF enable) |
+| `nHPF` | GPIO | PD3 | output | Inverted HPF selection |
+| `bpf4` | GPIO | PD4 | output | Filter selection (BPF branch 4) |
+| `bpf3` | GPIO | PD5 | output | Filter selection (BPF branch 3) |
+| `enable3V3` | GPIO | PD6 | output | 3.3V power rail enable |
+| `atten6dB` | GPIO | PD7 | output | 6 dB attenuator stage |
+| `atten12dB` | GPIO | PD8 | output | 12 dB attenuator stage |
+| `atten24dB` | GPIO | PD9 | output | 24 dB attenuator stage |
+| `atten3dB` | GPIO | PD10 | output | 3 dB attenuator stage |
+| `cc1ADC` | ADC1 | PC5 | input | USB CC1 voltage |
+| `cc2ADC` | ADC1 | PA7 | input | USB CC2 voltage |
+| `statusRed` | GPIO | PB9 | output | RGB Status LED - Red (active low) |
+| `statusGreen` | GPIO | PB8 | output | RGB Status LED - Green (active low) |
+| `statusBlue` | GPIO | PE6 | output | RGB Status LED - Blue (active low) |
+| `gnssNRESET` | GPIO | PB3 | output | GNSS reset (active low) |
+| `gnssRX` | UART7 | PE8 | input | GNSS serial receive |
+| `gnssTX` | UART7 | PE9 | output | GNSS serial transmit |
+| `si5351OE` | GPIO | PB4 | output | Si5351 output enable |
+| `si5351SCL` | I2C1 | PB6 | bidir | Si5351 I2C clock |
+| `si5351SDA` | I2C1 | PB7 | bidir | Si5351 I2C data |
+| `swdSWDIO` | SWD | PA13 | bidir | SWD debug data |
+| `swdSWDCLK` | SWD | PA14 | input | SWD debug clock |
+| `usbDATA0` | USB_HS | PA3 | bidir | USB ULPI Data 0 |
+| `usbCLKOUT` | USB_HS | PA5 | input | USB ULPI Clock |
+| `usbDATA1` | USB_HS | PB0 | bidir | USB ULPI Data 1 |
+| `usbDATA2` | USB_HS | PB1 | bidir | USB ULPI Data 2 |
+| `usbDATA7` | USB_HS | PB5 | bidir | USB ULPI Data 7 |
+| `usbDATA3` | USB_HS | PB10 | bidir | USB ULPI Data 3 |
+| `usbDATA4` | USB_HS | PB11 | bidir | USB ULPI Data 4 |
+| `usbDATA5` | USB_HS | PB12 | bidir | USB ULPI Data 5 |
+| `usbDATA6` | USB_HS | PB13 | bidir | USB ULPI Data 6 |
+| `usbSTP` | USB_HS | PC0 | output | USB ULPI Stop |
+| `usbDIR` | USB_HS | PC2_C | input | USB ULPI Direction |
+| `usbNXT` | USB_HS | PC3_C | input | USB ULPI Next |
+| `STM32Clock` | RCC | PH0 | input | 26MHz Crystal Resonator (HSE) |
+
+---
+
+## Firmware Integration (Zephyr RTOS)
 
 The embedded firmware resides in the `fw/` directory.
 
 ### Subsystem Driver Allocation:
-1. **SPI (`zephyr,spi-stm32`)**: Manages CPLD register configuration
-   and ST7789V display driving.
-2. **I2C (`zephyr,i2c-stm32`)**: Controls Si5351 synthesizer tuning
-   (I2C1) and audio codec configuration (I2C4).
-3. **UART (`zephyr,uart-stm32`)**: Handles GNSS NMEA/UBX telemetry
-   parsing (UART7) and shell/logging output (USART6).
-4. **I2S / SAI (`zephyr,i2s-stm32`)**: Captures 24-bit audio-rate I/Q
-   streams from the audio codecs with DMA buffering.
-5. **USB (`zephyr,usb-device`)**: High-speed USB 2.0 offload (480
-   Mbps) using the external ULPI PHY.
-6. **GPIO (`zephyr,gpio-stm32`)**: Direct drive control for BPF band
-   selection relays, attenuator pads, and hardware status lines.
-   Hardware power sequencing is automatic on power-up.
+1. **SPI (`zephyr,spi-stm32`)**:
+   - SPI2: ST7789V display driver.
+   - SPI3: Dual CPLD register and configuration interface.
+   - SPI4: Dual TLV320ADC5140 ADC SPI control driver.
+2. **I2C (`zephyr,i2c-stm32`)**: Controls Si5351 synthesizer tuning (I2C1).
+3. **UART (`zephyr,uart-stm32`)**: Handles GNSS NMEA/UBX telemetry parsing (UART7).
+4. **SAI (`zephyr,i2s-stm32`)**: Captures four 24-bit samples at 384ksps per OSD across SAI2a (master) and SAI2b (slave) with DMA buffering.
+5. **USB (`zephyr,usb-device`)**: High-speed USB 2.0 offload (480 Mbps) using the external ULPI PHY.
+6. **ADC (`zephyr,adc-stm32`)**: Monitors CC1 and CC2 pin voltages to validate Type-C power negotiation before enabling 3.3V analog supplies.
+7. **GPIO (`zephyr,gpio-stm32`)**:
+   - BPF/HPF filter bank selection (`bpf1`..`bpf4`, `hpf`, `nHPF`).
+   - Attenuator stage switching (`atten3dB`, `atten6dB`, `atten12dB`, `atten24dB`).
+   - Power rail control (`enable3V3`).
+   - Status RGB LEDs (`statusRed`, `statusGreen`, `statusBlue`).
+   - Hardware reset control (`adcReset`, `gnssNRESET`, `cpldCRESET`).
 

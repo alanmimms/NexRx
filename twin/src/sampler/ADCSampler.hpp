@@ -1,6 +1,6 @@
 // NexRx Digital Twin - ADC Sampler
 //
-// Samples Xyce I/Q output nodes at 96kHz ADC rate.
+// Samples Xyce I/Q output nodes at 384ksps ADC rate.
 // Converts analog voltages to 24-bit signed digital values.
 //
 // Copyright 2026 NexRx Project - MIT License
@@ -23,9 +23,9 @@ namespace nexrx {
 //======================================================================
 struct ADCConfig {
   // Sample rate
-  static constexpr double SAMPLE_RATE_HZ = 96000.0;
+  static constexpr double SAMPLE_RATE_HZ = 384000.0;
   static constexpr double SAMPLE_PERIOD_S = 1.0 / SAMPLE_RATE_HZ;
-  static constexpr uint64_t SAMPLE_PERIOD_NS = 10416;  // 1e9 / 96000
+  static constexpr uint64_t SAMPLE_PERIOD_NS = 2604;  // 1e9 / 384000
 
   // ADC specifications (matching real hardware)
   static constexpr double VREF = 3.3;                   // ADC reference voltage
@@ -35,15 +35,14 @@ struct ADCConfig {
   static constexpr int32_t ADC_MIN = -8388608;          // -2^23
 
   // Node names in the netlist for I/Q outputs
-  // These map to the QSD outputs in nexrx_rx.cir
-  std::array<std::string, 3> iNodes = {"Q0_I", "Q1_I", "Q2_I"};
-  std::array<std::string, 3> qNodes = {"Q0_Q", "Q1_Q", "Q2_Q"};
+  std::array<std::string, 2> iNodes = {"O0_I", "O1_I"};
+  std::array<std::string, 2> qNodes = {"O0_Q", "O1_Q"};
 };
 
 //======================================================================
 // ADC Sampler
 //
-// Samples the 6 I/Q channels from Xyce at 96kHz rate.
+// Samples the 4 I/Q channels from Xyce at 384ksps rate.
 // Maintains sample timing and sequence numbering.
 //
 // Usage:

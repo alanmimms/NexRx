@@ -1,6 +1,6 @@
 // NexRx Digital Twin - I/Q Frame Structure
 //
-// Lightweight struct for I/Q sample data from three QSDs.
+// Lightweight struct for I/Q sample data from two OSDs.
 // Designed for efficient shared memory transfer.
 //
 // Copyright 2026 NexRx Project - MIT License
@@ -48,7 +48,7 @@ struct IQSample {
 
 //======================================================================
 // I/Q Frame (Dual OSDs)
-// One frame per sample period (96kHz = 10.4μs per frame)
+// One frame per sample period (384ksps = 2.604μs per frame)
 //======================================================================
 struct IQFrame {
   // Samples from each OSD
@@ -69,8 +69,8 @@ struct IQFrame {
   const IQSample& operator[](size_t idx) const { return osd[idx]; }
 
   static constexpr size_t NUM_CHANNELS = 2;
-  static constexpr size_t SAMPLE_RATE_HZ = 96000;
-  static constexpr uint64_t SAMPLE_PERIOD_NS = 10416;
+  static constexpr size_t SAMPLE_RATE_HZ = 384000;
+  static constexpr uint64_t SAMPLE_PERIOD_NS = 2604; // 1e9 / 384000
 };
 
 // Verify size for shared memory alignment

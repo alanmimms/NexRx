@@ -43,13 +43,13 @@ TestStatus select_chk(RemoteDevice& device, std::string& message) {
     const size_t FFT_SIZE = 8192; // Increased for better resolution at higher FS
     const int AVG_COUNT = 32;
 
-    // Configure codec for high-speed mode (768k) on QSD2
-    conn.setCodecConfig(768000, {4, 5}, 0.0, 0); // Assuming channels 4,5 map to QSD2 I/Q in high-speed remapping
+    // Configure codec for high-speed mode (768k) on OSD0
+    conn.setCodecConfig(768000, {0, 1}, 0.0, 0); // Channels 0,1 map to OSD0 I/Q
     
     for (const auto& tc : cases) {
         conn.setPreselectorInd(0, tc.l1);
         for (int i=0; i<11; ++i) conn.setPreselectorCap(i, (tc.mask >> i) & 1);
-        conn.setQsdVfo(2, tc.resonance);
+        conn.setQsdVfo(0, tc.resonance);
         
         std::this_thread::sleep_for(std::chrono::milliseconds(150));
         
@@ -59,7 +59,7 @@ TestStatus select_chk(RemoteDevice& device, std::string& message) {
             std::vector<std::complex<double>> buffer;
             auto callback = [&](const IQFrame& frame) {
                 if (buffer.size() < FFT_SIZE) {
-                    buffer.push_back({(double)frame.qsd[2].i, (double)frame.qsd[2].q});
+                    buffer.push_back({(double)frame.osd[0].i, (double)frame.osd[0].q});
                 }
             };
             conn.setFrameCallback(callback);

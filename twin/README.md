@@ -1,6 +1,6 @@
 # NexRx Digital Twin
 
-Software-in-the-Loop simulation environment for the NexRx Triple-QSD SDR receiver.
+Software-in-the-Loop simulation environment for the NexRx Dual-OSD SDR receiver.
 
 ## Building
 
@@ -78,7 +78,7 @@ west build -b native_sim
 ```
 
 **What it tests:**
-- Synthetic QSD mixing model (RF x LO quadrature)
+- Synthetic OSD mixing model (RF x LO quadrature)
 - `DspPipeline` signal processing
 - `Visualizer` S-meter and level display
 - Baseband frequency estimation
@@ -90,7 +90,7 @@ RF: 14.010 MHz, 1mV peak
 LO: 14.000 MHz
 Expected baseband: 10 kHz
 
-Processing 9600 samples...
+Processing 38400 samples...
 
 S-Meter: [####      ] S5
 Level: -73.2 dBm
@@ -130,7 +130,7 @@ S-meter: S5
 
 **What it tests:**
 - Xyce initialization and simulation stepping
-- ADC sampling callback at 96 kHz
+- ADC sampling callback at 384 kHz
 - Node voltage extraction from SPICE
 - I/Q frame generation and storage
 
@@ -147,15 +147,15 @@ Duration: 1.0 ms
 
 --- Results ---
 Success: yes
-Samples collected: 96
+Samples collected: 384
 Wall time: 2.5 s
 Speed: 0.0004x realtime
 
 --- First 10 samples ---
-t=    10.417us Q0:   0.123/  -0.456mV Q1:   0.123/  -0.456mV Q2:   0.123/  -0.456mV
+t=     2.604us O0:   0.123/  -0.456mV O1:   0.123/  -0.456mV
 ...
 
---- Signal Analysis (QSD0) ---
+--- Signal Analysis (OSD0) ---
 RMS magnitude: 0.5 mV
 Expected baseband: 10 kHz
 ```
@@ -163,7 +163,7 @@ Expected baseband: 10 kHz
 **Pass/Fail criteria:**
 - **PASS:**
   - "Success: yes"
-  - Sample count matches expected (duration * 96000)
+  - Sample count matches expected (duration * 384000)
   - No samples with error flag (flags != 0)
   - RMS magnitude > 0 (signal present)
 - **FAIL:**
@@ -201,14 +201,13 @@ uart connected to pseudotty: /dev/pts/X
 [00:00:00.000,000] <inf> twin_transport:   SHM: /nexrx_iq
 [00:00:00.000,000] <wrn> twin_transport: Failed to open shared memory: /nexrx_iq (errno=22)
 [00:00:00.000,000] <err> nexrx_main: Failed to initialize transport
-[00:00:00.000,000] <inf> virtual_nco: Virtual NCO initialized with 3 channels
+[00:00:00.000,000] <inf> virtual_nco: Virtual NCO initialized with 2 channels
 [00:00:00.000,000] <inf> virtual_adc: Virtual ADC initialized
-[00:00:00.000,000] <inf> virtual_adc:   Channels: 6
-[00:00:00.000,000] <inf> virtual_adc:   Sample rate: 96000 Hz
+[00:00:00.000,000] <inf> virtual_adc:   Channels: 4
+[00:00:00.000,000] <inf> virtual_adc:   Sample rate: 384000 Hz
 [00:00:00.000,000] <inf> virtual_adc:   Resolution: 24 bits
 [00:00:00.000,000] <inf> virtual_nco: NCO0 frequency set to 14000000 Hz
 [00:00:00.000,000] <inf> virtual_nco: NCO1 frequency set to 14000000 Hz
-[00:00:00.000,000] <inf> virtual_nco: NCO2 frequency set to 14000000 Hz
 [00:00:00.000,000] <inf> nexrx_main: I/Q processing thread started
 [00:00:00.000,000] <inf> nexrx_main: Firmware initialized, entering shell
 ```
@@ -216,8 +215,8 @@ uart connected to pseudotty: /dev/pts/X
 **Pass/Fail criteria:**
 - **PASS:**
   - "Booting Zephyr OS" message appears
-  - All three NCOs initialized to 14 MHz
-  - Virtual ADC shows 6 channels, 96kHz, 24-bit
+  - Both NCOs initialized to 14 MHz
+  - Virtual ADC shows 4 channels, 384kHz, 24-bit
   - "Firmware initialized, entering shell"
   - Shared memory warning is OK when orchestrator not running
 - **FAIL:**
@@ -243,12 +242,12 @@ uart:~$ nexrx freq 0 7000000   # Set VFO0 to 7 MHz
                              ▼
 ┌────────────────────────────────────────────────────────────┐
 │                     Xyce SPICE Simulation                   │ ◄── twin
-│  (Preselector → Transformer → Triple-QSD → TIA)            │
+│  (Preselector → Transformer → Dual-OSD → TIA)              │
 └────────────────────────────┬───────────────────────────────┘
                              │ Node voltages
                              ▼
                     ┌─────────────────┐
-                    │   AdcSampler    │ @ 96 kHz
+                    │   AdcSampler    │ @ 384 kHz
                     └────────┬────────┘
                              │ IQFrame
                              ▼

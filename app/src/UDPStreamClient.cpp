@@ -92,12 +92,10 @@ void UDPStreamClient::receiveLoop() {
       IQFrame frame;
       frame.sequence = header->sequence;
       frame.timestampNS = header->timestampNS;
-      frame.qsd[0].i = samples[i*6 + 0];
-      frame.qsd[0].q = samples[i*6 + 1];
-      frame.qsd[1].i = samples[i*6 + 2];
-      frame.qsd[1].q = samples[i*6 + 3];
-      frame.qsd[2].i = samples[i*6 + 4];
-      frame.qsd[2].q = samples[i*6 + 5];
+      frame.osd[0].i = samples[i*4 + 0];
+      frame.osd[0].q = samples[i*4 + 1];
+      frame.osd[1].i = samples[i*4 + 2];
+      frame.osd[1].q = samples[i*4 + 3];
 
       size_t nextWrite = (writePos.load() + 1) % config.receiveBufferSize;
       if (nextWrite == readPos.load()) {

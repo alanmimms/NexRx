@@ -1,6 +1,6 @@
 // NexRx Digital Twin
 //
-// Software-in-the-loop signal generator for the NexRx Triple-QSD SDR.
+// Software-in-the-loop signal generator for the NexRx Dual-OSD SDR.
 //
 // Build target: twin
 // Copyright 2026 NexRx Project - MIT License
@@ -55,7 +55,7 @@ namespace nexrx {
     double rfFreqMHz = 14.120; 
     double loFreqMHz = 14.200;
     double rfAmplitudeMV = 1.0;
-    double qsdOffsetKHz = 12.0;
+    double osdOffsetKHz = 12.0;
     std::string stimulus = "";
     std::string wavIQ = "";
     double wavFreqMHz = 0.0;
@@ -78,7 +78,7 @@ namespace nexrx {
 	      << "  --rf FREQ        Set static RF signal frequency in MHz (default: 14.12)\n"
 	      << "  --lo FREQ        Set initial LO frequency in MHz (default: 14.20)\n"
 	      << "  --amplitude MV   Set RF signal amplitude in mV (default: 1.0)\n"
-	      << "  --qsd-offset KHZ Set QSD offset k in kHz (default: 12.0)\n"
+	      << "  --osd-offset KHZ Set OSD offset k in kHz (default: 12.0)\n"
 	      << "  --stimulus FILE  Load Lua stimulus script (overrides --rf)\n"
 	      << "  --wav-iq FILE    Load WAV I/Q file as antenna stimulus\n"
 	      << "  --wav-freq MHZ   Center frequency for WAV I/Q stimulus (default: from filename)\n"
@@ -114,8 +114,8 @@ namespace nexrx {
 	opts.loFreqMHz = std::stod(argv[++i]);
       } else if (arg == "--amplitude" && i + 1 < argc) {
 	opts.rfAmplitudeMV = std::stod(argv[++i]);
-      } else if (arg == "--qsd-offset" && i + 1 < argc) {
-	opts.qsdOffsetKHz = std::stod(argv[++i]);
+      } else if ((arg == "--osd-offset" || arg == "--qsd-offset") && i + 1 < argc) {
+	opts.osdOffsetKHz = std::stod(argv[++i]);
       } else if (arg == "--stimulus" && i + 1 < argc) {
 	opts.stimulus = argv[++i];
       } else if (arg == "--wav-iq" && i + 1 < argc) {
@@ -312,14 +312,14 @@ namespace nexrx {
       std::cout << "[Twin] Streaming IQ data to " << control->peerIP() << ":" << opts.streamPort << std::endl;
     
       double lo = opts.loFreqMHz * 1e6;
-      double k = opts.qsdOffsetKHz * 1000.0;
+      double k = opts.osdOffsetKHz * 1000.0;
       CPLDModel cpldModel;
       auto controlHandler = std::make_unique<ControlHandler>(lo, k, &attenuator, &filters, &pga, &agc);
       if (!opts.headless) {
         controlHandler->start(control.get(), opts.verbose);
       }
     
-      double sampleRate = 96000.0;
+      double sampleRate = 384000.0;
       double samplePeriod = 1.0 / sampleRate;
       auto streamStartTime = std::chrono::steady_clock::now();
       size_t outputSample = 0;
@@ -331,12 +331,13 @@ namespace nexrx {
       bool headlessStreaming = opts.headless;
     
     // =======================================================================
-    // AK5578 SHARP ROLL-OFF Digital Filter Emulation with OVERSAMPLING
+    // TLV320ADC5140 Digital Filter Emulation with OVERSAMPLING
     // =======================================================================
     struct BiquadCoeffs { double b0, b1, b2, a1, a2; };
     static constexpr int NUM_LPF_STAGES = 3;
     static constexpr int OVERSAMPLE_RATIO = 5;
-    static constexpr BiquadCoeffs ak5578_480k_stages[NUM_LPF_STAGES] = {
+    const double simSampleRate = sampleRate * OVERSAMPLE_RATIO;
+    static constexpr BiquadCoeffs tlv320_stages[NUM_LPF_STAGES] = {
         {0.0006628600, 0.0008272571, 0.0006628600, -1.5472148716, 0.6157336719},
         {1.0000000000, -0.4832493140, 1.0000000000, -1.5609518734, 0.7359192796},
         {1.0000000000, -0.9740021692, 1.0000000000, -1.6237519754, 0.9064567688},
@@ -360,7 +361,7 @@ namespace nexrx {
     auto applyLpf = [&](double x, double z[NUM_LPF_STAGES][2]) -> double {
         double y = x;
         for (int s = 0; s < NUM_LPF_STAGES; ++s) {
-            const auto& c = ak5578_480k_stages[s];
+            const auto& c = tlv320_stages[s];
             double out = c.b0 * y + z[s][0];
             z[s][0] = c.b1 * y - c.a1 * out + z[s][1];
             z[s][1] = c.b2 * y - c.a2 * out;
@@ -378,17 +379,17 @@ namespace nexrx {
     double lo_cos_d[2], lo_sin_d[2];
 
     auto updateLOs = [&](double lo, double k) {
-        auto p0 = computePhaseInc(lo - k, 480000.0);
+        auto p0 = computePhaseInc(lo - k, simSampleRate);
         lo_cos_d[0] = p0.first; lo_sin_d[0] = p0.second;
-        auto p1 = computePhaseInc(lo + k, 480000.0);
+        auto p1 = computePhaseInc(lo + k, simSampleRate);
         lo_cos_d[1] = p1.first; lo_sin_d[1] = p1.second;
     };
 
     double current_lo = opts.loFreqMHz * 1e6;
-    double current_k = opts.qsdOffsetKHz * 1000.0;
+    double current_k = opts.osdOffsetKHz * 1000.0;
     updateLOs(current_lo, current_k);
 
-    std::vector<double> antBufferIQ(960 * OVERSAMPLE_RATIO * 2);
+    std::vector<double> antBufferIQ(3840 * OVERSAMPLE_RATIO * 2);
 
     #ifndef _WIN32
     struct sched_param param;
@@ -401,7 +402,7 @@ namespace nexrx {
     #endif
 
     while (opts.headless || (controlHandler && controlHandler->isConnected())) {
-      if (opts.durationMS > 0 && (outputSample * 1000.0 / 96000.0) >= opts.durationMS) {
+      if (opts.durationMS > 0 && (outputSample * 1000.0 / sampleRate) >= opts.durationMS) {
           std::cout << "[Twin] Requested duration (" << opts.durationMS << " ms) reached, closing session." << std::endl;
           break;
       }
@@ -421,27 +422,29 @@ namespace nexrx {
       }
 
       double baseVFO = controlHandler->getVFO();
-      double qsdK = controlHandler->getOSDOffset() * 1000.0;
-      if (std::abs(baseVFO - current_lo) > 0.1 || std::abs(qsdK - current_k) > 0.1) {
-          updateLOs(baseVFO, qsdK);
-          current_lo = baseVFO; current_k = qsdK;
-          cpldModel.updateWaterfallViewport(current_lo - 192000.0, current_lo + 192000.0);
+      double osdK = controlHandler->getOSDOffset() * 1000.0;
+      if (std::abs(baseVFO - current_lo) > 0.1 || std::abs(osdK - current_k) > 0.1) {
+        updateLOs(baseVFO, osdK);
+        current_lo = baseVFO; current_k = osdK;
+        constexpr double streamSampleRateHz = 384000.0; // 384 k samples/sec
+        constexpr double halfSpanHz = streamSampleRateHz / 2.0;
+        cpldModel.updateWaterfallViewport(current_lo - halfSpanHz, current_lo + halfSpanHz);
       }
 
       double attenGain = attenuator.getVoltageGain();
       double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
       double modeGainScale = cpldModel.getModeGainScale();
 
-      int nToProcess = 960; // 10ms chunk
-      double chunkStartTime = (outputSample * OVERSAMPLE_RATIO) / 480000.0;
-      double oversamplePeriod = 1.0 / 480000.0;
+      int nToProcess = 3840; // 10ms chunk
+      double chunkStartTime = (outputSample * OVERSAMPLE_RATIO) / simSampleRate;
+      double oversamplePeriod = 1.0 / simSampleRate;
       
       if (stimulusManager) {
           auto gainFunc = [&](double f) {
               return getFilterBankGain(f, filters);
           };
           stimulusManager->generateBatch(chunkStartTime, oversamplePeriod, nToProcess * OVERSAMPLE_RATIO, 
-                                        antBufferIQ.data(), current_lo, 480000.0, gainFunc);
+                                        antBufferIQ.data(), current_lo, simSampleRate, gainFunc);
       } else {
           std::fill(antBufferIQ.begin(), antBufferIQ.end(), 0.0);
       }
@@ -501,7 +504,7 @@ namespace nexrx {
               }
           }
 
-          if ((outputSample % 960) == 0) {
+          if ((outputSample % 3840) == 0) {
               for (int ch = 0; ch < 2; ++ch) {
                   double m = 1.0 / std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
                   lo_cos[ch] *= m; lo_sin[ch] *= m;
@@ -535,7 +538,7 @@ namespace nexrx {
               // --- Smoother Pacing at Packet Level ---
               auto nowP = std::chrono::steady_clock::now();
               double elapsedP = std::chrono::duration<double>(nowP - streamStartTime).count();
-              double targetP = static_cast<double>(outputSample) / 96000.0;
+              double targetP = static_cast<double>(outputSample) / sampleRate;
               
               if (targetP > elapsedP) {
                   auto waitTime = std::chrono::microseconds(static_cast<int64_t>((targetP - elapsedP) * 1e6));

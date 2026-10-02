@@ -19,14 +19,14 @@ class TwinTransport;
 
 class VirtualNco {
 public:
-    static constexpr int NUM_CHANNELS = 3;
+    static constexpr int NUM_CHANNELS = 2;
 
     VirtualNco() = default;
 
     // Initialize with transport to orchestrator
     void initialize(TwinTransport* transport);
 
-    // Set frequency for NCO channel (0-2)
+    // Set frequency for NCO channel (0-1)
     bool setFrequency(int channel, uint64_t freq_hz);
 
     // Get current frequency setting
@@ -43,9 +43,9 @@ public:
 
 private:
     TwinTransport* transport_ = nullptr;
-    uint64_t freq_hz_[NUM_CHANNELS] = {14000000, 14000000, 14000000};
-    uint16_t phase_deg_[NUM_CHANNELS] = {0, 0, 0};
-    bool enabled_[NUM_CHANNELS] = {true, true, true};
+    uint64_t freq_hz_[NUM_CHANNELS] = {14000000, 14000000};
+    uint16_t phase_deg_[NUM_CHANNELS] = {0, 0};
+    bool enabled_[NUM_CHANNELS] = {true, true};
 };
 
 } // namespace nexrx

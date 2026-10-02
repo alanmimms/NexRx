@@ -51,7 +51,7 @@ void process_iq_thread(void* p1, void* p2, void* p3) {
             // Process I/Q data here
             // In real firmware, this would:
             // 1. Apply digital filtering
-            // 2. Combine QSD outputs for image rejection
+            // 2. Combine OSD outputs for image rejection
             // 3. Decimate to audio rate
             // 4. Send to USB audio class
 

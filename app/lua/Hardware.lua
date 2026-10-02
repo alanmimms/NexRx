@@ -98,10 +98,15 @@ function Hardware.sync(commands)
         end
     end
 
-    -- QSD Control
-    if commands.QSD then
-        if hw and shouldSend("qsd.offset", commands.QSD.offsetK) and hw.setQSDOffset then
-            hw.setQSDOffset(commands.QSD.offsetK)
+    -- OSD Control
+    if commands.OSD or commands.QSD then
+        local cmd = commands.OSD or commands.QSD
+        if hw and (shouldSend("osd.offset", cmd.offsetK) or shouldSend("qsd.offset", cmd.offsetK)) then
+            if hw.setOSDOffset then
+                hw.setOSDOffset(cmd.offsetK)
+            elseif hw.setQSDOffset then
+                hw.setQSDOffset(cmd.offsetK)
+            end
         end
     end
 

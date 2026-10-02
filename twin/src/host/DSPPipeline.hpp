@@ -1,7 +1,7 @@
 // NexRx Digital Twin - DSP Pipeline
 //
-// Basic signal processing for triple-QSD I/Q data.
-// Combines signals from three QSDs for image rejection.
+// Basic signal processing for dual-OSD I/Q data.
+// Combines signals from two OSDs for image rejection.
 //
 // Copyright 2026 NexRx Project - MIT License
 
@@ -27,14 +27,11 @@ using Complex = std::complex<double>;
 // DSP Pipeline Configuration
 //======================================================================
 struct DSPConfig {
-    // QSD weighting for combining (default: equal weight)
-    std::array<double, 3> qsdWeights = {1.0, 1.0, 1.0};
-
-    // Enable QSD2 (sextature) for enhanced image rejection
-    bool useSextature = true;
+    // OSD weighting for combining (default: equal weight)
+    std::array<double, 2> osdWeights = {1.0, 1.0};
 
     // DC removal filter time constant (samples)
-    size_t dcFilterLength = 96;  // ~1ms at 96kHz
+    size_t dcFilterLength = 384;  // ~1ms at 384ksps
 
     // AGC parameters
     bool enableAgc = false;
@@ -63,8 +60,8 @@ struct SignalStats {
 //======================================================================
 // DSP Pipeline
 //
-// Processes I/Q frames from the triple-QSD receiver:
-// 1. Combines signals from QSD0, QSD1, QSD2
+// Processes I/Q frames from the dual-OSD receiver:
+// 1. Combines signals from OSD0 and OSD1
 // 2. Applies DC removal
 // 3. Optionally applies AGC
 // 4. Computes signal statistics
@@ -125,8 +122,8 @@ public:
     }
 
 private:
-    // Combine three QSD outputs
-    Complex combineQsd(const IQFrame& frame);
+    // Combine two OSD outputs
+    Complex combineOsd(const IQFrame& frame);
 
     // Remove DC offset
     Complex removeDc(const Complex& sample);
