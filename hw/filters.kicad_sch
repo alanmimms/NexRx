@@ -3271,7 +3271,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Inductor_SMD:L_1812_4532Metric"
 			(at 181.61 53.34 0)
 			(effects
 				(font
@@ -4719,7 +4719,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Inductor_SMD:L_1812_4532Metric"
 			(at 181.61 80.01 0)
 			(effects
 				(font
@@ -4958,7 +4958,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Inductor_SMD:L_1812_4532Metric"
 			(at 195.58 53.34 0)
 			(effects
 				(font
@@ -7209,7 +7209,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Inductor_SMD:L_1812_4532Metric"
 			(at 73.66 104.14 0)
 			(effects
 				(font
@@ -7765,7 +7765,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Inductor_SMD:L_1812_4532Metric"
 			(at 87.63 104.14 0)
 			(effects
 				(font
@@ -8809,7 +8809,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Inductor_SMD:L_1812_4532Metric"
 			(at 195.58 80.01 0)
 			(effects
 				(font
@@ -9118,7 +9118,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Library:L_1812_4532Metric-keepout"
+		(property "Footprint" "Inductor_SMD:L_1812_4532Metric"
 			(at 58.42 104.14 0)
 			(effects
 				(font

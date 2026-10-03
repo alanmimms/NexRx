@@ -1,6 +1,7 @@
 #include "GUIEngine.hpp"
 #include "AppLuaBridge.hpp"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <csignal>
 #include <cbor.h>
@@ -161,6 +162,54 @@ void GUIEngine::update(float dt) {
   if (updateFn.valid()) { 
     auto res = updateFn(dt); 
     if (!res.valid()) { sol::error err = res; std::cerr << "Lua update() error: " << err.what() << std::endl; running = false; } 
+  }
+
+  // 3. Periodic 1-second diagnostics (Stages C & D)
+  statTimer += dt;
+  if (statTimer >= 1.0f) {
+    statTimer -= 1.0f;
+    uint64_t curPkts = twinHost.getPacketsReceived();
+    uint64_t curFrames = twinHost.getFramesReceived();
+    uint64_t curOverruns = twinHost.getBufferOverruns();
+    uint64_t curDspFrames = dsp_.getDiagnostics().framesProcessed.load();
+    const auto& aStats = dsp_.getAudioBuffer().stats();
+    uint64_t curAudioWritten = aStats.samplesWritten.load();
+    uint64_t curAudioRead = aStats.samplesRead.load();
+    uint64_t curAudioDrops = aStats.dropsOverflow.load();
+    uint64_t curAudioUnderruns = aStats.underruns.load();
+    uint64_t curAudioStretch = aStats.stretchCount.load();
+    float fillPct = dsp_.getAudioBuffer().getFillRatio() * 100.0f;
+
+    float ingestKsps = static_cast<float>(curFrames - lastStatFrames) / 1000.0f;
+    float pktsPerSec = static_cast<float>(curPkts - lastStatPkts);
+    uint64_t overrunsDelta = curOverruns - lastStatOverruns;
+    float dspKsps = static_cast<float>(curDspFrames - lastStatDspFrames) / 1000.0f;
+    float audioGenRate = static_cast<float>(curAudioWritten - lastStatAudioWritten);
+    float audioPlayRate = static_cast<float>(curAudioRead - lastStatAudioRead);
+    uint64_t audioDropsDelta = curAudioDrops - lastStatAudioDrops;
+    uint64_t audioUnderrunsDelta = curAudioUnderruns - lastStatAudioUnderruns;
+    uint64_t audioStretchDelta = curAudioStretch - lastStatAudioStretch;
+
+    lastStatPkts = curPkts;
+    lastStatFrames = curFrames;
+    lastStatOverruns = curOverruns;
+    lastStatDspFrames = curDspFrames;
+    lastStatAudioWritten = curAudioWritten;
+    lastStatAudioRead = curAudioRead;
+    lastStatAudioDrops = curAudioDrops;
+    lastStatAudioUnderruns = curAudioUnderruns;
+    lastStatAudioStretch = curAudioStretch;
+
+    if (twinConnected.load()) {
+      std::cout << "[App Stats 1s] Stage C Ingest: " << std::fixed << std::setprecision(1) << ingestKsps 
+                << " ksps (" << std::setprecision(0) << pktsPerSec << " pkts/s) | Overruns: " 
+                << overrunsDelta << " (total " << curOverruns << ") | Stage D DSP: " 
+                << std::setprecision(1) << dspKsps << " ksps -> Audio Gen: " 
+                << std::setprecision(0) << audioGenRate << " s/s | Playback: " << audioPlayRate 
+                << " s/s (fill " << std::setprecision(1) << fillPct << "%, drops " 
+                << audioDropsDelta << ", underruns " << audioUnderrunsDelta 
+                << ", stretch " << audioStretchDelta << ")" << std::endl;
+    }
   }
 }
 

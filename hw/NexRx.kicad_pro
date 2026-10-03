@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": true,
         "zones": {
-          "min_clearance": 0.15
+          "min_clearance": 0.25
         }
       },
       "diff_pair_dimensions": [
@@ -5054,7 +5054,7 @@
           "show": true
         }
       ],
-      "filter_string": "c",
+      "filter_string": "l",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",

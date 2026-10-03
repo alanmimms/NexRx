@@ -78,6 +78,7 @@ public:
   std::vector<uint8_t> sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& argsCBOR);
 
   [[nodiscard]] uint64_t getFramesReceived() const { return framesReceivedCount; }
+  [[nodiscard]] uint64_t getPacketsReceived() const;
   [[nodiscard]] uint64_t getLastSequence() const { return lastSequenceReceived; }
   [[nodiscard]] uint64_t getBufferOverruns() const;
   [[nodiscard]] uint64_t getFramesDropped() const;

@@ -323,6 +323,10 @@ std::vector<uint8_t> TwinConn::getState() {
   return cachedStateCBOR;
 }
 
+uint64_t TwinConn::getPacketsReceived() const {
+  return stream ? stream->packetsReceived() : 0;
+}
+
 uint64_t TwinConn::getBufferOverruns() const {
   return stream ? stream->bufferOverruns() : 0;
 }

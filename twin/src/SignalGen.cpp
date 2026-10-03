@@ -10,6 +10,7 @@
 #include "sampler/ADCSampler.hpp"
 #include "sampler/RXControls.hpp"
 #include "transport/IQFrame.hpp"
+#include "transport/IQPacketHeader.hpp"
 #include "transport/TCPControlTransport.hpp"
 #include "transport/UDPStreamTransport.hpp"
 #include "stimulus/ToneGenerator.hpp"
@@ -65,6 +66,10 @@ namespace nexrx {
     uint16_t controlPort = 5000;
     uint16_t streamPort = 5001;
 
+    std::string dumpStage3InFile = "";
+    std::string dumpStage3OutFile = "";
+    size_t dumpLimit = 0;
+
     double gainErr[2];
     double phaseErrRad[2];
   };
@@ -85,6 +90,9 @@ namespace nexrx {
 	      << "  --wav-iq FILE    Load WAV I/Q file as antenna stimulus\n"
 	      << "  --wav-freq MHZ   Center frequency for WAV I/Q stimulus (default: from filename)\n"
 	      << "  --swap-iq        Swap I and Q channels for WAV stimulus\n"
+	      << "  --dump-stage3-in FILE  Dump Stage 3 input (pre-recomb 4x float64) to FILE\n"
+	      << "  --dump-stage3-out FILE Dump Stage 3 output (post-recomb 2x float64) to FILE\n"
+	      << "  --dump-limit N         Limit Stage 3 dump to N samples (default: 0 = unlimited)\n"
 	      << "  --headless       Run simulation immediately without waiting for a client\n"
 	      << "  --duration MS    Run for specific duration in ms (default: forever)\n"
 	      << "  --timeout SEC    Exit after SEC seconds total or idle waiting (default: forever)\n"
@@ -128,6 +136,12 @@ namespace nexrx {
 	opts.wavFreqMHz = std::stod(argv[++i]);
       } else if (arg == "--swap-iq") {
 	opts.swapIQ = true;
+      } else if (arg == "--dump-stage3-in" && i + 1 < argc) {
+	opts.dumpStage3InFile = argv[++i];
+      } else if (arg == "--dump-stage3-out" && i + 1 < argc) {
+	opts.dumpStage3OutFile = argv[++i];
+      } else if (arg == "--dump-limit" && i + 1 < argc) {
+	opts.dumpLimit = std::stoull(argv[++i]);
       } else if (arg == "--headless") {
 	opts.headless = true;
       } else if (arg == "--duration" && i + 1 < argc) {
@@ -357,6 +371,43 @@ namespace nexrx {
       std::vector<IQFrame> batch;
       batch.reserve(32);
     
+      std::ofstream dumpStage3InStream;
+      if (!opts.dumpStage3InFile.empty()) {
+        dumpStage3InStream.open(opts.dumpStage3InFile, std::ios::binary);
+        if (dumpStage3InStream.is_open()) {
+          std::cout << "[Twin] Dumping Stage 3 input (pre-recomb 4x float64) to: " << opts.dumpStage3InFile << std::endl;
+        } else {
+          std::cerr << "[Twin] WARNING: Failed to open Stage 3 input dump file: " << opts.dumpStage3InFile << std::endl;
+        }
+      }
+
+      std::ofstream dumpStage3OutStream;
+      if (!opts.dumpStage3OutFile.empty()) {
+        dumpStage3OutStream.open(opts.dumpStage3OutFile, std::ios::binary);
+        if (dumpStage3OutStream.is_open()) {
+          std::cout << "[Twin] Dumping Stage 3 output (post-recomb 2x float64) to: " << opts.dumpStage3OutFile << std::endl;
+        } else {
+          std::cerr << "[Twin] WARNING: Failed to open Stage 3 output dump file: " << opts.dumpStage3OutFile << std::endl;
+        }
+      }
+
+      size_t samplesDumpedIn = 0;
+      size_t samplesDumpedOut = 0;
+
+      uint64_t totalRFSamples = 0;
+      uint64_t totalBasebandSamples = 0;
+      uint64_t totalPacketsSent = 0;
+      uint64_t totalBytesSent = 0;
+      uint64_t catchUpCount = 0;
+
+      auto lastStatTime = std::chrono::steady_clock::now();
+      uint64_t lastRFSamples = 0;
+      uint64_t lastBasebandSamples = 0;
+      uint64_t lastPacketsSent = 0;
+      uint64_t lastBytesSent = 0;
+      uint64_t lastCatchUpCount = 0;
+      double intervalComputeTimeS = 0.0;
+
       bool streamLogged = false;
       std::cout << "[Twin] Starting session loop (Dual OSD)" << std::endl;
       bool headlessStreaming = opts.headless;
@@ -488,6 +539,7 @@ namespace nexrx {
       double chunkStartTime = (outputSample * OVERSAMPLE_RATIO) / simSampleRate;
       double oversamplePeriod = 1.0 / simSampleRate;
       
+      auto batchComputeStart = std::chrono::steady_clock::now();
       if (stimulusManager) {
           auto gainFunc = [&](double f) {
               return getFilterBankGain(f, filters);
@@ -562,6 +614,17 @@ namespace nexrx {
               recombCos *= rm; recombSin *= rm;
           }
 
+          // Dump Stage 3 input (pre-recombination 4 channels: OSD0 I/Q, OSD1 I/Q)
+          if (dumpStage3InStream.is_open() && (opts.dumpLimit == 0 || samplesDumpedIn < opts.dumpLimit)) {
+            double buf[4] = { filt_i[0], filt_q[0], filt_i[1], filt_q[1] };
+            dumpStage3InStream.write(reinterpret_cast<const char*>(buf), sizeof(buf));
+            samplesDumpedIn++;
+            if (opts.dumpLimit > 0 && samplesDumpedIn == opts.dumpLimit) {
+              std::cout << "[Twin] Reached Stage 3 input dump limit (" << opts.dumpLimit << " samples)" << std::endl;
+              dumpStage3InStream.flush();
+            }
+          }
+
           // STM32 on-chip recombination:
           // Shift OSD0 DOWN by k: (i + j*q) * (cos - j*sin)
           double s0_s_i = filt_i[0] * recombCos + filt_q[0] * recombSin;
@@ -574,6 +637,17 @@ namespace nexrx {
           // Coherently sum both OSDs into a single orthogonal I/Q pair
           double comb_i = (s0_s_i + s1_s_i) * 0.5;
           double comb_q = (s0_s_q + s1_s_q) * 0.5;
+
+          // Dump Stage 3 output (post-recombination 2 channels: Combined I/Q)
+          if (dumpStage3OutStream.is_open() && (opts.dumpLimit == 0 || samplesDumpedOut < opts.dumpLimit)) {
+            double buf[2] = { comb_i, comb_q };
+            dumpStage3OutStream.write(reinterpret_cast<const char*>(buf), sizeof(buf));
+            samplesDumpedOut++;
+            if (opts.dumpLimit > 0 && samplesDumpedOut == opts.dumpLimit) {
+              std::cout << "[Twin] Reached Stage 3 output dump limit (" << opts.dumpLimit << " samples)" << std::endl;
+              dumpStage3OutStream.flush();
+            }
+          }
 
           // Advance recombination phasor
           double nextRCos = recombCos * recombCos_d - recombSin * recombSin_d;
@@ -614,18 +688,54 @@ namespace nexrx {
                   }
               } else if (elapsedP - targetP > 0.1) {
                   // Catch-up protection
+                  catchUpCount++;
                   streamStartTime = nowP - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(targetP));
               }
 
               if (!opts.headless) {
                   stream->writeBatch(batch);
               }
+              totalPacketsSent++;
+              totalBytesSent += sizeof(IQPacketHeader) + batch.size() * sizeof(int32_t) * 2;
               batch.clear();
           }
+      }
+
+      auto batchComputeEnd = std::chrono::steady_clock::now();
+      intervalComputeTimeS += std::chrono::duration<double>(batchComputeEnd - batchComputeStart).count();
+      totalRFSamples += static_cast<uint64_t>(nToProcess) * OVERSAMPLE_RATIO;
+      totalBasebandSamples += nToProcess;
+
+      auto nowStat = std::chrono::steady_clock::now();
+      double statElapsed = std::chrono::duration<double>(nowStat - lastStatTime).count();
+      if (statElapsed >= 1.0) {
+        double rfRateMsps = static_cast<double>(totalRFSamples - lastRFSamples) / (statElapsed * 1e6);
+        double bbRateKsps = static_cast<double>(totalBasebandSamples - lastBasebandSamples) / (statElapsed * 1e3);
+        double pktRate = static_cast<double>(totalPacketsSent - lastPacketsSent) / statElapsed;
+        double mbRate = static_cast<double>(totalBytesSent - lastBytesSent) / (statElapsed * 1e6);
+        uint64_t catchUpDelta = catchUpCount - lastCatchUpCount;
+        double cpuPercent = (intervalComputeTimeS / statElapsed) * 100.0;
+
+        std::cout << "[Twin Stats 1s] Stage A: RF " << std::fixed << std::setprecision(2) << rfRateMsps 
+                  << " Msps, Baseband " << std::setprecision(1) << bbRateKsps 
+                  << " ksps | Stage B: Net " << std::setprecision(0) << pktRate 
+                  << " pkts/s (" << std::setprecision(2) << mbRate << " MB/s) | Compute CPU: " 
+                  << std::setprecision(1) << cpuPercent << "% | Deadlines Missed: " 
+                  << catchUpDelta << " (total " << catchUpCount << ")" << std::endl;
+
+        lastStatTime = nowStat;
+        lastRFSamples = totalRFSamples;
+        lastBasebandSamples = totalBasebandSamples;
+        lastPacketsSent = totalPacketsSent;
+        lastBytesSent = totalBytesSent;
+        lastCatchUpCount = catchUpCount;
+        intervalComputeTimeS = 0.0;
       }
     }
     
       std::cout << "[Twin] Session ended" << std::endl;
+      if (dumpStage3InStream.is_open()) dumpStage3InStream.close();
+      if (dumpStage3OutStream.is_open()) dumpStage3OutStream.close();
       if (!opts.headless) {
         controlHandler->stop();
         stream->disconnect();

@@ -72,4 +72,16 @@ private:
   std::mutex cmdMutex;
   std::thread commandThread;
   std::atomic<bool> commandThreadRunning{false};
+
+  // Periodic 1-second diagnostics
+  float statTimer = 0.0f;
+  uint64_t lastStatPkts = 0;
+  uint64_t lastStatFrames = 0;
+  uint64_t lastStatOverruns = 0;
+  uint64_t lastStatDspFrames = 0;
+  uint64_t lastStatAudioWritten = 0;
+  uint64_t lastStatAudioRead = 0;
+  uint64_t lastStatAudioDrops = 0;
+  uint64_t lastStatAudioUnderruns = 0;
+  uint64_t lastStatAudioStretch = 0;
 };
