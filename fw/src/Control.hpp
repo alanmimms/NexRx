@@ -30,6 +30,21 @@ public:
   static constexpr uint32_t CMD_GET_STATE       = makeControlId("GSTA");
   static constexpr uint32_t CMD_CAL_STIM        = makeControlId("CAL!");
   static constexpr uint32_t CMD_GBYE            = makeControlId("GBYE");
+  static constexpr uint32_t CMD_GET_VERSION     = makeControlId("GVER");
+  static constexpr uint32_t CMD_LOAD_CPLD       = makeControlId("LCPL");
+
+  /* Firmware and Protocol Version Constants */
+  static constexpr uint16_t FW_VERSION_MAJOR    = 1;
+  static constexpr uint16_t FW_VERSION_MINOR    = 0;
+  static constexpr uint16_t FW_VERSION_PATCH    = 0;
+  static constexpr uint32_t FW_PROTOCOL_MAGIC   = 0x4E585258; /* "NXRX" */
+
+  /* Hardware Operational States */
+  static constexpr uint32_t STATE_BOOTING          = 0;
+  static constexpr uint32_t STATE_WAIT_CPLD_IMAGE  = 1;
+  static constexpr uint32_t STATE_READY            = 2;
+  static constexpr uint32_t STATE_STREAMING        = 3;
+  static constexpr uint32_t STATE_ERROR            = 4;
 };
 
 } // namespace nexrx

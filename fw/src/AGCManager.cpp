@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include "TLV320ADC5140.hpp"
+#include "FrontEndDriver.hpp"
 
 LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
 
@@ -81,6 +82,7 @@ void AGCManager::setTotalGain(float totalGainDB) {
 }
 
 void AGCManager::applyHardwareGain() {
+  FrontEndDriver::setAttenuation(currentAttenDB);
   TLV320ADC5140::setPGAGain(static_cast<uint8_t>(currentPGACode));
 }
 

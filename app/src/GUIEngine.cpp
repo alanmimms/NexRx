@@ -237,7 +237,77 @@ void GUIEngine::render() {
     }
   }
 
+  if (firmwareIncompatible) {
+    renderIncompatibleFirmwareModal();
+  }
+
   EndDrawing();
+}
+
+void GUIEngine::renderIncompatibleFirmwareModal() {
+  int screenW = GetScreenWidth();
+  int screenH = GetScreenHeight();
+
+  // Dark overlay
+  DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.80f));
+
+  // Modal box
+  int boxW = 540;
+  int boxH = 260;
+  int boxX = (screenW - boxW) / 2;
+  int boxY = (screenH - boxH) / 2;
+
+  DrawRectangle(boxX, boxY, boxW, boxH, Color{30, 32, 38, 255});
+  DrawRectangleLines(boxX, boxY, boxW, boxH, Color{220, 50, 50, 255});
+  DrawRectangleLines(boxX + 1, boxY + 1, boxW - 2, boxH - 2, Color{220, 50, 50, 180});
+
+  // Header banner
+  DrawRectangle(boxX + 2, boxY + 2, boxW - 4, 38, Color{180, 30, 30, 255});
+  DrawText("FIRMWARE UPDATE REQUIRED", boxX + 20, boxY + 10, 20, WHITE);
+
+  // Body text
+  char verLine[128];
+  snprintf(verLine, sizeof(verLine), "Connected Hardware: Firmware v%u.%u.%u",
+           connectedVersion.major, connectedVersion.minor, connectedVersion.patch);
+  DrawText(verLine, boxX + 25, boxY + 55, 18, Color{220, 220, 220, 255});
+
+  char reqLine[128];
+  snprintf(reqLine, sizeof(reqLine), "Application Requires: Firmware v%u.%u.x",
+           nexrx::Control::FW_VERSION_MAJOR, nexrx::Control::FW_VERSION_MINOR);
+  DrawText(reqLine, boxX + 25, boxY + 80, 18, Color{255, 200, 80, 255});
+
+  DrawText("ATTENTION: Continuing without updating will prevent NexRx", boxX + 25, boxY + 115, 16, Color{255, 120, 120, 255});
+  DrawText("from operating. The receiver hardware cannot communicate", boxX + 25, boxY + 135, 16, Color{255, 120, 120, 255});
+  DrawText("with this version of the application.", boxX + 25, boxY + 155, 16, Color{255, 120, 120, 255});
+
+  // Buttons
+  Rectangle updateBtn = { static_cast<float>(boxX + 30), static_cast<float>(boxY + 195), 230, 42 };
+  Rectangle cancelBtn = { static_cast<float>(boxX + 280), static_cast<float>(boxY + 195), 230, 42 };
+
+  Vector2 mousePos = GetMousePosition();
+  bool hoverUpdate = CheckCollisionPointRec(mousePos, updateBtn);
+  bool hoverCancel = CheckCollisionPointRec(mousePos, cancelBtn);
+
+  // Draw Update Button
+  DrawRectangleRec(updateBtn, hoverUpdate ? Color{40, 160, 60, 255} : Color{30, 130, 50, 255});
+  DrawRectangleLinesEx(updateBtn, 1.5f, Color{80, 220, 100, 255});
+  DrawText("Update Firmware Now", boxX + 48, boxY + 207, 18, WHITE);
+
+  // Draw Cancel Button
+  DrawRectangleRec(cancelBtn, hoverCancel ? Color{100, 100, 110, 255} : Color{70, 70, 80, 255});
+  DrawRectangleLinesEx(cancelBtn, 1.5f, Color{150, 150, 160, 255});
+  DrawText("Disconnect / Cancel", boxX + 308, boxY + 207, 18, WHITE);
+
+  // Handle clicks
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (hoverUpdate) {
+      std::cout << "[Hardware] User initiated firmware update..." << std::endl;
+      firmwareIncompatible = false;
+    } else if (hoverCancel) {
+      std::cout << "[Hardware] User declined firmware update. Hardware remaining disconnected." << std::endl;
+      firmwareIncompatible = false;
+    }
+  }
 }
 
 void GUIEngine::shutdown() {
@@ -252,6 +322,36 @@ void GUIEngine::shutdown() {
 bool GUIEngine::connectTwin(const std::string& host, int cp, int sp) {
   nexrx::TwinConfig c; c.host = host; c.controlPort = cp; c.streamPort = sp;
   if (twinHost.initialize(c)) {
+    auto vInfo = twinHost.checkFirmwareVersion();
+    if (vInfo.valid) {
+      connectedVersion = vInfo;
+      if (!vInfo.compatible) {
+        std::cerr << "[Hardware] Connected firmware v" << vInfo.major << "." << vInfo.minor << "." << vInfo.patch
+                  << " is INCOMPATIBLE with App required v" << nexrx::Control::FW_VERSION_MAJOR << "."
+                  << nexrx::Control::FW_VERSION_MINOR << "!" << std::endl;
+        firmwareIncompatible = true;
+        twinHost.shutdown();
+        twinConnected.store(false);
+        return false;
+      }
+      firmwareIncompatible = false;
+
+      if (vInfo.hwState == nexrx::Control::STATE_WAIT_CPLD_IMAGE) {
+        std::ifstream bitstreamFile("common/cpld.bin", std::ios::binary);
+        if (!bitstreamFile.is_open()) {
+          bitstreamFile.open("app/assets/cpld.bin", std::ios::binary);
+        }
+        if (bitstreamFile.is_open()) {
+          std::vector<uint8_t> bitstreamData((std::istreambuf_iterator<char>(bitstreamFile)),
+                                             std::istreambuf_iterator<char>());
+          std::cout << "[Hardware] Pushing CPLD bitstream (" << bitstreamData.size() << " bytes) to hardware..." << std::endl;
+          twinHost.loadCPLDBitstream(bitstreamData);
+        } else {
+          std::cerr << "[Hardware] Warning: CPLD bitstream file not found on host!" << std::endl;
+        }
+      }
+    }
+
     twinHost.setFrameCallback([this](const nexrx::IQFrame& f) { dsp_.processIQFrame(f); });
     if (twinHost.startReceiving()) {
       twinConnected.store(true);

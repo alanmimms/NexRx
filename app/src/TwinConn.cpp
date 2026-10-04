@@ -318,6 +318,97 @@ uint64_t TwinConn::getTimestamp() {
   return 0; // TODO: Implement CBOR decode
 }
 
+TwinConn::VersionInfo TwinConn::checkFirmwareVersion() {
+  VersionInfo info;
+  uint8_t buf[64];
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf, sizeof(buf), 0);
+  cbor_encoder_create_array(&enc, &arr, 1);
+  cbor_encode_uint(&arr, Control::CMD_GET_VERSION);
+  cbor_encoder_close_container(&enc, &arr);
+
+  auto res = sendCBORRequest(Control::CMD_GET_VERSION, {buf, buf + cbor_encoder_get_buffer_size(&enc, buf)});
+  if (res.empty()) {
+    return info;
+  }
+
+  CborParser parser;
+  CborValue it;
+  if (cbor_parser_init(res.data(), res.size(), 0, &parser, &it) != CborNoError) {
+    return info;
+  }
+
+  if (cbor_value_is_array(&it)) {
+    CborValue val;
+    cbor_value_enter_container(&it, &val);
+
+    int64_t status = -1;
+    if (cbor_value_is_integer(&val)) {
+      cbor_value_get_int64(&val, &status);
+      cbor_value_advance(&val);
+    }
+    if (status != 0) {
+      return info;
+    }
+
+    uint64_t magic = 0, major = 0, minor = 0, patch = 0, hwState = 0;
+    if (cbor_value_is_integer(&val)) { cbor_value_get_uint64(&val, &magic); cbor_value_advance(&val); }
+    if (cbor_value_is_integer(&val)) { cbor_value_get_uint64(&val, &major); cbor_value_advance(&val); }
+    if (cbor_value_is_integer(&val)) { cbor_value_get_uint64(&val, &minor); cbor_value_advance(&val); }
+    if (cbor_value_is_integer(&val)) { cbor_value_get_uint64(&val, &patch); cbor_value_advance(&val); }
+    if (cbor_value_is_integer(&val)) { cbor_value_get_uint64(&val, &hwState); cbor_value_advance(&val); }
+
+    info.magic = static_cast<uint32_t>(magic);
+    info.major = static_cast<uint16_t>(major);
+    info.minor = static_cast<uint16_t>(minor);
+    info.patch = static_cast<uint16_t>(patch);
+    info.hwState = static_cast<uint32_t>(hwState);
+    info.valid = true;
+    info.compatible = (info.magic == Control::FW_PROTOCOL_MAGIC && info.major == Control::FW_VERSION_MAJOR);
+  }
+
+  return info;
+}
+
+bool TwinConn::loadCPLDBitstream(const std::vector<uint8_t>& bitstream) {
+  if (bitstream.empty()) {
+    return false;
+  }
+  std::vector<uint8_t> buf;
+  buf.resize(bitstream.size() + 64);
+
+  CborEncoder enc, arr;
+  cbor_encoder_init(&enc, buf.data(), buf.size(), 0);
+  cbor_encoder_create_array(&enc, &arr, 2);
+  cbor_encode_uint(&arr, Control::CMD_LOAD_CPLD);
+  cbor_encode_byte_string(&arr, bitstream.data(), bitstream.size());
+  cbor_encoder_close_container(&enc, &arr);
+
+  size_t encodedLen = cbor_encoder_get_buffer_size(&enc, buf.data());
+  auto res = sendCBORRequest(Control::CMD_LOAD_CPLD, {buf.data(), buf.data() + encodedLen});
+  if (res.empty()) {
+    return false;
+  }
+
+  CborParser parser;
+  CborValue it;
+  if (cbor_parser_init(res.data(), res.size(), 0, &parser, &it) != CborNoError) {
+    return false;
+  }
+
+  if (cbor_value_is_array(&it)) {
+    CborValue val;
+    cbor_value_enter_container(&it, &val);
+    int64_t status = -1;
+    if (cbor_value_is_integer(&val)) {
+      cbor_value_get_int64(&val, &status);
+    }
+    return (status == 0);
+  }
+
+  return false;
+}
+
 std::vector<uint8_t> TwinConn::getState() {
   std::lock_guard<std::mutex> lock(stateMutex);
   return cachedStateCBOR;

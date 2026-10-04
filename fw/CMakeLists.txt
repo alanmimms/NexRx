@@ -20,6 +20,7 @@ target_sources(app PRIVATE
     src/CPLDDriver.cpp
     src/TLV320ADC5140.cpp
     src/DisplayManager.cpp
+    src/FrontEndDriver.cpp
     src/USBManager.cpp
     src/OSDCapture.cpp
     src/ControlHandler.cpp

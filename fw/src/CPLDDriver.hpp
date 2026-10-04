@@ -17,14 +17,17 @@ public:
   static constexpr uint32_t expectedSig   = 0x4E785278; /* "NxRx" */
 
   static void init();
-  static bool readSignature();
+  static bool isConfigured();
+  static bool programBitstream(const uint8_t* data, size_t length);
+  static bool readSignature(int cpldIndex = 0);
+  static bool readBothSignatures();
   static void setClockMode(bool isFourPhase);
-  static uint64_t getLatchedTCXOCount();
+  static uint64_t getLatchedTCXOCount(int cpldIndex = 0);
 
 private:
   static const struct device* getSPIDevice();
-  static int writeRegister(uint8_t addr, uint32_t data);
-  static int readRegister(uint8_t addr, uint32_t &data);
+  static int writeRegister(uint8_t addr, uint32_t data, int cpldIndex = -1);
+  static int readRegister(uint8_t addr, uint32_t &data, int cpldIndex = 0);
 };
 
 } // namespace nexrx

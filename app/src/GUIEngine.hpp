@@ -67,6 +67,10 @@ private:
   std::chrono::steady_clock::time_point lastStatePollTime;
   std::atomic<bool> twinConnected{false};
 
+  bool firmwareIncompatible = false;
+  nexrx::TwinConn::VersionInfo connectedVersion;
+  void renderIncompatibleFirmwareModal();
+
   // Coalescing Command Queue
   std::map<std::string, std::function<void()>> pendingCommands;
   std::mutex cmdMutex;

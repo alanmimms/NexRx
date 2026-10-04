@@ -75,6 +75,19 @@ public:
   void pollStateAsync(); // Called by background thread
   bool sendCalibrationStimulus(double freqHz, uint64_t durationMs);
 
+  struct VersionInfo {
+    uint32_t magic = 0;
+    uint16_t major = 0;
+    uint16_t minor = 0;
+    uint16_t patch = 0;
+    uint32_t hwState = 0;
+    bool valid = false;
+    bool compatible = false;
+  };
+
+  VersionInfo checkFirmwareVersion();
+  bool loadCPLDBitstream(const std::vector<uint8_t>& bitstream);
+
   std::vector<uint8_t> sendCBORRequest(uint32_t cmdId, const std::vector<uint8_t>& argsCBOR);
 
   [[nodiscard]] uint64_t getFramesReceived() const { return framesReceivedCount; }
