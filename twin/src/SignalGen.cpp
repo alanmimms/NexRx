@@ -33,6 +33,9 @@
 #include <random>
 #include <atomic>
 #include <mutex>
+#include <future>
+#include <semaphore>
+#include <functional>
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
 #include <xmmintrin.h>
@@ -480,7 +483,24 @@ namespace nexrx {
     };
     updateRecomb(current_k);
 
-    std::vector<double> antBufferIQ(3840 * OVERSAMPLE_RATIO * 2);
+    constexpr int BATCH_SAMPLES = 19200; // 50ms chunk at 384 ksps
+    std::vector<double> antBufferIQ(BATCH_SAMPLES * OVERSAMPLE_RATIO * 2);
+    std::vector<double> filtI[2] = { std::vector<double>(BATCH_SAMPLES), std::vector<double>(BATCH_SAMPLES) };
+    std::vector<double> filtQ[2] = { std::vector<double>(BATCH_SAMPLES), std::vector<double>(BATCH_SAMPLES) };
+
+    std::binary_semaphore semStart{0};
+    std::binary_semaphore semDone{0};
+    std::atomic<bool> workerStop{false};
+    std::function<void(int)> processChannel;
+
+    std::thread workerCh1([&]() {
+      while (!workerStop.load()) {
+        semStart.acquire();
+        if (workerStop.load()) break;
+        if (processChannel) processChannel(1);
+        semDone.release();
+      }
+    });
 
     #ifndef _WIN32
     struct sched_param param;
@@ -535,7 +555,7 @@ namespace nexrx {
       double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
       double modeGainScale = cpldModel.getModeGainScale();
 
-      int nToProcess = 3840; // 10ms chunk
+      int nToProcess = BATCH_SAMPLES; // 50ms chunk
       double chunkStartTime = (outputSample * OVERSAMPLE_RATIO) / simSampleRate;
       double oversamplePeriod = 1.0 / simSampleRate;
       
@@ -550,73 +570,94 @@ namespace nexrx {
           std::fill(antBufferIQ.begin(), antBufferIQ.end(), 0.0);
       }
 
-      for (int s = 0; s < nToProcess; ++s) {
-          double filt_i[2]={0}, filt_q[2]={0};
+      bool isCal = (controlHandler && (controlHandler->isCalStimActive() || controlHandler->isISGEnabled()));
+      double fCalStim = 0.0;
+      double pgCalStim = 1.0;
+      if (isCal) {
+        fCalStim = controlHandler->isISGEnabled() ? controlHandler->getISGFreq() : controlHandler->getCalStimFreq();
+        pgCalStim = getFilterBankGain(fCalStim, filters);
+      }
+
+      auto processChannel = [&](int ch) {
+        double locCos = lo_cos[ch];
+        double locSin = lo_sin[ch];
+        double locCosD = lo_cos_d[ch];
+        double locSinD = lo_sin_d[ch];
+        double gE = opts.gainErr[ch];
+        double pE = opts.phaseErrRad[ch];
+        double cosPE = std::cos(pE);
+        double sinPE = std::sin(pE);
+
+        for (int s = 0; s < nToProcess; ++s) {
+          double fi = 0.0, fq = 0.0;
           for (int i = 0; i < OVERSAMPLE_RATIO; ++i) {
-              int bufIdx = (s * OVERSAMPLE_RATIO + i) * 2;
-              double antI = antBufferIQ[bufIdx];
-              double antQ = antBufferIQ[bufIdx + 1];
+            int bufIdx = (s * OVERSAMPLE_RATIO + i) * 2;
+            double antI = antBufferIQ[bufIdx];
+            double antQ = antBufferIQ[bufIdx + 1];
+
+            if (isCal) {
               double t = chunkStartTime + (s * OVERSAMPLE_RATIO + i) * oversamplePeriod;
-              
-              if (controlHandler->isCalStimActive() || controlHandler->isISGEnabled()) {
-                double fStim = controlHandler->isISGEnabled() ? controlHandler->getISGFreq() : controlHandler->getCalStimFreq();
-                double pgStim = getFilterBankGain(fStim, filters);
-                double phaseStim = 2.0 * M_PI * std::fmod(fStim * t, 1.0);
-                antI = 0.010 * std::cos(phaseStim) * pgStim;
-                antQ = 0.010 * std::sin(phaseStim) * pgStim;
-              }
+              double phaseStim = 2.0 * M_PI * std::fmod(fCalStim * t, 1.0);
+              antI = 0.010 * std::cos(phaseStim) * pgCalStim;
+              antQ = 0.010 * std::sin(phaseStim) * pgCalStim;
+            }
 
-              antI *= attenGain * modeGainScale; 
-              antQ *= attenGain * modeGainScale;
+            antI *= attenGain * modeGainScale;
+            antQ *= attenGain * modeGainScale;
 
-              for (int ch = 0; ch < 2; ++ch) {
-                  double bb_i = antI * lo_cos[ch] + antQ * lo_sin[ch];
-                  double bb_q = antQ * lo_cos[ch] - antI * lo_sin[ch];
-                  
-                  double cos2 = lo_cos[ch]*lo_cos[ch] - lo_sin[ch]*lo_sin[ch];
-                  double sin2 = 2.0*lo_cos[ch]*lo_sin[ch];
-                  bb_i += 0.001 * (antI * cos2 + antQ * sin2); 
-                  bb_q += 0.001 * (antQ * cos2 - antI * sin2);
+            double bb_i = antI * locCos + antQ * locSin;
+            double bb_q = antQ * locCos - antI * locSin;
 
-                  double cos3 = lo_cos[ch]*cos2 - lo_sin[ch]*sin2;
-                  double sin3 = lo_sin[ch]*cos2 + lo_cos[ch]*sin2;
-                  bb_i += 0.33 * (antI * cos3 + antQ * sin3);
-                  bb_q += 0.33 * (antQ * cos3 - antI * sin3);
-                  
-                  bb_i += noiseGens[ch].next() * 2e-11; 
-                  bb_q += noiseGens[ch].next() * 2e-11;
+            double cos2 = locCos * locCos - locSin * locSin;
+            double sin2 = 2.0 * locCos * locSin;
+            bb_i += 0.001 * (antI * cos2 + antQ * sin2);
+            bb_q += 0.001 * (antQ * cos2 - antI * sin2);
 
-                  double gE = opts.gainErr[ch];
-                  double pE = opts.phaseErrRad[ch];
-                  double err_i = bb_i;
-                  double err_q = (bb_q * std::cos(pE) - bb_i * std::sin(pE)) * gE;
+            double cos3 = locCos * cos2 - locSin * sin2;
+            double sin3 = locSin * cos2 + locCos * sin2;
+            bb_i += 0.33 * (antI * cos3 + antQ * sin3);
+            bb_q += 0.33 * (antQ * cos3 - antI * sin3);
 
-                  double fi = applyLpf(err_i, lpf_zi[ch]);
-                  double fq = applyLpf(err_q, lpf_zq[ch]);
-                  
-                  if (i == OVERSAMPLE_RATIO - 1) {
-                      filt_i[ch] = fi;
-                      filt_q[ch] = fq;
-                  }
+            bb_i += noiseGens[ch].next() * 2e-11;
+            bb_q += noiseGens[ch].next() * 2e-11;
 
-                  double c = lo_cos[ch] * lo_cos_d[ch] - lo_sin[ch] * lo_sin_d[ch];
-                  double s = lo_sin[ch] * lo_cos_d[ch] + lo_cos[ch] * lo_sin_d[ch];
-                  lo_cos[ch] = c; lo_sin[ch] = s;
-              }
+            double err_i = bb_i;
+            double err_q = (bb_q * cosPE - bb_i * sinPE) * gE;
+
+            fi = applyLpf(err_i, lpf_zi[ch]);
+            fq = applyLpf(err_q, lpf_zq[ch]);
+
+            double c = locCos * locCosD - locSin * locSinD;
+            double s = locSin * locCosD + locCos * locSinD;
+            locCos = c; locSin = s;
           }
 
-          if ((outputSample % 3840) == 0) {
-              for (int ch = 0; ch < 2; ++ch) {
-                  double m = 1.0 / std::sqrt(lo_cos[ch]*lo_cos[ch] + lo_sin[ch]*lo_sin[ch]);
-                  lo_cos[ch] *= m; lo_sin[ch] *= m;
-              }
+          if (((outputSample + s) % 3840) == 0) {
+            double m = 1.0 / std::sqrt(locCos * locCos + locSin * locSin);
+            locCos *= m; locSin *= m;
+          }
+
+          filtI[ch][s] = fi;
+          filtQ[ch][s] = fq;
+        }
+
+        lo_cos[ch] = locCos;
+        lo_sin[ch] = locSin;
+      };
+
+      semStart.release();
+      processChannel(0);
+      semDone.acquire();
+
+      for (int s = 0; s < nToProcess; ++s) {
+          if (((outputSample + s) % 3840) == 0) {
               double rm = 1.0 / std::sqrt(recombCos * recombCos + recombSin * recombSin);
               recombCos *= rm; recombSin *= rm;
           }
 
           // Dump Stage 3 input (pre-recombination 4 channels: OSD0 I/Q, OSD1 I/Q)
           if (dumpStage3InStream.is_open() && (opts.dumpLimit == 0 || samplesDumpedIn < opts.dumpLimit)) {
-            double buf[4] = { filt_i[0], filt_q[0], filt_i[1], filt_q[1] };
+            double buf[4] = { filtI[0][s], filtQ[0][s], filtI[1][s], filtQ[1][s] };
             dumpStage3InStream.write(reinterpret_cast<const char*>(buf), sizeof(buf));
             samplesDumpedIn++;
             if (opts.dumpLimit > 0 && samplesDumpedIn == opts.dumpLimit) {
@@ -627,12 +668,12 @@ namespace nexrx {
 
           // STM32 on-chip recombination:
           // Shift OSD0 DOWN by k: (i + j*q) * (cos - j*sin)
-          double s0_s_i = filt_i[0] * recombCos + filt_q[0] * recombSin;
-          double s0_s_q = filt_q[0] * recombCos - filt_i[0] * recombSin;
+          double s0_s_i = filtI[0][s] * recombCos + filtQ[0][s] * recombSin;
+          double s0_s_q = filtQ[0][s] * recombCos - filtI[0][s] * recombSin;
 
           // Shift OSD1 UP by k: (i + j*q) * (cos + j*sin)
-          double s1_s_i = filt_i[1] * recombCos - filt_q[1] * recombSin;
-          double s1_s_q = filt_q[1] * recombCos + filt_i[1] * recombSin;
+          double s1_s_i = filtI[1][s] * recombCos - filtQ[1][s] * recombSin;
+          double s1_s_q = filtQ[1][s] * recombCos + filtI[1][s] * recombSin;
 
           // Coherently sum both OSDs into a single orthogonal I/Q pair
           double comb_i = (s0_s_i + s1_s_i) * 0.5;
@@ -675,36 +716,54 @@ namespace nexrx {
           batch.push_back(pk);
           outputSample++;
 
-          if (batch.size() >= 32) {
-              // --- Smoother Pacing at Packet Level ---
-              auto nowP = std::chrono::steady_clock::now();
-              double elapsedP = std::chrono::duration<double>(nowP - streamStartTime).count();
-              double targetP = static_cast<double>(outputSample) / sampleRate;
-              
-              if (targetP > elapsedP) {
-                  auto waitTime = std::chrono::microseconds(static_cast<int64_t>((targetP - elapsedP) * 1e6));
-                  if (waitTime.count() > 100) {
-                      std::this_thread::sleep_for(waitTime);
-                  }
-              } else if (elapsedP - targetP > 0.1) {
-                  // Catch-up protection
-                  catchUpCount++;
-                  streamStartTime = nowP - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(targetP));
-              }
-
-              if (!opts.headless) {
-                  stream->writeBatch(batch);
-              }
-              totalPacketsSent++;
-              totalBytesSent += sizeof(IQPacketHeader) + batch.size() * sizeof(int32_t) * 2;
-              batch.clear();
+          if (batch.size() >= 128) {
+            if (!opts.headless) {
+              stream->writeBatch(batch);
+            }
+            totalPacketsSent++;
+            totalBytesSent += sizeof(IQPacketHeader) + batch.size() * sizeof(int32_t) * 2;
+            batch.clear();
           }
+      }
+
+      if (!batch.empty()) {
+        if (!opts.headless) {
+          stream->writeBatch(batch);
+        }
+        totalPacketsSent++;
+        totalBytesSent += sizeof(IQPacketHeader) + batch.size() * sizeof(int32_t) * 2;
+        batch.clear();
       }
 
       auto batchComputeEnd = std::chrono::steady_clock::now();
       intervalComputeTimeS += std::chrono::duration<double>(batchComputeEnd - batchComputeStart).count();
       totalRFSamples += static_cast<uint64_t>(nToProcess) * OVERSAMPLE_RATIO;
       totalBasebandSamples += nToProcess;
+
+      // Absolute non-drifting interval timer pacing for 50ms batch
+      uint64_t batchIndex = outputSample / nToProcess;
+      auto scheduledWake = streamStartTime + std::chrono::microseconds(batchIndex * 50000LL);
+      auto nowP = std::chrono::steady_clock::now();
+      if (scheduledWake > nowP) {
+        auto waitDuration = scheduledWake - nowP;
+        if (waitDuration > std::chrono::milliseconds(2)) {
+          std::this_thread::sleep_for(waitDuration - std::chrono::milliseconds(1));
+        }
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__)
+        while (std::chrono::steady_clock::now() < scheduledWake) {
+          asm volatile("pause" ::: "memory");
+        }
+#else
+        while (std::chrono::steady_clock::now() < scheduledWake) {
+          std::this_thread::yield();
+        }
+#endif
+      } else {
+        catchUpCount++;
+        if (nowP - scheduledWake > std::chrono::milliseconds(200)) {
+          streamStartTime = nowP - std::chrono::microseconds(batchIndex * 50000LL);
+        }
+      }
 
       auto nowStat = std::chrono::steady_clock::now();
       double statElapsed = std::chrono::duration<double>(nowStat - lastStatTime).count();
@@ -734,6 +793,11 @@ namespace nexrx {
     }
     
       std::cout << "[Twin] Session ended" << std::endl;
+      workerStop.store(true);
+      semStart.release();
+      if (workerCh1.joinable()) {
+        workerCh1.join();
+      }
       if (dumpStage3InStream.is_open()) dumpStage3InStream.close();
       if (dumpStage3OutStream.is_open()) dumpStage3OutStream.close();
       if (!opts.headless) {

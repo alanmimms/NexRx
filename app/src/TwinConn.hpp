@@ -20,7 +20,7 @@ struct TwinConfig {
   uint16_t controlPort = 5000;
   uint16_t streamPort = 5001;
   size_t frameBufferSize = 1024;
-  size_t receiveBufferSize = 8192;
+  size_t receiveBufferSize = 65536;
   bool verbose = false;
 };
 

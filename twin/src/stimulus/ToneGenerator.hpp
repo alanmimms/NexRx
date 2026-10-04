@@ -84,6 +84,35 @@ public:
         }
     }
 
+    void generateBatch(double startTime, double samplePeriod, size_t count, double* outIQ, double stimGain) const override {
+        for (const auto& tone : tones_) {
+            double phase_rad = tone.phase_deg * M_PI / 180.0;
+            double phase0 = 2.0 * M_PI * std::fmod(tone.frequency_hz * startTime, 1.0) + phase_rad;
+            double cosP = std::cos(phase0);
+            double sinP = std::sin(phase0);
+            double phaseInc = 2.0 * M_PI * std::fmod(tone.frequency_hz * samplePeriod, 1.0);
+            double cosInc = std::cos(phaseInc);
+            double sinInc = std::sin(phaseInc);
+            double amp = tone.amplitudeV * stimGain;
+
+            for (size_t i = 0; i < count; ++i) {
+                outIQ[i * 2] += amp * cosP;
+                outIQ[i * 2 + 1] += amp * sinP;
+
+                double nextCos = cosP * cosInc - sinP * sinInc;
+                double nextSin = sinP * cosInc + cosP * sinInc;
+                cosP = nextCos;
+                sinP = nextSin;
+
+                if ((i & 1023) == 0) {
+                    double norm = 1.0 / std::sqrt(cosP * cosP + sinP * sinP);
+                    cosP *= norm;
+                    sinP *= norm;
+                }
+            }
+        }
+    }
+
     [[nodiscard]] double carrierFrequency() const override {
         // Return first tone frequency as primary carrier
         return tones_.empty() ? 0.0 : tones_[0].frequency_hz;

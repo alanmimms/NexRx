@@ -77,6 +77,7 @@ private:
   float statTimer = 0.0f;
   uint64_t lastStatPkts = 0;
   uint64_t lastStatFrames = 0;
+  uint64_t lastStatNetDropped = 0;
   uint64_t lastStatOverruns = 0;
   uint64_t lastStatDspFrames = 0;
   uint64_t lastStatAudioWritten = 0;

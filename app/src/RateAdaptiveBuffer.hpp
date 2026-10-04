@@ -111,6 +111,12 @@ public:
     buffer[wPos] = sample;
     writePos.store(nextWrite, std::memory_order_release);
     bufferStats.samplesWritten.fetch_add(1, std::memory_order_relaxed);
+
+    if (isBuffering.load(std::memory_order_relaxed)) {
+      if (available() >= static_cast<size_t>(config.capacity * config.targetFillRatio)) {
+        isBuffering.store(false, std::memory_order_release);
+      }
+    }
     return true;
   }
 
@@ -229,6 +235,22 @@ public:
    * @return Number of samples produced (always == output.size())
    */
   size_t read(std::span<T> output) {
+    if (isBuffering.load(std::memory_order_acquire)) {
+      for (T& out : output) {
+        out = T{};
+      }
+      return output.size();
+    }
+
+    if (available() == 0) {
+      isBuffering.store(true, std::memory_order_release);
+      for (T& out : output) {
+        out = T{};
+      }
+      bufferStats.underruns.fetch_add(output.size(), std::memory_order_relaxed);
+      return output.size();
+    }
+
     if (!config.enableAdaptation) {
       return readDirect(output);
     }
@@ -267,6 +289,7 @@ public:
 
   void clear() {
     readPos.store(writePos.load(std::memory_order_acquire), std::memory_order_release);
+    isBuffering.store(true, std::memory_order_release);
   }
 
   const BufferStats& stats() const { return bufferStats; }
@@ -395,6 +418,7 @@ private:
   alignas(64) std::atomic<size_t> readPos{0};
 
   BufferStats bufferStats;
+  alignas(64) std::atomic<bool> isBuffering{true};
 };
 
 /**

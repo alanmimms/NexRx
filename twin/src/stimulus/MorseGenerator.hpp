@@ -55,6 +55,7 @@ public:
 
     // Analytic RF signal (complex envelope at carrier)
     void getRfIQ(double timeS, double& out_i, double& out_q) const override;
+    void generateBatch(double startTime, double samplePeriod, size_t count, double* outIQ, double stimGain) const override;
     [[nodiscard]] double carrierFrequency() const override { return freq_hz_; }
     [[nodiscard]] double getEnvelope(double timeS) const override;
 

@@ -114,7 +114,7 @@ size_t TwinConn::pollFrames(size_t maxFrames) {
 
 void TwinConn::receiveLoop() {
   while (!stopRequested) {
-    if (pollFrames(512) == 0) {
+    if (pollFrames(2048) == 0) {
       std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
   }

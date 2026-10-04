@@ -34,12 +34,12 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
   if (!audio.init(48000, 2)) return false;
   if (!waterfall.init(DSPEngine::FFT_SIZE, 256)) return false;
 
-  // Configure audio buffer for low latency
+  // Configure audio buffer for smooth jitter absorption with 50ms batches
   BufferConfig audioConfig;
-  audioConfig.capacity = 8192;
-  audioConfig.targetFillRatio = 0.2f;
-  audioConfig.lowThreshold = 0.1f;
-  audioConfig.highThreshold = 0.4f;
+  audioConfig.capacity = 32768;
+  audioConfig.targetFillRatio = 0.35f;
+  audioConfig.lowThreshold = 0.15f;
+  audioConfig.highThreshold = 0.65f;
   audioConfig.enableAdaptation = true;
   dsp_.getAudioBuffer().configure(audioConfig);
 
@@ -170,6 +170,7 @@ void GUIEngine::update(float dt) {
     statTimer -= 1.0f;
     uint64_t curPkts = twinHost.getPacketsReceived();
     uint64_t curFrames = twinHost.getFramesReceived();
+    uint64_t curNetDropped = twinHost.getFramesDropped();
     uint64_t curOverruns = twinHost.getBufferOverruns();
     uint64_t curDspFrames = dsp_.getDiagnostics().framesProcessed.load();
     const auto& aStats = dsp_.getAudioBuffer().stats();
@@ -182,6 +183,7 @@ void GUIEngine::update(float dt) {
 
     float ingestKsps = static_cast<float>(curFrames - lastStatFrames) / 1000.0f;
     float pktsPerSec = static_cast<float>(curPkts - lastStatPkts);
+    uint64_t netDroppedDelta = curNetDropped - lastStatNetDropped;
     uint64_t overrunsDelta = curOverruns - lastStatOverruns;
     float dspKsps = static_cast<float>(curDspFrames - lastStatDspFrames) / 1000.0f;
     float audioGenRate = static_cast<float>(curAudioWritten - lastStatAudioWritten);
@@ -192,6 +194,7 @@ void GUIEngine::update(float dt) {
 
     lastStatPkts = curPkts;
     lastStatFrames = curFrames;
+    lastStatNetDropped = curNetDropped;
     lastStatOverruns = curOverruns;
     lastStatDspFrames = curDspFrames;
     lastStatAudioWritten = curAudioWritten;
@@ -202,7 +205,8 @@ void GUIEngine::update(float dt) {
 
     if (twinConnected.load()) {
       std::cout << "[App Stats 1s] Stage C Ingest: " << std::fixed << std::setprecision(1) << ingestKsps 
-                << " ksps (" << std::setprecision(0) << pktsPerSec << " pkts/s) | Overruns: " 
+                << " ksps (" << std::setprecision(0) << pktsPerSec << " pkts/s) | Net Lost: "
+                << netDroppedDelta << " (total " << curNetDropped << ") | Overruns: " 
                 << overrunsDelta << " (total " << curOverruns << ") | Stage D DSP: " 
                 << std::setprecision(1) << dspKsps << " ksps -> Audio Gen: " 
                 << std::setprecision(0) << audioGenRate << " s/s | Playback: " << audioPlayRate 

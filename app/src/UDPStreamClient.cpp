@@ -27,6 +27,9 @@ bool UDPStreamClient::connect() {
   tv.tv_usec = 100000;
   ::setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
+  int rcvbuf = 2 * 1024 * 1024;
+  ::setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf));
+
   sockaddr_in addr{};
   addr.sin_family = AF_INET;
   addr.sin_port = htons(config.port);
@@ -95,6 +98,17 @@ void UDPStreamClient::receiveLoop() {
     }
 
     size_t framesInPacket = header->frameCount;
+    if (!firstFrame.load()) {
+      uint32_t expectedSeq = lastSequence.load() + 1;
+      if (header->sequence > expectedSeq) {
+        uint32_t lostPkts = header->sequence - expectedSeq;
+        framesDroppedCount += static_cast<uint64_t>(lostPkts) * framesInPacket;
+      }
+    } else {
+      firstFrame.store(false);
+    }
+    lastSequence.store(header->sequence);
+
     const int32_t* samples = reinterpret_cast<const int32_t*>(buffer + sizeof(IQPacketHeader));
 
     for (size_t i = 0; i < framesInPacket; i++) {

@@ -24,9 +24,7 @@ stimulus.addNoise("band-noise", {
     type = "thermal"
 })
 
-if true then
-
--- CW beacon on 14.100 MHz (S7 level)
+-- CW beacon on 14.0750 MHz (S7 level)
 stimulus.addMorse("VVV-DE-NIST", {
     freq = 14.0750e6,
     amplitude = 1.25e-3, -- 1.25mV
@@ -68,7 +66,7 @@ stimulus.addAm("am-2tone", {
     tones = {400, 1000}
 })
 
--- AM voice beacon on 14.280 MHz (S9+10)
+-- AM voice beacon on 15.000 MHz (S9+10)
 stimulus.addAm("wwv15", {
     freq = 15e6,
     amplitude = 15e-3, -- 15mV
@@ -76,8 +74,6 @@ stimulus.addAm("wwv15", {
     audioFile = "test/wwv-ident.wav",
     loop = true
 })
-
-end
 
 stimulus.addSsb("voice-id", {
     freq = 14.200e6,

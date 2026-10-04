@@ -185,13 +185,7 @@ void StimulusManager::generateBatch(double startTime, double samplePeriod,
           stimGain *= gainFunc(stim->carrierFrequency());
       }
 
-      for (size_t i = 0; i < count; ++i) {
-        double t = startTime + i * samplePeriod;
-        double sI, sQ;
-        stim->getRfIQ(t, sI, sQ);
-        outIQ[i * 2] += sI * stimGain;
-        outIQ[i * 2 + 1] += sQ * stimGain;
-      }
+      stim->generateBatch(startTime, samplePeriod, count, outIQ, stimGain);
   };
 
   if (frozen.load()) {

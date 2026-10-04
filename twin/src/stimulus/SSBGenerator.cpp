@@ -573,22 +573,14 @@ void SSBGenerator::getAudioIQ(double timeS, double& i, double& q) const {
       }
 
       size_t i1 = static_cast<size_t>(sampleIdxF);
-      size_t i0 = (i1 > 0) ? i1 - 1 : (samplesRepeat ? totalSamples - 1 : 0);
-      size_t i2 = (i1 + 1) % totalSamples;
-      size_t i3 = (i2 + 1) % totalSamples;
+      size_t i2 = (i1 + 1);
+      if (i2 >= totalSamples) {
+        i2 = samplesRepeat ? 0 : totalSamples - 1;
+      }
       double f = sampleIdxF - i1;
 
-      auto interp = [&](const std::vector<float>& s) {
-          double y0 = s[i0], y1 = s[i1], y2 = s[i2], y3 = s[i3];
-          double a = -0.5*y0 + 1.5*y1 - 1.5*y2 + 0.5*y3;
-          double b = y0 - 2.5*y1 + 2.0*y2 - 0.5*y3;
-          double c = -0.5*y0 + 0.5*y2;
-          double d = y1;
-          return ((a * f + b) * f + c) * f + d;
-      };
-
-      double rawI = interp(audioSamples);
-      double rawQ = interp(audioSamplesQ);
+      double rawI = audioSamples[i1] + f * (audioSamples[i2] - audioSamples[i1]);
+      double rawQ = audioSamplesQ[i1] + f * (audioSamplesQ[i2] - audioSamplesQ[i1]);
 
       constexpr double alpha = 0.05;
       // Filter I channel
@@ -745,6 +737,79 @@ void SSBGenerator::getRfIQ(double timeS, double& outI, double& outQ) const {
     // (audioI - j*audioQ) * exp(j*phase) = (audioI*cos + audioQ*sin) + j(audioI*sin - audioQ*cos)
     outI = amplitudeV * (audioI * cosP + audioQ * sinP);
     outQ = amplitudeV * (audioI * sinP - audioQ * cosP);
+  }
+}
+
+void SSBGenerator::generateBatch(double startTime, double samplePeriod, size_t count, double* outIQ, double stimGain) const {
+  if (audioSource == AudioSource::None) {
+    return;
+  }
+
+  if (audioSource == AudioSource::Tones) {
+    for (const auto& tone : tones) {
+      double fEff = (mode == Mode::USB) ? (carrierHz + tone.freqHz) : (carrierHz - tone.freqHz);
+      double phase0 = 2.0 * M_PI * std::fmod(fEff * startTime, 1.0);
+      double cosP = std::cos(phase0);
+      double sinP = std::sin(phase0);
+
+      double phaseInc = 2.0 * M_PI * std::fmod(fEff * samplePeriod, 1.0);
+      double cosInc = std::cos(phaseInc);
+      double sinInc = std::sin(phaseInc);
+
+      double effectiveAmp = amplitudeV * tone.amplitude * stimGain;
+
+      for (size_t i = 0; i < count; ++i) {
+        outIQ[i * 2] += effectiveAmp * cosP;
+        outIQ[i * 2 + 1] += effectiveAmp * sinP;
+
+        double nextCos = cosP * cosInc - sinP * sinInc;
+        double nextSin = sinP * cosInc + cosP * sinInc;
+        cosP = nextCos;
+        sinP = nextSin;
+
+        if ((i & 1023) == 0) {
+          double norm = 1.0 / std::sqrt(cosP * cosP + sinP * sinP);
+          cosP *= norm;
+          sinP *= norm;
+        }
+      }
+    }
+    return;
+  }
+
+  double phase0 = 2.0 * M_PI * std::fmod(carrierHz * startTime, 1.0);
+  double cosP = std::cos(phase0);
+  double sinP = std::sin(phase0);
+
+  double phaseInc = 2.0 * M_PI * std::fmod(carrierHz * samplePeriod, 1.0);
+  double cosInc = std::cos(phaseInc);
+  double sinInc = std::sin(phaseInc);
+
+  double effectiveAmp = amplitudeV * stimGain;
+
+  for (size_t i = 0; i < count; ++i) {
+    double t = startTime + i * samplePeriod;
+    double audioI, audioQ;
+    getAudioIQ(t, audioI, audioQ);
+
+    if (mode == Mode::USB) {
+      outIQ[i * 2] += effectiveAmp * (audioI * cosP - audioQ * sinP);
+      outIQ[i * 2 + 1] += effectiveAmp * (audioI * sinP + audioQ * cosP);
+    } else {
+      outIQ[i * 2] += effectiveAmp * (audioI * cosP + audioQ * sinP);
+      outIQ[i * 2 + 1] += effectiveAmp * (audioI * sinP - audioQ * cosP);
+    }
+
+    double nextCos = cosP * cosInc - sinP * sinInc;
+    double nextSin = sinP * cosInc + cosP * sinInc;
+    cosP = nextCos;
+    sinP = nextSin;
+
+    if ((i & 1023) == 0) {
+      double norm = 1.0 / std::sqrt(cosP * cosP + sinP * sinP);
+      cosP *= norm;
+      sinP *= norm;
+    }
   }
 }
 

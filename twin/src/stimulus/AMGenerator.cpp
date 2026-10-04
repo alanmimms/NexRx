@@ -65,19 +65,13 @@ double AMGenerator::getModulation(double timeS) const {
         return 0.0;
       }
 
-      // 4-tap cubic Hermite interpolation
       size_t i1 = static_cast<size_t>(sampleIdxF);
-      size_t i0 = (i1 > 0) ? i1 - 1 : (samplesRepeat ? totalSamples - 1 : 0);
-      size_t i2 = (i1 + 1) % totalSamples;
-      size_t i3 = (i2 + 1) % totalSamples;
+      size_t i2 = (i1 + 1);
+      if (i2 >= totalSamples) {
+        i2 = samplesRepeat ? 0 : totalSamples - 1;
+      }
       double f = sampleIdxF - i1;
-
-      double y0 = audioSamples[i0], y1 = audioSamples[i1], y2 = audioSamples[i2], y3 = audioSamples[i3];
-      double a = -0.5*y0 + 1.5*y1 - 1.5*y2 + 0.5*y3;
-      double b = y0 - 2.5*y1 + 2.0*y2 - 0.5*y3;
-      double c = -0.5*y0 + 0.5*y2;
-      double d = y1;
-      double rawMod = ((a * f + b) * f + c) * f + d;
+      double rawMod = audioSamples[i1] + f * (audioSamples[i2] - audioSamples[i1]);
       
       // 2nd-order IIR LPF (two cascaded poles)
       // Cutoff ~4kHz at 480kHz -> alpha ~= 0.05
@@ -105,6 +99,85 @@ void AMGenerator::getRfIQ(double timeS, double& outI, double& outQ) const {
 
   outI = env * std::cos(phase);
   outQ = env * std::sin(phase);
+}
+
+void AMGenerator::generateBatch(double startTime, double samplePeriod, size_t count, double* outIQ, double stimGain) const {
+  double phase0 = 2.0 * M_PI * std::fmod(carrierHz * startTime, 1.0);
+  double cosP = std::cos(phase0);
+  double sinP = std::sin(phase0);
+
+  double phaseInc = 2.0 * M_PI * std::fmod(carrierHz * samplePeriod, 1.0);
+  double cosInc = std::cos(phaseInc);
+  double sinInc = std::sin(phaseInc);
+
+  double effectiveAmp = amplitudeV * stimGain;
+
+  if (audioSource == AudioSource::Tones) {
+    struct TonePhasor {
+      double amp;
+      double cosP;
+      double sinP;
+      double cosInc;
+      double sinInc;
+    };
+    std::vector<TonePhasor> tPhasors;
+    tPhasors.reserve(tones.size());
+    for (const auto& t : tones) {
+      double p0 = 2.0 * M_PI * std::fmod(t.freqHz * startTime, 1.0);
+      double pInc = 2.0 * M_PI * std::fmod(t.freqHz * samplePeriod, 1.0);
+      tPhasors.push_back({t.amplitude, std::cos(p0), std::sin(p0), std::cos(pInc), std::sin(pInc)});
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+      double mod = 0.0;
+      for (auto& tp : tPhasors) {
+        mod += tp.amp * tp.sinP;
+        double nc = tp.cosP * tp.cosInc - tp.sinP * tp.sinInc;
+        double ns = tp.sinP * tp.cosInc + tp.cosP * tp.sinInc;
+        tp.cosP = nc; tp.sinP = ns;
+      }
+      double env = effectiveAmp * (1.0 + modIndex * mod);
+
+      outIQ[i * 2] += env * cosP;
+      outIQ[i * 2 + 1] += env * sinP;
+
+      double nextCos = cosP * cosInc - sinP * sinInc;
+      double nextSin = sinP * cosInc + cosP * sinInc;
+      cosP = nextCos;
+      sinP = nextSin;
+
+      if ((i & 1023) == 0) {
+        double norm = 1.0 / std::sqrt(cosP * cosP + sinP * sinP);
+        cosP *= norm;
+        sinP *= norm;
+        for (auto& tp : tPhasors) {
+          double tnorm = 1.0 / std::sqrt(tp.cosP * tp.cosP + tp.sinP * tp.sinP);
+          tp.cosP *= tnorm; tp.sinP *= tnorm;
+        }
+      }
+    }
+    return;
+  }
+
+  for (size_t i = 0; i < count; ++i) {
+    double t = startTime + i * samplePeriod;
+    double mod = getModulation(t);
+    double env = effectiveAmp * (1.0 + modIndex * mod);
+
+    outIQ[i * 2] += env * cosP;
+    outIQ[i * 2 + 1] += env * sinP;
+
+    double nextCos = cosP * cosInc - sinP * sinInc;
+    double nextSin = sinP * cosInc + cosP * sinInc;
+    cosP = nextCos;
+    sinP = nextSin;
+
+    if ((i & 1023) == 0) {
+      double norm = 1.0 / std::sqrt(cosP * cosP + sinP * sinP);
+      cosP *= norm;
+      sinP *= norm;
+    }
+  }
 }
 
 std::string AMGenerator::description() const {

@@ -334,4 +334,38 @@ void MorseGenerator::getRfIQ(double timeS, double& out_i, double& out_q) const {
     out_q = env * std::sin(phase);
 }
 
+void MorseGenerator::generateBatch(double startTime, double samplePeriod, size_t count, double* outIQ, double stimGain) const {
+    double phase0 = 2.0 * M_PI * std::fmod(freq_hz_ * startTime, 1.0);
+    double cosP = std::cos(phase0);
+    double sinP = std::sin(phase0);
+
+    double phaseInc = 2.0 * M_PI * std::fmod(freq_hz_ * samplePeriod, 1.0);
+    double cosInc = std::cos(phaseInc);
+    double sinInc = std::sin(phaseInc);
+
+    double effectiveAmp = amplitude_v_ * stimGain;
+
+    for (size_t i = 0; i < count; ++i) {
+        double t = startTime + i * samplePeriod;
+        double envNorm = getEnvelope(t);
+
+        if (envNorm > 1e-12) {
+            double env = envNorm * effectiveAmp;
+            outIQ[i * 2] += env * cosP;
+            outIQ[i * 2 + 1] += env * sinP;
+        }
+
+        double nextCos = cosP * cosInc - sinP * sinInc;
+        double nextSin = sinP * cosInc + cosP * sinInc;
+        cosP = nextCos;
+        sinP = nextSin;
+
+        if ((i & 1023) == 0) {
+            double norm = 1.0 / std::sqrt(cosP * cosP + sinP * sinP);
+            cosP *= norm;
+            sinP *= norm;
+        }
+    }
+}
+
 } // namespace nexrx

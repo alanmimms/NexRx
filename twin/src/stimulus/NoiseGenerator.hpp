@@ -40,7 +40,17 @@ public:
         : rms_v_(rms_voltage_v)
         , gen_(seed == 0 ? std::random_device{}() : seed)
         , dist_(0.0, 1.0)
-    {}
+    {
+        initTable();
+    }
+
+    void initTable() {
+        noiseTable_.resize(65536);
+        double scale = rms_v_ / std::sqrt(2.0);
+        for (size_t i = 0; i < 65536; ++i) {
+            noiseTable_[i] = scale * dist_(gen_);
+        }
+    }
 
     [[nodiscard]] double getSample(double timeS) const override {
         (void)timeS;  // White noise is time-independent
@@ -51,11 +61,20 @@ public:
     // Noise is broadband - no carrier, mixing doesn't change its character
     void getRfIQ(double timeS, double& out_i, double& out_q) const override {
         (void)timeS;
-        // Noise is broadband - equal contribution to I and Q
-        // Divide by sqrt(2) to maintain total power
-        double scale = rms_v_ / std::sqrt(2.0);
-        out_i = scale * dist_(gen_);
-        out_q = scale * dist_(gen_);
+        out_i = noiseTable_[noiseIdx_];
+        out_q = noiseTable_[(noiseIdx_ + 1) & 65535];
+        noiseIdx_ = (noiseIdx_ + 2) & 65535;
+    }
+
+    void generateBatch(double startTime, double samplePeriod, size_t count, double* outIQ, double stimGain) const override {
+        (void)startTime; (void)samplePeriod;
+        size_t idx = noiseIdx_;
+        for (size_t i = 0; i < count; ++i) {
+            outIQ[i * 2] += noiseTable_[idx] * stimGain;
+            outIQ[i * 2 + 1] += noiseTable_[(idx + 1) & 65535] * stimGain;
+            idx = (idx + 2) & 65535;
+        }
+        noiseIdx_ = idx;
     }
 
     [[nodiscard]] bool isBroadband() const override { return true; }
@@ -156,6 +175,8 @@ private:
     double rms_v_;
     mutable std::mt19937_64 gen_;
     mutable std::normal_distribution<double> dist_;
+    std::vector<double> noiseTable_;
+    mutable size_t noiseIdx_{0};
 };
 
 } // namespace nexrx

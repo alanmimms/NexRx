@@ -50,6 +50,17 @@ public:
         out_i = out_q = 0.0;
     }
 
+    // Batch generate RF I/Q directly into interleaved output buffer with gain
+    virtual void generateBatch(double startTime, double samplePeriod, size_t count, double* outIQ, double stimGain) const {
+        for (size_t i = 0; i < count; ++i) {
+            double t = startTime + i * samplePeriod;
+            double sI, sQ;
+            getRfIQ(t, sI, sQ);
+            outIQ[i * 2] += sI * stimGain;
+            outIQ[i * 2 + 1] += sQ * stimGain;
+        }
+    }
+
     // Get carrier frequency (0 if no carrier, e.g., noise)
     [[nodiscard]] virtual double carrierFrequency() const { return 0.0; }
 
