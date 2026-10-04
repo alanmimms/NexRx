@@ -184944,6 +184944,94 @@
 			)
 		)
 	)
+	(gr_rect
+		(start 76.93 36.235)
+		(end 77.68 135.235)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Mask")
+		(uuid "c9d35bc0-1032-4317-8a6d-6c498ca6373a")
+	)
+	(gr_rect
+		(start 76.93 36.235)
+		(end 175.93 36.985)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Mask")
+		(uuid "20c0da34-a1b5-432a-a326-aea9bac9bd5b")
+	)
+	(gr_rect
+		(start 76.93 135.235)
+		(end 175.93 134.485)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Mask")
+		(uuid "42788ac5-a7df-4339-a0f3-731a2a859987")
+	)
+	(gr_rect
+		(start 175.93 36.235)
+		(end 175.18 135.235)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Mask")
+		(uuid "19637b33-da4d-4975-95cd-e0ecac7038e1")
+	)
+	(gr_rect
+		(start 76.93 36.26)
+		(end 77.68 135.26)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "B.Mask")
+		(uuid "c29ac0bf-5ec0-4738-a0b5-dea33ab7f7fe")
+	)
+	(gr_rect
+		(start 76.93 36.26)
+		(end 175.93 37.01)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "B.Mask")
+		(uuid "86f26364-da0b-4dbd-9bc4-ff5aca85fcad")
+	)
+	(gr_rect
+		(start 76.93 135.26)
+		(end 175.93 134.51)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "B.Mask")
+		(uuid "cf0d3e25-2405-46c9-bedc-66297062357f")
+	)
+	(gr_rect
+		(start 175.93 36.26)
+		(end 175.18 135.26)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill yes)
+		(layer "B.Mask")
+		(uuid "469ac177-e8ed-4506-be39-b4634bdfd160")
+	)
 	(gr_poly
 		(pts
 			(xy 76.93 36.26) (xy 175.93 36.26) (xy 175.93 113.36) (xy 175.93 124.335) (xy 175.93 135.26) (xy 76.93 135.26)
@@ -260097,6 +260185,18 @@
 			"dc759439-8a7d-4d84-ad30-5239718032eb" "dd05795a-527c-4431-a09d-ce07d67a22a6"
 			"dda26823-070e-4b0f-b2d9-1c55b1b9fdc5" "e5dd9b44-ab91-4c0a-bc8c-84dc6be22f06"
 			"f1f0f705-d864-4b37-a1a3-51c09f991aed" "f61cecec-fb8d-4313-908d-2e95f735bc71"
+		)
+	)
+	(group "F.Mask eraser"
+		(uuid "76ebf3a2-f5bd-4f70-8745-8cf572f6de71")
+		(members "19637b33-da4d-4975-95cd-e0ecac7038e1" "20c0da34-a1b5-432a-a326-aea9bac9bd5b"
+			"42788ac5-a7df-4339-a0f3-731a2a859987" "c9d35bc0-1032-4317-8a6d-6c498ca6373a"
+		)
+	)
+	(group "B.Mask eraser"
+		(uuid "7435bde4-0c9a-4481-ab1a-5f6c888a77cc")
+		(members "469ac177-e8ed-4506-be39-b4634bdfd160" "86f26364-da0b-4dbd-9bc4-ff5aca85fcad"
+			"c29ac0bf-5ec0-4738-a0b5-dea33ab7f7fe" "cf0d3e25-2405-46c9-bedc-66297062357f"
 		)
 	)
 	(embedded_fonts no)
