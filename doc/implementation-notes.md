@@ -112,6 +112,13 @@ transceiver instead of the STM32's internal Full-Speed PHY.
 
 # Testing and Twin
 
+The digital twin hardware simulation takes considerable multi-core CPU
+horsepower to run. You will want to run this on a pretty high end
+modern CPU. I use a 32 core (64 thread) AMD Ryzen Threadripper 2990WX
+at 2.2GHz. Fortunately, this level of horsepower is usually only
+needed if you don't have hardware. The NexRx app is architected to
+require substantially less power (TBD).
+
 To run the "twin" testing against the app (digital twin to stand in
 for hardware), you might want to grant realtime capability to your
 username. These instructions apply for modern (Ubuntu 26.04 is what
