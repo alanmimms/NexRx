@@ -5,7 +5,7 @@ details discovered during schematic analysis.
 
 ---
 
-## 1. Active Bias Voltage Generation
+## Active Bias Voltage Generation
 
 ### Design Choice
 The receiver uses an **OPA1692** operational amplifier to buffer
@@ -25,7 +25,7 @@ resistive voltage dividers, creating the `+1.65V` (OSD) reference.
 
 ---
 
-## 2. RF Switching with pHEMTs
+## RF Switching with pHEMTs
 
 ### Design Choice
 The preselector and attenuator stages utilize **AS183-92LF** -- and
@@ -44,7 +44,7 @@ Electron Mobility Transistor) switches.
 
 ---
 
-## 3. Cascaded Protection Strategy
+## Cascaded Protection Strategy
 
 The receiver implements a four-stage protection chain to ensure
 survivability in harsh RF environments:
@@ -63,7 +63,7 @@ survivability in harsh RF environments:
 
 ---
 
-## 4. Transformer Symmetry
+## Transformer Symmetry
 
 ### Design Choice
 The 200Ω to 3x22Ω output transformer uses **hexafilar winding** on a
@@ -77,7 +77,7 @@ BN-43-202 binocular core.
     together before winding) ensures that leakage inductance and
     coupling coefficients are perfectly matched across all channels.
 
-## 5. OSD Biasing Implementation
+## OSD Biasing Implementation
 
 ### Design Choice
 The final implementation uses **10kΩ** bias resistors for the OSD inputs (instead of the 100kΩ originally considered).
@@ -93,7 +93,7 @@ The final implementation uses **10kΩ** bias resistors for the OSD inputs (inste
 
 ---
 
-## 6. High-Speed USB Connectivity
+## High-Speed USB Connectivity
 
 ### Design Choice
 The receiver utilizes an external **USB3343** ULPI (UTMI+ Low Pin Interface)
@@ -109,3 +109,77 @@ transceiver instead of the STM32's internal Full-Speed PHY.
 *   **Offloading Microcontroller**: Using an external PHY allows the
     STM32H753 to focus its computational resources on DSP and AGC
     tasks rather than managing the low-level physical USB signaling.
+
+# Testing and Twin
+
+To run the "twin" testing against the app (digital twin to stand in
+for hardware), you might want to grant realtime capability to your
+username. These instructions apply for modern (Ubuntu 26.04 is what
+I'm using) Linux.
+
+You can grant non-root users permission to use POSIX realtime
+scheduling (like `SCHED_FIFO` or `SCHED_RR`) and memory locking by
+configuring PAM (Pluggable Authentication Modules) limits. This is the
+standard mechanism to run high-performance audio or SDR DSP code
+natively without requiring `sudo`.
+
+1. **Create a Realtime Group:** Terminal.
+
+First, create a dedicated group for users who need realtime execution
+privileges.
+
+```bash
+sudo groupadd realtime
+
+```
+
+**Verification:** Run `getent group realtime` to confirm the group was
+successfully added to the system.
+
+
+2. **Add Your User to the Group:** Terminal.
+
+Add your current user account to this new group.
+
+```bash
+sudo usermod -aG realtime $USER
+
+```
+
+**Verification:** Run `groups $USER` and ensure `realtime` appears in
+the output list.
+
+
+3. **Configure PAM Limits:** File Editing.
+
+Create a new limits configuration file that delegates realtime
+priority (`rtprio`) and unlimited memory locking (`memlock`) to
+members of the group. The `@` symbol denotes a group rather than a
+specific user.
+
+```bash
+sudo nano /etc/security/limits.d/99-realtime.conf
+
+```
+
+Paste the following two lines into the file and save it:
+
+```text
+@realtime - rtprio 98
+@realtime - memlock unlimited
+
+```
+
+**Verification:** Run `cat /etc/security/limits.d/99-realtime.conf` to
+ensure the file contains the correct text exactly as written.
+
+4. **Apply and Verify Limits:** Session Restart.
+
+PAM limits are evaluated strictly at login. You must completely log
+out of your Ubuntu desktop session and log back in (or reboot) for the
+changes to take effect.
+
+**Verification:** Open a new terminal and run `ulimit -r` to confirm
+it returns `98`, and `ulimit -l` to confirm it returns `unlimited`.
+Your `signalgen` and host application processes can now execute
+realtime functions without root access.
