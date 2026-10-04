@@ -116,8 +116,16 @@ The digital twin hardware simulation takes considerable multi-core CPU
 horsepower to run. You will want to run this on a pretty high end
 modern CPU. I use a 32 core (64 thread) AMD Ryzen Threadripper 2990WX
 at 2.2GHz. Fortunately, this level of horsepower is usually only
-needed if you don't have hardware. The NexRx app is architected to
-require substantially less power (TBD).
+needed if you don't have hardware.
+
+The NexRx app is architected to require substantially less power
+(TBD). Estimates are:
+
+* UDP network ingest thread: < 2% CPU.
+* Stage D DSP / Demodulation thread: about 18% to 25% of one core.
+* Raylib UI / Render thread: about 4% to 6% of one core.
+
+## Realtime Scheduling of Twin
 
 To run the "twin" testing against the app (digital twin to stand in
 for hardware), you might want to grant realtime capability to your
