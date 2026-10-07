@@ -1968,49 +1968,42 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Library:TPS74612PQWDRBRQ1"
+		(symbol "Library:TPS7A2012PDBVR"
+			(pin_names
+				(offset 1.016)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at -11.43 5.08 0)
+				(at -8.89 11.43 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
+					(justify left bottom)
 				)
 			)
-			(property "Value" "TPS74612PQWDRBRQ1"
-				(at -11.43 2.54 0)
+			(property "Value" "TPS7A2012PDBVR"
+				(at -8.89 8.89 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
+					(justify left bottom)
 				)
 			)
-			(property "Footprint" "SON65P300X300X100-9N-D"
-				(at 26.67 -95.25 0)
+			(property "Footprint" "Library:DBV0005A-MFG"
+				(at 0 -27.94 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
+					(justify bottom)
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tps746-q1.pdf?HQS=dis-dk-null-digikeymode-dsf-pf-null-wwe&ts=1646856964625"
-				(at 26.67 -195.58 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "LDO Voltage Regulators Automotive 1-A, low-IQ, high-PSRR, low-dropout (LDO) voltage regulator with power good 8-SON -40 to 125"
+			(property "Datasheet" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -2019,60 +2012,169 @@
 					(hide yes)
 				)
 			)
-			(property "Height" "1"
-				(at 26.67 -394.97 0)
+			(property "Description" ""
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
 					(hide yes)
 				)
 			)
-			(property "Mouser Part Number" "595-PS74612PQWDRBRQ1"
-				(at 26.67 -495.3 0)
+			(property "MF" "Texas Instruments"
+				(at 1.27 -27.94 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
+					(justify bottom)
 					(hide yes)
 				)
 			)
-			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS74612PQWDRBRQ1?qs=OlC7AqGiEDlKxsOXBcUCtQ%3D%3D"
-				(at 26.67 -595.63 0)
+			(property "MAXIMUM_PACKAGE_HEIGHT" "1.45mm"
+				(at 1.27 -27.94 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
+					(justify bottom)
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Texas Instruments"
-				(at 26.67 -694.69 0)
+			(property "CREATOR" "ANA"
+				(at 1.27 -27.94 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
+					(justify bottom)
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "TPS74612PQWDRBRQ1"
-				(at 26.67 -795.02 0)
+			(property "Price" "None"
+				(at 1.27 -27.94 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
+					(justify bottom)
 					(hide yes)
 				)
 			)
-			(symbol "TPS74612PQWDRBRQ1_1_1"
+			(property "Package" "SOT-23 Texas Instruments"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Check_prices" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=eda"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "STANDARD" "IPC-7351B"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "PARTREV" "H"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "VERIFIER" "RODRIGO"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "SnapEDA_Link" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=snap"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "MP" "TPS7A2012PDBVR"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Purchase-URL" "https://www.snapeda.com/api/url_track_click_mouser/?unipart_id=5819962&manufacturer=Texas Instruments&part_name=TPS7A2012PDBVR&search_term=tps7a2012pdbvr"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Description_1" "300-mA ultra-low-noise low-IQ low-dropout (LDO) linear regulator with high PSRR"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Availability" "In Stock"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "MANUFACTURER" "Texas Instruments"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(symbol "TPS7A2012PDBVR_0_0"
 				(rectangle
-					(start -10.16 0)
-					(end 10.16 -17.78)
+					(start -6.35 7.62)
+					(end 6.35 -7.62)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -2081,164 +2183,406 @@
 						(type background)
 					)
 				)
-				(pin power_in line
-					(at -15.24 -2.54 0)
-					(length 5.08)
-					(name "IN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -15.24 -5.08 0)
-					(length 5.08)
-					(name "NC_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -15.24 -7.62 0)
-					(length 5.08)
-					(name "PG"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -15.24 -10.16 0)
-					(length 5.08)
+				(pin input line
+					(at -8.89 0 0)
+					(length 2.54)
 					(name "EN"
 						(effects
 							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -1.27 -22.86 90)
-					(length 5.08)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 -22.86 90)
-					(length 5.08)
-					(name "EP"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "9"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at 15.24 -2.54 180)
-					(length 5.08)
-					(name "OUT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 15.24 -5.08 180)
-					(length 5.08)
-					(name "NC_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 15.24 -7.62 180)
-					(length 5.08)
-					(name "NC_2"
-						(effects
-							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "3"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -10.16 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+			)
+			(symbol "TPS7A2012PDBVR_1_0"
+				(pin power_in line
+					(at -8.89 5.08 0)
+					(length 2.54)
+					(name "IN"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at -8.89 -5.08 0)
+					(length 2.54)
+					(hide yes)
+					(name "N/C"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 8.89 5.08 180)
+					(length 2.54)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Library:TPS7A2033PDBVR"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at -8.89 11.43 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left bottom)
+				)
+			)
+			(property "Value" "TPS7A2033PDBVR"
+				(at -8.89 8.89 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left bottom)
+				)
+			)
+			(property "Footprint" "Library:DBV0005A-MFG"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "MF" "Texas Instruments"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "MAXIMUM_PACKAGE_HEIGHT" "1.45mm"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "CREATOR" "ANA"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Price" "None"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Package" "SOT-23 Texas Instruments"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Check_prices" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=eda"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "STANDARD" "IPC-7351B"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "PARTREV" "H"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "VERIFIER" "RODRIGO"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "SnapEDA_Link" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=snap"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "MP" "TPS7A2012PDBVR"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Purchase-URL" "https://www.snapeda.com/api/url_track_click_mouser/?unipart_id=5819962&manufacturer=Texas Instruments&part_name=TPS7A2012PDBVR&search_term=tps7a2012pdbvr"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Description_1" "300-mA ultra-low-noise low-IQ low-dropout (LDO) linear regulator with high PSRR"
+				(at 0 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Availability" "In Stock"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "MANUFACTURER" "Texas Instruments"
+				(at 1.27 -27.94 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(symbol "TPS7A2033PDBVR_0_0"
+				(rectangle
+					(start -6.35 7.62)
+					(end 6.35 -7.62)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin input line
+					(at -8.89 0 0)
+					(length 2.54)
+					(name "EN"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -10.16 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+			)
+			(symbol "TPS7A2033PDBVR_1_0"
+				(pin power_in line
+					(at -8.89 5.08 0)
+					(length 2.54)
+					(name "IN"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at -8.89 -5.08 0)
+					(length 2.54)
+					(hide yes)
+					(name "N/C"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 8.89 5.08 180)
+					(length 2.54)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.016 1.016)
 							)
 						)
 					)
@@ -2895,228 +3239,6 @@
 						)
 					)
 					(number "B8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "PTPS7A2012PDBVR_1"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "U"
-				(at 17.78 8.89 0)
-				(effects
-					(font
-						(size 1.524 1.524)
-					)
-				)
-			)
-			(property "Value" "PTPS7A2012PDBVR"
-				(at 15.24 6.35 0)
-				(effects
-					(font
-						(size 1.524 1.524)
-					)
-				)
-			)
-			(property "Footprint" "DBV0005A-IPC_A"
-				(at 20.32 13.97 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-						(italic yes)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://www.ti.com/lit/gpn/tps7a20"
-				(at 15.24 11.43 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-						(italic yes)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "PTPS7A2012PDBVR"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "DBV0005A-IPC_A DBV0005A-IPC_B DBV0005A-IPC_C DBV0005A-MFG"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "PTPS7A2012PDBVR_1_0_1"
-				(polyline
-					(pts
-						(xy 5.08 5.08) (xy 5.08 -12.7)
-					)
-					(stroke
-						(width 0.2032)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 -12.7) (xy 25.4 -12.7)
-					)
-					(stroke
-						(width 0.2032)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 25.4 5.08) (xy 5.08 5.08)
-					)
-					(stroke
-						(width 0.2032)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 25.4 -12.7) (xy 25.4 5.08)
-					)
-					(stroke
-						(width 0.2032)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin power_in line
-					(at 0 0 0)
-					(length 5.08)
-					(name "IN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 0 -5.08 0)
-					(length 5.08)
-					(name "EN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 0 -10.16 0)
-					(length 5.08)
-					(name "NC"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 30.48 -10.16 180)
-					(length 5.08)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "PTPS7A2012PDBVR_1_1_1"
-				(pin power_out line
-					(at 30.48 0 180)
-					(length 5.08)
-					(name "OUT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4161,7 +4283,7 @@
 	)
 	(text "VCPLDCORE 1.2V LDO"
 		(exclude_from_sim no)
-		(at 246.38 50.8 0)
+		(at 237.998 49.022 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4201,7 +4323,7 @@
 	)
 	(text "+3.3VA 300mA LDO"
 		(exclude_from_sim no)
-		(at 75.946 79.248 0)
+		(at 80.518 79.248 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4274,12 +4396,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "40fe1c4e-46ae-4f92-80e7-6f0f6ec77363")
-	)
-	(junction
-		(at 96.52 74.93)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "46964b24-b070-40e2-b063-6ddf6edda9da")
 	)
 	(junction
 		(at 54.61 30.48)
@@ -4366,12 +4482,6 @@
 		(uuid "7bde3ce9-7819-4053-998b-1395030deebf")
 	)
 	(junction
-		(at 261.62 33.02)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "812c0d02-f918-4780-8a13-82283d8e0e01")
-	)
-	(junction
 		(at 194.31 33.02)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4390,13 +4500,13 @@
 		(uuid "a63e3808-6d88-4837-a593-39febd1fa523")
 	)
 	(junction
-		(at 255.27 33.02)
+		(at 242.57 33.02)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "afce5be5-42bd-40a8-a18f-d75b1e481740")
 	)
 	(junction
-		(at 96.52 64.77)
+		(at 83.82 64.77)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "afeedf49-9780-4fd1-845b-251b2eeb62fa")
@@ -4492,28 +4602,12 @@
 		(uuid "fc5ac6ce-9b7c-415e-91fb-1007df3ca4e2")
 	)
 	(no_connect
-		(at 247.65 35.56)
-		(uuid "19ab922e-6f41-4c38-a774-d684bba03d7e")
-	)
-	(no_connect
-		(at 217.17 35.56)
-		(uuid "210d1ab7-3bcf-4404-935e-db063baefebf")
-	)
-	(no_connect
-		(at 247.65 38.1)
-		(uuid "24df9ba4-8499-4c64-9e88-62e2d4fb9714")
-	)
-	(no_connect
 		(at 68.58 148.59)
 		(uuid "4b9da139-4c94-4fc0-a620-6f65b987dff9")
 	)
 	(no_connect
 		(at 68.58 146.05)
 		(uuid "a7ace586-32c3-4cb1-a014-38ec2c5af0ac")
-	)
-	(no_connect
-		(at 60.96 74.93)
-		(uuid "bff13a5a-b596-4ccc-b6e7-4b6590516abb")
 	)
 	(wire
 		(pts
@@ -4747,16 +4841,6 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 38.1) (xy 215.9 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "17e1c614-2952-494c-803e-d1de48c15591")
-	)
-	(wire
-		(pts
 			(xy 104.14 33.02) (xy 106.68 33.02)
 		)
 		(stroke
@@ -4777,7 +4861,7 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 64.77) (xy 96.52 64.77)
+			(xy 78.74 64.77) (xy 83.82 64.77)
 		)
 		(stroke
 			(width 0)
@@ -4827,7 +4911,7 @@
 	)
 	(wire
 		(pts
-			(xy 261.62 29.21) (xy 261.62 33.02)
+			(xy 248.92 29.21) (xy 248.92 33.02)
 		)
 		(stroke
 			(width 0)
@@ -5087,7 +5171,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 62.23) (xy 96.52 64.77)
+			(xy 83.82 62.23) (xy 83.82 64.77)
 		)
 		(stroke
 			(width 0)
@@ -5117,23 +5201,13 @@
 	)
 	(wire
 		(pts
-			(xy 213.36 40.64) (xy 213.36 33.02)
+			(xy 213.36 38.1) (xy 213.36 33.02)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "428b6c4e-79ad-4f88-8de4-ab3aabe4a764")
-	)
-	(wire
-		(pts
-			(xy 261.62 36.83) (xy 261.62 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "428fe9ef-ef65-4ff6-8a0f-ad165d33a214")
 	)
 	(wire
 		(pts
@@ -5167,7 +5241,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 64.77) (xy 96.52 66.04)
+			(xy 83.82 64.77) (xy 83.82 66.04)
 		)
 		(stroke
 			(width 0)
@@ -5217,7 +5291,7 @@
 	)
 	(wire
 		(pts
-			(xy 255.27 41.91) (xy 255.27 43.18)
+			(xy 242.57 41.91) (xy 242.57 43.18)
 		)
 		(stroke
 			(width 0)
@@ -5237,7 +5311,7 @@
 	)
 	(wire
 		(pts
-			(xy 261.62 33.02) (xy 255.27 33.02)
+			(xy 248.92 33.02) (xy 242.57 33.02)
 		)
 		(stroke
 			(width 0)
@@ -5267,7 +5341,7 @@
 	)
 	(wire
 		(pts
-			(xy 247.65 33.02) (xy 255.27 33.02)
+			(xy 234.95 33.02) (xy 242.57 33.02)
 		)
 		(stroke
 			(width 0)
@@ -5717,7 +5791,7 @@
 	)
 	(wire
 		(pts
-			(xy 255.27 33.02) (xy 255.27 34.29)
+			(xy 242.57 33.02) (xy 242.57 34.29)
 		)
 		(stroke
 			(width 0)
@@ -5754,16 +5828,6 @@
 			(type default)
 		)
 		(uuid "a4444d22-175a-4a18-8007-19a1399c6171")
-	)
-	(wire
-		(pts
-			(xy 91.44 74.93) (xy 96.52 74.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a571dfd2-588f-4424-b3bd-160aae87b81c")
 	)
 	(wire
 		(pts
@@ -5877,16 +5941,6 @@
 	)
 	(wire
 		(pts
-			(xy 261.62 59.69) (xy 261.62 41.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b6ad2349-f832-4ca6-b6eb-1e88811cfec7")
-	)
-	(wire
-		(pts
 			(xy 74.93 40.64) (xy 74.93 41.91)
 		)
 		(stroke
@@ -5967,7 +6021,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 74.93) (xy 96.52 76.2)
+			(xy 83.82 73.66) (xy 83.82 74.93)
 		)
 		(stroke
 			(width 0)
@@ -6027,6 +6081,16 @@
 	)
 	(wire
 		(pts
+			(xy 69.85 80.01) (xy 69.85 81.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d19b4dd0-d9fa-4534-bf7a-bc9654f8e6d4")
+	)
+	(wire
+		(pts
 			(xy 154.94 107.95) (xy 154.94 109.22)
 		)
 		(stroke
@@ -6077,7 +6141,7 @@
 	)
 	(wire
 		(pts
-			(xy 213.36 40.64) (xy 217.17 40.64)
+			(xy 213.36 38.1) (xy 217.17 38.1)
 		)
 		(stroke
 			(width 0)
@@ -6117,16 +6181,6 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 73.66) (xy 96.52 74.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dfb57f7b-9734-4331-8cac-08c03e23c772")
-	)
-	(wire
-		(pts
 			(xy 68.58 118.11) (xy 69.85 118.11)
 		)
 		(stroke
@@ -6157,16 +6211,6 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 38.1) (xy 215.9 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e1594856-6d05-4af0-9176-224194f4ef8e")
-	)
-	(wire
-		(pts
 			(xy 41.91 30.48) (xy 41.91 55.88)
 		)
 		(stroke
@@ -6174,16 +6218,6 @@
 			(type default)
 		)
 		(uuid "e4746675-5ccd-4adf-92fc-8aaa32b91e0e")
-	)
-	(wire
-		(pts
-			(xy 234.95 53.34) (xy 234.95 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e4e76a32-4a25-4b88-b766-0955e41faf1c")
 	)
 	(wire
 		(pts
@@ -6204,16 +6238,6 @@
 			(type default)
 		)
 		(uuid "e7de1b8f-ecd0-4cf5-8ce6-c60b106a2c8f")
-	)
-	(wire
-		(pts
-			(xy 215.9 59.69) (xy 261.62 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e8c3fa0d-7ced-4886-9a19-74177211f272")
 	)
 	(wire
 		(pts
@@ -6277,7 +6301,7 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 53.34) (xy 231.14 54.61)
+			(xy 226.06 48.26) (xy 226.06 49.53)
 		)
 		(stroke
 			(width 0)
@@ -6455,7 +6479,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 231.14 54.61 0)
+		(at 226.06 49.53 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6465,7 +6489,7 @@
 		(fields_autoplaced yes)
 		(uuid "03f1d49c-eb01-453c-9872-c2ce7eff1a9a")
 		(property "Reference" "#PWR01513"
-			(at 231.14 60.96 0)
+			(at 226.06 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6474,7 +6498,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 231.1399 58.42 90)
+			(at 226.0599 53.34 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6484,7 +6508,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 231.14 54.61 0)
+			(at 226.06 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6493,7 +6517,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 231.14 54.61 0)
+			(at 226.06 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6502,7 +6526,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 231.14 54.61 0)
+			(at 226.06 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8037,75 +8061,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 234.95 54.61 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "2ba9c6e5-e094-4566-9308-2b3dcaaa156f")
-		(property "Reference" "#PWR01514"
-			(at 234.95 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 234.9499 58.42 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-		(property "Footprint" ""
-			(at 234.95 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 234.95 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 234.95 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "fef4294f-6c88-431f-a1b0-2b160fd322d6")
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
-					(reference "#PWR01514")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:L_Small")
 		(at 101.6 33.02 90)
 		(unit 1)
@@ -8947,7 +8902,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C50254"
+		(property "LCSC_PN" "C12530"
 			(at 81.28 -52.07 0)
 			(effects
 				(font
@@ -9370,7 +9325,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C96446"
+		(property "LCSC_PN" "C307331"
 			(at 12.7 -81.28 0)
 			(effects
 				(font
@@ -10227,7 +10182,7 @@
 	)
 	(symbol
 		(lib_id "power:VDD")
-		(at 261.62 29.21 0)
+		(at 248.92 29.21 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10235,7 +10190,7 @@
 		(dnp no)
 		(uuid "45f3d7f5-94d7-4675-99cb-ecb9eff22440")
 		(property "Reference" "#PWR01503"
-			(at 261.62 33.02 0)
+			(at 248.92 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10244,7 +10199,7 @@
 			)
 		)
 		(property "Value" "+VCPLDCORE"
-			(at 259.334 25.4 0)
+			(at 246.634 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10252,7 +10207,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 261.62 29.21 0)
+			(at 248.92 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10261,7 +10216,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 261.62 29.21 0)
+			(at 248.92 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10270,7 +10225,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+VFPGACORE\""
-			(at 261.62 29.21 0)
+			(at 248.92 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10279,7 +10234,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 261.62 29.21 0)
+			(at 248.92 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10287,7 +10242,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 261.62 29.21 0)
+			(at 248.92 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11027,7 +10982,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C96446"
+		(property "LCSC_PN" "C76614"
 			(at 116.84 39.37 0)
 			(effects
 				(font
@@ -11532,7 +11487,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 255.27 38.1 0)
+		(at 242.57 38.1 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -11541,7 +11496,7 @@
 		(dnp no)
 		(uuid "4e5f71da-44fa-41c9-9ac6-5a5be3a3032e")
 		(property "Reference" "C1505"
-			(at 255.27 36.068 0)
+			(at 242.57 36.068 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11550,7 +11505,7 @@
 			)
 		)
 		(property "Value" "1uF"
-			(at 254.762 40.132 0)
+			(at 242.062 40.132 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11559,7 +11514,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 254.3048 41.91 0)
+			(at 241.6048 41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11568,7 +11523,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11577,7 +11532,7 @@
 			)
 		)
 		(property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402"
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11586,7 +11541,7 @@
 			)
 		)
 		(property "Manufacturer" "Murata"
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11595,7 +11550,7 @@
 			)
 		)
 		(property "MPN" "GRM155R61E105MA12D"
-			(at 0 0 0)
+			(at -12.7 0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11604,7 +11559,7 @@
 			)
 		)
 		(property "LCSC_PN" "C77009"
-			(at 0 0 0)
+			(at -12.7 0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11613,7 +11568,7 @@
 			)
 		)
 		(property "Mouser_PN" "81-GRM155R61E105KE1D"
-			(at 0 0 0)
+			(at -12.7 0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11622,7 +11577,7 @@
 			)
 		)
 		(property "cap-type" "X5R"
-			(at 257.302 40.386 0)
+			(at 244.602 40.386 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11630,7 +11585,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11638,7 +11593,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11647,7 +11602,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11656,7 +11611,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11665,7 +11620,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11674,7 +11629,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11683,7 +11638,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11692,7 +11647,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11701,7 +11656,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11710,7 +11665,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11719,7 +11674,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11728,7 +11683,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11737,7 +11692,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11746,7 +11701,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11755,7 +11710,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11764,7 +11719,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11773,7 +11728,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11782,7 +11737,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11791,7 +11746,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11800,7 +11755,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11809,7 +11764,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11818,7 +11773,7 @@
 			)
 		)
 		(property "working-voltage" "25V"
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11827,7 +11782,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11836,7 +11791,7 @@
 			)
 		)
 		(property "label" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11845,7 +11800,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11854,7 +11809,7 @@
 			)
 		)
 		(property "MFG" "muRata"
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11863,7 +11818,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
-			(at 255.27 38.1 0)
+			(at 242.57 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12718,7 +12673,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C96446"
+		(property "LCSC_PN" "C307331"
 			(at 0 0 0)
 			(effects
 				(font
@@ -13427,7 +13382,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C96446"
+		(property "LCSC_PN" "C76614"
 			(at 0 0 0)
 			(effects
 				(font
@@ -13874,8 +13829,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Library:TPS74612PQWDRBRQ1")
-		(at 232.41 30.48 0)
+		(lib_id "Library:TPS7A2012PDBVR")
+		(at 226.06 38.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -13883,43 +13838,42 @@
 		(dnp no)
 		(uuid "6a717a8f-bdd6-403f-a4a9-8bf73dd1c775")
 		(property "Reference" "U1501"
-			(at 232.156 27.178 0)
+			(at 226.822 27.178 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "TPS74612PQWDRBRQ1"
-			(at 232.918 29.21 0)
+		(property "Value" "TPS7A2012PDBVR"
+			(at 227.584 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Library:SON65P300X300X100-9N-D"
-			(at 259.08 125.4 0)
+		(property "Footprint" "Library:DBV0005A-MFG"
+			(at 226.06 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/gpn/tps746-q1"
-			(at 259.08 225.4 0)
+		(property "Datasheet" "https://www.ti.com/lit/gpn/TPS7A20"
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
 				(hide yes)
 			)
 		)
-		(property "Description" "LDO Voltage Regulators Automotive 1-A, low-IQ, high-PSRR, low-dropout (LDO) voltage regulator with power good 8-SON -40 to 125"
-			(at 232.41 30.48 0)
+		(property "Description" "300mA ultra-low-noise low-IQ low-dropout (LDO) linear regulator with high PSRR | DBV | 5 | -40 to 125"
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13928,7 +13882,7 @@
 			)
 		)
 		(property "Manufacturer" "Texas Instruments"
-			(at 0 0 0)
+			(at -6.35 7.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13936,8 +13890,8 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TPS74612PQWDRBRQ1"
-			(at 0 0 0)
+		(property "MPN" "TPS7A2012PDBVR"
+			(at -6.35 7.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13945,8 +13899,8 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C2862740"
-			(at 0 0 0)
+		(property "LCSC_PN" "C2864597"
+			(at -6.35 7.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13954,8 +13908,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser_PN" "595-PS74612PQWDRBRQ1"
-			(at 0 0 0)
+		(property "Mouser_PN" ""
+			(at -6.35 7.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13964,7 +13918,7 @@
 			)
 		)
 		(property "Height" "1"
-			(at 259.08 425.4 0)
+			(at 252.73 433.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13973,8 +13927,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS74612PQWDRBRQ1?qs=OlC7AqGiEDlKxsOXBcUCtQ%3D%3D"
-			(at 259.08 625.4 0)
+		(property "Mouser Price/Stock" ""
+			(at 252.73 633.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13984,7 +13938,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 232.41 30.48 0)
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13992,7 +13946,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 232.41 30.48 0)
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14000,7 +13954,7 @@
 			)
 		)
 		(property "label" ""
-			(at 232.41 30.48 0)
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14008,7 +13962,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 232.41 30.48 0)
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14017,7 +13971,7 @@
 			)
 		)
 		(property "MFG" "TI"
-			(at 232.41 30.48 0)
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14026,11 +13980,161 @@
 			)
 		)
 		(property "Mouser Part Number" "595-PS74612PQWDRBRQ1 "
-			(at 232.41 30.48 0)
+			(at 226.06 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
+			)
+		)
+		(property "MF" "Texas Instruments"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" "1.45mm"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" "ANA"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Price" "None"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Package" "SOT-23 Texas Instruments"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=eda"
+			(at 226.06 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" "IPC-7351B"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" "H"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" "RODRIGO"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=snap"
+			(at 226.06 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MP" "TPS7A2012PDBVR"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Purchase-URL" "https://www.snapeda.com/api/url_track_click_mouser/?unipart_id=5819962&manufacturer=Texas Instruments&part_name=TPS7A2012PDBVR&search_term=tps7a2012pdbvr"
+			(at 226.06 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Description_1" "300-mA ultra-low-noise low-IQ low-dropout (LDO) linear regulator with high PSRR"
+			(at 226.06 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Availability" "In Stock"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" "Texas Instruments"
+			(at 227.33 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
@@ -14039,18 +14143,6 @@
 		)
 		(pin "4"
 			(uuid "68b92aa6-ae75-47d1-9800-526d018248c6")
-		)
-		(pin "9"
-			(uuid "3f541603-55b1-4fca-bbe0-683253149412")
-		)
-		(pin "8"
-			(uuid "92e7b31b-cc63-4a5d-8582-7165a4d0fbe3")
-		)
-		(pin "7"
-			(uuid "aa19dee0-60fe-4a92-9feb-c42066108b7e")
-		)
-		(pin "6"
-			(uuid "d600ac22-2b62-42c1-8a82-afa198d7c0b7")
 		)
 		(pin "1"
 			(uuid "dc6359d0-8313-4d2d-b26f-ae78bf36b406")
@@ -14143,7 +14235,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C96446"
+		(property "LCSC_PN" "C76614"
 			(at -2.54 3.81 0)
 			(effects
 				(font
@@ -14427,9 +14519,8 @@
 		)
 	)
 	(symbol
-		(lib_name "PTPS7A2012PDBVR_1")
-		(lib_id "Library:PTPS7A2012PDBVR")
-		(at 60.96 64.77 0)
+		(lib_id "Library:TPS7A2033PDBVR")
+		(at 69.85 69.85 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14437,7 +14528,7 @@
 		(dnp no)
 		(uuid "6cfbf5da-00b3-4a51-b445-163970a039bd")
 		(property "Reference" "U1504"
-			(at 71.12 55.372 0)
+			(at 65.278 58.928 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14445,7 +14536,7 @@
 			)
 		)
 		(property "Value" "TPS7A2033PDBVR"
-			(at 76.2 57.15 0)
+			(at 70.358 60.706 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14453,27 +14544,26 @@
 			)
 		)
 		(property "Footprint" "Library:DBV0005A-MFG"
-			(at 60.96 64.77 0)
+			(at 69.85 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
-					(italic yes)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.ti.com/lit/gpn/TPS7A20"
+			(at 69.85 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/gpn/tps7a20"
-			(at 60.96 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "300 mA Low Dropout Voltage Regulator, Fixed Output, 1.6..6.0Vin, Low-Noise (7μV RMS), 6.5μA IQ LDO, X2SON-5"
-			(at 60.96 64.77 0)
+		(property "Description" "300mA ultra-low-noise low-IQ low-dropout (LDO) linear regulator with high PSRR | DBV | 5 | -40 to 125"
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14482,7 +14572,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14491,7 +14581,7 @@
 			)
 		)
 		(property "MPN" "TPS7A2033PDBVR"
-			(at -144.78 -38.1 0)
+			(at -135.89 -33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14500,7 +14590,7 @@
 			)
 		)
 		(property "LCSC_PN" "C2862740"
-			(at -144.78 -38.1 0)
+			(at -135.89 -33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14509,7 +14599,7 @@
 			)
 		)
 		(property "Mouser_PN" ""
-			(at -144.78 -38.1 0)
+			(at -135.89 -33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14518,7 +14608,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14526,7 +14616,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14534,7 +14624,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14543,7 +14633,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14552,7 +14642,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14561,7 +14651,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14570,7 +14660,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14578,71 +14668,78 @@
 				(hide yes)
 			)
 		)
-		(property "Availability" ""
-			(at 60.96 64.77 0)
+		(property "Availability" "In Stock"
+			(at 71.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "Check_prices" ""
-			(at 60.96 64.77 0)
+		(property "Check_prices" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=eda"
+			(at 69.85 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "Description_1" ""
-			(at 60.96 64.77 0)
+		(property "Description_1" "300-mA ultra-low-noise low-IQ low-dropout (LDO) linear regulator with high PSRR"
+			(at 69.85 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "MANUFACTURER" ""
-			(at 60.96 64.77 0)
+		(property "MANUFACTURER" "Texas Instruments"
+			(at 71.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 60.96 64.77 0)
+		(property "MAXIMUM_PACKAGE_HEIGHT" "1.45mm"
+			(at 71.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "PARTREV" ""
-			(at 60.96 64.77 0)
+		(property "PARTREV" "H"
+			(at 71.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "Package" ""
-			(at 60.96 64.77 0)
+		(property "Package" "SOT-23 Texas Instruments"
+			(at 71.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
 		(property "Part Number" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14650,26 +14747,28 @@
 				(hide yes)
 			)
 		)
-		(property "Price" ""
-			(at 60.96 64.77 0)
+		(property "Price" "None"
+			(at 71.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
-		(property "STANDARD" ""
-			(at 60.96 64.77 0)
+		(property "STANDARD" "IPC-7351B"
+			(at 71.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
 		(property "Sim.Device" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14678,7 +14777,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14686,17 +14785,18 @@
 				(hide yes)
 			)
 		)
-		(property "SnapEDA_Link" ""
-			(at 60.96 64.77 0)
+		(property "SnapEDA_Link" "https://www.snapeda.com/parts/TPS7A2012PDBVR/Texas+Instruments/view-part/?ref=snap"
+			(at 69.85 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
 		(property "Specifications" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14705,7 +14805,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14714,7 +14814,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14723,7 +14823,7 @@
 			)
 		)
 		(property "label" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14732,7 +14832,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14741,7 +14841,7 @@
 			)
 		)
 		(property "MFG" "TI"
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14750,11 +14850,61 @@
 			)
 		)
 		(property "Mouser Part Number" "595-TPS7A2033PDBVR"
-			(at 60.96 64.77 0)
+			(at 69.85 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
+			)
+		)
+		(property "MF" "Texas Instruments"
+			(at 71.12 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" "ANA"
+			(at 71.12 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" "RODRIGO"
+			(at 71.12 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MP" "TPS7A2012PDBVR"
+			(at 71.12 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Purchase-URL" "https://www.snapeda.com/api/url_track_click_mouser/?unipart_id=5819962&manufacturer=Texas Instruments&part_name=TPS7A2012PDBVR&search_term=tps7a2012pdbvr"
+			(at 69.85 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
@@ -15329,7 +15479,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C50254"
+		(property "LCSC_PN" "C12530"
 			(at 208.28 -50.8 0)
 			(effects
 				(font
@@ -15607,171 +15757,6 @@
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
 					(reference "C1512")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R_Small_US")
-		(at 261.62 39.37 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "75eae10a-4043-4a6d-ab00-4f73635cf0ee")
-		(property "Reference" "R1511"
-			(at 260.604 42.672 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 260.604 36.576 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 261.62 39.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 261.62 39.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor, Thin Film, 0.1%, 10k, 0402"
-			(at 261.62 39.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 5.08 8.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "RT0402BRD0710KL"
-			(at 5.08 8.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC_PN" "C283961"
-			(at 5.08 8.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser_PN" ""
-			(at 5.08 8.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "cap-type" ""
-			(at 261.62 39.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "r-power" ""
-			(at 261.62 39.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Core" ""
-			(at 261.62 39.37 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "label" ""
-			(at 261.62 39.37 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Winding" ""
-			(at 261.62 39.37 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MFG" "YAGEO"
-			(at 261.62 39.37 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "603-RT0402BRD0710KL"
-			(at 261.62 39.37 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "368f8a97-2212-425e-83dd-8ea7f25b1100")
-		)
-		(pin "2"
-			(uuid "a4993925-f6d8-4eb2-b918-c7fc3398284f")
-		)
-		(instances
-			(project "NexRx"
-				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
-					(reference "R1511")
 					(unit 1)
 				)
 			)
@@ -16287,7 +16272,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C96446"
+		(property "LCSC_PN" "C76614"
 			(at 127 39.37 0)
 			(effects
 				(font
@@ -16449,7 +16434,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3VA")
-		(at 96.52 62.23 0)
+		(at 83.82 62.23 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -16457,7 +16442,7 @@
 		(dnp no)
 		(uuid "8749933c-32e1-43d7-ba26-031b74c16b89")
 		(property "Reference" "#PWR01515"
-			(at 96.52 66.04 0)
+			(at 83.82 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16466,7 +16451,7 @@
 			)
 		)
 		(property "Value" "+3.3VA"
-			(at 96.52 57.15 0)
+			(at 83.82 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16474,7 +16459,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 96.52 62.23 0)
+			(at 83.82 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16483,7 +16468,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 96.52 62.23 0)
+			(at 83.82 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16492,7 +16477,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3VA\""
-			(at 96.52 62.23 0)
+			(at 83.82 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16583,7 +16568,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C1710"
+		(property "LCSC_PN" "C15195"
 			(at 96.52 -52.07 0)
 			(effects
 				(font
@@ -17159,7 +17144,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C1710"
+		(property "LCSC_PN" "C15195"
 			(at 10.16 -64.77 0)
 			(effects
 				(font
@@ -17895,7 +17880,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 96.52 69.85 0)
+		(at 83.82 69.85 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17903,7 +17888,7 @@
 		(dnp no)
 		(uuid "9fc7a948-99b4-4b11-9a63-85473d571c15")
 		(property "Reference" "C1510"
-			(at 96.774 66.04 0)
+			(at 84.074 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17912,7 +17897,7 @@
 			)
 		)
 		(property "Value" "1uF"
-			(at 97.028 67.818 0)
+			(at 84.328 67.818 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17921,7 +17906,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 97.4852 73.66 0)
+			(at 84.7852 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17930,7 +17915,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17939,7 +17924,7 @@
 			)
 		)
 		(property "Description" "Capacitor, MLCC, X5R, 25V, 10%, 1uF, 0402"
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17948,7 +17933,7 @@
 			)
 		)
 		(property "cap-type" "X5R"
-			(at 94.488 72.136 0)
+			(at 81.788 72.136 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17956,7 +17941,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17964,7 +17949,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17973,7 +17958,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17982,7 +17967,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17991,7 +17976,7 @@
 			)
 		)
 		(property "Mfg" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18000,7 +17985,7 @@
 			)
 		)
 		(property "MfgPart" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18009,7 +17994,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18018,7 +18003,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18027,7 +18012,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18036,7 +18021,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18045,7 +18030,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18054,7 +18039,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18063,7 +18048,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18072,7 +18057,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18081,7 +18066,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18090,7 +18075,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18099,7 +18084,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18108,7 +18093,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18117,7 +18102,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18126,7 +18111,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18135,7 +18120,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18144,7 +18129,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18153,7 +18138,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18162,7 +18147,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18171,7 +18156,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18180,7 +18165,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18189,7 +18174,7 @@
 			)
 		)
 		(property "working-voltage" "25V"
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18198,7 +18183,7 @@
 			)
 		)
 		(property "Manufacturer_Name" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18207,7 +18192,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18216,7 +18201,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GRM155R61E105MA2D"
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18225,7 +18210,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18234,7 +18219,7 @@
 			)
 		)
 		(property "label" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18243,7 +18228,7 @@
 			)
 		)
 		(property "JLCPCBpn" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18252,7 +18237,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18261,7 +18246,7 @@
 			)
 		)
 		(property "MFG" "muRata"
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18270,7 +18255,7 @@
 			)
 		)
 		(property "MPN" "GRM155R61E105MA12D"
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18279,7 +18264,7 @@
 			)
 		)
 		(property "LCSC_PN" "C77009"
-			(at 96.52 69.85 0)
+			(at 83.82 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18991,7 +18976,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 255.27 43.18 0)
+		(at 242.57 43.18 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -19001,7 +18986,7 @@
 		(fields_autoplaced yes)
 		(uuid "abb8eec1-809d-4107-9467-2f0c414f75a6")
 		(property "Reference" "#PWR01510"
-			(at 255.27 49.53 0)
+			(at 242.57 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19010,7 +18995,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 255.2699 46.99 90)
+			(at 242.5699 46.99 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19020,7 +19005,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 255.27 43.18 0)
+			(at 242.57 43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19029,7 +19014,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 255.27 43.18 0)
+			(at 242.57 43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19038,7 +19023,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 255.27 43.18 0)
+			(at 242.57 43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19773,7 +19758,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C1710"
+		(property "LCSC_PN" "C15195"
 			(at 81.28 -52.07 0)
 			(effects
 				(font
@@ -21677,16 +21662,16 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 96.52 76.2 0)
+		(at 69.85 81.28 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "ee4eac86-0cab-4f9e-b729-32527445fe5c")
-		(property "Reference" "#PWR01518"
-			(at 96.52 82.55 0)
+		(uuid "ebf9eaf6-cd13-4822-80cd-20eb0b8336b9")
+		(property "Reference" "#PWR01514"
+			(at 69.85 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21695,7 +21680,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 96.52 81.28 0)
+			(at 69.85 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21704,7 +21689,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 96.52 76.2 0)
+			(at 69.85 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21713,7 +21698,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 96.52 76.2 0)
+			(at 69.85 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21722,7 +21707,74 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 96.52 76.2 0)
+			(at 69.85 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "42156d55-2486-4adb-8f59-f0d494bc34f4")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/cbf7569b-90aa-4e1a-84a7-d4153f6242b6"
+					(reference "#PWR01514")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 83.82 74.93 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ee4eac86-0cab-4f9e-b729-32527445fe5c")
+		(property "Reference" "#PWR01518"
+			(at 83.82 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 83.82 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 83.82 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 83.82 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 83.82 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)

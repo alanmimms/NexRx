@@ -1,0 +1,39 @@
+/ {
+    chosen {
+        zephyr,console = &cdc_acm_uart0;
+    };
+};
+
+&zephyr_udc0 {
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
+    };
+};
+
+
+&spi1 {
+    status = "okay";
+    /* Define the clock and data lines. We omit NSS here to use software CS below */
+    pinctrl-0 = <&spi1_sck_pb3 &spi1_mosi_pb5>;
+    pinctrl-names = "default";
+    cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+
+    ssd1306: ssd1306@0 {
+        compatible = "solomon,ssd1306";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        width = <128>;
+        height = <64>;
+        segment-offset = <0>;
+        page-offset = <0>;
+        display-offset = <0>;
+        multiplex-ratio = <63>;
+        segment-remap;
+        com-invdir;
+        prechargep = <0x22>;
+        
+        /* Your custom control pins */
+        data-cmd-gpios = <&gpiog 2 GPIO_ACTIVE_HIGH>; /* PG2 */
+        reset-gpios = <&gpiog 3 GPIO_ACTIVE_LOW>;     /* PG3 */
+    };
+};

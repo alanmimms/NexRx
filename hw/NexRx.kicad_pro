@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": true,
         "zones": {
-          "min_clearance": 0.25
+          "min_clearance": 0.0
         }
       },
       "diff_pair_dimensions": [
@@ -68,7 +68,16 @@
           "width": 0.225298
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        [
+          "silk_over_copper|175130000|123030000|64f17c6a-8454-4e5c-b3db-be96ea1dbc2b|00000000-0000-0000-0000-000000000000",
+          ""
+        ],
+        [
+          "silk_over_copper|175193857|114090000|d79f576e-3846-4c4d-8a6c-38421c1607d7|00000000-0000-0000-0000-000000000000",
+          ""
+        ]
+      ],
       "meta": {
         "version": 2
       },
@@ -572,6 +581,14 @@
       ],
       [
         "multiple_net_names|241300|1193800|22031725-34ed-4ff4-ba64-51c8288c6b22|140c78b6-c9ff-442c-8f78-1efb29758733|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|241300|1295400|04f0bd59-8acd-47c1-a912-33da38b40b88|c35d42f0-3352-4e79-a07b-4960d5a81f5e|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|266700|1219200|22031725-34ed-4ff4-ba64-51c8288c6b22|50faa46b-ed24-4355-a1d5-31dfbac91437|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
@@ -5052,9 +5069,27 @@
           "label": "Exclude from Board",
           "name": "${EXCLUDE_FROM_BOARD}",
           "show": true
+        },
+        {
+          "group_by": false,
+          "label": "VERIFIER",
+          "name": "VERIFIER",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "CREATOR",
+          "name": "CREATOR",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Purchase-URL",
+          "name": "Purchase-URL",
+          "show": false
         }
       ],
-      "filter_string": "c",
+      "filter_string": "u",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
