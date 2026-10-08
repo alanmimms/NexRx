@@ -6297,6 +6297,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 81.28 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "90145689-240e-4271-baee-b2ebb9767912")
 		)
@@ -6446,6 +6455,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 66.04 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project "NexRx"
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
@@ -6581,6 +6599,15 @@
 			)
 		)
 		(property "Mouser Part Number" "n/a"
+			(at 82.55 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 82.55 198.12 0)
 			(effects
 				(font
@@ -6846,6 +6873,15 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "UsedIn" ""
+			(at 114.3 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(pin "6"
@@ -7150,6 +7186,15 @@
 			)
 		)
 		(property "Mouser Part Number" "n/a"
+			(at 48.26 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 48.26 198.12 0)
 			(effects
 				(font
@@ -7507,6 +7552,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 52.07 72.39 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f80eaea2-70d0-4b45-ae8b-c638e333d745")
 		)
@@ -7605,6 +7659,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 33.02 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 33.02 187.96 0)
 			(effects
 				(font
@@ -7834,6 +7897,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 120.65 142.24 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "938dcaeb-1142-4414-ba29-d4f4349c77f0")
 		)
@@ -8034,6 +8106,15 @@
 			)
 		)
 		(property "LCSC_PN" "C48687404"
+			(at 181.61 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 181.61 137.16 0)
 			(effects
 				(font
@@ -8292,6 +8373,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 83.82 38.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "957dacc2-69d3-4af2-b90f-1f61f5b28176")
 		)
@@ -8495,6 +8585,15 @@
 			)
 		)
 		(property "LCSC_PN" "C90770"
+			(at 147.32 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 147.32 151.13 0)
 			(effects
 				(font
@@ -8974,6 +9073,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 67.31 26.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "843d9752-2bcf-4931-b83e-fb885a91b1d9")
 		)
@@ -9256,6 +9364,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 105.41 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "3a0f86e2-13f0-4d08-b3c1-ced4a3363945")
 		)
@@ -9363,6 +9480,15 @@
 			)
 		)
 		(property "LCSC_PN" "C37361"
+			(at 55.88 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 55.88 154.94 0)
 			(effects
 				(font
@@ -9609,6 +9735,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 175.26 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "b410459b-7da5-4bc9-ab93-0b504f4a5134")
 		)
@@ -9707,6 +9842,15 @@
 			)
 		)
 		(property "LCSC_PN" "C37361"
+			(at 55.88 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 55.88 139.7 0)
 			(effects
 				(font
@@ -10280,6 +10424,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 110.49 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e7f08b9f-84ad-4a21-abd9-69fa5848e034")
 		)
@@ -10711,6 +10864,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 86.36 72.39 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e717b9bc-7761-4f64-ae10-1f6c36ec1043")
 		)
@@ -10890,6 +11052,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 92.71 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2a846404-c1a9-4d5a-838d-bf139a956418")
 		)
@@ -11023,6 +11194,15 @@
 			)
 		)
 		(property "LCSC_PN" "C60035"
+			(at 124.46 133.35 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 124.46 133.35 90)
 			(effects
 				(font
@@ -11460,6 +11640,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 88.9 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "38a495b0-2a25-4f3f-a441-6359daef1311")
 		)
@@ -11625,6 +11814,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 52.07 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 52.07 187.96 0)
 			(effects
 				(font
@@ -11805,6 +12003,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 96.52 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "6819c4d7-2361-460d-bc5a-60c889f8e11a")
 		)
@@ -11969,6 +12176,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 72.39 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 72.39 187.96 0)
 			(effects
 				(font
@@ -12214,6 +12430,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 92.71 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f9cb73c7-0ae1-4366-a9db-559aa863c9c8")
 		)
@@ -12363,6 +12588,15 @@
 			)
 		)
 		(property "LCSC_PN" "C76991"
+			(at 167.64 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 167.64 132.08 0)
 			(effects
 				(font
@@ -12536,6 +12770,15 @@
 			)
 		)
 		(property "Mouser Part Number" ""
+			(at 54.61 33.02 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 54.61 33.02 90)
 			(effects
 				(font

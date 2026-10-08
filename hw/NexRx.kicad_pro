@@ -584,6 +584,10 @@
         ""
       ],
       [
+        "multiple_net_names|241300|1244600|6e31939d-ff11-4dd2-b89d-2ff7b650eca6|9a52498e-d0b1-45a4-b186-320f90801375|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
         "multiple_net_names|241300|1295400|04f0bd59-8acd-47c1-a912-33da38b40b88|c35d42f0-3352-4e79-a07b-4960d5a81f5e|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
@@ -5089,7 +5093,7 @@
           "show": false
         }
       ],
-      "filter_string": "u",
+      "filter_string": "j201",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",

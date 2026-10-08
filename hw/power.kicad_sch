@@ -7112,6 +7112,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 137.16 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9256f2a1-274f-40da-813d-3968a5c0639a")
 		)
@@ -7427,6 +7436,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 187.96 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "cf473268-2307-47dc-8b95-b0477929fe10")
 		)
@@ -7720,6 +7738,15 @@
 			)
 		)
 		(property "Mouser Part Number" ""
+			(at 195.58 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 195.58 100.33 90)
 			(effects
 				(font
@@ -8037,6 +8064,15 @@
 			)
 		)
 		(property "Mouser Part Number" "637-1.0SMBJ15A-AQ"
+			(at 30.48 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 30.48 100.33 0)
 			(effects
 				(font
@@ -8389,6 +8425,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 101.6 33.02 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f601ea54-8c17-4782-8181-6e0f45d0d30c")
 		)
@@ -8485,6 +8530,15 @@
 			)
 		)
 		(property "LCSC_PN" "C92494"
+			(at 165.1 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 165.1 100.33 0)
 			(effects
 				(font
@@ -8796,6 +8850,15 @@
 			)
 		)
 		(property "Mouser Part Number" "595-LMR51430YDDCR"
+			(at 74.93 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 74.93 33.02 0)
 			(effects
 				(font
@@ -9162,6 +9225,15 @@
 			)
 		)
 		(property "Mouser Part Number" "963-TMK105CBJ225MV-F"
+			(at 209.55 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 209.55 105.41 0)
 			(effects
 				(font
@@ -9594,6 +9666,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 157.48 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "635dec42-fcc8-4505-b9f1-edbe5320bdfe")
 		)
@@ -9737,6 +9818,15 @@
 			)
 		)
 		(property "Mouser Part Number" "863-ESD9B5.0ST5G"
+			(at 80.01 158.75 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 80.01 158.75 90)
 			(effects
 				(font
@@ -10157,6 +10247,15 @@
 			)
 		)
 		(property "Mouser Part Number" "710-560112110216"
+			(at 180.34 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 180.34 100.33 90)
 			(effects
 				(font
@@ -10592,6 +10691,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 105.41 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "bffe4c96-3461-46a6-b34c-84cadbe41281")
 		)
@@ -10983,6 +11091,15 @@
 			)
 		)
 		(property "LCSC_PN" "C76614"
+			(at 116.84 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 116.84 39.37 0)
 			(effects
 				(font
@@ -11470,6 +11587,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 205.74 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5e1b6030-437f-4777-a87f-f225d538bbb2")
 		)
@@ -11826,6 +11952,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 242.57 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e486c911-d522-4184-9a64-fb2b1a8dc53b")
 		)
@@ -12172,6 +12307,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 114.3 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "81bb1472-68dd-4651-ae0b-113cf03ac00a")
 		)
@@ -12379,6 +12523,15 @@
 			)
 		)
 		(property "Mouser Part Number" "863-ESD9B5.0ST5G"
+			(at 114.3 158.75 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 114.3 158.75 90)
 			(effects
 				(font
@@ -12950,6 +13103,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 90.17 30.48 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "baaba13c-ef94-4bad-ab8d-6281b62c13e9")
 		)
@@ -13289,6 +13451,15 @@
 			)
 		)
 		(property "Mouser Part Number" ""
+			(at 106.68 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 106.68 46.99 0)
 			(effects
 				(font
@@ -13642,6 +13813,15 @@
 			)
 		)
 		(property "Mouser Part Number" "187-CL10A106MA8NRWC "
+			(at 45.72 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 45.72 36.83 0)
 			(effects
 				(font
@@ -14138,6 +14318,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 226.06 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "5"
 			(uuid "04ff531d-a56e-4cc3-bc33-b86a59b6587b")
 		)
@@ -14495,6 +14684,15 @@
 			)
 		)
 		(property "Mouser Part Number" "187-CL10A106MA8NRWC "
+			(at 39.37 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 39.37 106.68 0)
 			(effects
 				(font
@@ -14905,6 +15103,15 @@
 					(size 1.27 1.27)
 				)
 				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
+			(at 69.85 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -15327,6 +15534,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 53.34 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "349615d8-679d-4f92-a53d-e086ccb6dfe7")
 		)
@@ -15739,6 +15955,15 @@
 			)
 		)
 		(property "Mouser Part Number" "963-TMK105CBJ225MV-F"
+			(at 147.32 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 147.32 104.14 0)
 			(effects
 				(font
@@ -16273,6 +16498,15 @@
 			)
 		)
 		(property "LCSC_PN" "C76614"
+			(at 127 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 127 39.37 0)
 			(effects
 				(font
@@ -16836,6 +17070,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 217.17 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "74c2c985-f2d1-448d-9569-fd3af685ce03")
 		)
@@ -17036,6 +17279,15 @@
 			)
 		)
 		(property "MFG" "TI"
+			(at 167.64 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 167.64 34.29 0)
 			(effects
 				(font
@@ -17405,6 +17657,15 @@
 			)
 		)
 		(property "Mouser Part Number" "603-CC0402KRX5R8BB10"
+			(at 154.94 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 154.94 104.14 0)
 			(effects
 				(font
@@ -17863,6 +18124,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 132.08 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "774fba16-643c-4528-a27e-593e7cef2991")
 		)
@@ -18272,6 +18542,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 83.82 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d3166686-d8e9-4a5c-bf62-c63a5e1ea7d5")
 		)
@@ -18603,6 +18882,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 106.68 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b61616f0-29b8-4864-ae42-7c81345e6fff")
 		)
@@ -18915,6 +19203,15 @@
 			)
 		)
 		(property "Mouser Part Number" "179-UJ20CHGSMT1P16TR "
+			(at 53.34 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 53.34 133.35 0)
 			(effects
 				(font
@@ -19374,6 +19671,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 54.61 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5dd57629-657d-43b9-91fb-ca311fe491b2")
 		)
@@ -19596,6 +19902,15 @@
 			)
 		)
 		(property "LCSC_PN" "C126505"
+			(at 184.15 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 184.15 43.18 0)
 			(effects
 				(font
@@ -20018,6 +20333,15 @@
 			)
 		)
 		(property "Mouser Part Number" "603-CC0402KRX5R8BB10"
+			(at 201.93 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 201.93 105.41 0)
 			(effects
 				(font
@@ -20455,6 +20779,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 88.9 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "33685bd5-63d9-4c75-abb2-718a7601b372")
 		)
@@ -20693,6 +21026,15 @@
 		)
 		(property "LCSC_PN" "C332259"
 			(at 106.68 54.61 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
+			(at 106.68 54.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21264,6 +21606,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 88.9 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a16da2ec-1d28-4fc8-ba42-7071b471deb3")
 		)
@@ -21637,6 +21988,15 @@
 			)
 		)
 		(property "LCSC_PN" "C25792"
+			(at 132.08 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 132.08 104.14 90)
 			(effects
 				(font

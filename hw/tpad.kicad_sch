@@ -1303,6 +1303,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 114.3 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f8e83097-706b-40d3-a6c3-2cc4ef6613ae")
 		)
@@ -1646,6 +1655,15 @@
 				(hide yes)
 			)
 		)
+		(property "UsedIn" ""
+			(at 92.71 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "93e298e9-6ab5-4d9d-964d-ef4c833d2fad")
 		)
@@ -1943,6 +1961,15 @@
 			)
 		)
 		(property "Winding" ""
+			(at 109.22 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 109.22 87.63 90)
 			(effects
 				(font
@@ -2286,6 +2313,15 @@
 			)
 		)
 		(property "MFG" "SKYWORKS"
+			(at 125.73 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 125.73 80.01 0)
 			(effects
 				(font
@@ -2776,6 +2812,15 @@
 			)
 		)
 		(property "Mouser Part Number" ""
+			(at 104.14 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "UsedIn" ""
 			(at 104.14 82.55 90)
 			(effects
 				(font
