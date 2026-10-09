@@ -1,15 +1,10 @@
 / {
     chosen {
-        zephyr,console = &cdc_acm_uart0;
+        zephyr,console = &usart3;
+        zephyr,shell_uart = &usart3;
+        zephyr,display = &ssd1306; /* Add this line */
     };
 };
-
-&zephyr_udc0 {
-    cdc_acm_uart0: cdc_acm_uart0 {
-        compatible = "zephyr,cdc-acm-uart";
-    };
-};
-
 
 &spi1 {
     status = "okay";

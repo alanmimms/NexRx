@@ -20,15 +20,7 @@ int main(void) {
     return -1;
   }  
 
-  // Initialize the USB subsystem
-  if (usb_enable(NULL)) {
-    return -1;
-  }
-
-  // Optional: Wait for a terminal to connect before proceeding
-  // k_sleep(K_MSEC(2000)); 
-    
-  printk("USB Console initialized.\n");
+  printk("Serial console initialized.\n");
 
   if (!device_is_ready(display)) {
     return -1;
@@ -51,16 +43,32 @@ int main(void) {
   st = cfb_framebuffer_clear(display, true);
   printk("Framebuffer cleared %d\n", st);
 
-  st = cfb_print(display, "NexRx OLED Test", 0, 0);
+  static char msg[] =
+    "0123456789AB"
+    " Line2      "
+    "  Line3     "
+    "   Line4    ";
+    
+  st = cfb_print(display, msg, 0, 0);
   printk("Framebuffer string printed %d\n", st);
 
   static const struct cfb_position cirPos = {64, 32};
   
-  st = cfb_draw_circle(display, &cirPos, 13);
+  st = cfb_draw_circle(display, &cirPos, 31);
   printk("Framebuffer draw circle %d\n", st);
 
+#if 0
   st = cfb_invert_area(display, 3, 3, 123, 61);
   printk("Framebuffer invert area %d\n", st);
+#endif
+
+  int h = cfb_get_display_parameter(display, CFB_DISPLAY_HEIGHT);
+  int w = cfb_get_display_parameter(display, CFB_DISPLAY_WIDTH);
+  int ppt = cfb_get_display_parameter(display, CFB_DISPLAY_PPT);
+  int rows = cfb_get_display_parameter(display, CFB_DISPLAY_ROWS);
+  int cols = cfb_get_display_parameter(display, CFB_DISPLAY_COLS);
+  int nFonts = cfb_get_numof_fonts(display);
+  printk("Framebuffer h=%d w=%d ppt=%d rows=%d cols=%d nFonts=%d\n", h, w, ppt, rows, cols, nFonts);
 
   st = cfb_framebuffer_finalize(display);
   printk("Framebuffer finalized %d\n", st);
