@@ -5093,7 +5093,7 @@
           "show": false
         }
       ],
-      "filter_string": "j201",
+      "filter_string": "c",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
