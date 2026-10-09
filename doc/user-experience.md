@@ -240,3 +240,35 @@ cleanly execute the two-pass layout algorithm without glitches.
 | Bidirectional computed | Yes |
 | Watchers for side effects | Yes |
 | Cleanup/disposal | Yes |
+
+
+# The Front Panel OLED
+
+This display is useful for determining if things have gone wrong, to
+prompt the user for various fixes that might be necessary to get USB
+connection to the host working, to show firmware and booting problems,
+and to show NexRx operational status.
+
+If only text is displayed, the display can show 12 columns x 4 lines.
+
+* Start of each boot phase. In case one of them fails the last one
+  shown is the likely culprit. Last boot phase shows firmware revision
+  and "Connecting to Host..." until USB connection is established.
+
+* Status display is four rows of up to 12 characters: S-meter bar
+  chart, demodulation mode and frequency, GNSS time, USB status.
+
+			1: SSSSSSSSSSSS
+			2: US12.456.789
+				or
+			2: LS12.456.789
+				or
+			2: CW12.456.789
+				or
+			2: AM12.456.789
+				or
+			2: FM12.456.789
+			3: 00:00:00 UTC
+			4: USB conn'ed 
+				or
+			4: USB not conn
