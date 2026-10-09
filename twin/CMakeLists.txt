@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_definitions(SOL_HAS_STD_OPTIONAL=1 SOL_USE_STD_OPTIONAL=1)
 
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+endif()
+
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-Wno-template-body COMPILER_SUPPORTS_WNO_TEMPLATE_BODY)
 if(COMPILER_SUPPORTS_WNO_TEMPLATE_BODY)
@@ -234,6 +238,8 @@ add_executable(nexrx-signalgen
   src/SignalGen.cpp
   ${SIGNALGEN_SOURCES}
 )
+
+target_compile_options(nexrx-signalgen PRIVATE -O3 -march=native)
 
 # Libraries
 find_package(PkgConfig QUIET)

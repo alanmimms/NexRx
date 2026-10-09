@@ -3,6 +3,7 @@
 // Copyright 2026 NexRx Project - MIT License
 
 #include "StimulusManager.hpp"
+#include "../ThreadPool.hpp"
 #include <algorithm>
 #include <iostream>
 
@@ -198,6 +199,88 @@ void StimulusManager::generateBatch(double startTime, double samplePeriod,
       if (pair.second.enabled) {
         applyStim(pair.second.stimulus);
       }
+    }
+  }
+}
+
+void StimulusManager::generateBatchParallel(ThreadPool& pool, double startTime, double samplePeriod,
+                                           size_t count, double* outIQ,
+                                           double centerHz, double bandwidthHz,
+                                           std::function<double(double)> gainFunc) const {
+  std::fill(outIQ, outIQ + 2 * count, 0.0);
+
+  struct ActiveItem {
+    StimulusPtr stim;
+    double gain;
+  };
+  std::vector<ActiveItem> activeItems;
+
+  double g = globalGain.load();
+  auto collectStim = [&](const StimulusPtr& stim) {
+    if (!stim->isBroadband() && bandwidthHz > 0) {
+      double stimFreq = stim->carrierFrequency();
+      if (std::abs(stimFreq - centerHz) > bandwidthHz / 2.0) {
+        return;
+      }
+    }
+
+    double stimGain = g;
+    if (gainFunc) {
+      stimGain *= gainFunc(stim->carrierFrequency());
+    }
+
+    activeItems.push_back({stim, stimGain});
+  };
+
+  if (frozen.load()) {
+    for (const auto& stim : frozenStimuli) {
+      collectStim(stim);
+    }
+  } else {
+    std::lock_guard<std::mutex> lock(stimulusMutex);
+    for (const auto& pair : stimuli) {
+      if (pair.second.enabled) {
+        collectStim(pair.second.stimulus);
+      }
+    }
+  }
+
+  if (activeItems.empty()) {
+    return;
+  }
+
+  if (activeItems.size() == 1 || pool.threadCount() <= 1) {
+    for (const auto& item : activeItems) {
+      item.stim->generateBatch(startTime, samplePeriod, count, outIQ, item.gain);
+    }
+    return;
+  }
+
+  int nItems = static_cast<int>(activeItems.size());
+  int nExtra = nItems - 1;
+  if (static_cast<int>(scratchBuffers.size()) < nExtra) {
+    scratchBuffers.resize(nExtra);
+  }
+  for (int k = 0; k < nExtra; ++k) {
+    if (scratchBuffers[k].size() != 2 * count) {
+      scratchBuffers[k].resize(2 * count);
+    }
+    std::fill(scratchBuffers[k].begin(), scratchBuffers[k].end(), 0.0);
+  }
+
+  pool.parallelFor(nItems, [&](int idx) {
+    if (idx == 0) {
+      activeItems[0].stim->generateBatch(startTime, samplePeriod, count, outIQ, activeItems[0].gain);
+    } else {
+      activeItems[idx].stim->generateBatch(startTime, samplePeriod, count, scratchBuffers[idx - 1].data(), activeItems[idx].gain);
+    }
+  });
+
+  int nTotal = static_cast<int>(2 * count);
+  for (int k = 0; k < static_cast<int>(nExtra); ++k) {
+    const double* src = scratchBuffers[k].data();
+    for (int i = 0; i < nTotal; ++i) {
+      outIQ[i] += src[i];
     }
   }
 }

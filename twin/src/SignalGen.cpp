@@ -20,6 +20,9 @@
 #include "AttenuatorModel.hpp"
 #include "AGCManager.hpp"
 #include "CPLDModel.hpp"
+#include "ThreadPool.hpp"
+#include "RingBuffer.hpp"
+#include "SamplePacer.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -73,6 +76,10 @@ namespace nexrx {
     std::string dumpStage3OutFile = "";
     size_t dumpLimit = 0;
 
+    double batchMS = 10.0;
+    double pacingMS = 10.0;
+    int numThreads = 0;
+
     double gainErr[2];
     double phaseErrRad[2];
   };
@@ -93,6 +100,9 @@ namespace nexrx {
 	      << "  --wav-iq FILE    Load WAV I/Q file as antenna stimulus\n"
 	      << "  --wav-freq MHZ   Center frequency for WAV I/Q stimulus (default: from filename)\n"
 	      << "  --swap-iq        Swap I and Q channels for WAV stimulus\n"
+	      << "  --batch-ms MS    Set sample batch duration in ms (default: 10.0)\n"
+	      << "  --pacing-ms MS   Set SamplePacer pacing interval in ms (default: 10.0)\n"
+	      << "  --threads N      Set worker thread pool size (default: auto)\n"
 	      << "  --dump-stage3-in FILE  Dump Stage 3 input (pre-recomb 4x float64) to FILE\n"
 	      << "  --dump-stage3-out FILE Dump Stage 3 output (post-recomb 2x float64) to FILE\n"
 	      << "  --dump-limit N         Limit Stage 3 dump to N samples (default: 0 = unlimited)\n"
@@ -153,6 +163,12 @@ namespace nexrx {
 	opts.timeoutSec = std::stod(argv[++i]);
       } else if (arg == "--single-session") {
 	opts.singleSession = true;
+      } else if (arg == "--batch-ms" && i + 1 < argc) {
+	opts.batchMS = std::stod(argv[++i]);
+      } else if (arg == "--pacing-ms" && i + 1 < argc) {
+	opts.pacingMS = std::stod(argv[++i]);
+      } else if (arg == "--threads" && i + 1 < argc) {
+	opts.numThreads = std::stoi(argv[++i]);
       } else if (arg == "--port" && i + 1 < argc) {
 	opts.controlPort = (uint16_t)std::stoi(argv[++i]);
       } else {
@@ -371,8 +387,6 @@ namespace nexrx {
       double samplePeriod = 1.0 / sampleRate;
       auto streamStartTime = std::chrono::steady_clock::now();
       size_t outputSample = 0;
-      std::vector<IQFrame> batch;
-      batch.reserve(32);
     
       std::ofstream dumpStage3InStream;
       if (!opts.dumpStage3InFile.empty()) {
@@ -410,6 +424,9 @@ namespace nexrx {
       uint64_t lastBytesSent = 0;
       uint64_t lastCatchUpCount = 0;
       double intervalComputeTimeS = 0.0;
+      double rfTimeS = 0.0;
+      double mixTimeS = 0.0;
+      double recTimeS = 0.0;
 
       bool streamLogged = false;
       std::cout << "[Twin] Starting session loop (Dual OSD)" << std::endl;
@@ -483,24 +500,25 @@ namespace nexrx {
     };
     updateRecomb(current_k);
 
-    constexpr int BATCH_SAMPLES = 19200; // 50ms chunk at 384 ksps
-    std::vector<double> antBufferIQ(BATCH_SAMPLES * OVERSAMPLE_RATIO * 2);
-    std::vector<double> filtI[2] = { std::vector<double>(BATCH_SAMPLES), std::vector<double>(BATCH_SAMPLES) };
-    std::vector<double> filtQ[2] = { std::vector<double>(BATCH_SAMPLES), std::vector<double>(BATCH_SAMPLES) };
+    constexpr int BASEBAND_SAMPLE_RATE = 384000;
+    int batchDurationMs = (opts.batchMS > 0.0) ? static_cast<int>(opts.batchMS) : 10;
+    int nToProcess = (BASEBAND_SAMPLE_RATE * batchDurationMs) / 1000;
+    if (nToProcess < 128) {
+      nToProcess = 128;
+    }
+    int nRfSamples = nToProcess * OVERSAMPLE_RATIO;
 
-    std::binary_semaphore semStart{0};
-    std::binary_semaphore semDone{0};
-    std::atomic<bool> workerStop{false};
+    ThreadPool pool(opts.numThreads);
+    constexpr size_t RING_CAPACITY = 65536;
+    RingBuffer<IQFrame, RING_CAPACITY> frameRing;
+    SamplePacer<RING_CAPACITY> pacer(frameRing, opts.headless ? nullptr : stream.get(), sampleRate, opts.pacingMS, 128);
+
+    std::vector<double> antBufferIQ(nRfSamples * 2);
+    std::vector<double> filtI[2] = { std::vector<double>(nToProcess), std::vector<double>(nToProcess) };
+    std::vector<double> filtQ[2] = { std::vector<double>(nToProcess), std::vector<double>(nToProcess) };
+    std::vector<IQFrame> batchFrames;
+    batchFrames.reserve(nToProcess);
     std::function<void(int)> processChannel;
-
-    std::thread workerCh1([&]() {
-      while (!workerStop.load()) {
-        semStart.acquire();
-        if (workerStop.load()) break;
-        if (processChannel) processChannel(1);
-        semDone.release();
-      }
-    });
 
     #ifndef _WIN32
     struct sched_param param;
@@ -527,6 +545,10 @@ namespace nexrx {
       }
 
       if (!headlessStreaming && !controlHandler->isStreaming()) {
+        if (pacer.isRunning()) {
+          pacer.stop();
+          frameRing.clear();
+        }
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	streamStartTime = std::chrono::steady_clock::now();
 	outputSample = 0;
@@ -555,20 +577,29 @@ namespace nexrx {
       double pgaGain = std::pow(10.0, pga.getGainDB() / 20.0);
       double modeGainScale = cpldModel.getModeGainScale();
 
-      int nToProcess = BATCH_SAMPLES; // 50ms chunk
       double chunkStartTime = (outputSample * OVERSAMPLE_RATIO) / simSampleRate;
       double oversamplePeriod = 1.0 / simSampleRate;
       
+      constexpr size_t HIGH_WATERMARK = 19200; // ~50 ms of buffered samples
+      while (frameRing.available() >= HIGH_WATERMARK) {
+        pacer.waitForSpace(HIGH_WATERMARK, std::chrono::milliseconds(5));
+        if (!headlessStreaming && !controlHandler->isStreaming()) {
+          break;
+        }
+      }
+
       auto batchComputeStart = std::chrono::steady_clock::now();
+      auto tBeforeRf = batchComputeStart;
       if (stimulusManager) {
           auto gainFunc = [&](double f) {
               return getFilterBankGain(f, filters);
           };
-          stimulusManager->generateBatch(chunkStartTime, oversamplePeriod, nToProcess * OVERSAMPLE_RATIO, 
-                                        antBufferIQ.data(), current_lo, simSampleRate, gainFunc);
+          stimulusManager->generateBatchParallel(pool, chunkStartTime, oversamplePeriod, nRfSamples, 
+                                                antBufferIQ.data(), current_lo, simSampleRate, gainFunc);
       } else {
           std::fill(antBufferIQ.begin(), antBufferIQ.end(), 0.0);
       }
+      auto tAfterRf = std::chrono::steady_clock::now();
 
       bool isCal = (controlHandler && (controlHandler->isCalStimActive() || controlHandler->isISGEnabled()));
       double fCalStim = 0.0;
@@ -645,10 +676,13 @@ namespace nexrx {
         lo_sin[ch] = locSin;
       };
 
-      semStart.release();
-      processChannel(0);
-      semDone.acquire();
+      auto tBeforeMix = std::chrono::steady_clock::now();
+      pool.parallelFor(2, [&](int ch) {
+        processChannel(ch);
+      });
+      auto tAfterMix = std::chrono::steady_clock::now();
 
+      auto tBeforeRec = tAfterMix;
       for (int s = 0; s < nToProcess; ++s) {
           if (((outputSample + s) % 3840) == 0) {
               double rm = 1.0 / std::sqrt(recombCos * recombCos + recombSin * recombSin);
@@ -713,73 +747,50 @@ namespace nexrx {
           // Update AGC with peak from this sample
           agc.processReflex(maxPeak);
 
-          batch.push_back(pk);
+          batchFrames.push_back(pk);
           outputSample++;
-
-          if (batch.size() >= 128) {
-            if (!opts.headless) {
-              stream->writeBatch(batch);
-            }
-            totalPacketsSent++;
-            totalBytesSent += sizeof(IQPacketHeader) + batch.size() * sizeof(int32_t) * 2;
-            batch.clear();
-          }
       }
 
-      if (!batch.empty()) {
-        if (!opts.headless) {
-          stream->writeBatch(batch);
-        }
-        totalPacketsSent++;
-        totalBytesSent += sizeof(IQPacketHeader) + batch.size() * sizeof(int32_t) * 2;
-        batch.clear();
+      frameRing.write(batchFrames.data(), batchFrames.size());
+      pacer.notifySpace();
+      if (!pacer.isRunning()) {
+        pacer.start();
       }
+      batchFrames.clear();
+      auto tAfterRec = std::chrono::steady_clock::now();
 
       auto batchComputeEnd = std::chrono::steady_clock::now();
       intervalComputeTimeS += std::chrono::duration<double>(batchComputeEnd - batchComputeStart).count();
-      totalRFSamples += static_cast<uint64_t>(nToProcess) * OVERSAMPLE_RATIO;
+      rfTimeS += std::chrono::duration<double>(tAfterRf - tBeforeRf).count();
+      mixTimeS += std::chrono::duration<double>(tAfterMix - tBeforeMix).count();
+      recTimeS += std::chrono::duration<double>(tAfterRec - tBeforeRec).count();
+      totalRFSamples += nRfSamples;
       totalBasebandSamples += nToProcess;
-
-      // Absolute non-drifting interval timer pacing for 50ms batch
-      uint64_t batchIndex = outputSample / nToProcess;
-      auto scheduledWake = streamStartTime + std::chrono::microseconds(batchIndex * 50000LL);
-      auto nowP = std::chrono::steady_clock::now();
-      if (scheduledWake > nowP) {
-        auto waitDuration = scheduledWake - nowP;
-        if (waitDuration > std::chrono::milliseconds(2)) {
-          std::this_thread::sleep_for(waitDuration - std::chrono::milliseconds(1));
-        }
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__)
-        while (std::chrono::steady_clock::now() < scheduledWake) {
-          asm volatile("pause" ::: "memory");
-        }
-#else
-        while (std::chrono::steady_clock::now() < scheduledWake) {
-          std::this_thread::yield();
-        }
-#endif
-      } else {
-        catchUpCount++;
-        if (nowP - scheduledWake > std::chrono::milliseconds(200)) {
-          streamStartTime = nowP - std::chrono::microseconds(batchIndex * 50000LL);
-        }
-      }
 
       auto nowStat = std::chrono::steady_clock::now();
       double statElapsed = std::chrono::duration<double>(nowStat - lastStatTime).count();
       if (statElapsed >= 1.0) {
+        uint64_t totalPacketsSent = pacer.getPacketsSent();
+        uint64_t totalBytesSent = pacer.getBytesSent();
+        uint64_t catchUpCount = pacer.getDeadlinesMissed();
+
         double rfRateMsps = static_cast<double>(totalRFSamples - lastRFSamples) / (statElapsed * 1e6);
         double bbRateKsps = static_cast<double>(totalBasebandSamples - lastBasebandSamples) / (statElapsed * 1e3);
         double pktRate = static_cast<double>(totalPacketsSent - lastPacketsSent) / statElapsed;
         double mbRate = static_cast<double>(totalBytesSent - lastBytesSent) / (statElapsed * 1e6);
         uint64_t catchUpDelta = catchUpCount - lastCatchUpCount;
         double cpuPercent = (intervalComputeTimeS / statElapsed) * 100.0;
+        double bufferMs = (static_cast<double>(frameRing.available()) * 1000.0) / sampleRate;
 
         std::cout << "[Twin Stats 1s] Stage A: RF " << std::fixed << std::setprecision(2) << rfRateMsps 
                   << " Msps, Baseband " << std::setprecision(1) << bbRateKsps 
                   << " ksps | Stage B: Net " << std::setprecision(0) << pktRate 
-                  << " pkts/s (" << std::setprecision(2) << mbRate << " MB/s) | Compute CPU: " 
-                  << std::setprecision(1) << cpuPercent << "% | Deadlines Missed: " 
+                  << " pkts/s (" << std::setprecision(2) << mbRate << " MB/s) | Buffer: " 
+                  << std::setprecision(1) << bufferMs << " ms | Compute CPU: " 
+                  << std::setprecision(1) << cpuPercent << "% (RF: " 
+                  << std::setprecision(1) << (rfTimeS / statElapsed) * 100.0 << "%, Mix: "
+                  << std::setprecision(1) << (mixTimeS / statElapsed) * 100.0 << "%, Rec: "
+                  << std::setprecision(1) << (recTimeS / statElapsed) * 100.0 << "%) | Deadlines Missed: " 
                   << catchUpDelta << " (total " << catchUpCount << ")" << std::endl;
 
         lastStatTime = nowStat;
@@ -789,15 +800,15 @@ namespace nexrx {
         lastBytesSent = totalBytesSent;
         lastCatchUpCount = catchUpCount;
         intervalComputeTimeS = 0.0;
+        rfTimeS = 0.0;
+        mixTimeS = 0.0;
+        recTimeS = 0.0;
       }
     }
     
       std::cout << "[Twin] Session ended" << std::endl;
-      workerStop.store(true);
-      semStart.release();
-      if (workerCh1.joinable()) {
-        workerCh1.join();
-      }
+      pacer.stop();
+      pool.stop();
       if (dumpStage3InStream.is_open()) dumpStage3InStream.close();
       if (dumpStage3OutStream.is_open()) dumpStage3OutStream.close();
       if (!opts.headless) {

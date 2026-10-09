@@ -20,6 +20,8 @@
 
 namespace nexrx {
 
+class ThreadPool;
+
 //======================================================================
 // Stimulus Info - metadata about a registered stimulus
 //======================================================================
@@ -120,6 +122,11 @@ public:
                      double centerHz = 0, double bandwidthHz = 0,
                      std::function<double(double)> gainFunc = nullptr) const;
 
+  void generateBatchParallel(ThreadPool& pool, double startTime, double samplePeriod,
+                             size_t count, double* outIQ,
+                             double centerHz = 0, double bandwidthHz = 0,
+                             std::function<double(double)> gainFunc = nullptr) const;
+
   //------------------------------------------------------------------
   // Control
   //------------------------------------------------------------------
@@ -156,6 +163,7 @@ private:
   std::atomic<bool> frozen{false};
   std::vector<StimulusPtr> frozenStimuli;  // Enabled stimuli only
   std::atomic<double> globalGain{1.0};
+  mutable std::vector<std::vector<double>> scratchBuffers;
 };
 
 } // namespace nexrx
