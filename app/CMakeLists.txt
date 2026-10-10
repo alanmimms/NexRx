@@ -87,7 +87,7 @@ if(NOT TARGET raylib)
   endif()
 endif()
 
-# Lua 5.4 - FetchContent pinned to v5.4.8
+# Lua 5.4 - FetchContent pinned to v5.4.9
 if(TARGET lua)
   # Target already defined
 elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../uitest/build/_deps/lua-src")
@@ -102,7 +102,7 @@ else()
   FetchContent_Declare(
     lua
     GIT_REPOSITORY https://github.com/lua/lua.git
-    GIT_TAG v5.4.8
+    GIT_TAG v5.4.9
   )
   FetchContent_GetProperties(lua)
   if(NOT lua_POPULATED)

@@ -8,11 +8,11 @@ via a 480Mb/s USB connection to a host PC.
 
 The software architecture divides responsibilities strictly to
 maintain high performance while offering maximum flexibility. The host
-application is built in C++ to handle digital signal processing (DSP)
-and real-time data constraints. The user interface, however, is driven
-entirely by Lua 5.4, utilizing Raylib and SDL2 to render an
-immediate-mode, OpenGL-accelerated GUI that operates similarly to a
-high-framerate video game UI.
+application is built in C++ to handle the last stages of digital
+signal processing (DSP) and real-time data constraints. The user
+interface, however, is driven entirely by Lua 5.4, utilizing Raylib
+and SDL2 to render an immediate-mode, OpenGL-accelerated GUI that
+operates similarly to a high-framerate video game UI.
 
 This document outlines the core concepts, data structures, and layout
 philosophies of the NexRx UI engine.
