@@ -59,6 +59,35 @@ function Spectrum:init(def)
   Widget.init(self, def)
   self.gl = GraticuleLegend.new()
   self.signalBoxWidgets = {}
+  self.dragging = false
+end
+
+function Spectrum:onEvent(event)
+  if event.type == "mouseWheel" then
+    local step = 100
+    if isCtrlDown and isCtrlDown() then step = 10000
+    elseif isShiftDown and isShiftDown() then step = 100000 end
+    local current = Model.rx.VFO.activeValue:get()
+    Model.set("rx.VFO.activeValue", current + event.delta * step)
+    return true
+  elseif event.type == "mouseButton" and event.button == "LEFT" then
+    if event.isDown then
+      self.dragging = true
+      local freq = self:getFreqAtPx(event.x)
+      Model.set("rx.VFO.activeValue", freq)
+      state.setActive(self.id)
+      return true
+    else
+      self.dragging = false
+      state.setActive(nil)
+      return true
+    end
+  elseif event.type == "mouseMotion" and self.dragging then
+    local freq = self:getFreqAtPx(event.x)
+    Model.set("rx.VFO.activeValue", freq)
+    return true
+  end
+  return Widget.onEvent(self, event)
 end
 
 function Spectrum:calcMetrics()
@@ -68,14 +97,14 @@ end
 
 function Spectrum:getHzPerPx()
   local zoom = Model.waterfall.zoom:get() or 1.0
-  local span = _G.sampleRate / zoom
+  local span = (_G.sampleRate or 384000) / zoom
   return span / self.props.w
 end
 
 function Spectrum:getFreqAtPx(px)
   local w = self.props.w
   local zoom = Model.waterfall.zoom:get() or 1.0
-  local span = _G.sampleRate / zoom
+  local span = (_G.sampleRate or 384000) / zoom
   local center = Model.spectrumCenterFreq:peek()
   return center + (px / w - 0.5) * span
 end
@@ -83,7 +112,7 @@ end
 function Spectrum:getPxAtFreq(freq)
   local w = self.props.w
   local zoom = Model.waterfall.zoom:get() or 1.0
-  local span = _G.sampleRate / zoom
+  local span = (_G.sampleRate or 384000) / zoom
   local center = Model.spectrumCenterFreq:peek()
   return (w / 2) + ((freq - center) / span) * w
 end
@@ -92,7 +121,7 @@ function Spectrum:updateKids()
   local boxes = Model.signalBoxes:get()
   local w, h = self.props.w, self.props.h
   local zoom = Model.waterfall.zoom:get() or 1.0
-  local span = _G.sampleRate / zoom
+  local span = (_G.sampleRate or 384000) / zoom
 
   -- Ensure we have one widget per model box
   for i, box in ipairs(boxes) do
@@ -133,7 +162,7 @@ function Spectrum:drawSelf(spectrumData)
   Hardware.renderSpectrum(data or {}, 0, 0, w, h)
   
   local zoom = Model.waterfall.zoom:get() or 1.0
-  local span = _G.sampleRate / zoom
+  local span = (_G.sampleRate or 384000) / zoom
   
   self.gl:draw("spec-legend", 10, 10, 100, 45, self.lwc, string.format("%.1f kHz/div", span/10000), "20 dB/div")
 end

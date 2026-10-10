@@ -240,9 +240,13 @@ function Widget:contains(x, y)
 end
 
 function Widget:setFocus()
-  if focusedWidget then focusedWidget.focused = false end
+  if focusedWidget and focusedWidget ~= self then
+    focusedWidget.focused = false
+    if focusedWidget.onBlur then focusedWidget:onBlur() end
+  end
   focusedWidget = self
   self.focused = true
+  if self.onFocus then self:onFocus() end
 end
 
 function Widget.getFocused() return focusedWidget end

@@ -70,8 +70,7 @@ function SignalBox:onEvent(event)
             -- SignalBox frequency is its center
             local newFreq = self.parent:getFreqAtPx(newBoxX + self.props.w / 2)
             if math.abs(box.frequency - newFreq) > 0.1 then
-                box.frequency = newFreq
-                -- Note: AppController watches box.frequency and will sync to HW
+                Model.set("rx.VFO.activeValue", newFreq)
             end
         end
         return true

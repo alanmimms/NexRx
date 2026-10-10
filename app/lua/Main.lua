@@ -287,8 +287,8 @@ function init()
    end
 
    local vfoDisp = FrequencyDisplay{ id = "id-rx-freq", valueObs = Model.rx.VFO.activeValue, tags = {"widget.VFOControl"}, metrics = { stick = "TLR", prefH = 40 } }
-   local spec = Spectrum{ id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 150 }, eventRedirect = vfoDisp }
-   local wf = Waterfall{ id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 200 }, eventRedirect = vfoDisp }
+   local spec = Spectrum{ id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 150 } }
+   local wf = Waterfall{ id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 200 } }
 
    rxTree = Widget.Window{
       name = "id-root-window",

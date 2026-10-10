@@ -63,6 +63,9 @@ end
 
 function FrequencyDisplay:onEvent(event)
     if event.type == "mouseWheel" then
+        if self.editing then
+            self:cancelEdit()
+        end
         local step = 100 -- Default 100 Hz
         if isCtrlDown and isCtrlDown() then step = 10000
         elseif isShiftDown and isShiftDown() then step = 100000 end
@@ -197,7 +200,16 @@ function FrequencyDisplay:cancelEdit()
     events.removeModeTag("state.FreqEntryMode")
 end
 
+function FrequencyDisplay:onBlur()
+    if self.editing then
+        self:cancelEdit()
+    end
+end
+
 function FrequencyDisplay:drawSelf(tags)
+    if self.editing and not self.focused then
+        self:cancelEdit()
+    end
     local id, w, h = self.id, self.props.w, self.props.h
     local widgetTags = {"widget.FrequencyDisplay", "id." .. id}
     if self.tags then

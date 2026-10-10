@@ -23,6 +23,7 @@
 #include "ThreadPool.hpp"
 #include "RingBuffer.hpp"
 #include "SamplePacer.hpp"
+#include "CoherenceVeto.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -79,6 +80,9 @@ namespace nexrx {
     double batchMS = 10.0;
     double pacingMS = 10.0;
     int numThreads = 0;
+    bool enableCoherenceVeto = false;
+    double vetoExponent = 2.0;
+    bool enableCal = true;
 
     double gainErr[2];
     double phaseErrRad[2];
@@ -90,8 +94,10 @@ namespace nexrx {
 	      << "  --help, -h       Show this help\n"
 	      << "  --quiet          Disable verbose command logging\n"
 	      << "  --no-stimulus    Do not load any stimulus (silent RF)\n"
-	      << "  --no-cal         Ignore calibration and use random errors\n"
+	      << "  --no-cal         Disable digital IQ imbalance calibration\n"
 	      << "  --cal-file FILE  Load hardware calibration from JSON\n"
+	      << "  --veto           Enable experimental STFT Coherence Veto\n"
+	      << "  --no-veto        Disable experimental STFT Coherence Veto (default)\n"
 	      << "  --rf FREQ        Set static RF signal frequency in MHz (default: 14.12)\n"
 	      << "  --lo FREQ        Set initial LO frequency in MHz (default: 14.20)\n"
 	      << "  --amplitude MV   Set RF signal amplitude in mV (default: 1.0)\n"
@@ -111,6 +117,8 @@ namespace nexrx {
 	      << "  --timeout SEC    Exit after SEC seconds total or idle waiting (default: forever)\n"
 	      << "  --single-session Exit after first client session ends\n"
 	      << "  --port PORT      Set TCP control port (default: 5000)\n"
+	      << "  --no-veto        Disable Dual-OSD coherence image vetoing\n"
+	      << "  --veto-exp EXP   Set coherence veto exponent (default: 2.0)\n"
 	      << std::endl;
   }
 
@@ -130,7 +138,7 @@ namespace nexrx {
       } else if (arg == "--no-stimulus") {
 	opts.noStimulus = true;
       } else if (arg == "--no-cal") {
-	opts.noCal = true;
+	opts.enableCal = false;
       } else if (arg == "--cal-file" && i + 1 < argc) {
 	opts.calFile = argv[++i];
       } else if (arg == "--rf" && i + 1 < argc) {
@@ -169,6 +177,12 @@ namespace nexrx {
 	opts.pacingMS = std::stod(argv[++i]);
       } else if (arg == "--threads" && i + 1 < argc) {
 	opts.numThreads = std::stoi(argv[++i]);
+      } else if (arg == "--veto") {
+	opts.enableCoherenceVeto = true;
+      } else if (arg == "--no-veto") {
+	opts.enableCoherenceVeto = false;
+      } else if (arg == "--veto-exp" && i + 1 < argc) {
+	opts.vetoExponent = std::stod(argv[++i]);
       } else if (arg == "--port" && i + 1 < argc) {
 	opts.controlPort = (uint16_t)std::stoi(argv[++i]);
       } else {
@@ -178,7 +192,7 @@ namespace nexrx {
       }
     }
 
-    if (opts.calFile.empty() && !opts.noCal) {
+    if (opts.calFile.empty()) {
       std::mt19937 rng(1337); // Stable seed for simulation consistency
       std::uniform_real_distribution<double> gDist(0.95, 1.05);
       std::uniform_real_distribution<double> pDist(-0.05, 0.05);
@@ -200,8 +214,12 @@ namespace nexrx {
 	std::cout << std::setw(7) << i << " | " << std::fixed << std::setprecision(1) << std::setw(7) << rej << " dBc | " << std::setw(15) << std::setprecision(3) << 20.0*std::log10(g) << " dB | " << std::setw(15) << std::setprecision(2) << p * (180.0/M_PI) << " deg" << std::endl;
       }
       std::cout << std::endl;
-    } else if (opts.noCal) {
-      std::cout << "[Twin] Simulated Hardware: Using ideal components (--no-cal specified)" << std::endl;
+    }
+
+    if (opts.enableCal) {
+      std::cout << "[Twin] DSP Pipeline: Linear IQ imbalance calibration ENABLED" << std::endl;
+    } else {
+      std::cout << "[Twin] DSP Pipeline: Linear IQ imbalance calibration DISABLED (--no-cal specified)" << std::endl;
     }
     return opts;
   }
@@ -516,6 +534,20 @@ namespace nexrx {
     std::vector<double> antBufferIQ(nRfSamples * 2);
     std::vector<double> filtI[2] = { std::vector<double>(nToProcess), std::vector<double>(nToProcess) };
     std::vector<double> filtQ[2] = { std::vector<double>(nToProcess), std::vector<double>(nToProcess) };
+    std::vector<double> s0RotI(nToProcess), s0RotQ(nToProcess);
+    std::vector<double> s1RotI(nToProcess), s1RotQ(nToProcess);
+    std::vector<double> combI(nToProcess), combQ(nToProcess);
+    CoherenceVeto<512> coherenceVeto(opts.enableCoherenceVeto, opts.vetoExponent);
+    double calGain[2] = {1.0, 1.0};
+    double calLeak[2] = {0.0, 0.0};
+    if (opts.enableCal) {
+      for (int ch = 0; ch < 2; ++ch) {
+        double gE = opts.gainErr[ch];
+        double pE = opts.phaseErrRad[ch];
+        calGain[ch] = 1.0 / (gE * std::cos(pE));
+        calLeak[ch] = std::tan(pE);
+      }
+    }
     std::vector<IQFrame> batchFrames;
     batchFrames.reserve(nToProcess);
     std::function<void(int)> processChannel;
@@ -548,6 +580,7 @@ namespace nexrx {
         if (pacer.isRunning()) {
           pacer.stop();
           frameRing.clear();
+          coherenceVeto.reset();
         }
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	streamStartTime = std::chrono::steady_clock::now();
@@ -684,71 +717,90 @@ namespace nexrx {
 
       auto tBeforeRec = tAfterMix;
       for (int s = 0; s < nToProcess; ++s) {
-          if (((outputSample + s) % 3840) == 0) {
-              double rm = 1.0 / std::sqrt(recombCos * recombCos + recombSin * recombSin);
-              recombCos *= rm; recombSin *= rm;
+        if (((outputSample + s) % 3840) == 0) {
+          double rm = 1.0 / std::sqrt(recombCos * recombCos + recombSin * recombSin);
+          recombCos *= rm;
+          recombSin *= rm;
+        }
+
+        // Dump Stage 3 input (pre-recombination 4 channels: OSD0 I/Q, OSD1 I/Q)
+        if (dumpStage3InStream.is_open() && (opts.dumpLimit == 0 || samplesDumpedIn < opts.dumpLimit)) {
+          double buf[4] = { filtI[0][s], filtQ[0][s], filtI[1][s], filtQ[1][s] };
+          dumpStage3InStream.write(reinterpret_cast<const char*>(buf), sizeof(buf));
+          samplesDumpedIn++;
+          if (opts.dumpLimit > 0 && samplesDumpedIn == opts.dumpLimit) {
+            std::cout << "[Twin] Reached Stage 3 input dump limit (" << opts.dumpLimit << " samples)" << std::endl;
+            dumpStage3InStream.flush();
           }
+        }
 
-          // Dump Stage 3 input (pre-recombination 4 channels: OSD0 I/Q, OSD1 I/Q)
-          if (dumpStage3InStream.is_open() && (opts.dumpLimit == 0 || samplesDumpedIn < opts.dumpLimit)) {
-            double buf[4] = { filtI[0][s], filtQ[0][s], filtI[1][s], filtQ[1][s] };
-            dumpStage3InStream.write(reinterpret_cast<const char*>(buf), sizeof(buf));
-            samplesDumpedIn++;
-            if (opts.dumpLimit > 0 && samplesDumpedIn == opts.dumpLimit) {
-              std::cout << "[Twin] Reached Stage 3 input dump limit (" << opts.dumpLimit << " samples)" << std::endl;
-              dumpStage3InStream.flush();
-            }
+        // DSP linear IQ imbalance calibration (STM32 on-chip calibration)
+        double calI0 = filtI[0][s];
+        double calQ0 = filtQ[0][s] * calGain[0] + calI0 * calLeak[0];
+        double calI1 = filtI[1][s];
+        double calQ1 = filtQ[1][s] * calGain[1] + calI1 * calLeak[1];
+
+        // STM32 on-chip rotation:
+        // Shift OSD0 DOWN by k: (i + j*q) * (cos - j*sin)
+        s0RotI[s] = calI0 * recombCos + calQ0 * recombSin;
+        s0RotQ[s] = calQ0 * recombCos - calI0 * recombSin;
+
+        // Shift OSD1 UP by k: (i + j*q) * (cos + j*sin)
+        s1RotI[s] = calI1 * recombCos - calQ1 * recombSin;
+        s1RotQ[s] = calQ1 * recombCos + calI1 * recombSin;
+
+        // Advance recombination phasor
+        double nextRCos = recombCos * recombCos_d - recombSin * recombSin_d;
+        double nextRSin = recombSin * recombCos_d + recombCos * recombSin_d;
+        recombCos = nextRCos;
+        recombSin = nextRSin;
+      }
+
+      if (opts.enableCoherenceVeto) {
+        coherenceVeto.processBatch(s0RotI.data(), s0RotQ.data(),
+                                   s1RotI.data(), s1RotQ.data(),
+                                   combI.data(), combQ.data(), nToProcess);
+      } else {
+        for (int s = 0; s < nToProcess; ++s) {
+          combI[s] = (s0RotI[s] + s1RotI[s]) * 0.5;
+          combQ[s] = (s0RotQ[s] + s1RotQ[s]) * 0.5;
+        }
+      }
+
+      for (int s = 0; s < nToProcess; ++s) {
+        double combValI = combI[s];
+        double combValQ = combQ[s];
+
+        // Dump Stage 3 output (post-recombination 2 channels: Combined I/Q)
+        if (dumpStage3OutStream.is_open() && (opts.dumpLimit == 0 || samplesDumpedOut < opts.dumpLimit)) {
+          double buf[2] = { combValI, combValQ };
+          dumpStage3OutStream.write(reinterpret_cast<const char*>(buf), sizeof(buf));
+          samplesDumpedOut++;
+          if (opts.dumpLimit > 0 && samplesDumpedOut == opts.dumpLimit) {
+            std::cout << "[Twin] Reached Stage 3 output dump limit (" << opts.dumpLimit << " samples)" << std::endl;
+            dumpStage3OutStream.flush();
           }
+        }
 
-          // STM32 on-chip recombination:
-          // Shift OSD0 DOWN by k: (i + j*q) * (cos - j*sin)
-          double s0_s_i = filtI[0][s] * recombCos + filtQ[0][s] * recombSin;
-          double s0_s_q = filtQ[0][s] * recombCos - filtI[0][s] * recombSin;
+        IQFrame pk;
+        pk.sequence = static_cast<uint32_t>(outputSample);
+        pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
 
-          // Shift OSD1 UP by k: (i + j*q) * (cos + j*sin)
-          double s1_s_i = filtI[1][s] * recombCos - filtQ[1][s] * recombSin;
-          double s1_s_q = filtQ[1][s] * recombCos + filtI[1][s] * recombSin;
+        constexpr double scale = 8388607.0 / 1.65;
+        auto quantize = [&](double v) {
+          double dither = noiseGens[0].next() * 2.0;
+          return static_cast<int_fast32_t>(std::clamp(std::round(v * pgaGain * scale + dither), -8388608.0, 8388607.0));
+        };
 
-          // Coherently sum both OSDs into a single orthogonal I/Q pair
-          double comb_i = (s0_s_i + s1_s_i) * 0.5;
-          double comb_q = (s0_s_q + s1_s_q) * 0.5;
+        pk.sample.i = quantize(combValI);
+        pk.sample.q = quantize(combValQ);
+        int32_t maxPeak = std::max(std::abs(pk.sample.i), std::abs(pk.sample.q));
 
-          // Dump Stage 3 output (post-recombination 2 channels: Combined I/Q)
-          if (dumpStage3OutStream.is_open() && (opts.dumpLimit == 0 || samplesDumpedOut < opts.dumpLimit)) {
-            double buf[2] = { comb_i, comb_q };
-            dumpStage3OutStream.write(reinterpret_cast<const char*>(buf), sizeof(buf));
-            samplesDumpedOut++;
-            if (opts.dumpLimit > 0 && samplesDumpedOut == opts.dumpLimit) {
-              std::cout << "[Twin] Reached Stage 3 output dump limit (" << opts.dumpLimit << " samples)" << std::endl;
-              dumpStage3OutStream.flush();
-            }
-          }
+        // Update AGC with peak from this sample
+        agc.processReflex(maxPeak);
 
-          // Advance recombination phasor
-          double nextRCos = recombCos * recombCos_d - recombSin * recombSin_d;
-          double nextRSin = recombSin * recombCos_d + recombCos * recombSin_d;
-          recombCos = nextRCos;
-          recombSin = nextRSin;
-
-          IQFrame pk;
-          pk.sequence = (uint32_t)outputSample;
-          pk.timestampNS = static_cast<uint64_t>(outputSample * 1e9 / sampleRate);
-          
-          constexpr double scale = 8388607.0 / 1.65;
-          auto quantize = [&](double v) {
-              double dither = noiseGens[0].next() * 2.0;
-              return static_cast<int_fast32_t>(std::clamp(std::round(v * pgaGain * scale + dither), -8388608.0, 8388607.0));
-          };
-
-          pk.sample.i = quantize(comb_i);
-          pk.sample.q = quantize(comb_q);
-          int32_t maxPeak = std::max(std::abs(pk.sample.i), std::abs(pk.sample.q));
-          
-          // Update AGC with peak from this sample
-          agc.processReflex(maxPeak);
-
-          batchFrames.push_back(pk);
-          outputSample++;
+        batchFrames.push_back(pk);
+        outputSample++;
       }
 
       frameRing.write(batchFrames.data(), batchFrames.size());
