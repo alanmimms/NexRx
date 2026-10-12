@@ -41,93 +41,22 @@ philosophies of the NexRx UI engine.
 
 ## Architecture Components
 
-### 1. The Widget Types and Instances
+### Theming and State (Tags)
 
-The UI differentiates strictly between a **Widget Type** (the
-definition or class) and a **Widget Instance** (the realized object in
-the tree).
-
-A Lua metatable DSL (Domain Specific Language) allows developers and
-users to construct the UI declaratively. Every hierarchy begins with a
-`Window` root node.
-
-```lua
-local WidgetInstance = {}
-WidgetInstance.__index = WidgetInstance
-
--- Defines a new widget class
-local function defineWidgetType(typeName)
-  local widgetType = { typeName = typeName }
-  
-  setmetatable(widgetType, {
-    __call = function (cls, def)
-      local instance = {
-        type = cls.typeName,
-        id = def.id or "",
-        props = def.props or {},
-        tags = def.tags or {},
-        children = def.children or {},
-        parent = nil
-      }
-      
-      local nChildren = #instance.children
-      for i = 1, nChildren do
-        instance.children[i].parent = instance
-      end
-      
-      setmetatable(instance, WidgetInstance)
-      return instance
-    end
-  })
-  
-  return widgetType
-end
-
-local Window = defineWidgetType("Window")
-local VBox = defineWidgetType("VBox")
-local Checkbox = defineWidgetType("Checkbox")
-
-```
-
-### 2. Theming and State (Tags)
-
-State is managed through a hierarchical tag system. Themes are defined
-globally using normalized RGBA color values (0.0 to 1.0). When a
-widget renders, it resolves its style by traversing its tag hierarchy
-(Local -> Container -> Window -> Global).
-
-```lua
-local function hexToRgba(hexStr)
-  local hex = string.gsub(hexStr, "#", "")
-  local hexLen = string.len(hex)
-  
-  local r = tonumber(string.sub(hex, 1, 2), 16) / 255.0
-  local g = tonumber(string.sub(hex, 3, 4), 16) / 255.0
-  local b = tonumber(string.sub(hex, 5, 6), 16) / 255.0
-  local a = 1.0
-  
-  if (hexLen == 8) then
-    a = tonumber(string.sub(hex, 7, 8), 16) / 255.0
-  end
-  
-  return { r, g, b, a }
-end
-
-local theme = {
-  default = {
-    background = { style = "fill", color = hexToRgba("#1c1c1cFF") },
-    foreground = { textColor = { 0.86, 0.86, 0.86, 1.0 }, lineColor = { 0.0, 1.0, 0.0, 1.0 } }
-  }
-}
-
-```
+State is managed, by default, through a hierarchical tag system.
+However any state value can be set to a Lua function, so this can be
+overridden. By default the state values are set to the Lua function
+that implements this hierarchical tag system. In the tag system,
+themes are defined globally using normalized RGBA color values (0.0 to
+1.0). When a widget renders, it resolves its style by traversing its
+tag hierarchy (Local -> Container -> Window -> Global).
 
 This allows a global state change (e.g., adding a `"transmitting"`
 tag) to instantly alter the appearance or behavior of deeply nested
 leaf widgets, such as checkboxes or sliders, without requiring tight
 coupling.
 
-### 3. Layout Strategies
+### Layout Strategies
 
 Layout logic is treated as a swappable strategy applied to containers.
 The layout function interprets a child's constraints (e.g., edge
@@ -146,34 +75,11 @@ widest of the kids.
 #### Generic Sticking and Stretching
 
 For standard UI elements (buttons, panels), widgets declare their
-adhesion to container boundaries via the `props.stick` table.
+adhesion to container boundaries via the `props.stick` table. This
+allows `stick.left` and/or `stick.right` and equivalent for top and
+bottom to be used to keep a given widget attached to its adjacent
+neighbor.
 
-```lua
-local function applyHorizontalSticking(container)
-  local nChildren = #container.children
-  local parentWidth = container.props.width
-  local currentX = container.props.x
-  
-  for i = 1, nChildren do
-    local child = container.children[i]
-    local stick = child.props.stick or {}
-    local padLeft = child.props.padLeft or 0
-    local padRight = child.props.padRight or 0
-    
-    if (stick.left and stick.right) then
-      child.props.width = parentWidth - padLeft - padRight
-      child.props.x = currentX + padLeft
-    elseif (stick.left) then
-      child.props.x = currentX + padLeft
-    elseif (stick.right) then
-      child.props.x = (currentX + parentWidth) - child.props.width - padRight
-    end
-    
-    currentX = currentX + child.props.width + padLeft + padRight
-  end
-end
-
-```
 
 #### Proportional Mapping (Data-Driven Placement)
 
@@ -182,29 +88,8 @@ demodulation target on the spectrum, positioning is mapped directly
 from the domain data (frequency) to screen space, bypassing
 traditional flex or grid rules.
 
-```lua
-local function spectrumLayout(container)
-  local fMin = container.props.freqMin
-  local fMax = container.props.freqMax
-  local span = fMax - fMin
-  local nChildren = #container.children
-  
-  for i = 1, nChildren do
-    local child = container.children[i]
-    if (child.type == "SignalBox") then
-      local startFreq = child.props.centerFreq - (child.props.bandwidth / 2.0)
-      local xRatio = (startFreq - fMin) / span
-      local wRatio = child.props.bandwidth / span
-      
-      child.props.x = container.props.x + (xRatio * container.props.width)
-      child.props.width = wRatio * container.props.width
-    end
-  end
-end
 
-```
-
-### 4. The C++ Bridge
+### The C++ Bridge
 
 The C++ host provides primitive rendering functions and handles
 high-throughput data. To maintain performance and follow project
@@ -214,33 +99,6 @@ allocations during the render loop.
 
 Functions are generalized, and templates are reserved strictly for
 handling varying DSP data types.
-
-```cpp
-class RenderBridge {
-public:
-  void drawWidgetBorder(const char* widgetId, int x, int y, int w, int h, const char* borderStyle) {
-    constexpr int borderThickness = 2; 
-    
-    if (strcmp(borderStyle, "dashed") == 0) {
-      // Execute Raylib dashed line draw
-    } else if (strcmp(borderStyle, "solid") == 0) {
-      // Execute Raylib solid line draw
-    }
-  }
-
-  template <typename DSP_PAYLOAD>
-  void drawWaterfallRegion(const char* widgetId, int x, int y, int w, int h, const DSP_PAYLOAD* dspData, int dataSize) {
-    constexpr int bytesPerPixel = 4;
-    constexpr int textureWidth = 1024;
-    constexpr int maxBufferSize = textureWidth * 1024 * bytesPerPixel; 
-    
-    for (int i = 0; i < dataSize; ++i) {
-      // Map dspData[i] to waterfall texture and render via Raylib
-    }
-  }
-};
-
-```
 
 # UI Notes
 * A signal box is a unique bandwidth, frequency, and demodulation mode
@@ -293,3 +151,18 @@ public:
   * Change to bandwidth or height of focus.
   * Change to waterfall split or zoom.
 * Control-Y redoes a mistaken undo operation.
+
+* "Auto-tune mode", which is probably enabled or disabled or applied
+  when a modifier key is held down when creating a new signal box,
+  tunes the frequency precisely to match the signal under the click.
+  The signal's modulation mode is determined automatically.
+
+  * CW sets the frequency so the signal's tone is the user's preferred
+    sidetone frequency.
+
+  * Single sideband automatically chooses the right sideband, sets the
+    frequency to the precise carrier frequency of the signal.
+	* Should this update bandwidth to match signal?
+
+  * AM and FM modes tune to center the signal's carrier and modulation
+    in the signalbox passband.
