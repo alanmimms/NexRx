@@ -1,4 +1,4 @@
-# NexRx UI Architecture Guide
+NexRx UI Architecture Guide
 
 ## Overview
 
@@ -241,3 +241,55 @@ public:
 };
 
 ```
+
+# UI Notes
+* A signal box is a unique bandwidth, frequency, and demodulation mode
+  to be applied to a signal on the waterfall.
+  
+* Consider flipping time to horizontal.
+
+* Demodulation focus (or simply focus) is current signal box the
+  receiver's audio and S meter are focused on.
+  * There may be any (reasonable) number of signal boxes, but only one
+    can be the focused at once.
+  * TAB key switches among the signal boxes, and shift-TAB switches
+    among them in the reverse order.
+
+* Make S-meter be vertical along the right or left edge of the live
+  waveform upper part of the waterfall with decaying peak and text
+  below showing peak S*s*+*d*dB reading. Text display dB value isn't
+  limited by size of graphical area.
+
+* Drag bars appear when cursor hovers over focus box to:
+  * Drag bandwidth left or right edge.
+  * Drag top to change waterfall vertical scale.
+
+* Drag bars appear when cursor hovers over edges of waterfall.
+  * Left and right edges allow scaling up and down (zoom) of
+    waterfall's view of passband.
+  * At seam between live waterfall signal wave and waterfall below,
+    allows adjusting height of split of display.
+	
+* Legend box shows waterfall grid units:
+  * Vertical scale (dB, 3dB, etc.) in live upper portion.
+  * Vertical scale (10ms, 100ms, 1s, 10s) in history lower portion.
+  * Horizontal scale (1, 10, 100, 1k, 10k, 100k, 1M, 10M).
+	
+* When cursor is over waterfall history, cursor changes shape to
+  indicate it's possible to play back history buffered signal.
+
+* When cursor is over signals box not focused, cursor changes shape to
+  a target to show click would focus at that point's frequency.
+  * When cursor is over area not currently in a signal box, cursor
+    changes shape to show a signal box can be created there.
+  * If shift is held down, a new signal box is created by clicking.
+  * If shift is not held down, current signal box is abandoned and new
+    frequency becomes the new focused signal box.
+  * Some keystroke (control-Z?) undoes this effect to allow a mistaken
+    click to be undone.
+
+* Control-Z undoes:
+  * Signal box change or creation.
+  * Change to bandwidth or height of focus.
+  * Change to waterfall split or zoom.
+* Control-Y redoes a mistaken undo operation.
