@@ -4,6 +4,8 @@
 #include <zephyr/display/cfb.h>
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
+
 
 #define OLED_NODE DT_NODELABEL(ssd1306)
 
@@ -40,35 +42,40 @@ int main(void) {
   int res = gpio_pin_get_raw(resPort, resPin);
   printk("Early GPIO pin states: NSS=%d DC=%d RES=%d\n", nss, dc, res);
 
-  st = cfb_framebuffer_clear(display, true);
-  printk("Framebuffer cleared %d\n", st);
+  uint64_t startT = k_cycle_get_64();
 
-  static char msg[] =
-    "0123456789AB"
-    " Line2      "
-    "  Line3     "
-    "   Line4    ";
+#define MAYBE_PRINTK while(0)
+  #define NITERS 1000
+
+  for (int k=NITERS; --k; ) {
+    st = cfb_framebuffer_clear(display, true);
+    MAYBE_PRINTK("Framebuffer cleared %d\n", st);
+
+    static char msg[] =
+      "0123456789AB"
+      " Line2      "
+      "  Line3     "
+      "   Line4    ";
     
-  st = cfb_print(display, msg, 0, 0);
-  printk("Framebuffer string printed %d\n", st);
+    st = cfb_print(display, msg, 0, 0);
+    MAYBE_PRINTK("Framebuffer string printed %d\n", st);
 
-  static const struct cfb_position cirPos = {64, 32};
+    static const struct cfb_position cirPos = {64, 32};
   
-  st = cfb_draw_circle(display, &cirPos, 31);
-  printk("Framebuffer draw circle %d\n", st);
+    st = cfb_draw_circle(display, &cirPos, 31);
+    MAYBE_PRINTK("Framebuffer draw circle %d\n", st);
 
-#if 0
-  st = cfb_invert_area(display, 3, 3, 123, 61);
-  printk("Framebuffer invert area %d\n", st);
-#endif
+    int h = cfb_get_display_parameter(display, CFB_DISPLAY_HEIGHT);
+    int w = cfb_get_display_parameter(display, CFB_DISPLAY_WIDTH);
+    int ppt = cfb_get_display_parameter(display, CFB_DISPLAY_PPT);
+    int rows = cfb_get_display_parameter(display, CFB_DISPLAY_ROWS);
+    int cols = cfb_get_display_parameter(display, CFB_DISPLAY_COLS);
+    int nFonts = cfb_get_numof_fonts(display);
+    MAYBE_PRINTK("Framebuffer h=%d w=%d ppt=%d rows=%d cols=%d nFonts=%d\n", h, w, ppt, rows, cols, nFonts);
+  }
 
-  int h = cfb_get_display_parameter(display, CFB_DISPLAY_HEIGHT);
-  int w = cfb_get_display_parameter(display, CFB_DISPLAY_WIDTH);
-  int ppt = cfb_get_display_parameter(display, CFB_DISPLAY_PPT);
-  int rows = cfb_get_display_parameter(display, CFB_DISPLAY_ROWS);
-  int cols = cfb_get_display_parameter(display, CFB_DISPLAY_COLS);
-  int nFonts = cfb_get_numof_fonts(display);
-  printk("Framebuffer h=%d w=%d ppt=%d rows=%d cols=%d nFonts=%d\n", h, w, ppt, rows, cols, nFonts);
+  uint64_t endT = k_cycle_get_64();
+  printk("Time for %d iterations: %ums\n", NITERS, (unsigned) k_cyc_to_ms_near64(endT - startT));
 
   st = cfb_framebuffer_finalize(display);
   printk("Framebuffer finalized %d\n", st);
