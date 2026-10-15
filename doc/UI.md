@@ -101,22 +101,30 @@ Functions are generalized, and templates are reserved strictly for
 handling varying DSP data types.
 
 # UI Notes
+
+## Terminology
+
 * A signal box is a unique bandwidth, frequency, and demodulation mode
   to be applied to a signal on the waterfall.
-  
-* Consider flipping time to horizontal.
-
-* Demodulation focus (or simply focus) is current signal box the
-  receiver's audio and S meter are focused on.
   * There may be any (reasonable) number of signal boxes, but only one
     can be the focused at once.
   * TAB key switches among the signal boxes, and shift-TAB switches
     among them in the reverse order.
+  * Demodulation focus (or simply focus) is current signal box the
+    receiver's audio and S meter are focused on.
+
+* The Waterfall is also called the River, which flows from the right
+  toward the left.
+
+## Layout
 
 * Make S-meter be vertical along the right or left edge of the live
   waveform upper part of the waterfall with decaying peak and text
   below showing peak S*s*+*d*dB reading. Text display dB value isn't
   limited by size of graphical area.
+
+
+## Mouse Signal Manipulation
 
 * Drag bars appear when cursor hovers over focus box to:
   * Drag bandwidth left or right edge.
@@ -128,11 +136,16 @@ handling varying DSP data types.
   * At seam between live waterfall signal wave and waterfall below,
     allows adjusting height of split of display.
 	
+
+## Waterfall Legend
+
 * Legend box shows waterfall grid units:
   * Vertical scale (dB, 3dB, etc.) in live upper portion.
   * Vertical scale (10ms, 100ms, 1s, 10s) in history lower portion.
   * Horizontal scale (1, 10, 100, 1k, 10k, 100k, 1M, 10M).
 	
+## Cursor Shape
+
 * When cursor is over waterfall history, cursor changes shape to
   indicate it's possible to play back history buffered signal.
 
@@ -146,11 +159,15 @@ handling varying DSP data types.
   * Some keystroke (control-Z?) undoes this effect to allow a mistaken
     click to be undone.
 
+## Undo
+
 * Control-Z undoes:
   * Signal box change or creation.
   * Change to bandwidth or height of focus.
   * Change to waterfall split or zoom.
 * Control-Y redoes a mistaken undo operation.
+
+## Auto Tune Mode
 
 * "Auto-tune mode", which is probably enabled or disabled or applied
   when a modifier key is held down when creating a new signal box,
@@ -166,3 +183,36 @@ handling varying DSP data types.
 
   * AM and FM modes tune to center the signal's carrier and modulation
     in the signalbox passband.
+
+## Scrolling and Zooming
+
+* Scrolling slides current signal box up and down in frequency.
+* Zooming changes bandwidth displayed, resizing frequency ruler.
+* Zooming with shift key changes time displayed, resizing time grid.
+
+## Context Menu
+
+* Right click on frequency ruler gets you popup to change frequency
+  manually and to change band.
+  
+## Keyboard Shortcuts
+
+* TAB moves between signal boxes, and shift-TAB moves in the opposite order.
+
+* ENTER brings up the ruler context menu dialog to change frequency
+  manually and/or select a different band.
+
+* Control-Z undo.
+* Control-Y redo.
+
+* M is audio MUTE toggle.
+
+* Arrow up and down change volume level.
+
+* Arrow left and right allow history audio playback forward from a
+  given point moved by the arrow direction in steps of 25% of a time
+  grid square.
+
+## Possibilities
+
+* Consider flipping time to horizontal.
