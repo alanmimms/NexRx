@@ -1,0 +1,12 @@
+# Copyright (c) 2026 Starview Labs (starviewlabs.com)
+# SPDX-License-Identifier: Apache-2.0
+
+title: Ultrachip UC1609 dot-matrix LCD controller on MIPI-DBI bus
+
+description: |
+    The Ultrachip UC1609 is a monochrome Dot-Matrix LCD controller
+    with a maximum 192x64 resolution.
+
+compatible: "ultrachip,uc1609"
+
+include: ["ultrachip,uc1609-common.yaml", "mipi-dbi-spi-device.yaml"]

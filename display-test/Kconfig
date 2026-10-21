@@ -1,0 +1,33 @@
+# Kconfig
+mainmenu "Display Configuration"
+
+# Source Zephyr's standard base symbols
+source "Kconfig.zephyr"
+
+menu "Display Selection"
+
+choice APP_DISPLAY_TYPE
+    prompt "Active SPI OLED or LCD Display Controller"
+    default APP_DISPLAY_UC1609
+
+config APP_DISPLAY_SSD1306
+    bool "Solomon Systech SSD1306"
+    select DISPLAY
+    select MIPI_DBI
+    select SSD1306
+
+config APP_DISPLAY_SH1106
+    bool "Sino Wealth SH1106"
+    select DISPLAY
+    select MIPI_DBI
+    select SH1106
+
+config APP_DISPLAY_UC1609
+    bool "UltraChip UC1609"
+    select DISPLAY
+    select MIPI_DBI
+    select UC1609
+
+endchoice
+
+endmenu

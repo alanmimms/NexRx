@@ -1,0 +1,23 @@
+if SHIELD_DISPLAY_UC1609
+config DISPLAY
+    default y
+config UC1609
+    bool
+    default y
+endif
+
+if SHIELD_DISPLAY_SSD1306
+config DISPLAY
+    default y
+config SSD1306
+    bool
+    default y
+endif
+
+if SHIELD_DISPLAY_SH1106
+config DISPLAY
+    default y
+config SH1106
+    bool
+    default y
+endif

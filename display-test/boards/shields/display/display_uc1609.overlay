@@ -1,0 +1,28 @@
+/ {
+	chosen {
+		zephyr,display = &disp;
+	};
+
+	display_header: display-header {
+		compatible = "zephyr,gpio-nexus";
+		#gpio-cells = <2>;
+		gpio-map-mask = <0xffffffff 0x0>;
+		gpio-map-pass-thru = <0x0 0xffffffff>;
+	};
+};
+
+
+&spi1 {
+	status = "okay";
+
+	disp: display@0 {
+		compatible = "ultrachip,uc1609";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+		width = <192>;
+		height = <64>;
+
+		data-cmd-gpios = <&display_header 1 GPIO_ACTIVE_HIGH>;
+		reset-gpios    = <&display_header 2 GPIO_ACTIVE_LOW>;
+	};
+};

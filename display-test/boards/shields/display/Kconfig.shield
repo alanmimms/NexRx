@@ -1,0 +1,8 @@
+config SHIELD_DISPLAY_UC1609
+    def_bool $(shields_list_contains,display_uc1609)
+
+config SHIELD_DISPLAY_SSD1306
+    def_bool $(shields_list_contains,display_ssd1306)
+
+config SHIELD_DISPLAY_SH1106
+    def_bool $(shields_list_contains,display_sh1106)
