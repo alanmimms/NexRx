@@ -4,561 +4,338 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(display_uc1609, CONFIG_DISPLAY_LOG_LEVEL);
+#define DT_DRV_COMPAT zephyr_uc1609
 
-#include <string.h>
 #include <zephyr/device.h>
-#include <zephyr/init.h>
 #include <zephyr/drivers/display.h>
-#include <zephyr/drivers/i2c.h>
-#include <zephyr/drivers/mipi_dbi.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/init.h>
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
-#include "display_uc1609_regs.h"
+LOG_MODULE_REGISTER(uc1609, CONFIG_UC1609_LOG_LEVEL);
 
-struct uc1609_dbi {
-	const struct device *mipi_dev;
-	const struct mipi_dbi_config dbi_config;
-};
+#if defined(CONFIG_UC1609_LOG_LEVEL_DBG) || false
+#define UC_DBG(fmt, ...) printk("[uc1609_dbg] " fmt "\n", ##__VA_ARGS__)
+#define DBGRAW(fmt, ...) printk(fmt, ##__VA_ARGS__)
+#else
+#define UC_DBG(fmt, ...) do {} while (0)
+#define DBGRAW(fmt, ...) do {} while (0)
+#endif
 
-union uc1609_bus {
-	struct i2c_dt_spec i2c;
-	struct uc1609_dbi dbi;
-};
 
-typedef bool (*uc1609_bus_ready_fn)(const struct device *dev);
-typedef int (*uc1609_write_cmd_bus_fn)(const struct device *dev, const uint8_t *buf, size_t len);
-typedef int (*uc1609_write_pixels_bus_fn)(const struct device *dev, const uint8_t *buf, size_t len);
-typedef void (*uc1609_release_bus_fn)(const struct device *dev);
-typedef int (*uc1609_reset_fn)(const struct device *dev);
-typedef const char *(*uc1609_bus_name_fn)(const struct device *dev);
+/* UC1609 Command Set */
+#define UC1609_CMD_SET_COL_ADDR_LSB     0x00
+#define UC1609_CMD_SET_COL_ADDR_MSB     0x10
+#define UC1609_CMD_SET_SCROLL_LINE      0x40
+#define UC1609_CMD_SET_PAGE_ADDR        0xB0
+
+#define UC1609_CMD_SET_POWER_CONTROL    0x28
+#define UC1609_CMD_SET_VBIAS_POT        0x81
+#define UC1609_CMD_SET_BIAS_RATIO       0xEB
+
+#define UC1609_CMD_SET_RAM_ADDR_CTRL    0x88
+#define UC1609_CMD_SET_ALL_PIX_ON       0xA4
+#define UC1609_CMD_SET_ALL_PIX_NORMAL	0xA5
+
+#define UC1609_CMD_SET_DISP_OFF		0xAE
+#define UC1609_CMD_SET_DISP_ON		0xAF
+
+#define UC1609_CMD_SYSTEM_RESET         0xE2
+
+#define UC1609_PAGES_PER_ROW            8
 
 struct uc1609_config {
-	union uc1609_bus bus;
-	uc1609_bus_ready_fn bus_ready;
-	uc1609_write_cmd_bus_fn write_cmd_bus;
-	uc1609_write_pixels_bus_fn write_pixels_bus;
-	uc1609_release_bus_fn release_bus;
-	uc1609_reset_fn reset;
-	uc1609_bus_name_fn bus_name;
-	uint16_t height;
-	uint16_t width;
-	uint8_t column_offset;
-	uint8_t line_offset;
-	uint8_t regulation_ratio;
-	bool com_invdir;
-	bool segment_invdir;
-	bool inversion_on;
-	bool bias;
+  struct spi_dt_spec spi;
+  struct gpio_dt_spec dc;
+  struct gpio_dt_spec reset;
+  uint16_t width;
+  uint16_t height;
 };
 
 struct uc1609_data {
-	enum display_pixel_format pf;
+  uint8_t contrast;
 };
 
-#if DT_HAS_COMPAT_ON_BUS_STATUS_OKAY(ultrachip_uc1609, i2c)
-
-static bool uc1609_bus_ready_i2c(const struct device *dev)
+static int uc1609_write_cmd(const struct device *dev, uint8_t cmd)
 {
-	const struct uc1609_config *config = dev->config;
+  const struct uc1609_config *config = dev->config;
+  struct spi_buf buf = {
+    .buf = &cmd,
+    .len = sizeof(cmd)
+  };
+  struct spi_buf_set tx = {
+    .buffers = &buf,
+    .count = 1
+  };
 
-	return i2c_is_ready_dt(&config->bus.i2c);
+  UC_DBG("CMD: 0x%02X", cmd);
+
+  /* D/C low for command */
+  gpio_pin_set_dt(&config->dc, 0);
+  int st = spi_write_dt(&config->spi, &tx);
+  if (st < 0) LOG_ERR("spi_write_dt failed: %d\n", st);
+  return st;
 }
 
-static int uc1609_write_cmd_bus_i2c(const struct device *dev, const uint8_t *buf, size_t len)
+static int uc1609_write_data(const struct device *dev, const uint8_t *data, size_t len)
 {
-	const struct uc1609_config *config = dev->config;
+  const struct uc1609_config *config = dev->config;
+  struct spi_buf buf = {
+    .buf = (void *)data,
+    .len = len
+  };
+  struct spi_buf_set tx = {
+    .buffers = &buf,
+    .count = 1
+  };
 
-	return i2c_burst_write_dt(&config->bus.i2c, UC1609_CONTROL_ALL_BYTES_CMD, buf, len);
+  DBGRAW("DATA [%zu bytes]:", (unsigned) len);
+
+  /* Truncate hex dump to first 16 or 32 bytes to avoid stalling the UART */
+  const size_t dumpLen = (len > 32) ? 32 : len;
+  //  LOG_HEXDUMP_DBG(data, dumpLen, "Data head:");
+  for (int k=0; k < dumpLen; ++k) DBGRAW(" %02X", data[k]);
+  DBGRAW("\n");
+
+  /* D/C high for display RAM data */
+  gpio_pin_set_dt(&config->dc, 1);
+  int st = spi_write_dt(&config->spi, &tx);
+  if (st < 0) LOG_ERR("spi_write_dt failed: %d\n", st);
+  return st;
 }
 
-static int uc1609_write_pixels_bus_i2c(const struct device *dev, const uint8_t *buf, size_t len)
+static int uc1609_set_contrast(const struct device *dev, uint8_t contrast)
 {
-	const struct uc1609_config *config = dev->config;
-
-	return i2c_burst_write_dt(&config->bus.i2c, UC1609_CONTROL_ALL_BYTES_DATA, buf, len);
+  int ret = uc1609_write_cmd(dev, UC1609_CMD_SET_VBIAS_POT);
+  if (ret < 0) {
+    return ret;
+  }
+  return uc1609_write_cmd(dev, contrast);
 }
 
-static const char *uc1609_bus_name_i2c(const struct device *dev)
+static int uc1609_blanking_on(const struct device *dev)
 {
-	const struct uc1609_config *config = dev->config;
-
-	return config->bus.i2c.bus->name;
+  int ret = uc1609_write_cmd(dev, UC1609_CMD_SET_DISP_OFF);
+  //  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_ALL_PIX_ON);
+  return ret;
 }
 
-static int uc1609_reset_i2c(const struct device *dev)
+static int uc1609_blanking_off(const struct device *dev)
 {
-	/* do nothing */
-	return 0;
-}
-
-static void uc1609_release_bus_i2c(const struct device *dev)
-{
-	/* do nothing */
-}
-
-#endif
-
-#if DT_HAS_COMPAT_ON_BUS_STATUS_OKAY(ultrachip_uc1609, mipi_dbi)
-
-static bool uc1609_bus_ready_dbi(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-
-	return device_is_ready(config->bus.dbi.mipi_dev);
-}
-
-static int uc1609_write_cmd_bus_dbi(const struct device *dev, const uint8_t *buf, size_t len)
-{
-	const struct uc1609_config *config = dev->config;
-	int ret = 0;
-
-	for (size_t i = 0; i < len; i++) {
-		ret = mipi_dbi_command_write(config->bus.dbi.mipi_dev, &config->bus.dbi.dbi_config,
-					buf[i], NULL, 0);
-		if (ret) {
-			return ret;
-		}
-	}
-	mipi_dbi_release(config->bus.dbi.mipi_dev, &config->bus.dbi.dbi_config);
-
-	return ret;
-}
-
-static int uc1609_write_pixels_bus_dbi(const struct device *dev, const uint8_t *buf, size_t len)
-{
-	const struct uc1609_config *config = dev->config;
-	struct display_buffer_descriptor mipi_desc;
-	int ret;
-
-	mipi_desc.height = 8;
-	mipi_desc.width = len;
-	mipi_desc.pitch = len;
-	mipi_desc.buf_size = len;
-
-	ret = mipi_dbi_write_display(config->bus.dbi.mipi_dev, &config->bus.dbi.dbi_config,
-				     buf, &mipi_desc, PIXEL_FORMAT_MONO01);
-
-	return ret;
-}
-
-static const char *uc1609_bus_name_dbi(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-
-	return config->bus.dbi.mipi_dev->name;
-}
-
-static int uc1609_reset_dbi(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-	int err;
-
-	err = mipi_dbi_reset(config->bus.dbi.mipi_dev, UC1609_RESET_DELAY);
-	if (err < 0) {
-		LOG_ERR("Failed to reset device!");
-	}
-
-	return err;
-}
-
-static void uc1609_release_bus_dbi(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-
-	mipi_dbi_release(config->bus.dbi.mipi_dev, &config->bus.dbi.dbi_config);
-}
-
-#endif
-
-static inline bool uc1609_bus_ready(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-
-	return config->bus_ready(dev);
-}
-
-static inline int uc1609_write_cmd_bus(const struct device *dev, const uint8_t *buf, size_t len)
-{
-	const struct uc1609_config *config = dev->config;
-
-	return config->write_cmd_bus(dev, buf, len);
-}
-
-static inline int uc1609_write_pixels_bus(const struct device *dev, const uint8_t *buf, size_t len)
-{
-	const struct uc1609_config *config = dev->config;
-
-	return config->write_pixels_bus(dev, buf, len);
-}
-
-static inline void release_bus(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-
-	config->release_bus(dev);
-}
-
-static inline int uc1609_hw_reset(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-
-	return config->reset(dev);
-}
-
-static inline int uc1609_set_panel_orientation(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-	uint8_t cmd_buf[] = {(config->segment_invdir ? UC1609_SET_SEGMENT_MAP_FLIPPED
-						     : UC1609_SET_SEGMENT_MAP_NORMAL),
-			     (config->com_invdir ? UC1609_SET_COM_OUTPUT_SCAN_FLIPPED
-						 : UC1609_SET_COM_OUTPUT_SCAN_NORMAL)};
-
-	return uc1609_write_cmd_bus(dev, cmd_buf, sizeof(cmd_buf));
-}
-
-static inline int uc1609_set_hardware_config(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-	int ret;
-	uint8_t cmd_buf[1];
-
-	cmd_buf[0] = UC1609_SET_BIAS | (config->bias ? 1 : 0);
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, 1);
-	if (ret < 0) {
-		return ret;
-	}
-
-	cmd_buf[0] = UC1609_POWER_CONTROL | UC1609_POWER_CONTROL_VB;
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, 1);
-	if (ret < 0) {
-		return ret;
-	}
-
-	cmd_buf[0] = UC1609_POWER_CONTROL | UC1609_POWER_CONTROL_VB | UC1609_POWER_CONTROL_VR;
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, 1);
-	if (ret < 0) {
-		return ret;
-	}
-
-	cmd_buf[0] = UC1609_POWER_CONTROL | UC1609_POWER_CONTROL_VB | UC1609_POWER_CONTROL_VR |
-		     UC1609_POWER_CONTROL_VF;
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, 1);
-	if (ret < 0) {
-		return ret;
-	}
-
-	cmd_buf[0] = UC1609_SET_REGULATION_RATIO | (config->regulation_ratio & 0x7);
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, 1);
-	if (ret < 0) {
-		return ret;
-	}
-
-	cmd_buf[0] = UC1609_LINE_SCROLL | (config->line_offset & 0x3F);
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, 1);
-	if (ret < 0) {
-		return ret;
-	}
-
-	return ret;
-}
-
-static int uc1609_resume(const struct device *dev)
-{
-	uint8_t cmd_buf[] = {
-		UC1609_DISPLAY_ALL_PIXEL_NORMAL,
-		UC1609_DISPLAY_ON,
-	};
-
-	return uc1609_write_cmd_bus(dev, cmd_buf, sizeof(cmd_buf));
-}
-
-static int uc1609_suspend(const struct device *dev)
-{
-	uint8_t cmd_buf[] = {
-		UC1609_DISPLAY_OFF,
-		UC1609_DISPLAY_ALL_PIXEL_ON,
-	};
-
-	return uc1609_write_cmd_bus(dev, cmd_buf, sizeof(cmd_buf));
-}
-
-static int uc1609_write_default(const struct device *dev, const uint16_t x, const uint16_t y,
-				const uint8_t *buf, const size_t buf_len)
-{
-	const struct uc1609_config *config = dev->config;
-	int ret;
-	uint8_t cmd_buf[3];
-	uint16_t column = x + config->column_offset;
-
-	cmd_buf[0] = UC1609_COLUMN_LSB | (column & 0xF);
-	cmd_buf[1] = UC1609_COLUMN_MSB | ((column >> 4) & 0xF);
-	cmd_buf[2] = UC1609_PAGE | (y >> 3);
-
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, sizeof(cmd_buf));
-	if (ret < 0) {
-		return ret;
-	}
-
-	return uc1609_write_pixels_bus(dev, buf, buf_len);
-}
-
-static int uc1609_write_desc(const struct device *dev, const uint16_t x, const uint16_t y,
-			     const struct display_buffer_descriptor *desc, const void *buf,
-			     const size_t buf_len)
-{
-	int ret = 0;
-
-	for (int i = 0; i < desc->height / 8; i++) {
-		ret = uc1609_write_default(dev, x, y + (i << 3),
-					   ((const uint8_t *)buf + i * desc->pitch), desc->pitch);
-		if (ret < 0) {
-			return ret;
-		}
-	}
-
-	release_bus(dev);
-
-	return ret;
+  int ret = uc1609_write_cmd(dev, UC1609_CMD_SET_DISP_ON);
+  //  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_ALL_PIX_NORMAL);
+  return ret;
 }
 
 static int uc1609_write(const struct device *dev, const uint16_t x, const uint16_t y,
-			const struct display_buffer_descriptor *desc, const void *buf)
+                        const struct display_buffer_descriptor *desc, const void *buf)
 {
-	size_t buf_len;
+  const struct uc1609_config *config = dev->config;
+  const uint8_t *pixel_data = buf;
+  size_t bytes_per_page = desc->width;
+  uint8_t start_page = y / UC1609_PAGES_PER_ROW;
+  uint8_t total_pages = (desc->height + UC1609_PAGES_PER_ROW - 1) / UC1609_PAGES_PER_ROW;
 
-	if (desc->pitch < desc->width) {
-		LOG_ERR("Pitch is smaller than width");
-		return -EINVAL;
-	}
+  if (desc->pitch != desc->width) {
+    LOG_ERR("Unsupported pitch %u != width %u", desc->pitch, desc->width);
+    return -EINVAL;
+  }
 
-	buf_len = MIN(desc->buf_size, desc->height * desc->width / 8);
-	if (buf == NULL || buf_len == 0U) {
-		LOG_ERR("Display buffer is not available");
-		return -EINVAL;
-	}
+  if ((x + desc->width > config->width) || (y + desc->height > config->height)) {
+    LOG_ERR("Buffer boundary exceeds display limits");
+    return -EINVAL;
+  }
 
-	if (desc->pitch > desc->width) {
-		LOG_ERR("Unsupported mode");
-		return -EINVAL;
-	}
+  int ret = uc1609_write_cmd(dev, UC1609_CMD_SET_PAGE_ADDR | (start_page & 0x0F));
+  if (ret < 0) {
+    return ret;
+  }
 
-	if ((y & 0x7) != 0U) {
-		LOG_ERR("Y coordinate must be aligned on page boundary");
-		return -EINVAL;
-	}
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_LSB | (x & 0x0F));
+  if (ret < 0) {
+    return ret;
+  }
 
-	LOG_DBG("x %u, y %u, pitch %u, width %u, height %u, buf_len %u", x, y, desc->pitch,
-		desc->width, desc->height, buf_len);
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_MSB | ((x >> 4) & 0x0F));
+  if (ret < 0) {
+    return ret;
+  }
 
-	return uc1609_write_desc(dev, x, y, desc, buf, buf_len);
-}
+  for (unsigned page = 0; page < total_pages; page++) {
+    ret = uc1609_write_data(dev, pixel_data, bytes_per_page);
+    if (ret < 0) {
+      return ret;
+    }
 
-static int uc1609_set_contrast(const struct device *dev, const uint8_t contrast)
-{
-	uint8_t cmd_buf[] = {
-		UC1609_SET_CONTRAST_CTRL,
-		contrast,
-	};
+    pixel_data += bytes_per_page;
+  }
 
-	return uc1609_write_cmd_bus(dev, cmd_buf, sizeof(cmd_buf));
+  return 0;
 }
 
 static void uc1609_get_capabilities(const struct device *dev, struct display_capabilities *caps)
 {
-	const struct uc1609_config *config = dev->config;
-	struct uc1609_data *data = dev->data;
+  const struct uc1609_config *config = dev->config;
 
-	caps->x_resolution = config->width;
-	caps->y_resolution = config->height;
-	caps->supported_pixel_formats = PIXEL_FORMAT_MONO10 | PIXEL_FORMAT_MONO01;
-	caps->current_pixel_format = data->pf;
-	caps->screen_info = SCREEN_INFO_MONO_VTILED;
-	caps->current_orientation = DISPLAY_ORIENTATION_NORMAL;
+  memset(caps, 0, sizeof(struct display_capabilities));
+  caps->x_resolution = config->width;
+  caps->y_resolution = config->height;
+  caps->supported_pixel_formats = PIXEL_FORMAT_MONO01 | PIXEL_FORMAT_MONO10;
+  caps->current_pixel_format = PIXEL_FORMAT_MONO10;
+  caps->current_orientation = DISPLAY_ORIENTATION_NORMAL;
+  caps->screen_info = SCREEN_INFO_MONO_VTILED;
 }
 
-static int uc1609_set_pixel_format(const struct device *dev, const enum display_pixel_format pf)
+static int uc1609_set_pixel_format(const struct device *dev, const enum display_pixel_format pixel_format)
 {
-	struct uc1609_data *data = dev->data;
-	const struct uc1609_config *config = dev->config;
-	uint8_t cmd;
-	int ret;
-
-	if (pf == data->pf) {
-		return 0;
-	}
-
-	if (pf == PIXEL_FORMAT_MONO10) {
-		cmd = config->inversion_on ? UC1609_SET_REVERSE_DISPLAY : UC1609_SET_NORMAL_DISPLAY;
-	} else if (pf == PIXEL_FORMAT_MONO01) {
-		cmd = config->inversion_on ? UC1609_SET_NORMAL_DISPLAY : UC1609_SET_REVERSE_DISPLAY;
-	} else {
-		LOG_WRN("Unsupported pixel format");
-		return -ENOTSUP;
-	}
-
-	ret = uc1609_write_cmd_bus(dev, &cmd, 1);
-	if (ret) {
-		LOG_WRN("Couldn't set inversion");
-		return ret;
-	}
-
-	data->pf = pf;
-
-	return 0;
+  if (pixel_format == PIXEL_FORMAT_MONO10 || pixel_format == PIXEL_FORMAT_MONO01) {
+    return 0;
+  }
+  LOG_ERR("Unsupported pixel format %d", pixel_format);
+  return -ENOTSUP;
 }
 
-static int uc1609_reset(const struct device *dev)
+static int uc1609_set_orientation(const struct device *dev, const enum display_orientation orientation)
 {
-	const struct uc1609_config *config = dev->config;
-	int ret;
-	uint8_t cmd_buf[] = {
-		UC1609_DISPLAY_OFF,
-		(config->inversion_on ? UC1609_SET_REVERSE_DISPLAY : UC1609_SET_NORMAL_DISPLAY),
-	};
-
-	ret = uc1609_hw_reset(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	return uc1609_write_cmd_bus(dev, cmd_buf, sizeof(cmd_buf));
-}
-
-static int uc1609_clear(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-	int ret = 0;
-	uint8_t buf = 0;
-
-	for (int y = 0; y < config->height; y += 8) {
-		for (int x = 0; x < config->width; x++) {
-			ret = uc1609_write_default(dev, x, y, &buf, 1);
-			if (ret < 0) {
-				LOG_ERR("Error clearing display");
-				return ret;
-			}
-		}
-	}
-	return ret;
-}
-
-static int uc1609_init_device(const struct device *dev)
-{
-	const struct uc1609_config *config = dev->config;
-	struct uc1609_data *data = dev->data;
-	int ret;
-	uint8_t cmd_buf[] = {
-		UC1609_DISPLAY_OFF,
-		(config->inversion_on ? UC1609_SET_REVERSE_DISPLAY : UC1609_SET_NORMAL_DISPLAY),
-	};
-
-	ret = uc1609_reset(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = uc1609_suspend(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = uc1609_set_hardware_config(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = uc1609_set_panel_orientation(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	/* Set inversion */
-	ret = uc1609_write_cmd_bus(dev, cmd_buf, sizeof(cmd_buf));
-	if (ret < 0) {
-		return ret;
-	}
-
-	data->pf = config->inversion_on ? PIXEL_FORMAT_MONO10 : PIXEL_FORMAT_MONO01;
-
-	ret = uc1609_set_contrast(dev, CONFIG_UC1609_DEFAULT_CONTRAST);
-	if (ret < 0) {
-		return ret;
-	}
-
-	/* Clear display, RAM is undefined at power up */
-	ret = uc1609_clear(dev);
-	if (ret < 0) {
-		return ret;
-	}
-	ret = uc1609_resume(dev);
-
-	return ret;
+  UC_DBG("Set display orientation %d\n", (int) orientation);
+  if (orientation == DISPLAY_ORIENTATION_NORMAL) {
+    return 0;
+  }
+  LOG_ERR("Orientation not supported");
+  return -ENOTSUP;
 }
 
 static int uc1609_init(const struct device *dev)
 {
-	const struct uc1609_config *config = dev->config;
+  const struct uc1609_config *config = dev->config;
+  struct uc1609_data *data = dev->data;
+  int ret;
 
-	if (!uc1609_bus_ready(dev)) {
-		LOG_ERR("Bus device %s not ready!", config->bus_name(dev));
-		return -EINVAL;
-	}
+  DBGRAW("\n>>> [EARLY BOOT] uc1609_init running for %s <<<\n\n", dev->name);
 
-	if (uc1609_init_device(dev)) {
-		LOG_ERR("Failed to initialize device!");
-		return -EIO;
-	}
+  if (!spi_is_ready_dt(&config->spi)) {
+    LOG_ERR("SPI device not ready");
+    return -ENODEV;
+  }
 
-	return 0;
+  if (!gpio_is_ready_dt(&config->dc)) {
+    LOG_ERR("D/C GPIO device not ready");
+    return -ENODEV;
+  }
+
+  ret = gpio_pin_configure_dt(&config->dc, GPIO_OUTPUT_INACTIVE);
+  if (ret < 0) {
+    return ret;
+  }
+
+  if (config->reset.port) {
+    if (!gpio_is_ready_dt(&config->reset)) {
+      LOG_ERR("Reset GPIO device not ready");
+      return -ENODEV;
+    }
+
+    ret = gpio_pin_configure_dt(&config->reset, GPIO_OUTPUT_INACTIVE);
+    if (ret < 0) {
+      return ret;
+    }
+
+    gpio_pin_set_dt(&config->reset, 1);
+    k_msleep(10);
+    gpio_pin_set_dt(&config->reset, 0);
+    k_msleep(10);
+  }
+
+  /* Reset chip state */
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SYSTEM_RESET);
+  if (ret < 0) {
+    return ret;
+  }
+  k_msleep(10);
+
+  /* Frame rate 76FPS */
+  ret = uc1609_write_cmd(dev, 0xA0);
+  if (ret < 0) {
+    return ret;
+  }
+  k_msleep(10);
+
+  /* Bias ratio: 1/8 bias (0xEB) or 1/9 bias (0xEA) */
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_BIAS_RATIO);
+  if (ret < 0) {
+    return ret;
+  }
+
+  /* RAM address control: auto-increment column */
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_RAM_ADDR_CTRL | 0x01);
+  if (ret < 0) {
+    return ret;
+  }
+
+  /* Power control: internal charge pump on */
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_POWER_CONTROL | 0x0F);
+  k_msleep(100);	      // Wait for V_LCD charge pump to come up
+  if (ret < 0) {
+    return ret;
+  }
+
+  /* LCD mapping control */
+  ret = uc1609_write_cmd(dev, 0xC4);
+  if (ret < 0) {
+    return ret;
+  }
+
+  data->contrast = CONFIG_UC1609_DEFAULT_CONTRAST;
+  ret = uc1609_set_contrast(dev, data->contrast);
+  if (ret < 0) {
+    return ret;
+  }
+
+  /* Turn display on */
+  ret = uc1609_blanking_off(dev);
+  if (ret < 0) {
+    return ret;
+  }
+
+  /* Invert display */
+  ret = uc1609_write_cmd(dev, 0xA7);
+  if (ret < 0) {
+    return ret;
+  }
+
+  LOG_INF("UC1609 initialized (%ux%u)", config->width, config->height);
+  return 0;
 }
 
-static DEVICE_API(display, uc1609_driver_api) = {
-	.blanking_on = uc1609_suspend,
-	.blanking_off = uc1609_resume,
-	.write = uc1609_write,
-	.clear = uc1609_clear,
-	.set_contrast = uc1609_set_contrast,
-	.get_capabilities = uc1609_get_capabilities,
-	.set_pixel_format = uc1609_set_pixel_format,
+static const struct display_driver_api uc1609_api = {
+  .blanking_on = uc1609_blanking_on,
+  .blanking_off = uc1609_blanking_off,
+  .write = uc1609_write,
+  .read = NULL,
+  .get_capabilities = uc1609_get_capabilities,
+  .set_pixel_format = uc1609_set_pixel_format,
+  .set_orientation = uc1609_set_orientation,
 };
 
-#define UC1609_WORD_SIZE(inst)                                                                     \
-	((DT_STRING_UPPER_TOKEN(inst, mipi_mode) == MIPI_DBI_MODE_SPI_4WIRE) ? SPI_WORD_SET(8)     \
-									     : SPI_WORD_SET(9))
+#define UC1609_INIT(inst)                                                      \
+  static struct uc1609_data uc1609_data_##inst;                                \
+                                                                               \
+  static const struct uc1609_config uc1609_config_##inst = {                   \
+    .spi = SPI_DT_SPEC_INST_GET(inst, SPI_OP_MODE_MASTER | SPI_WORD_SET(8)),   \
+    .dc = GPIO_DT_SPEC_INST_GET(inst, data_cmd_gpios),                         \
+    .reset = GPIO_DT_SPEC_INST_GET_OR(inst, reset_gpios, {0}),                 \
+    .width = DT_INST_PROP(inst, width),                                        \
+    .height = DT_INST_PROP(inst, height),                                      \
+  };                                                                           \
+                                                                               \
+  DEVICE_DT_INST_DEFINE(inst,                                                  \
+                        uc1609_init,                                           \
+                        NULL,                                                  \
+                        &uc1609_data_##inst,                                   \
+                        &uc1609_config_##inst,                                 \
+                        POST_KERNEL,                                           \
+                        CONFIG_DISPLAY_INIT_PRIORITY,                          \
+                        &uc1609_api);
 
-#define UC1609_CONFIG_DBI(node_id)                                                                 \
-	.bus = {.dbi.dbi_config = MIPI_DBI_CONFIG_DT(                                              \
-			node_id, UC1609_WORD_SIZE(node_id) | SPI_OP_MODE_MASTER, 0),               \
-		.dbi.mipi_dev = DEVICE_DT_GET(DT_PARENT(node_id)),},                               \
-	.bus_ready = uc1609_bus_ready_dbi,                                                         \
-	.write_cmd_bus = uc1609_write_cmd_bus_dbi, .write_pixels_bus = uc1609_write_pixels_bus_dbi,\
-	.bus_name = uc1609_bus_name_dbi, .release_bus = uc1609_release_bus_dbi,                    \
-	.reset = uc1609_reset_dbi,
-
-#define UC1609_CONFIG_I2C(node_id)                                                                 \
-	.bus = {.i2c = I2C_DT_SPEC_GET(node_id)}, .bus_ready = uc1609_bus_ready_i2c,               \
-	.write_cmd_bus = uc1609_write_cmd_bus_i2c, .write_pixels_bus = uc1609_write_pixels_bus_i2c,\
-	.bus_name = uc1609_bus_name_i2c, .release_bus = uc1609_release_bus_i2c,                    \
-	.reset = uc1609_reset_i2c,
-
-#define UC1609_DEFINE(node_id)                                                                     \
-	static struct uc1609_data data##node_id;                                                   \
-	static const struct uc1609_config config##node_id = {                                      \
-		.height = DT_PROP(node_id, height),                                                \
-		.width = DT_PROP(node_id, width),                                                  \
-		.column_offset = DT_PROP(node_id, column_offset),                                  \
-		.line_offset = DT_PROP(node_id, line_offset),                                      \
-		.segment_invdir = DT_PROP(node_id, segment_invdir),                                \
-		.com_invdir = DT_PROP(node_id, com_invdir),                                        \
-		.inversion_on = DT_PROP(node_id, inversion_on),                                    \
-		.bias = DT_PROP(node_id, bias),                                                    \
-		.regulation_ratio = DT_PROP(node_id, regulation_ratio),                            \
-		COND_CODE_1(DT_ON_BUS(node_id, mipi_dbi), (UC1609_CONFIG_DBI(node_id)),            \
-			    (UC1609_CONFIG_I2C(node_id))) }; \
-                                                                                                   \
-	DEVICE_DT_DEFINE(node_id, uc1609_init, NULL, &data##node_id, &config##node_id,             \
-			 POST_KERNEL, CONFIG_DISPLAY_INIT_PRIORITY, &uc1609_driver_api);
-
-DT_FOREACH_STATUS_OKAY(ultrachip_uc1609, UC1609_DEFINE)
+DT_INST_FOREACH_STATUS_OKAY(UC1609_INIT)

@@ -2,7 +2,6 @@ if SHIELD_DISPLAY_UC1609
 config DISPLAY
     default y
 config UC1609
-    bool
     default y
 endif
 

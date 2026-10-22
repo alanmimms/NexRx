@@ -3,6 +3,7 @@ mainmenu "Display Configuration"
 
 # Source Zephyr's standard base symbols
 source "Kconfig.zephyr"
+rsource "drivers/display/Kconfig.uc1609"
 
 menu "Display Selection"
 

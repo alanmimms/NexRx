@@ -1,18 +1,22 @@
 menuconfig UC1609
         bool "UC1609 display controller"
         default y
-        depends on DT_HAS_ULTRACHIP_UC1609_ENABLED
-        select I2C if $(dt_compat_on_bus,$(DT_COMPAT_ULTRACHIP_UC1609),i2c)
-        select MIPI_DBI if $(dt_compat_on_bus,$(DT_COMPAT_ULTRACHIP_UC1609),mipi-dbi)
+        depends on DT_HAS_ZEPHYR_UC1609_ENABLED
+        select I2C if $(dt_compat_on_bus,$(DT_COMPAT_ZEPHYR_UC1609),i2c)
+        select MIPI_DBI if $(dt_compat_on_bus,$(DT_COMPAT_ZEPHYR_UC1609),mipi-dbi)
         help
           Enable driver for UC1609 display controller.
 
 if UC1609
 
+module = UC1609
+module-str = uc1609
+source "subsys/logging/Kconfig.template.log_config"
+
 config UC1609_DEFAULT_CONTRAST
         int "UC1609 default contrast"
-        default 8
-        range 0 15
+        default 154
+        range 0 255
         help
           UC1609 default contrast.
 

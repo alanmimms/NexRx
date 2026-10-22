@@ -16,9 +16,9 @@
 	status = "okay";
 
 	disp: display@0 {
-		compatible = "ultrachip,uc1609";
+		compatible = "zephyr,uc1609";
 		reg = <0>;
-		spi-max-frequency = <10000000>;
+		spi-max-frequency = <1900000>;
 		width = <192>;
 		height = <64>;
 
