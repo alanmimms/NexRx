@@ -8,7 +8,7 @@ project(display)
 include(${ZEPHYR_BASE}/cmake/cfb.cmake NO_POLICY_SCOPE)
 
 set(fontGenDir ${ZEPHYR_BINARY_DIR}/include/generated)
-set(fontHeader ${fontGenDir}/cfb_font_ubuntu_mono_b_12.h)
+set(fontHeader ${fontGenDir}/cfb_font_12_7x16.h)
 
 generate_cfb_font_for_target(
   app

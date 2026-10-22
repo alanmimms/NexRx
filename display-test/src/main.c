@@ -5,7 +5,7 @@
 #include <zephyr/display/cfb.h>
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/kernel.h>
-#include "cfb_font_ubuntu_mono_b_12.h"
+#include "cfb_font_12_7x16.h"
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
@@ -53,7 +53,7 @@ int main(void) {
   st = cfb_framebuffer_init(display);
   LOG_INF("Framebuffer initialized %d.", st);
 
-  int fontX = configureFont(display, 7, 16);
+  int fontX = configureFont(display, 6, 16);
   LOG_INF("Font index %d.", fontX);
   cfb_framebuffer_set_font(display, fontX);
 
@@ -81,7 +81,7 @@ int main(void) {
     st = cfb_print(display, "   Line4", 0, 3*fontH);
     MAYBE_LOG("Framebuffer string printed %d.", st);
 
-    static const struct cfb_position cirPos = {64, 32};
+    static const struct cfb_position cirPos = {192/2, 32};
   
     st = cfb_draw_circle(display, &cirPos, 31);
     MAYBE_LOG("Framebuffer draw circle %d.", st);
