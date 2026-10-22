@@ -5,11 +5,32 @@
 #include <zephyr/display/cfb.h>
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/kernel.h>
-
+#include "cfb_font_ubuntu_mono_b_12.h"
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
 static const struct device *display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
+
+
+// Returns the font index to be used with cfb_framebuffer_set_font().
+static int configureFont(const struct device *d, int w, int h) {
+  int nFonts = cfb_get_numof_fonts(d);
+
+  for (int fontX = 0; fontX < nFonts; ++fontX) {
+    uint8_t thisW, thisH;
+
+    if (cfb_get_font_size(d, fontX, &thisW, &thisH) == 0) {
+
+      if (w == thisW && h == thisH) {
+        cfb_framebuffer_set_font(d, fontX);
+	return fontX;
+      }
+    }
+  }
+
+  LOG_ERR("configureFont failed to find font with w=%d h=%d", (int) w, (int) h);
+  return 0;
+}
 
 
 int main(void) {
@@ -28,15 +49,19 @@ int main(void) {
   struct display_capabilities caps;
   display_get_capabilities(display, &caps);
   LOG_INF("Resolution: %dx%d.", caps.x_resolution, caps.y_resolution);
-  
+
   st = cfb_framebuffer_init(display);
   LOG_INF("Framebuffer initialized %d.", st);
+
+  int fontX = configureFont(display, 7, 16);
+  LOG_INF("Font index %d.", fontX);
+  cfb_framebuffer_set_font(display, fontX);
 
   uint64_t startT = k_cycle_get_64();
 
   //#define MAYBE_LOG while(0) LOG_INF
-  #define MAYBE_LOG LOG_INF
-  #define NITERS 1
+#define MAYBE_LOG LOG_INF
+#define NITERS 1
 
   for (int k=NITERS; k--; ) {
     st = cfb_framebuffer_clear(display, true);
