@@ -13,6 +13,8 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/cache.h>
+#include <zephyr/linker/section_tags.h>
 
 LOG_MODULE_REGISTER(uc1609, CONFIG_UC1609_LOG_LEVEL);
 
@@ -58,23 +60,32 @@ struct uc1609_data {
   uint8_t contrast;
 };
 
+
+// Largest CMD transaction we do
+#define CMD_NBYTES 1
+
+#define NBYTES (192 * 64 / 8)
+
+static struct k_sem dmaDoneSem = Z_SEM_INITIALIZER(dmaDoneSem, 1, 1);
+static uint8_t __nocache dmaBuf[NBYTES] __aligned(32);
+static uint8_t __nocache dmaCmdBuf[CMD_NBYTES] __aligned(32);
+
+
 static int uc1609_write_cmd(const struct device *dev, uint8_t cmd)
 {
   const struct uc1609_config *config = dev->config;
-  struct spi_buf buf = {
-    .buf = &cmd,
-    .len = sizeof(cmd)
-  };
-  struct spi_buf_set tx = {
-    .buffers = &buf,
-    .count = 1
-  };
+  static const struct spi_buf buf = {.buf = &dmaCmdBuf, .len = 1};
+  static const struct spi_buf_set tx = {.buffers = &buf, .count = 1};
+
+  k_sem_take(&dmaDoneSem, K_FOREVER);
 
   UC_DBG("CMD: 0x%02X", cmd);
+  dmaCmdBuf[0] = cmd;
 
   /* D/C low for command */
   gpio_pin_set_dt(&config->dc, 0);
   int st = spi_write_dt(&config->spi, &tx);
+  k_sem_give(&dmaDoneSem);
   if (st < 0) LOG_ERR("spi_write_dt failed: %d\n", st);
   return st;
 }
@@ -91,6 +102,7 @@ static int uc1609_write_data(const struct device *dev, const uint8_t *data, size
     .count = 1
   };
 
+  printk("uc1609_write_data is being called data=%p len=%u!\n", data, (unsigned) len);
   DBGRAW("DATA [%zu bytes]:", (unsigned) len);
 
   /* Truncate hex dump to first 16 or 32 bytes to avoid stalling the UART */
@@ -129,47 +141,88 @@ static int uc1609_blanking_off(const struct device *dev)
   return ret;
 }
 
+
+static void spiAsyncCB(const struct device *devP, int result, void *dataP) {
+  ARG_UNUSED(devP);
+  ARG_UNUSED(dataP);
+
+  if (result < 0) printk("spiAsyncCB result=%d\n", result);
+  k_sem_give(&dmaDoneSem);
+}
+
+
 static int uc1609_write(const struct device *dev, const uint16_t x, const uint16_t y,
                         const struct display_buffer_descriptor *desc, const void *buf)
 {
   const struct uc1609_config *config = dev->config;
-  const uint8_t *pixel_data = buf;
-  size_t bytes_per_page = desc->width;
-  uint8_t start_page = y / UC1609_PAGES_PER_ROW;
-  uint8_t total_pages = (desc->height + UC1609_PAGES_PER_ROW - 1) / UC1609_PAGES_PER_ROW;
 
-  if (desc->pitch != desc->width) {
-    LOG_ERR("Unsupported pitch %u != width %u", desc->pitch, desc->width);
-    return -EINVAL;
-  }
+  // Check for fast, frequent (only?) case that full display update is
+  // required. We assume the page address and column are always left
+  // at 0 and the DC pin is already set to DATA when we're called.
+  if (x == 0 &&
+      y == 0 &&
+      desc->width == config->width &&
+      desc->height == config->height)
+  {
+    int st = 0;
 
-  if ((x + desc->width > config->width) || (y + desc->height > config->height)) {
-    LOG_ERR("Buffer boundary exceeds display limits");
-    return -EINVAL;
-  }
+    k_sem_take(&dmaDoneSem, K_FOREVER);
+    memcpy(dmaBuf, buf, NBYTES);
+    gpio_pin_set_dt(&config->dc, 0);
 
-  int ret = uc1609_write_cmd(dev, UC1609_CMD_SET_PAGE_ADDR | (start_page & 0x0F));
-  if (ret < 0) {
-    return ret;
-  }
+    // Start async DMA
+    static const struct spi_buf txBuf = {.buf = dmaBuf, .len = NBYTES};
+    static const struct spi_buf_set txSet = {.buffers = &txBuf, .count = 1};
 
-  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_LSB | (x & 0x0F));
-  if (ret < 0) {
-    return ret;
-  }
+    const struct spi_dt_spec *spiP = &config->spi;
 
-  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_MSB | ((x >> 4) & 0x0F));
-  if (ret < 0) {
-    return ret;
-  }
+    st = spi_transceive_cb(spiP->bus, &spiP->config, &txSet, NULL, spiAsyncCB, NULL);
+    printk("spi_transceive_cb returned %d\n", st);
+    if (st < 0) k_sem_give(&dmaDoneSem);
+    return st;
+  } else {
+    size_t bytes_per_page = desc->width;
+    uint8_t start_page = y / UC1609_PAGES_PER_ROW;
+    uint8_t total_pages = (desc->height + UC1609_PAGES_PER_ROW - 1) / UC1609_PAGES_PER_ROW;
 
-  for (unsigned page = 0; page < total_pages; page++) {
-    ret = uc1609_write_data(dev, pixel_data, bytes_per_page);
+    LOG_INF("WARNING: Non-optimal call to uc1609 driver write(): x=%d, y=%d, w=%d, h=%d",
+	    x, y, desc->width, desc->height);
+
+    if (desc->pitch != desc->width) {
+      LOG_ERR("Unsupported pitch %u != width %u", desc->pitch, desc->width);
+      return -EINVAL;
+    }
+
+    if ((x + desc->width > config->width) || (y + desc->height > config->height)) {
+      LOG_ERR("Buffer boundary exceeds display limits");
+      return -EINVAL;
+    }
+
+    int ret = uc1609_write_cmd(dev, UC1609_CMD_SET_PAGE_ADDR | (start_page & 0x0F));
     if (ret < 0) {
       return ret;
     }
 
-    pixel_data += bytes_per_page;
+    ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_LSB | (x & 0x0F));
+    if (ret < 0) {
+      return ret;
+    }
+
+    ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_MSB | ((x >> 4) & 0x0F));
+    if (ret < 0) {
+      return ret;
+    }
+
+    const uint8_t *pixel_data = buf;
+
+    for (unsigned page = 0; page < total_pages; page++) {
+      ret = uc1609_write_data(dev, pixel_data, bytes_per_page);
+      if (ret < 0) {
+	return ret;
+      }
+
+      pixel_data += bytes_per_page;
+    }
   }
 
   return 0;
@@ -214,6 +267,7 @@ static int uc1609_init(const struct device *dev)
   int ret;
 
   DBGRAW("\n>>> [EARLY BOOT] uc1609_init running for %s <<<\n\n", dev->name);
+  printk("SPI dmaBuf at %p\n", (void *)dmaBuf);
 
   if (!spi_is_ready_dt(&config->spi)) {
     LOG_ERR("SPI device not ready");
@@ -267,7 +321,7 @@ static int uc1609_init(const struct device *dev)
     return ret;
   }
 
-  /* RAM address control: auto-increment column */
+  /* RAM address control: auto-increment column, then page, with wrap-around */
   ret = uc1609_write_cmd(dev, UC1609_CMD_SET_RAM_ADDR_CTRL | 0x01);
   if (ret < 0) {
     return ret;

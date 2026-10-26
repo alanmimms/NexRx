@@ -1,9 +1,9 @@
 / {
 	display_header: display-header {
 		gpio-map =
-		<0 0 &gpioa 4 0>,  /* PA4: SPI /CS (in software) */
-		<1 0 &gpiog 2 0>,  /* PG2: D/C pin */
-		<2 0 &gpiog 3 0>;  /* PG3: RESET pin */
+		    <0 0 &gpioa 4 0>,  /* PA4: SPI /CS (in software) */
+		    <1 0 &gpiog 2 0>,  /* PG2: D/C pin */
+		    <2 0 &gpiog 3 0>;  /* PG3: RESET pin */
 	};
 
 	chosen {

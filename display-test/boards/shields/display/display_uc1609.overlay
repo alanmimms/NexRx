@@ -1,6 +1,12 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/spi/spi.h>
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+#include <zephyr/dt-bindings/dma/stm32_dma.h>
+
 / {
 	chosen {
 		zephyr,display = &disp;
+		zephyr,sram-nocache = &sram3;
 	};
 
 	display_header: display-header {
@@ -11,14 +17,36 @@
 	};
 };
 
+&sram4 {
+	status = "okay";
+	/delete-property/ zephyr,memory-attr;
+};
+
+
+&dma1 {
+	status = "okay";
+};
+
+&dma2 {
+	status = "okay";
+};
+
+&dmamux1 {
+	status = "okay";
+};
+
 
 &spi1 {
 	status = "okay";
 
+	dmas = <&dmamux1 2 38 (STM32_DMA_PERIPH_TX | STM32_DMA_PRIORITY_MEDIUM)>,
+               <&dmamux1 3 37 (STM32_DMA_PERIPH_RX | STM32_DMA_PRIORITY_MEDIUM)>;
+	dma-names = "tx", "rx";
+
 	disp: display@0 {
 		compatible = "zephyr,uc1609";
 		reg = <0>;
-		spi-max-frequency = <1900000>;
+		spi-max-frequency = <2000000>;
 		width = <192>;
 		height = <64>;
 
