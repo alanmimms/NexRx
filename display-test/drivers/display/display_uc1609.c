@@ -67,13 +67,12 @@ struct uc1609_data {
 #define NBYTES (192 * 64 / 8)
 
 static struct k_sem dmaDoneSem = Z_SEM_INITIALIZER(dmaDoneSem, 1, 1);
-static uint8_t __nocache dmaBuf[NBYTES] __aligned(32);
-static uint8_t __nocache dmaCmdBuf[CMD_NBYTES] __aligned(32);
 
 
 static int uc1609_write_cmd(const struct device *dev, uint8_t cmd)
 {
   const struct uc1609_config *config = dev->config;
+  static uint8_t __nocache dmaCmdBuf[CMD_NBYTES] __aligned(32);
   static const struct spi_buf buf = {.buf = &dmaCmdBuf, .len = 1};
   static const struct spi_buf_set tx = {.buffers = &buf, .count = 1};
 
@@ -167,14 +166,15 @@ static int uc1609_write(const struct device *dev, const uint16_t x, const uint16
     int st = 0;
 
     k_sem_take(&dmaDoneSem, K_FOREVER);
-    memcpy(dmaBuf, buf, NBYTES);
-    gpio_pin_set_dt(&config->dc, 0);
+    gpio_pin_set_dt(&config->dc, 1); /* Sending DATA */
 
     // Start async DMA
-    static const struct spi_buf txBuf = {.buf = dmaBuf, .len = NBYTES};
-    static const struct spi_buf_set txSet = {.buffers = &txBuf, .count = 1};
+    struct spi_buf txBuf = {.buf = (void *) buf, .len = NBYTES};
+    struct spi_buf_set txSet = {.buffers = &txBuf, .count = 1};
 
     const struct spi_dt_spec *spiP = &config->spi;
+
+    printk("uc1690_write %s buf=%p len=%u\n", spiP->bus->name, txBuf.buf, txBuf.len);
 
     st = spi_transceive_cb(spiP->bus, &spiP->config, &txSet, NULL, spiAsyncCB, NULL);
     printk("spi_transceive_cb returned %d\n", st);
@@ -267,7 +267,6 @@ static int uc1609_init(const struct device *dev)
   int ret;
 
   DBGRAW("\n>>> [EARLY BOOT] uc1609_init running for %s <<<\n\n", dev->name);
-  printk("SPI dmaBuf at %p\n", (void *)dmaBuf);
 
   if (!spi_is_ready_dt(&config->spi)) {
     LOG_ERR("SPI device not ready");
@@ -352,13 +351,14 @@ static int uc1609_init(const struct device *dev)
     return ret;
   }
 
+#if 0
   /* Invert display */
   ret = uc1609_write_cmd(dev, 0xA7);
   if (ret < 0) {
     return ret;
   }
-
-  LOG_INF("UC1609 initialized (%ux%u)", config->width, config->height);
+#endif
+  
   return 0;
 }
 

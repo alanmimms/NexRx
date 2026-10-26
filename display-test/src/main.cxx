@@ -6,6 +6,9 @@
 #include <zephyr/sys/timeutil.h>
 #include <zephyr/sys/time_units.h>
 #include <zephyr/kernel.h>
+#include <zephyr/cache.h>
+#include <zephyr/linker/devicetree_regions.h>
+
 #include <time.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -25,6 +28,14 @@ static const struct device *display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
 static std::unique_ptr<FrameBuffer> fbP = nullptr;
 
+struct SPIDMABuffers {
+  uint8_t fbPing[FrameBuffer::FBSIZE];
+  uint8_t fbPong[FrameBuffer::FBSIZE];
+  uint8_t cmdBuf[16];
+};
+
+#define NOCACHE_SECTION LINKER_DT_NODE_REGION_NAME(DT_NODELABEL(sram1_nocache))
+Z_GENERIC_SECTION(NOCACHE_SECTION)  __aligned(4) static SPIDMABuffers dmaBuffers;
 
 static const int daysBeforeMonth[] = {
   0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
@@ -114,6 +125,20 @@ static void drawUSBStatus(bool up) {
 }
 
 
+static void updateFB() {
+  const struct display_driver_api *api = static_cast<const struct display_driver_api *>(display->api);
+  struct display_buffer_descriptor desc = {
+    .buf_size = fbP->sizeBytes,
+    .width = fbP->width,
+    .height = fbP->height,
+    .pitch = fbP->width,
+  };
+
+  sys_cache_data_flush_range(fbP->bitsP, FrameBuffer::FBSIZE);    
+  api->write(display, 0, 0, &desc, fbP->bitsP);
+}
+
+
 int main(void) {
   LOG_INF("Serial console initialized.");
 
@@ -129,8 +154,7 @@ int main(void) {
   display_get_capabilities(display, &caps);
   LOG_INF("Resolution: %dx%d.", caps.x_resolution, caps.y_resolution);
 
-  std::vector<uint8_t> fbBits(FrameBuffer::WIDTH / 8 * FrameBuffer::HEIGHT);
-  fbP = std::make_unique<FrameBuffer>(fbBits);
+  fbP = std::make_unique<FrameBuffer>(&dmaBuffers.fbPing[0]);
 
   uint64_t startT = k_cycle_get_64();
 
@@ -146,7 +170,20 @@ int main(void) {
     .tm_isdst = 1,
   };
 
+  printk("Font hPages=%u, bitsP=%p\n", UbuntuM16.hPages, UbuntuM16.bitsP);
+  const FrameBuffer::Glyph &g = UbuntuM16.glyphs[42];
+  printk("  Glyphs[42]: .bitOffset=%u, .inkW=%u, .advance=%u\n", g.bitOffset, g.inkW, g.advance);
+  printk("fbP->bitsP=%p\n", fbP->bitsP);
+
+  //  fbP->eraseRect();
+  //  printk("Back from eraseRect\n");
+  memset(fbP->bitsP, 0xC3, fbP->FBSIZE);
+  updateFB();
+  printk("Back from first updateFB\n");
+
   time_t startTime = tmToEpochUTC(&startTM);
+
+  return 0;
 
   for (;;) {
     printk("Tick\n");
@@ -164,14 +201,7 @@ int main(void) {
 
     drawUSBStatus(true);
 
-    struct display_buffer_descriptor desc = {
-      .buf_size = fbP->sizeBytes,
-      .width = fbP->width,
-      .height = fbP->height,
-      .pitch = fbP->width,
-    };
-    const struct display_driver_api *api = static_cast<const struct display_driver_api *>(display->api);
-    api->write(display, 0, 0, &desc, &fbP->bits[0]);
+    updateFB();
     k_msleep(30000);
   }
 

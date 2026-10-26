@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include <algorithm>
+#include <zephyr/kernel.h>
 
 // This supports MONO_VTILED bitmaps for monochrome LCD. It's very
 // made-for-purpose and limited. Text drawing must be done such that y
@@ -9,11 +10,15 @@
 // LCD RAM pages.
 class FrameBuffer {
  public:
-  static constexpr uint8_t WIDTH=192;
-  static constexpr uint8_t HEIGHT=64;
+  static constexpr uint8_t WIDTH = 192;
+  static constexpr uint8_t HEIGHT = 64;
+  static constexpr unsigned FBSIZE = WIDTH * HEIGHT / 8;
 
- FrameBuffer(std::vector<uint8_t> &bits, uint8_t width=WIDTH, uint8_t height=HEIGHT)
-   : sizeBytes(width*height/8)
+ FrameBuffer(uint8_t *bitsP, uint8_t width=WIDTH, uint8_t height=HEIGHT)
+   : bitsP(bitsP),
+    width(width),
+    height(height),
+    sizeBytes(width*height/8)
     {}
 
   struct Point {
@@ -30,14 +35,14 @@ class FrameBuffer {
 
   struct Font {
 
-    Font(uint8_t hPages, std::vector<Glyph> glyphs, std::vector<uint8_t> bits)
+    Font(const uint8_t hPages, const std::vector<Glyph> glyphs, const uint8_t *bitsP)
         : hPages(hPages), 
           glyphs(std::move(glyphs)), 
-          bits(std::move(bits)) {}
+      bitsP(bitsP) {}
 
-    uint8_t hPages;
-    std::vector<Glyph> glyphs;
-    std::vector<uint8_t> bits;
+    const uint8_t hPages;
+    const std::vector<Glyph> glyphs;
+    const uint8_t *bitsP;
   };
 
 
@@ -49,7 +54,7 @@ class FrameBuffer {
 
       for (uint8_t page=0; page < font.hPages; ++page) {
 	const uint8_t glyphByteX = glyph.bitOffset + page * glyph.inkW;
-	bits[(y + page)*width + x] |= font.bits[glyphByteX];
+	bitsP[(y + page)*width + x] |= font.bitsP[glyphByteX];
       }
 
       x += glyph.advance;
@@ -96,14 +101,14 @@ class FrameBuffer {
       const uint8_t page = y >> 3;
 
       for (uint8_t xOffset=0; xOffset < w; ++xOffset) {
-	bits[page * width + xOffset] |= mask;
+	bitsP[page * width + xOffset] |= mask;
       }
     } else if (width == 0) {	// Vertical line
       const uint8_t mask = maskForY(y);
 
       for (uint8_t yOffset=0; yOffset < h; ++yOffset) {
 	const uint8_t page = (y + yOffset) >> 3;
-	bits[page * width + x] |= mask;
+	bitsP[page * width + x] |= mask;
       }
     } else {			// Bresenham line
       int m = 2 * h;
@@ -112,7 +117,7 @@ class FrameBuffer {
       for (uint8_t xOffset=0, thisY=y; xOffset < w; ++xOffset) {
 	const uint8_t page = thisY >> 3;
 	const uint8_t mask = maskForY(thisY);
-	bits[page * width + x + xOffset] |= mask;
+	bitsP[page * width + x + xOffset] |= mask;
 
 	slopeErr += m;
 
@@ -125,7 +130,7 @@ class FrameBuffer {
   }
 
 
-  uint8_t *bits;
+  uint8_t *bitsP;
   uint8_t width;
   uint8_t height;
   uint8_t sizeBytes;
@@ -151,14 +156,17 @@ class FrameBuffer {
   void doRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, BltOp bltOp) {
     const auto [startX, startY, lastX, lastY] = makeCanonical(x, y, w, h);
 
+    printk("doRect(%u %u %u %u) canon=%u %u %u %u\n", x, y, w, h, startX, startY, lastX, lastY);
+
     if (w == 0 || h == 0) return;
 
     for (uint8_t x=startX; x <= lastX; ++x) {
 
       for (uint8_t y=startY; ; ++y) {
 	const uint8_t mask = maskForRange(y, lastY);
+	//	printk("x=%u y=%u lastY=%u mask=%u\n", x, y, lastY, mask);
 	if (mask == 0) return;
-	bltOp(bits[x], mask);
+	bltOp(bitsP[x], mask);
       }
     }
   }

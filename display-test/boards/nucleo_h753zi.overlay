@@ -1,14 +1,33 @@
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+
+/delete-node/ &sram1;
+
 / {
 	display_header: display-header {
 		gpio-map =
-		    <0 0 &gpioa 4 0>,  /* PA4: SPI /CS (in software) */
-		    <1 0 &gpiog 2 0>,  /* PG2: D/C pin */
-		    <2 0 &gpiog 3 0>;  /* PG3: RESET pin */
+		<0 0 &gpioa 4 0>,  /* PA4: SPI /CS (in software) */
+		<1 0 &gpiog 2 0>,  /* PG2: D/C pin */
+		<2 0 &gpiog 3 0>;  /* PG3: RESET pin */
 	};
 
 	chosen {
+		zephyr,nocache = &sram1_nocache;
 		zephyr,console = &usart3;
 		zephyr,shell_uart = &usart3;
+	};
+
+	/* Shrink sram1 so it starts after our 8KB carve-out */
+	sram1: memory@30002000 {
+		compatible = "mmio-sram";
+		reg = <0x30002000 0x0001e000>;
+	};
+
+	/* Carve out the 8KB (0x2000 bytes) naturally aligned at 0x30000000 */
+	sram1_nocache: memory@30000000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x30000000 0x00002000>;
+		zephyr,memory-region = "SRAM1_NOCACHE";
+		zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM_NOCACHE) )>;
 	};
 };
 
