@@ -148,7 +148,6 @@ int main(void) {
   }
 
   LOG_INF("Display %s initialized.", display->name);
-  display_blanking_off(display);
 
   struct display_capabilities caps;
   display_get_capabilities(display, &caps);
@@ -175,9 +174,15 @@ int main(void) {
   printk("  Glyphs[42]: .bitOffset=%u, .inkW=%u, .advance=%u\n", g.bitOffset, g.inkW, g.advance);
   printk("fbP->bitsP=%p\n", fbP->bitsP);
 
-  //  fbP->eraseRect();
-  //  printk("Back from eraseRect\n");
   memset(fbP->bitsP, 0xC3, fbP->FBSIZE);
+  fbP->drawFilledRect(17, 11, 122 - 17, 37 - 11);
+  printk("Back from drawFilledRect\n");
+#if 0
+  for (unsigned page=3; page < 7; ++page) {
+    for (unsigned x=0; x < 192; ++x) fbP->bitsP[x + page*192] = x;
+  }
+#endif
+
   updateFB();
   printk("Back from first updateFB\n");
 

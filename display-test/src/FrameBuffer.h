@@ -76,19 +76,19 @@ class FrameBuffer {
 
 
   void drawFilledRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
-    doRect(x, y, w, h,
+    rectLoop(x, y, w, h,
 	   [](uint8_t &pageByte, uint8_t mask) { pageByte |= mask; });
   }
 
 
   void invertRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
-    doRect(x, y, w, h,
+    rectLoop(x, y, w, h,
 	   [](uint8_t &pageByte, uint8_t mask) { pageByte ^= mask; });
   }
 
 
   void eraseRect(uint8_t x=0, uint8_t y=0, uint8_t w=WIDTH, uint8_t h=HEIGHT) {
-    doRect(x, y, w, h,
+    rectLoop(x, y, w, h,
 	   [](uint8_t &pageByte, uint8_t mask) { pageByte &= ~mask; });
   }
 
@@ -143,33 +143,42 @@ class FrameBuffer {
     return 1 << (y & 7);
   }
 
+
   // Returns a bit mask for the vertical strip of pixels in a single
   // framebuffer byte for the range [startY, lastY] where each of
   // these ordinates is considered modulo 8.
   uint8_t maskForRange(uint8_t startY, uint8_t lastY) {
     const uint8_t startMask = 0xFF << (startY & 7);
-    const uint8_t lastMask = 0xFF >> (7 ^ (lastY & 7));
+    const uint8_t startEndBit = ((startY + 8) & -8) - 1;
+    const uint8_t lastMask = 0xFF >> (7 ^ (std::min(startEndBit, lastY) & 7));
+#if 0
+    printk("maskForRange(%u,%u) startMask=0x%02X lastMask=0x%02X\n",
+	   startY, lastY, startMask, lastMask);
+#endif
     return startMask & lastMask;
   }
 
+
   template<typename BltOp>
-  void doRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, BltOp bltOp) {
+  void rectLoop(uint8_t x, uint8_t y, uint8_t w, uint8_t h, BltOp bltOp) {
     const auto [startX, startY, lastX, lastY] = makeCanonical(x, y, w, h);
 
-    printk("doRect(%u %u %u %u) canon=%u %u %u %u\n", x, y, w, h, startX, startY, lastX, lastY);
+    printk("rectLoop(%u %u %u %u) canon=%u %u %u %u\n",
+	   x, y, w, h, startX, startY, lastX, lastY);
 
-    if (w == 0 || h == 0) return;
+    for (uint8_t y=startY; y <= lastY; y = (y+8) & -8) {
+      const uint8_t mask = maskForRange(y, lastY);
+      printk("y=%u mask=0x%02X\n", y, (int) mask);
+      if (mask == 0) return;
 
-    for (uint8_t x=startX; x <= lastX; ++x) {
-
-      for (uint8_t y=startY; ; ++y) {
-	const uint8_t mask = maskForRange(y, lastY);
+      for (uint8_t x=startX; x <= lastX; ++x) {
+	bltOp(bitsP[x + y*WIDTH/8], mask);
 	//	printk("x=%u y=%u lastY=%u mask=%u\n", x, y, lastY, mask);
-	if (mask == 0) return;
-	bltOp(bitsP[x], mask);
+	//	bitsP[(y >> 3)*WIDTH + x] ^= 0xFF;
       }
     }
   }
+
 
   struct Canonicalized {
     uint8_t startX;

@@ -41,6 +41,8 @@ LOG_MODULE_REGISTER(uc1609, CONFIG_UC1609_LOG_LEVEL);
 #define UC1609_CMD_SET_ALL_PIX_ON       0xA4
 #define UC1609_CMD_SET_ALL_PIX_NORMAL	0xA5
 
+#define UC1609_CMD_SET_LCD_MAPPING	0xC0
+#define UC1609_CMD_SET_FRAME_RATE	0xA0
 #define UC1609_CMD_SET_DISP_OFF		0xAE
 #define UC1609_CMD_SET_DISP_ON		0xAF
 
@@ -78,7 +80,7 @@ static int uc1609_write_cmd(const struct device *dev, uint8_t cmd)
 
   k_sem_take(&dmaDoneSem, K_FOREVER);
 
-  UC_DBG("CMD: 0x%02X", cmd);
+  printk("CMD: 0x%02X\n", cmd);
   dmaCmdBuf[0] = cmd;
 
   /* D/C low for command */
@@ -120,9 +122,7 @@ static int uc1609_write_data(const struct device *dev, const uint8_t *data, size
 static int uc1609_set_contrast(const struct device *dev, uint8_t contrast)
 {
   int ret = uc1609_write_cmd(dev, UC1609_CMD_SET_VBIAS_POT);
-  if (ret < 0) {
-    return ret;
-  }
+  if (ret < 0) return ret;
   return uc1609_write_cmd(dev, contrast);
 }
 
@@ -263,7 +263,6 @@ static int uc1609_set_orientation(const struct device *dev, const enum display_o
 static int uc1609_init(const struct device *dev)
 {
   const struct uc1609_config *config = dev->config;
-  struct uc1609_data *data = dev->data;
   int ret;
 
   DBGRAW("\n>>> [EARLY BOOT] uc1609_init running for %s <<<\n\n", dev->name);
@@ -279,20 +278,17 @@ static int uc1609_init(const struct device *dev)
   }
 
   ret = gpio_pin_configure_dt(&config->dc, GPIO_OUTPUT_INACTIVE);
-  if (ret < 0) {
-    return ret;
-  }
+  if (ret < 0) return ret;
 
   if (config->reset.port) {
+
     if (!gpio_is_ready_dt(&config->reset)) {
       LOG_ERR("Reset GPIO device not ready");
       return -ENODEV;
     }
 
     ret = gpio_pin_configure_dt(&config->reset, GPIO_OUTPUT_INACTIVE);
-    if (ret < 0) {
-      return ret;
-    }
+    if (ret < 0) return ret;
 
     gpio_pin_set_dt(&config->reset, 1);
     k_msleep(10);
@@ -302,62 +298,48 @@ static int uc1609_init(const struct device *dev)
 
   /* Reset chip state */
   ret = uc1609_write_cmd(dev, UC1609_CMD_SYSTEM_RESET);
-  if (ret < 0) {
-    return ret;
-  }
+  if (ret < 0) return ret;
   k_msleep(10);
 
   /* Frame rate 76FPS */
-  ret = uc1609_write_cmd(dev, 0xA0);
-  if (ret < 0) {
-    return ret;
-  }
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_FRAME_RATE);
+  if (ret < 0) return ret;
   k_msleep(10);
 
   /* Bias ratio: 1/8 bias (0xEB) or 1/9 bias (0xEA) */
   ret = uc1609_write_cmd(dev, UC1609_CMD_SET_BIAS_RATIO);
-  if (ret < 0) {
-    return ret;
-  }
+  if (ret < 0) return ret;
 
   /* RAM address control: auto-increment column, then page, with wrap-around */
   ret = uc1609_write_cmd(dev, UC1609_CMD_SET_RAM_ADDR_CTRL | 0x01);
-  if (ret < 0) {
-    return ret;
-  }
+  if (ret < 0) return ret;
 
   /* Power control: internal charge pump on */
   ret = uc1609_write_cmd(dev, UC1609_CMD_SET_POWER_CONTROL | 0x0F);
   k_msleep(100);	      // Wait for V_LCD charge pump to come up
-  if (ret < 0) {
-    return ret;
-  }
+  if (ret < 0) return ret;
 
-  /* LCD mapping control */
-  ret = uc1609_write_cmd(dev, 0xC4);
-  if (ret < 0) {
-    return ret;
-  }
+  /* LCD mapping control for 95fps and Y in top to bottom order */
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_LCD_MAPPING | 0x04);
+  if (ret < 0) return ret;
 
-  data->contrast = CONFIG_UC1609_DEFAULT_CONTRAST;
-  ret = uc1609_set_contrast(dev, data->contrast);
-  if (ret < 0) {
-    return ret;
-  }
+  ret = uc1609_set_contrast(dev, CONFIG_UC1609_DEFAULT_CONTRAST);
+  if (ret < 0) return ret;
+
+  // Since we always send the entire frame buffer to the display with
+  // SPI DMA, we leave these all zero.
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_PAGE_ADDR);
+  if (ret < 0) return ret;
+
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_LSB);
+  if (ret < 0) return ret;
+
+  ret = uc1609_write_cmd(dev, UC1609_CMD_SET_COL_ADDR_MSB);
+  if (ret < 0) return ret;
 
   /* Turn display on */
   ret = uc1609_blanking_off(dev);
-  if (ret < 0) {
-    return ret;
-  }
-
-#if 0
-  /* Invert display */
-  ret = uc1609_write_cmd(dev, 0xA7);
-  if (ret < 0) {
-    return ret;
-  }
-#endif
+  if (ret < 0) return ret;
   
   return 0;
 }
