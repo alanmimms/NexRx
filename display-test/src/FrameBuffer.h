@@ -166,15 +166,14 @@ class FrameBuffer {
     printk("rectLoop(%u %u %u %u) canon=%u %u %u %u\n",
 	   x, y, w, h, startX, startY, lastX, lastY);
 
-    for (uint8_t y=startY; y <= lastY; y = (y+8) & -8) {
-      const uint8_t mask = maskForRange(y, lastY);
-      printk("y=%u mask=0x%02X\n", y, (int) mask);
+    for (uint8_t thisY=startY; thisY <= lastY; thisY = (thisY+8) & -8) {
+      const uint8_t page = thisY & -8;
+      const uint8_t mask = maskForRange(thisY, lastY);
+      printk("thisY=%u page=%u mask=0x%02X\n", thisY, page, (int) mask);
       if (mask == 0) return;
 
-      for (uint8_t x=startX; x <= lastX; ++x) {
-	bltOp(bitsP[x + y*WIDTH/8], mask);
-	//	printk("x=%u y=%u lastY=%u mask=%u\n", x, y, lastY, mask);
-	//	bitsP[(y >> 3)*WIDTH + x] ^= 0xFF;
+      for (uint8_t thisX=startX; thisX <= lastX; ++thisX) {
+	bltOp(bitsP[thisX + page*WIDTH/8], mask);
       }
     }
   }
