@@ -41,7 +41,7 @@ class FrameBuffer {
   };
 
 
-  void drawString(const char *stringP, uint8_t x, uint8_t y, Font &font) {
+  void drawString(const char *stringP, uint8_t x, uint8_t y, const Font &font) {
 
     for (; *stringP; ++stringP) {
       const uint8_t chX = ((*stringP < ' ' || *stringP > '~') ? '?' : *stringP) - ' ';
@@ -57,7 +57,7 @@ class FrameBuffer {
   }
   
 
-  unsigned measureString(const char *stringP, Font &font) {
+  unsigned measureString(const char *stringP, const Font &font) {
     unsigned totalWidth = 0;
 
     for (; *stringP; ++stringP) {

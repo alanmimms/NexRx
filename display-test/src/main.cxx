@@ -14,7 +14,7 @@
 #include "FrameBuffer.h"
 #include <memory>
 
-extern FrameBuffer::Font UbuntuM16;
+extern const FrameBuffer::Font UbuntuM16;
 
 static const int fontH = 16;
 static const int fontW = 7;
@@ -170,8 +170,8 @@ int main(void) {
       .height = fbP->height,
       .pitch = fbP->width,
     };
-    const struct device *dev = display;
-    dev->api->write(display, 0, 0, &desc, &fbP->bits[0]);
+    const struct display_driver_api *api = static_cast<const struct display_driver_api *>(display->api);
+    api->write(display, 0, 0, &desc, &fbP->bits[0]);
     k_msleep(30000);
   }
 
