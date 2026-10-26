@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <vector>
 #include <algorithm>
-#include <zephyr/kernel.h>
 
 // This supports MONO_VTILED bitmaps for monochrome LCD. It's very
 // made-for-purpose and limited. Text drawing must be done such that y
@@ -151,10 +150,6 @@ class FrameBuffer {
     const uint8_t startMask = 0xFF << (startY & 7);
     const uint8_t startEndBit = ((startY + 8) & -8) - 1;
     const uint8_t lastMask = 0xFF >> (7 ^ (std::min(startEndBit, lastY) & 7));
-#if 0
-    printk("maskForRange(%u,%u) startMask=0x%02X lastMask=0x%02X\n",
-	   startY, lastY, startMask, lastMask);
-#endif
     return startMask & lastMask;
   }
 
@@ -163,13 +158,9 @@ class FrameBuffer {
   void rectLoop(uint8_t x, uint8_t y, uint8_t w, uint8_t h, BltOp bltOp) {
     const auto [startX, startY, lastX, lastY] = makeCanonical(x, y, w, h);
 
-    printk("rectLoop(%u %u %u %u) canon=%u %u %u %u\n",
-	   x, y, w, h, startX, startY, lastX, lastY);
-
     for (uint8_t thisY=startY; thisY <= lastY; thisY = (thisY+8) & -8) {
       const uint8_t page = thisY & -8;
       const uint8_t mask = maskForRange(thisY, lastY);
-      printk("thisY=%u page=%u mask=0x%02X\n", thisY, page, (int) mask);
       if (mask == 0) return;
 
       for (uint8_t thisX=startX; thisX <= lastX; ++thisX) {

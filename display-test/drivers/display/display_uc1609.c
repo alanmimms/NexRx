@@ -166,6 +166,9 @@ static int uc1609_write(const struct device *dev, const uint16_t x, const uint16
     int st = 0;
 
     k_sem_take(&dmaDoneSem, K_FOREVER);
+
+    uint64_t startT = k_cycle_get_64();
+
     gpio_pin_set_dt(&config->dc, 1); /* Sending DATA */
 
     // Start async DMA
@@ -174,11 +177,10 @@ static int uc1609_write(const struct device *dev, const uint16_t x, const uint16
 
     const struct spi_dt_spec *spiP = &config->spi;
 
-    printk("uc1690_write %s buf=%p len=%u\n", spiP->bus->name, txBuf.buf, txBuf.len);
-
     st = spi_transceive_cb(spiP->bus, &spiP->config, &txSet, NULL, spiAsyncCB, NULL);
-    printk("spi_transceive_cb returned %d\n", st);
     if (st < 0) k_sem_give(&dmaDoneSem);
+    long us = k_cyc_to_us_floor64(k_cycle_get_64() - startT);
+    printk("write DMA took %ldus\n", us);
     return st;
   } else {
     size_t bytes_per_page = desc->width;
