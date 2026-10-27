@@ -14,8 +14,8 @@ although incrementing tuning is still possible and a useful technique.
 Instead, instant direct access to signals seen on the River and
 digital readout of those signals' frequencies provides much of the
 same capability without making the frequency band an inherently
-sequentially accessed medium as is often the case with current
-receivers.
+sequentially accessed medium as is most comfortably the case with
+current receivers.
 
 Combined with a deep, wideband raw I/Q history buffer on the host PC
 and an immediate-mode, 60+ FPS Lua/Raylib rendering engine, The River
