@@ -8,21 +8,26 @@ target_compile_features(app PRIVATE cxx_std_20)
 
 find_package(Python3 REQUIRED)
 
-set(FONT_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/ttf-to-cxx.py)
-set(FONT_TTF    /usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf)
-set(FONT_NAME   UbuntuM16)
-set(FONT_OUT    ${CMAKE_CURRENT_BINARY_DIR}/${FONT_NAME}.cxx)
-
+set(fontScript ${CMAKE_CURRENT_SOURCE_DIR}/ttf-to-cxx.py)
 target_include_directories(app PRIVATE src)
-target_sources(app PRIVATE ${FONT_OUT})
 zephyr_include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_custom_command(
-    OUTPUT  ${FONT_OUT}
-    COMMAND ${Python3_EXECUTABLE} ${FONT_SCRIPT} ${FONT_TTF} 16 --name ${FONT_NAME} > ${FONT_OUT}
-    DEPENDS ${FONT_SCRIPT} ${FONT_TTF}
-    COMMENT "Generating MONO_VTILED C++ font ${FONT_NAME} from TTF..."
-)
+function(genFont ttf points fontName)
+  set(fontOut ${CMAKE_CURRENT_BINARY_DIR}/${fontName}.cxx)
+
+  target_sources(app PRIVATE ${fontOut})
+
+  add_custom_command(
+    OUTPUT  ${fontOut}
+    COMMAND ${Python3_EXECUTABLE} ${fontScript} ${ttf} ${points} --name ${fontName} > ${fontOut}
+    DEPENDS ${fontScript} ${ttf}
+    COMMENT "Generating MONO_VTILED C++ font ${fontName} from TTF..."
+    VERBATIM
+  )
+endfunction()
+
+genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf 16 UbuntuM16)
+genFont(/usr/share/fonts/truetype/ibm-plex/IBMPlexSans-Light.ttf 12 PlexL12)
 
 project(display)
 

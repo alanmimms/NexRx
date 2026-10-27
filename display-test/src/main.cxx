@@ -18,6 +18,9 @@
 #include <memory>
 
 extern const FrameBuffer::Font UbuntuM16;
+extern const FrameBuffer::Font PlexL12;
+
+const FrameBuffer::Font &defaultFont = PlexL12;
 
 static const int fontH = 16;
 static const int fontW = 7;
@@ -81,7 +84,7 @@ static void drawSMeter(int dB) {
 #define DB_TO_X(DB)	((DB) * sMeterW / MAX_SMETER_DB)
 
   //                              0123456789
-  fbP->drawString("S0==3=====9", 0*fontW, (sMeterLine+1)*fontH, UbuntuM16);
+  fbP->drawString("S0==3=====9", 0*fontW, (sMeterLine+1)*fontH, defaultFont);
 
   if (dB > MAX_SMETER_DB) dB = MAX_SMETER_DB;
 
@@ -107,21 +110,21 @@ static void drawSMeter(int dB) {
 static void drawDateTime(struct tm *timeP) {
   char buf[32];
   strftime(buf, sizeof(buf), "%H:%M:%S", timeP);
-  fbP->drawString(buf, 19*fontW, 0*fontH, UbuntuM16);
+  fbP->drawString(buf, 19*fontW, 0*fontH, defaultFont);
   strftime(buf, sizeof(buf), "%a %Y-%m-%d", timeP);
-  fbP->drawString(buf, 13*fontW, 1*fontH, UbuntuM16);
+  fbP->drawString(buf, 13*fontW, 1*fontH, defaultFont);
 }
 
 
 static void drawFreq(const int freq) {
   char buf[32];
   sprintf(buf, "%s %2d,%03d,%03d", "USB", freq/1000000, (freq/1000) % 1000, freq % 1000);
-  fbP->drawString(buf, 5*fontW, 2*fontH, UbuntuM16);
+  fbP->drawString(buf, 5*fontW, 2*fontH, defaultFont);
 }
 
 
 static void drawUSBStatus(bool up) {
-  fbP->drawString(up ? "[USB]" : "[NO USB]", 0*fontW, 3*fontH, UbuntuM16);
+  fbP->drawString(up ? "[USB]" : "[NO USB]", 0*fontW, 3*fontH, defaultFont);
 }
 
 
@@ -169,18 +172,26 @@ int main(void) {
     .tm_isdst = 1,
   };
 
-  printk("Font hPages=%u, bitsP=%p\n", UbuntuM16.hPages, UbuntuM16.bitsP);
-  const FrameBuffer::Glyph &g = UbuntuM16.glyphs[42];
-  printk("  Glyphs[42]: .bitOffset=%u, .inkW=%u, .advance=%u\n", g.bitOffset, g.inkW, g.advance);
-  printk("fbP->bitsP=%p\n", fbP->bitsP);
-
+  // Fill framebuffer with pattern we can predict.
+#if 0
   for (unsigned page=0; page < 8; ++page) {
     for (unsigned x=0; x < 192; ++x) {
       fbP->bitsP[x + page*192] = x;
     }
   }
+#endif
+
+  memset(fbP->bitsP, 0, FrameBuffer::FBSIZE);
+
+#if 0
   fbP->drawFilledRect(17, 11, 122 - 17, 37 - 11);
   printk("Back from drawFilledRect\n");
+#endif
+
+  unsigned width = fbP->measureString("This is a test!", defaultFont);
+  printk("Back from measureString = %d\n", width);
+  fbP->drawString("This is a test!", 11, 19, defaultFont);
+  printk("Back from drawString\n");
 
   updateFB();
   printk("Back from first updateFB\n");

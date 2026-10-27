@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include <algorithm>
+#include <zephyr/kernel.h>
 
 // This supports MONO_VTILED bitmaps for monochrome LCD. It's very
 // made-for-purpose and limited. Text drawing must be done such that y
@@ -44,16 +45,21 @@ class FrameBuffer {
     const uint8_t *bitsP;
   };
 
-
+  // NOTE: this assumes y is a multiple of 8 for now.
   void drawString(const char *stringP, uint8_t x, uint8_t y, const Font &font) {
 
-    for (; *stringP; ++stringP) {
-      const uint8_t chX = ((*stringP < ' ' || *stringP > '~') ? '?' : *stringP) - ' ';
+    for (const char *p=stringP; *p; ++p) {
+      const uint8_t chX = ((*p < ' ' || *p > '~') ? '?' : *p) - ' ';
       const Glyph &glyph = font.glyphs[chX];
+      unsigned glX = glyph.bitOffset;
 
-      for (uint8_t page=0; page < font.hPages; ++page) {
-	const uint8_t glyphByteX = glyph.bitOffset + page * glyph.inkW;
-	bitsP[(y + page)*width + x] |= font.bitsP[glyphByteX];
+      for (uint8_t inkPage=0; inkPage < font.hPages; ++inkPage) {
+	const uint8_t page = (y >> 3) + inkPage;
+
+	// Copy page strip for glyph to fb while clipping to right edge.
+	for (uint8_t k=0; k < glyph.inkW; ++k, ++glX) {
+	  if (x <= WIDTH) bitsP[x + k + page*WIDTH] |= font.bitsP[glX];
+	}
       }
 
       x += glyph.advance;
@@ -159,12 +165,12 @@ class FrameBuffer {
     const auto [startX, startY, lastX, lastY] = makeCanonical(x, y, w, h);
 
     for (uint8_t thisY=startY; thisY <= lastY; thisY = (thisY+8) & -8) {
-      const uint8_t page = thisY & -8;
+      const uint8_t page = thisY >> 3;
       const uint8_t mask = maskForRange(thisY, lastY);
       if (mask == 0) return;
 
       for (uint8_t thisX=startX; thisX <= lastX; ++thisX) {
-	bltOp(bitsP[thisX + page*WIDTH/8], mask);
+	bltOp(bitsP[thisX + page*WIDTH], mask);
       }
     }
   }
