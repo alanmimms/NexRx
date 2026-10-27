@@ -1,17 +1,15 @@
+local setbox = require("SetBox")
 local Widget = require("ui.Widget")
 local state = require("ui.State")
-local Color = require("ui.Color")
 local Model = require("Model")
 local Hardware = require("Hardware")
 local SignalBox = require("ui.SignalBox")
-local events = require("Events")
 
 --[[
   GraticuleLegend Widget
   Displays scaling info (e.g. "10 kHz/div") in corners of plot widgets.
 ]]
-local GraticuleLegend = {}
-GraticuleLegend.__index = GraticuleLegend
+local GraticuleLegend = Widget.mkType("GraticuleLegend", Widget)
 
 -- Default rules
 setbox.rule {
@@ -27,29 +25,30 @@ setbox.rule {
     }
 }
 
-function GraticuleLegend.new()
-    local self = setmetatable({}, GraticuleLegend)
-    return self
+function GraticuleLegend.new(id, parent)
+    return GraticuleLegend({ id = id or "spec-legend", parent = parent })
 end
 
 function GraticuleLegend:draw(id, x, y, w, h, parentLWC, line1, line2)
-    local lwc = setbox.newContext({"widget.GraticuleLegend", "id." .. id}, parentLWC)
-    
-    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#000000"))
-    local fgR, fgG, fgB = state.hexToRgb(lwc:optString("foreground", "#ffffff"))
-    local radius = lwc:optNumber("borderRadius", 4)
-    local alpha = lwc:optNumber("opacity", 0.5)
-    local pad = lwc:optNumber("padding", 4)
-    
-    System.drawRoundedRect(x, y, w, h, radius, {bgR, bgG, bgB, alpha})
-    
+    if parentLWC and self.lwc and self.lwc.parent ~= parentLWC then
+        self.lwc.parent = parentLWC
+    end
+
+    local bgR, bgG, bgB, bgA = state.hexToRgb(self.props.background or "#000000")
+    local fgR, fgG, fgB, fgA = state.hexToRgb(self.props.foreground or "#ffffff")
+    local radius = self.props.borderRadius or 4
+    local alpha = self.props.opacity or 0.5
+    local pad = self.props.padding or 4
+
+    System.drawRoundedRect(x, y, w, h, radius, {bgR, bgG, bgB, (bgA or 1.0) * alpha})
+
     local ty = y + pad
     if line1 then
-        System.drawText(line1, x + pad, ty, 14, {fgR, fgG, fgB, 1.0})
+        System.drawText(line1, x + pad, ty, 14, {fgR, fgG, fgB, fgA or 1.0})
         ty = ty + 16
     end
     if line2 then
-        System.drawText(line2, x + pad, ty, 14, {fgR, fgG, fgB, 0.7})
+        System.drawText(line2, x + pad, ty, 14, {fgR, fgG, fgB, (fgA or 1.0) * 0.7})
     end
 end
 
@@ -57,7 +56,7 @@ local Spectrum = Widget.mkType("Spectrum", Widget)
 
 function Spectrum:init(def)
   Widget.init(self, def)
-  self.gl = GraticuleLegend.new()
+  self.gl = GraticuleLegend.new("spec-legend", self)
   self.signalBoxWidgets = {}
   self.dragging = false
 end
@@ -68,7 +67,7 @@ function Spectrum:onEvent(event)
     if isCtrlDown and isCtrlDown() then step = 10000
     elseif isShiftDown and isShiftDown() then step = 100000 end
     local current = Model.rx.VFO.activeValue:get()
-    Model.set("rx.VFO.activeValue", current + event.delta * step)
+    Model.set("rx.VFO.activeValue", current + (event.delta or 0) * step)
     return true
   elseif event.type == "mouseButton" and event.button == "LEFT" then
     if event.isDown then
@@ -76,10 +75,12 @@ function Spectrum:onEvent(event)
       local freq = self:getFreqAtPx(event.x)
       Model.set("rx.VFO.activeValue", freq)
       state.setActive(self.id)
+      if self.lwc then self.lwc:addTag("state.Active") end
       return true
     else
       self.dragging = false
       state.setActive(nil)
+      if self.lwc then self.lwc:removeTag("state.Active") end
       return true
     end
   elseif event.type == "mouseMotion" and self.dragging then
@@ -91,18 +92,18 @@ function Spectrum:onEvent(event)
 end
 
 function Spectrum:calcMetrics()
-  if self.metrics.prefW == 0 then self.metrics.prefW = 400 end
-  if self.metrics.prefH == 0 then self.metrics.prefH = 200 end
+  if (self.props.prefW or 0) == 0 then self.props.prefW = 400 end
+  if (self.props.prefH or 0) == 0 then self.props.prefH = 200 end
 end
 
 function Spectrum:getHzPerPx()
   local zoom = Model.waterfall.zoom:get() or 1.0
   local span = (_G.sampleRate or 384000) / zoom
-  return span / self.props.w
+  return span / math.max(1, self.props.w or 1)
 end
 
 function Spectrum:getFreqAtPx(px)
-  local w = self.props.w
+  local w = math.max(1, self.props.w or 1)
   local zoom = Model.waterfall.zoom:get() or 1.0
   local span = (_G.sampleRate or 384000) / zoom
   local center = Model.spectrumCenterFreq:peek()
@@ -110,7 +111,7 @@ function Spectrum:getFreqAtPx(px)
 end
 
 function Spectrum:getPxAtFreq(freq)
-  local w = self.props.w
+  local w = math.max(1, self.props.w or 1)
   local zoom = Model.waterfall.zoom:get() or 1.0
   local span = (_G.sampleRate or 384000) / zoom
   local center = Model.spectrumCenterFreq:peek()
@@ -118,53 +119,66 @@ function Spectrum:getPxAtFreq(freq)
 end
 
 function Spectrum:updateKids()
-  local boxes = Model.signalBoxes:get()
-  local w, h = self.props.w, self.props.h
+  local boxes = Model.signalBoxes:get() or {}
+  local w, h = self.props.w or 0, self.props.h or 0
   local zoom = Model.waterfall.zoom:get() or 1.0
   local span = (_G.sampleRate or 384000) / zoom
 
   -- Ensure we have one widget per model box
   for i, box in ipairs(boxes) do
     if not self.signalBoxWidgets[i] then
-      self.signalBoxWidgets[i] = SignalBox{ id = "sb-" .. box.id, index = i }
+      self.signalBoxWidgets[i] = SignalBox({ id = "sb-" .. tostring(box.id or i), index = i, parent = self })
       self:add(self.signalBoxWidgets[i])
     end
-    
+
     local widget = self.signalBoxWidgets[i]
-    local bw = box.bandwidth
-    local freq = box.frequency
-    
+    widget.boxIndex = i
+    local bw = box.bandwidth or 3000
+    local freq = box.frequency or 0
+
     local boxW = (bw / span) * w
     local centerX = self:getPxAtFreq(freq)
     local boxX = centerX - (boxW / 2)
-    
+
     widget.props.x = boxX
     widget.props.y = 0
     widget.props.w = boxW
     widget.props.h = h
   end
-  
-  -- Remove extra widgets if boxes were deleted (TBD)
+
+  -- Prune extra widgets if boxes were deleted
+  for i = #self.signalBoxWidgets, #boxes + 1, -1 do
+    local removed = table.remove(self.signalBoxWidgets, i)
+    for k = #self.kids, 1, -1 do
+      if self.kids[k] == removed then
+        table.remove(self.kids, k)
+        break
+      end
+    end
+    if removed and removed.dispose then
+      removed:dispose()
+    end
+  end
 end
 
-function Spectrum:draw(parentLWC)
+function Spectrum:draw()
   self:updateKids()
-  return Widget.draw(self, parentLWC)
+  return Widget.draw(self)
 end
 
 function Spectrum:drawSelf(spectrumData)
-  local w, h = self.props.w, self.props.h
-  
+  local w, h = self.props.w or 0, self.props.h or 0
+
   -- Use provided data or fallback to global cached hardware data
   local data = (type(spectrumData) == "table" and spectrumData ~= self) and spectrumData or _G.lastSpectrumData
-  
+
   -- Local 0,0
   Hardware.renderSpectrum(data or {}, 0, 0, w, h)
-  
+
   local zoom = Model.waterfall.zoom:get() or 1.0
   local span = (_G.sampleRate or 384000) / zoom
-  
-  self.gl:draw("spec-legend", 10, 10, 100, 45, self.lwc, string.format("%.1f kHz/div", span/10000), "20 dB/div")
+
+  self.gl:draw("spec-legend", 10, 10, 100, 45, self.lwc, string.format("%.1f kHz/div", span / 10000), "20 dB/div")
 end
 
 return Spectrum

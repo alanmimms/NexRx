@@ -1,7 +1,7 @@
 --[[
   Frequency Display Widget
   Modular UI component for radio frequency readout.
-  Style and behavior driven entirely by SetBox rules.
+  Style and behavior driven by SetBox rules and reactive self.props.
 ]]
 
 local setbox = require("SetBox")
@@ -20,7 +20,7 @@ setbox.rule {
         background = "#1e293b",
         foreground = "#ffffff",
         border = "#3b82f6",
-        highlight = "#facc15", -- Yellow highlight for editing/focus
+        highlight = "#facc15",
         highlighted = false,
         borderWidth = 1,
         borderRadius = 4,
@@ -30,6 +30,7 @@ setbox.rule {
 }
 
 function FrequencyDisplay:init(def)
+    def = def or {}
     Widget.init(self, def)
     self.valueObs = def.valueObs
     self.editing = false
@@ -38,16 +39,13 @@ function FrequencyDisplay:init(def)
 end
 
 function FrequencyDisplay:calcMetrics()
-    if self.metrics.prefW == 0 then self.metrics.prefW = 200 end
-    if self.metrics.prefH == 0 then self.metrics.prefH = 40 end
+    if (self.props.prefW or 0) == 0 then self.props.prefW = 200 end
+    if (self.props.prefH or 0) == 0 then self.props.prefH = 40 end
 end
 
-local function formatFreq(f_hz, lwc)
-    local sep = ","
-    if lwc and lwc.optString then
-        sep = lwc:optString("locale.thousandsSeparator", ",")
-    end
-    local s = string.format("%.0f", f_hz)
+local function formatFreq(fHz, props)
+    local sep = (props and props["locale.thousandsSeparator"]) or ","
+    local s = string.format("%.0f", fHz or 0)
     local res = ""
     local count = 0
     for i = #s, 1, -1 do
@@ -61,31 +59,55 @@ local function formatFreq(f_hz, lwc)
     return res .. " Hz"
 end
 
+function FrequencyDisplay:beginEdit(initialText)
+    self.editing = true
+    self.entryText = initialText or ""
+    self.cursor = #self.entryText
+    if self.lwc then self.lwc:addTag("state.FreqEntryMode") end
+    events.addModeTag("state.FreqEntryMode")
+end
+
+function FrequencyDisplay:confirmEdit()
+    self.editing = false
+    self.entryText = ""
+    if self.lwc then self.lwc:removeTag("state.FreqEntryMode") end
+    events.removeModeTag("state.FreqEntryMode")
+end
+
+function FrequencyDisplay:cancelEdit()
+    self.editing = false
+    self.entryText = ""
+    if self.lwc then self.lwc:removeTag("state.FreqEntryMode") end
+    events.removeModeTag("state.FreqEntryMode")
+end
+
 function FrequencyDisplay:onEvent(event)
     if event.type == "mouseWheel" then
         if self.editing then
             self:cancelEdit()
         end
-        local step = 100 -- Default 100 Hz
+        local step = 100
         if isCtrlDown and isCtrlDown() then step = 10000
         elseif isShiftDown and isShiftDown() then step = 100000 end
-        
-        local current = self.valueObs:get()
-        self.valueObs:set(current + event.delta * step)
+
+        if self.valueObs then
+            local current = self.valueObs:get()
+            self.valueObs:set(current + (event.delta or 0) * step)
+        end
         return true
     end
 
     if event.type == "key" and event.isDown and not self.editing then
         local key = event.key
-        local step = 100 -- Default 100 Hz
+        local step = 100
         if isCtrlDown and isCtrlDown() then step = 10000
         elseif isShiftDown and isShiftDown() then step = 100000 end
-        
+
         local delta = 0
         if key == "RIGHT" or key == "UP" then delta = step
         elseif key == "LEFT" or key == "DOWN" then delta = -step end
-        
-        if delta ~= 0 then
+
+        if delta ~= 0 and self.valueObs then
             local current = self.valueObs:get()
             self.valueObs:set(current + delta)
             return true
@@ -93,13 +115,10 @@ function FrequencyDisplay:onEvent(event)
     end
 
     if event.type == "textInput" then
-        local text = event.text:upper()
+        local text = (event.text or ""):upper()
         if not self.editing then
             if text:match("[%dF]") then
-                self.editing = true
-                self.entryText = text:match("%d") or ""
-                self.cursor = #self.entryText
-                events.addModeTag("state.FreqEntryMode")
+                self:beginEdit(text:match("%d") or "")
                 return true
             end
         else
@@ -121,23 +140,17 @@ function FrequencyDisplay:onEvent(event)
     elseif event.type == "key" and event.isDown then
         local key = event.key
         if not self.editing then
-            -- Start editing on digit or 'F'
             if key:match("^%d$") or key == "F" then
-                self.editing = true
-                self.entryText = key:match("^%d$") and key or ""
-                self.cursor = #self.entryText
-                events.addModeTag("state.FreqEntryMode")
+                self:beginEdit(key:match("^%d$") and key or "")
                 return true
             end
         else
-            -- Already editing
             if key:match("^%d$") or key == "PERIOD" or key == "COMMA" then
                 local char = key:match("^%d$") or (key == "PERIOD" and "." or ",")
                 self.entryText = self.entryText .. char
                 self.cursor = #self.entryText
                 return true
             elseif key == "M" or key == "K" then
-                -- Units (case-insensitive in name but getName might return M/K)
                 local val = tonumber(self.entryText)
                 if val then
                     if key == "M" then val = val * 1e6
@@ -157,9 +170,6 @@ function FrequencyDisplay:onEvent(event)
             elseif key == "ENTER" or key == "RETURN" then
                 local val = tonumber(self.entryText)
                 if val then
-                    -- Heuristic: < 30000 assume kHz, < 100 assume MHz?
-                    -- Actually better to just use entered value or unit keys.
-                    -- User said: "Heuristic < 1000 = MHz" in AppController, let's keep consistency
                     if val < 1000 then val = val * 1e6 end
                     if self.valueObs and self.valueObs.set then self.valueObs:set(val) end
                 end
@@ -169,35 +179,17 @@ function FrequencyDisplay:onEvent(event)
                 self:cancelEdit()
                 return true
             elseif key == "LEFT" or key == "RIGHT" or key == "UP" or key == "DOWN" then
-                -- Arrow keys are also allowed while editing (though currently just ignored)
-                -- but we should return true to consume them if we are in entry mode
                 return true
             end
         end
     elseif event.type == "mouseButton" and event.isDown and event.button == "LEFT" then
         if not self.editing then
-            self.editing = true
-            self.entryText = ""
-            self.cursor = 0
-            events.addModeTag("state.FreqEntryMode")
+            self:beginEdit("")
             return true
         end
     end
 
-    -- Fallback to rules (like vfo_control for wheel)
     return Widget.onEvent(self, event)
-end
-
-function FrequencyDisplay:confirmEdit()
-    self.editing = false
-    self.entryText = ""
-    events.removeModeTag("state.FreqEntryMode")
-end
-
-function FrequencyDisplay:cancelEdit()
-    self.editing = false
-    self.entryText = ""
-    events.removeModeTag("state.FreqEntryMode")
 end
 
 function FrequencyDisplay:onBlur()
@@ -206,78 +198,55 @@ function FrequencyDisplay:onBlur()
     end
 end
 
-function FrequencyDisplay:drawSelf(tags)
+function FrequencyDisplay:drawSelf()
     if self.editing and not self.focused then
         self:cancelEdit()
     end
-    local id, w, h = self.id, self.props.w, self.props.h
-    local widgetTags = {"widget.FrequencyDisplay", "id." .. id}
-    if self.tags then
-        for _, t in ipairs(self.tags) do table.insert(widgetTags, t) end
-    end
-    
+    local w, h = self.props.w or 0, self.props.h or 0
     local isEditing = self.editing
-    if isEditing then
-        table.insert(widgetTags, "state.FreqEntryMode")
+
+    local bgR, bgG, bgB, bgA = state.hexToRgb(self.props.background or "#1e293b")
+    local fgR, fgG, fgB, fgA = state.hexToRgb(self.props.foreground or "#ffffff")
+    local bR, bG, bB, bA = state.hexToRgb(self.props.border or "#3b82f6")
+
+    if self.props.highlighted or isEditing then
+        bR, bG, bB, bA = state.hexToRgb(self.props.highlight or "#facc15")
     end
 
-    if tags then
-        for _, t in ipairs(tags) do table.insert(widgetTags, t) end
-    end
+    local bWidth = self.props.borderWidth or 1
+    local radius = self.props.borderRadius or 4
+    local alpha = self.props.opacity or 1.0
 
-    if state.isHot(id) then table.insert(widgetTags, "state.Hovered") end
-    if state.isActive(id) then table.insert(widgetTags, "state.Active") end
-
-    local lwc = self.lwc
-    
-    state.registerWidget(id, {x=0, y=0, w=w, h=h}, widgetTags)
-    if state.pointInRect(state.mouseX, state.mouseY, 0, 0, w, h) then
-        state.setHot(id)
-        if state.mouseClicked then state.setActive(id) end
-    end
-
-    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#1e293b"))
-    local fgR, fgG, fgB = state.hexToRgb(lwc:optString("foreground", "#ffffff"))
-    local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#3b82f6"))
-    
-    if lwc:optBool("highlighted", false) then
-        bR, bG, bB = state.hexToRgb(lwc:optString("highlight", "#facc15"))
-    end
-
-    local bWidth = lwc:optNumber("borderWidth", 1)
-    local radius = lwc:optNumber("borderRadius", 4)
-    local alpha = lwc:optNumber("opacity", 1.0)
-
-    -- Local coords 0,0
-    System.drawRoundedRect(0, 0, w, h, radius, {bgR, bgG, bgB, alpha})
+    System.drawRoundedRect(0, 0, w, h, radius, {bgR, bgG, bgB, (bgA or 1.0) * alpha})
     if bWidth > 0 then
-        System.drawRectLines(0, 0, w, h, bWidth, {bR, bG, bB, alpha})
+        System.drawRectLines(0, 0, w, h, bWidth, {bR, bG, bB, (bA or 1.0) * alpha})
     end
 
     local frequency = 0
     if self.valueObs then
         frequency = self.valueObs:get()
+    elseif self.props.value ~= nil then
+        frequency = self.props.value
     end
-    
+
     local text = ""
     if isEditing then
         text = self.entryText
     else
-        text = formatFreq(frequency, lwc)
+        text = formatFreq(frequency, self.props)
     end
 
     local tw = System.measureText(text, 20)
     local tx = (w - tw) / 2
     local ty = (h - 20) / 2
-    System.drawText(text, tx, ty, 20, {fgR, fgG, fgB, alpha})
+    System.drawText(text, tx, ty, 20, {fgR, fgG, fgB, (fgA or 1.0) * alpha})
 
-    -- Draw Cursor if editing
     if isEditing then
         local blink = (os.clock() % 1.0) < 0.5
         if blink then
             local cursorOffset = System.measureText(text:sub(1, self.cursor), 20)
             local cursorX = tx + cursorOffset
-            System.drawRect(cursorX, ty, 2, 20, {fgR, fgG, fgB, alpha})
+            System.drawRect(cursorX, ty, 2, 20, {fgR, fgG, fgB, (fgA or 1.0) * alpha})
         end
     end
 end

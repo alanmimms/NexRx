@@ -13,7 +13,7 @@ local ActiveTags = Widget.mkType("ActiveTags")
 -- Default rules for ActiveTags widget (very low priority)
 setbox.rule {
     id = "active-tags-defaults",
-    tags = {"widget.ActiveTagsViewer"},
+    tags = {"widget.ActiveTags"},
     priority = -1000,
     apply = {
         background = "#08081a",
@@ -29,29 +29,26 @@ function ActiveTags:init(def)
 end
 
 function ActiveTags:calcMetrics()
-    if self.metrics.prefW == 0 then self.metrics.prefW = 180 end
-    if self.metrics.prefH == 0 then self.metrics.prefH = 200 end
+    if (self.props.prefW or 0) == 0 then self.props.prefW = 180 end
+    if (self.props.prefH or 0) == 0 then self.props.prefH = 200 end
 end
 
 function ActiveTags:drawSelf(tags)
-    local w, h = self.props.w, self.props.h
-    local lwc = self.lwc
-    
-    -- Style resolution
-    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#08081a"))
-    local radius = lwc:optNumber("borderRadius", 4)
-    local alpha = lwc:optNumber("opacity", 0.8)
-    local pad = lwc:optNumber("padding", 8)
-    
+    local w, h = self.props.w or 0, self.props.h or 0
+
+    local bgR, bgG, bgB = state.hexToRgb(self.props.background or "#08081a")
+    local radius = self.props.borderRadius or 4
+    local alpha = self.props.opacity or 0.8
+    local pad = self.props.padding or 8
+
     System.drawRoundedRect(0, 0, w, h, radius, {bgR, bgG, bgB, alpha})
-    
-    -- Draw Title
-    local title = lwc:optString("title", "ACTIVE TAGS")
+
+    local title = self.props.title or "ACTIVE TAGS"
     System.drawText(title, pad, pad, 16, {0.5, 0.7, 1.0, alpha})
-    
+
     local ty = 32
     tags = tags or (setbox.getActiveTags and setbox.getActiveTags()) or {}
-    
+
     for _, tag in ipairs(tags) do
         System.drawText(tostring(tag), pad + 4, ty, 14, {1, 1, 1, alpha})
         ty = ty + 18

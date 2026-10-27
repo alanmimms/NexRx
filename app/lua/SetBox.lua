@@ -70,27 +70,38 @@ function Context.new(tags, parent)
     if tags then
         for _, t in ipairs(tags) do
             local name, _ = parseTag(t)
-            self.localTags[name] = true
+            self.localTags[name] = R.observable(true)
         end
     end
     self.parent = parent
     return self
 end
 
+function Context:getLocalTagObservable(name, initial)
+    if not self.localTags then self.localTags = {} end
+    local obs = self.localTags[name]
+    if not obs then
+        obs = R.observable(initial == true)
+        self.localTags[name] = obs
+    end
+    return obs
+end
+
 --- Check if a tag is active in this context (local or parent or global)
 function Context:hasTag(tag)
-    if self.localTags[tag] then return true end
-    if self.parent then return self.parent:hasTag(tag) end
-    
-    -- Reactive tracking: Reading the tag's state registers it as a dependency
-    -- We only care about tags that actually exist in rules
-    if knownTags[tag] then
-        return getTagObservable(tag):get() == true
+    local name, _ = parseTag(tag)
+    local localObs = self.localTags and self.localTags[name]
+    if localObs then
+        if localObs:get() == true then return true end
+    else
+        -- Subscribe to local tag observable on demand so future local tag toggles invalidate callers
+        self:getLocalTagObservable(name, false):get()
     end
+
+    if self.parent then return self.parent:hasTag(name) end
     
-    -- For non-rule tags, just peek to avoid creating useless observables
-    local obs = activeTags[tag]
-    return obs and obs:peek() == true
+    -- Reactive tracking: Reading the global tag's state registers it as a dependency
+    return getTagObservable(name):get() == true
 end
 
 --- Get all tags contributing to this context (for error reporting)
@@ -103,7 +114,15 @@ function Context:getHierarchyTags()
         local pTags = self.parent:getHierarchyTags()
         for _, t in ipairs(pTags) do tags[t] = true end
     end
-    for t in pairs(self.localTags) do tags[t] = true end
+    if self.localTags then
+        for name, obs in pairs(self.localTags) do
+            if type(obs) == "table" and obs.peek then
+                if obs:peek() then tags[name] = true end
+            elseif obs then
+                tags[name] = true
+            end
+        end
+    end
     
     local list = {}
     for t in pairs(tags) do table.insert(list, t) end
@@ -290,9 +309,8 @@ local function _invalidateCache(propertyName)
     if propertyName then
         local obs = getPropertyVersion(propertyName)
         obs:set(obs:peek() + 1)
-    else
-        globalRulesVersion:set(globalRulesVersion:peek() + 1)
     end
+    globalRulesVersion:set(globalRulesVersion:peek() + 1)
 
     if #changeCallbacks == 0 or not globalCtx then return end
     
@@ -307,10 +325,28 @@ local function _invalidateCache(propertyName)
     end
 end
 
+function Context:setTag(tag, active)
+    local name, _ = parseTag(tag)
+    local val = (active == true)
+    local obs = self:getLocalTagObservable(name, val)
+    if obs:peek() ~= val then
+        obs:set(val)
+    end
+end
+
 function Context:addTag(tag)
-    if not self.localTags then self.localTags = {} end
-    table.insert(self.localTags, tag)
-    _invalidateCache()
+    self:setTag(tag, true)
+end
+
+function Context:removeTag(tag)
+    self:setTag(tag, false)
+end
+
+function Context:toggleTag(tag)
+    local name, _ = parseTag(tag)
+    local obs = self.localTags and self.localTags[name]
+    local cur = obs and (obs:peek() == true) or false
+    self:setTag(name, not cur)
 end
 
 globalCtx = setmetatable({localTags = {}}, Context)
@@ -427,6 +463,7 @@ function SetBox._clear()
     propertyVersions = {}
     knownTags = {}
 end
+SetBox.clear = SetBox._clear
 
 -- =============================================================================
 -- Public API - Rule Registration
@@ -444,13 +481,15 @@ function SetBox.rule(def)
         end
     end
 
+    local propsTable = {}
     local rule = {
         id = id,
         tags = {},
         condition = def["when"],
         priority = def.priority or 0,
         enabled = def.enabled ~= false,
-        properties = {},
+        properties = propsTable,
+        apply = propsTable,
         declarationOrder = nextRuleOrder,
     }
     nextRuleOrder = nextRuleOrder + 1
@@ -494,6 +533,7 @@ function SetBox.rule(def)
                     if keyTable[i] == oldRule then table.remove(keyTable, i) end
                 end
             end
+            _invalidateCache(name)
         end
         table.remove(rules, existingIndex)
     end
@@ -512,6 +552,21 @@ function SetBox.rule(def)
 end
 
 function SetBox.getRules() return rules end
+
+function SetBox.getRulesWithTag(tag)
+    local name, _ = parseTag(tag)
+    local matching = {}
+    for _, r in ipairs(rules) do
+        if r.enabled and r.tags[name] ~= nil then
+            table.insert(matching, r)
+        end
+    end
+    return matching
+end
+
+function SetBox.getPropertyVersion(name)
+    return getPropertyVersion(name)
+end
 
 -- =============================================================================
 -- Public API - Resolution (Global / Legacy)
@@ -532,6 +587,7 @@ function SetBox.getString(name) return globalCtx:getString(name) end
 function SetBox.getBool(name) return globalCtx:getBool(name) end
 function SetBox.optNumber(name, default) return globalCtx:optNumber(name, default) end
 function SetBox.optString(name, default) return globalCtx:optString(name, default) end
+function SetBox.optBool(name, default) return globalCtx:optBool(name, default) end
 
 -- =============================================================================
 -- Script Loading

@@ -1,8 +1,11 @@
 --[[
-    Unit tests for ui.layout module
+    Unit tests for retained-mode ui.Layout and Widget.Container layout
 ]]
 
-local layout = require("ui.Layout")
+local Layout = require("ui.Layout")
+local Widget = require("ui.Widget")
+local Stick = require("ui.Stick")
+local setbox = require("SetBox")
 
 local Tests = {}
 local passed = 0
@@ -35,390 +38,161 @@ end
 -- Tests
 -- =============================================================================
 
-function Tests.test_begin_creates_root_region()
-    print("test_begin_creates_root_region")
-    layout.begin(0, 0, 800, 600)
+function Tests.test_hFlow_fixed_and_flex()
+    print("test_hFlow_fixed_and_flex")
+    local k1 = Widget({ id = "k1", prefW = 100, prefH = 40, stick = "TLB" })
+    local k2 = Widget({ id = "k2", flexW = 1, prefH = 40, stick = "TLBR" })
+    local k3 = Widget({ id = "k3", flexW = 2, prefH = 40, stick = "TLBR" })
 
-    local x, y, w, h = layout.getRect()
-    assert_eq(0, x, "root x")
-    assert_eq(0, y, "root y")
-    assert_eq(800, w, "root w")
-    assert_eq(600, h, "root h")
+    local row = Widget.Row({
+        id = "row",
+        kids = { k1, k2, k3 },
+    })
 
-    assert_eq(1, layout.getDepth(), "stack depth")
+    row:layout(0, 0, 700, 100)
 
-    layout.finish()
+    assert_eq(0, k1.props.x, "k1 x")
+    assert_eq(100, k1.props.w, "k1 w")
+    assert_eq(100, k1.props.h, "k1 h stretched TLB")
+
+    assert_close(100, k2.props.x, 0.01, "k2 x")
+    assert_close(200, k2.props.w, 0.01, "k2 w (1/3 of 600)")
+    assert_eq(100, k2.props.h, "k2 h")
+
+    assert_close(300, k3.props.x, 0.01, "k3 x")
+    assert_close(400, k3.props.w, 0.01, "k3 w (2/3 of 600)")
 end
 
-function Tests.test_dock_top()
-    print("test_dock_top")
-    layout.begin(0, 0, 800, 600)
+function Tests.test_vFlow_fixed_and_flex()
+    print("test_vFlow_fixed_and_flex")
+    local header = Widget({ id = "header", prefH = 40, stick = "TLR" })
+    local body = Widget({ id = "body", flexH = 1, stick = "TLBR" })
+    local footer = Widget({ id = "footer", prefH = 60, stick = "TLR" })
 
-    layout.dock("top", 40)
-    local x, y, w, h = layout.getRect()
-    assert_eq(0, x, "docked x")
-    assert_eq(0, y, "docked y")
-    assert_eq(800, w, "docked w")
-    assert_eq(40, h, "docked h")
-    layout.endDock()
+    local col = Widget.Column({
+        id = "col",
+        kids = { header, body, footer },
+    })
 
-    -- Remaining region should be reduced
-    x, y, w, h = layout.getRect()
-    assert_eq(0, x, "remaining x")
-    assert_eq(40, y, "remaining y")
-    assert_eq(800, w, "remaining w")
-    assert_eq(560, h, "remaining h")
+    col:layout(0, 0, 800, 600)
 
-    layout.finish()
+    assert_eq(0, header.props.y, "header y")
+    assert_eq(800, header.props.w, "header w")
+    assert_eq(40, header.props.h, "header h")
+
+    assert_eq(40, body.props.y, "body y")
+    assert_eq(800, body.props.w, "body w")
+    assert_eq(500, body.props.h, "body h (600 - 40 - 60)")
+
+    assert_eq(540, footer.props.y, "footer y")
+    assert_eq(60, footer.props.h, "footer h")
 end
 
-function Tests.test_dock_bottom()
-    print("test_dock_bottom")
-    layout.begin(0, 0, 800, 600)
+function Tests.test_margins_and_stick_alignment()
+    print("test_margins_and_stick_alignment")
+    local centered = Widget({
+        id = "centered",
+        prefW = 100,
+        prefH = 50,
+        stick = 0, -- Centered on both axes when neither L/R nor T/B is set
+    })
 
-    layout.dock("bottom", 30)
-    local x, y, w, h = layout.getRect()
-    assert_eq(0, x, "docked x")
-    assert_eq(570, y, "docked y")
-    assert_eq(800, w, "docked w")
-    assert_eq(30, h, "docked h")
-    layout.endDock()
+    local stack = Widget.Container({
+        id = "stack",
+        layoutFunc = Layout.zStack,
+        kids = { centered },
+    })
 
-    -- Remaining region
-    x, y, w, h = layout.getRect()
-    assert_eq(0, x, "remaining x")
-    assert_eq(0, y, "remaining y")
-    assert_eq(800, w, "remaining w")
-    assert_eq(570, h, "remaining h")
+    stack:layout(0, 0, 400, 200)
+    assert_eq(150, centered.props.x, "zStack centered x")
+    assert_eq(75, centered.props.y, "zStack centered y")
+    assert_eq(100, centered.props.w, "zStack centered w")
+    assert_eq(50, centered.props.h, "zStack centered h")
 
-    layout.finish()
+    local padded = Widget({
+        id = "padded",
+        stick = "TLBR",
+        margin = 10,
+    })
+    local stack2 = Widget.Container({
+        id = "stack2",
+        layoutFunc = Layout.zStack,
+        kids = { padded },
+    })
+    stack2:layout(0, 0, 400, 200)
+    assert_eq(10, padded.props.x, "padded x")
+    assert_eq(10, padded.props.y, "padded y")
+    assert_eq(380, padded.props.w, "padded w")
+    assert_eq(180, padded.props.h, "padded h")
 end
 
-function Tests.test_dock_left()
-    print("test_dock_left")
-    layout.begin(0, 0, 800, 600)
+function Tests.test_wrapFlow()
+    print("test_wrapFlow")
+    local w1 = Widget({ prefW = 120, prefH = 30 })
+    local w2 = Widget({ prefW = 120, prefH = 40 })
+    local w3 = Widget({ prefW = 120, prefH = 30 })
 
-    layout.dock("left", 200)
-    local x, y, w, h = layout.getRect()
-    assert_eq(0, x, "docked x")
-    assert_eq(0, y, "docked y")
-    assert_eq(200, w, "docked w")
-    assert_eq(600, h, "docked h")
-    layout.endDock()
+    local wrap = Widget.Container({
+        layoutFunc = Layout.wrapFlow,
+        kids = { w1, w2, w3 },
+    })
 
-    -- Remaining region
-    x, y, w, h = layout.getRect()
-    assert_eq(200, x, "remaining x")
-    assert_eq(0, y, "remaining y")
-    assert_eq(600, w, "remaining w")
-    assert_eq(600, h, "remaining h")
-
-    layout.finish()
+    wrap:layout(0, 0, 250, 200)
+    assert_eq(0, w1.props.x, "w1 x")
+    assert_eq(0, w1.props.y, "w1 y")
+    assert_eq(120, w2.props.x, "w2 x")
+    assert_eq(0, w2.props.y, "w2 y")
+    -- w3 wraps to next line (rowMaxH = 40)
+    assert_eq(0, w3.props.x, "w3 wrapped x")
+    assert_eq(40, w3.props.y, "w3 wrapped y")
 end
 
-function Tests.test_dock_right()
-    print("test_dock_right")
-    layout.begin(0, 0, 800, 600)
+function Tests.test_grid()
+    print("test_grid")
+    local g1 = Widget({ prefW = 50, prefH = 20 })
+    local g2 = Widget({ prefW = 80, prefH = 30 })
+    local g3 = Widget({ prefW = 60, prefH = 25 })
+    local g4 = Widget({ prefW = 40, prefH = 20 })
 
-    layout.dock("right", 150)
-    local x, y, w, h = layout.getRect()
-    assert_eq(650, x, "docked x")
-    assert_eq(0, y, "docked y")
-    assert_eq(150, w, "docked w")
-    assert_eq(600, h, "docked h")
-    layout.endDock()
+    local grid = Widget.Container({
+        layoutFunc = Layout.grid,
+        cols = 2,
+        kids = { g1, g2, g3, g4 },
+    })
 
-    -- Remaining region
-    x, y, w, h = layout.getRect()
-    assert_eq(0, x, "remaining x")
-    assert_eq(0, y, "remaining y")
-    assert_eq(650, w, "remaining w")
-    assert_eq(600, h, "remaining h")
-
-    layout.finish()
+    grid:layout(0, 0, 300, 300)
+    -- Col 1 max width = max(50, 60) = 60; Row 1 max height = max(20, 30) = 30
+    assert_eq(0, g1.props.x, "g1 x")
+    assert_eq(0, g1.props.y, "g1 y")
+    assert_eq(60, g2.props.x, "g2 x")
+    assert_eq(0, g2.props.y, "g2 y")
+    assert_eq(0, g3.props.x, "g3 x")
+    assert_eq(30, g3.props.y, "g3 y")
+    assert_eq(60, g4.props.x, "g4 x")
+    assert_eq(30, g4.props.y, "g4 y")
 end
 
-function Tests.test_dock_all_sides()
-    print("test_dock_all_sides")
-    layout.begin(0, 0, 800, 600)
-
-    layout.dock("top", 40)
-    layout.endDock()
-
-    layout.dock("bottom", 30)
-    layout.endDock()
-
-    layout.dock("left", 200)
-    layout.endDock()
-
-    layout.dock("right", 150)
-    layout.endDock()
-
-    -- Remaining center area
-    local x, y, w, h = layout.getRect()
-    assert_eq(200, x, "center x")
-    assert_eq(40, y, "center y")
-    assert_eq(450, w, "center w")  -- 800 - 200 - 150
-    assert_eq(530, h, "center h")  -- 600 - 40 - 30
-
-    layout.finish()
-end
-
-function Tests.test_nested_docks()
-    print("test_nested_docks")
-    layout.begin(0, 0, 800, 600)
-
-    layout.dock("left", 300)
-        -- Dock within dock
-        layout.dock("top", 50)
-        local x, y, w, h = layout.getRect()
-        assert_eq(0, x, "nested dock x")
-        assert_eq(0, y, "nested dock y")
-        assert_eq(300, w, "nested dock w")
-        assert_eq(50, h, "nested dock h")
-        layout.endDock()
-
-        -- Remaining after nested dock
-        x, y, w, h = layout.getRect()
-        assert_eq(0, x, "nested remaining x")
-        assert_eq(50, y, "nested remaining y")
-        assert_eq(300, w, "nested remaining w")
-        assert_eq(550, h, "nested remaining h")
-    layout.endDock()
-
-    layout.finish()
-end
-
-function Tests.test_split_horizontal()
-    print("test_split_horizontal")
-    layout.begin(0, 0, 800, 600)
-
-    layout.splitH(0.5)
-    local x, y, w, h = layout.getRect()
-    assert_eq(0, x, "left x")
-    assert_eq(0, y, "left y")
-    assert_eq(400, w, "left w")
-    assert_eq(600, h, "left h")
-
-    layout.nextSplit()
-    x, y, w, h = layout.getRect()
-    assert_eq(400, x, "right x")
-    assert_eq(0, y, "right y")
-    assert_eq(400, w, "right w")
-    assert_eq(600, h, "right h")
-
-    layout.endSplit()
-    layout.finish()
-end
-
-function Tests.test_split_vertical()
-    print("test_split_vertical")
-    layout.begin(0, 0, 800, 600)
-
-    layout.splitV(0.4)
-    local x, y, w, h = layout.getRect()
-    assert_eq(0, x, "top x")
-    assert_eq(0, y, "top y")
-    assert_eq(800, w, "top w")
-    assert_eq(240, h, "top h")  -- 600 * 0.4 = 240
-
-    layout.nextSplit()
-    x, y, w, h = layout.getRect()
-    assert_eq(0, x, "bottom x")
-    assert_eq(240, y, "bottom y")
-    assert_eq(800, w, "bottom w")
-    assert_eq(360, h, "bottom h")  -- 600 - 240
-
-    layout.endSplit()
-    layout.finish()
-end
-
-function Tests.test_split_uneven()
-    print("test_split_uneven")
-    layout.begin(0, 0, 1000, 500)
-
-    layout.splitH(0.25)
-    local x, y, w, h = layout.getRect()
-    assert_eq(250, w, "25% left w")
-
-    layout.nextSplit()
-    x, y, w, h = layout.getRect()
-    assert_eq(750, w, "75% right w")
-
-    layout.endSplit()
-    layout.finish()
-end
-
-function Tests.test_horizontal_stacking()
-    print("test_horizontal_stacking")
-    layout.begin(0, 0, 800, 600)
-    layout.beginHorizontal(10)
-
-    local x1, y1 = layout.reserveSpace(100, 32)
-    assert_eq(0, x1, "first item x")
-    assert_eq(0, y1, "first item y")
-
-    local x2, y2 = layout.reserveSpace(100, 32)
-    assert_eq(110, x2, "second item x")  -- 100 + 10 spacing
-    assert_eq(0, y2, "second item y")
-
-    local x3, y3 = layout.reserveSpace(50, 32)
-    assert_eq(220, x3, "third item x")  -- 110 + 100 + 10
-    assert_eq(0, y3, "third item y")
-
-    layout.endHorizontal()
-    layout.finish()
-end
-
-function Tests.test_vertical_stacking()
-    print("test_vertical_stacking")
-    layout.begin(0, 0, 800, 600)
-    layout.beginVertical(8)
-
-    local x1, y1 = layout.reserveSpace(200, 28)
-    assert_eq(0, x1, "first item x")
-    assert_eq(0, y1, "first item y")
-
-    local x2, y2 = layout.reserveSpace(200, 28)
-    assert_eq(0, x2, "second item x")
-    assert_eq(36, y2, "second item y")  -- 28 + 8 spacing
-
-    local x3, y3 = layout.reserveSpace(200, 28)
-    assert_eq(0, x3, "third item x")
-    assert_eq(72, y3, "third item y")  -- 36 + 28 + 8
-
-    layout.endVertical()
-    layout.finish()
-end
-
-function Tests.test_pad_reduces_region()
-    print("test_pad_reduces_region")
-    layout.begin(0, 0, 800, 600)
-
-    layout.pad(20)
-    local x, y, w, h = layout.getRect()
-    assert_eq(20, x, "padded x")
-    assert_eq(20, y, "padded y")
-    assert_eq(760, w, "padded w")  -- 800 - 40
-    assert_eq(560, h, "padded h")  -- 600 - 40
-
-    layout.finish()
-end
-
-function Tests.test_cursor_after_newline()
-    print("test_cursor_after_newline")
-    layout.begin(0, 0, 800, 600)
-
-    local cx, cy = layout.getCursor()
-    assert_eq(0, cx, "initial cursor x")
-    assert_eq(0, cy, "initial cursor y")
-
-    layout.newLine(30)
-    cx, cy = layout.getCursor()
-    assert_eq(0, cx, "cursor x after newline")
-    assert_eq(34, cy, "cursor y after newline")  -- 30 + default spacing 4
-
-    layout.finish()
-end
-
-function Tests.test_center_alignment()
-    print("test_center_alignment")
-    layout.begin(0, 0, 800, 600)
-
-    local cx, cy = layout.center(100, 50)
-    assert_eq(350, cx, "centered x")  -- (800 - 100) / 2
-    assert_eq(275, cy, "centered y")  -- (600 - 50) / 2
-
-    layout.finish()
-end
-
-function Tests.test_align_right()
-    print("test_align_right")
-    layout.begin(0, 0, 800, 600)
-
-    local rx = layout.alignRight(150)
-    assert_eq(650, rx, "right-aligned x")  -- 800 - 150
-
-    layout.finish()
-end
-
-function Tests.test_align_bottom()
-    print("test_align_bottom")
-    layout.begin(0, 0, 800, 600)
-
-    local by = layout.alignBottom(100)
-    assert_eq(500, by, "bottom-aligned y")  -- 600 - 100
-
-    layout.finish()
-end
-
-function Tests.test_indent_unindent()
-    print("test_indent_unindent")
-    layout.begin(0, 0, 800, 600)
-
-    layout.indent(20)
-    local cx, _ = layout.getCursor()
-    assert_eq(20, cx, "cursor after indent")
-
-    layout.indent(10)
-    cx, _ = layout.getCursor()
-    assert_eq(30, cx, "cursor after second indent")
-
-    layout.unindent(15)
-    cx, _ = layout.getCursor()
-    assert_eq(15, cx, "cursor after unindent")
-
-    layout.finish()
-end
-
-function Tests.test_space_in_horizontal()
-    print("test_space_in_horizontal")
-    layout.begin(0, 0, 800, 600)
-    layout.beginHorizontal()
-
-    local x1, _ = layout.reserveSpace(50, 20)
-    assert_eq(0, x1, "first item x")
-
-    layout.space(30)  -- Extra space
-
-    local x2, _ = layout.reserveSpace(50, 20)
-    -- 50 + 4 (default spacing) + 30 (extra) = 84
-    assert_eq(84, x2, "item after space x")
-
-    layout.endHorizontal()
-    layout.finish()
-end
-
-function Tests.test_remaining_size()
-    print("test_remaining_size")
-    layout.begin(0, 0, 800, 600)
-    layout.beginVertical()
-
-    layout.reserveSpace(200, 100)
-    local rw, rh = layout.getRemainingSize()
-    assert_eq(800, rw, "remaining width")
-    assert_eq(496, rh, "remaining height")  -- 600 - 100 - 4 spacing
-
-    layout.endVertical()
-    layout.finish()
-end
-
-function Tests.test_region_id_tracking()
-    print("test_region_id_tracking")
-    layout.begin(0, 0, 800, 600)
-
-    local rootId = layout.getCurrentRegionId()
-    assert_eq("region_1", rootId, "root region ID")
-
-    layout.dock("top", 40, "header")
-    local dockId = layout.getCurrentRegionId()
-    assert_eq("region_2", dockId, "dock region ID")
-
-    local dockName = layout.getCurrentRegionName()
-    assert_eq("header", dockName, "dock region name")
-
-    layout.endDock()
-    layout.finish()
+function Tests.test_rule_driven_metrics()
+    print("test_rule_driven_metrics")
+    setbox.rule {
+        id = "test-sidebar-rule",
+        tags = { "widget.TestSidebar" },
+        priority = 10,
+        apply = {
+            prefW = 240,
+            stick = "TLB",
+        }
+    }
+
+    local sb = Widget({ id = "sb", tags = { "widget.TestSidebar" } })
+    local center = Widget({ id = "center", flexW = 1, stick = "TLBR" })
+    local root = Widget.Row({ kids = { sb, center } })
+
+    root:layout(0, 0, 1000, 500)
+    assert_eq(240, sb.props.w, "rule-resolved sidebar width")
+    assert_eq(500, sb.props.h, "rule-resolved sidebar stick TLB height")
+    assert_eq(240, center.props.x, "center x after sidebar")
+    assert_eq(760, center.props.w, "center flex width")
 end
 
 -- =============================================================================
@@ -430,27 +204,12 @@ function Tests.runAll()
     passed = 0
     failed = 0
 
-    Tests.test_begin_creates_root_region()
-    Tests.test_dock_top()
-    Tests.test_dock_bottom()
-    Tests.test_dock_left()
-    Tests.test_dock_right()
-    Tests.test_dock_all_sides()
-    Tests.test_nested_docks()
-    Tests.test_split_horizontal()
-    Tests.test_split_vertical()
-    Tests.test_split_uneven()
-    Tests.test_horizontal_stacking()
-    Tests.test_vertical_stacking()
-    Tests.test_pad_reduces_region()
-    Tests.test_cursor_after_newline()
-    Tests.test_center_alignment()
-    Tests.test_align_right()
-    Tests.test_align_bottom()
-    Tests.test_indent_unindent()
-    Tests.test_space_in_horizontal()
-    Tests.test_remaining_size()
-    Tests.test_region_id_tracking()
+    Tests.test_hFlow_fixed_and_flex()
+    Tests.test_vFlow_fixed_and_flex()
+    Tests.test_margins_and_stick_alignment()
+    Tests.test_wrapFlow()
+    Tests.test_grid()
+    Tests.test_rule_driven_metrics()
 
     print(string.format("\nResults: %d passed, %d failed\n", passed, failed))
     return failed == 0

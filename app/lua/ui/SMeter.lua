@@ -106,40 +106,38 @@ function SMeter:init(def)
 end
 
 function SMeter:calcMetrics()
-    if self.metrics.prefW == 0 then self.metrics.prefW = 200 end
-    if self.metrics.prefH == 0 then self.metrics.prefH = 66 end
+    if (self.props.prefW or 0) == 0 then self.props.prefW = 200 end
+    if (self.props.prefH or 0) == 0 then self.props.prefH = 66 end
 end
 
 function SMeter:drawSelf(reading)
-    local w, h = self.props.w, self.props.h
-    local lwc = self.lwc
-    
+    local w = self.props.w or 0
     reading = reading or SMeter.getReading()
 
-    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#0f172a"))
-    local weakR, weakG, weakB = state.hexToRgb(lwc:optString("colorWeak", "#22c55e"))
-    local midR, midG, midB = state.hexToRgb(lwc:optString("colorMid", "#eab308"))
-    local strongR, strongG, strongB = state.hexToRgb(lwc:optString("colorStrong", "#ef4444"))
-    local offR, offG, offB = state.hexToRgb(lwc:optString("colorOff", "#1e293b"))
-    local radius = lwc:optNumber("borderRadius", 4)
-    local alpha = lwc:optNumber("opacity", 1.0)
-    local pad = lwc:optNumber("padding", 4)
-    local barCount = lwc:optNumber("barCount", 12)
-    local barGap = lwc:optNumber("barGap", 2)
+    local bgR, bgG, bgB = state.hexToRgb(self.props.background or "#0f172a")
+    local weakR, weakG, weakB = state.hexToRgb(self.props.colorWeak or "#22c55e")
+    local midR, midG, midB = state.hexToRgb(self.props.colorMid or "#eab308")
+    local strongR, strongG, strongB = state.hexToRgb(self.props.colorStrong or "#ef4444")
+    local offR, offG, offB = state.hexToRgb(self.props.colorOff or "#1e293b")
+    local radius = self.props.borderRadius or 4
+    local alpha = self.props.opacity or 1.0
+    local pad = self.props.padding or 4
+    local barCount = self.props.barCount or 12
+    local barGap = self.props.barGap or 2
 
-    local title = lwc:optString("title", "S-METER")
+    local title = self.props.title or "S-METER"
     System.drawText(title, 0, 0, 16, {0.7, 0.7, 0.8, alpha})
-    
+
     local barY = 18
     local barActualH = 28
     System.drawRoundedRect(0, barY, w, barActualH, radius, {bgR, bgG, bgB, alpha})
 
     local barW = (w - pad * 2 - barGap * (barCount - 1)) / barCount
     local barH = barActualH - pad * 2
-    
+
     for i = 0, barCount - 1 do
         local barX = pad + i * (barW + barGap)
-        local barThreshold = (i < 9) and (i + 1) or (9 + (i - 8) * (20/6))
+        local barThreshold = (i < 9) and (i + 1) or (9 + (i - 8) * (20 / 6))
 
         if reading.sUnits >= barThreshold then
             local r, g, b = weakR, weakG, weakB

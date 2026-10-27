@@ -11,12 +11,8 @@ local setbox = require("SetBox")
 
 local Model = {}
 
-local propertyVersions = {}
 local function getPropertyVersion(name)
-    if not propertyVersions[name] then
-        propertyVersions[name] = R.observable(0)
-    end
-    return propertyVersions[name]
+    return setbox.getPropertyVersion(name)
 end
 
 -- =============================================================================
@@ -220,18 +216,15 @@ function Model.set(name, value)
     end
 
     -- For standard properties, check if it actually changed before bumping revision
-    local current = setbox.get(name)
-    if current == value then return end
+    if setbox.has(name) and setbox.get(name) == value then return end
 
     -- Create or update a high-priority rule (1000) for this property.
+    -- SetBox.rule automatically increments setbox.getPropertyVersion(name).
     mutationRules[name] = setbox.rule({
         id = "override." .. name,
         priority = 1000,
         apply = { [name] = value }
     })
-    
-    local obs = getPropertyVersion(name)
-    obs:set(obs:peek() + 1)
 end
 
 --- Round frequency to nearest step

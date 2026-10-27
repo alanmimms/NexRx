@@ -92,47 +92,51 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   hwTable["disconnect"] = [engine]() { engine->disconnectTwin(); };
   hwTable["isConnected"] = [engine]() { return engine->isTwinConnected(); };
-  hwTable["getSpectrum"] = [engine](sol::this_state s) { 
+  hwTable["getSpectrum"] = [engine](sol::this_state s) {
     engine->getDSP().computeSpectrum();
     std::vector<float> data = engine->getDSP().getSpectrumData();
-    sol::state_view lView(s); sol::table res = lView.create_table(); 
-    for (size_t i = 0; i < data.size(); ++i) res[i + 1] = data[i]; 
-    return res; 
+    sol::state_view lView(s);
+    sol::table res = lView.create_table();
+    for (int i = 0; i < static_cast<int>(data.size()); ++i) {
+      res[i + 1] = data[i];
+    }
+    return res;
   };
   hwTable["getState"] = [engine](sol::this_state s) -> sol::object {
     return engine->getTwinState(s);
   };
-  
+
   // Setters
   hwTable["setVFO"] = [engine](double f, double k) { engine->postTwinCommand("VFO", [engine, f, k]() { engine->getTwinConn().setVFO(f, k); }); };
   hwTable["setAttenuation"] = [engine](int db) { engine->postTwinCommand("ATTEN", [engine, db]() { engine->getTwinConn().setAtten(db); }); };
   hwTable["setAGCMode"] = [engine](int m) { engine->postTwinCommand("AGC", [engine, m]() { engine->getTwinConn().setAGCMode(m); }); };
+  hwTable["setAGCEnabled"] = [engine](bool en) { engine->postTwinCommand("AGC_EN", [engine, en]() { engine->getTwinConn().setAGCMode(en ? 1 : 0); }); };
   hwTable["setIsgFreq"] = [engine](double f) { engine->postTwinCommand("ISG_FREQ", [engine, f]() { engine->getTwinConn().setISGFreq(f); }); };
   hwTable["setIsgEnable"] = [engine](bool en) { engine->postTwinCommand("ISG_EN", [engine, en]() { engine->getTwinConn().setISGEnable(en); }); };
   hwTable["setHpfBypass"] = [engine](bool bypass) { engine->postTwinCommand("HPF_BYPASS", [engine, bypass]() { engine->getTwinConn().setHpfBypass(bypass); }); };
   hwTable["setBpfIndex"] = [engine](int idx) { engine->postTwinCommand("BPF_SELECT", [engine, idx]() { engine->getTwinConn().setBpfIndex(idx); }); };
-  
+
   hwTable["setRFGain"] = [engine](double db) {
-    engine->getDSP().setRfGain((float)db);
-    engine->postTwinCommand("RF_GAIN", [engine, db]() { 
-        int code = (int)(db / 6.0);
-        if (code < 0) code = 0;
-        engine->getTwinConn().setPGAGain(code); 
-    }); 
+    engine->getDSP().setRfGain(static_cast<float>(db));
+    engine->postTwinCommand("RF_GAIN", [engine, db]() {
+      int code = static_cast<int>(db / 6.0);
+      if (code < 0) code = 0;
+      engine->getTwinConn().setPGAGain(code);
+    });
   };
-  auto setOsdOffsetFn = [engine](double k) { 
-    engine->getDSP().setOSDOffset(k); 
-    engine->postTwinCommand("VFO", [engine, k]() { engine->getTwinConn().setVFO(engine->getLastVFOHz(), k * 1000.0); }); 
+  auto setOSDOffsetFn = [engine](double k) {
+    engine->getDSP().setOSDOffset(k);
+    engine->postTwinCommand("VFO", [engine, k]() { engine->getTwinConn().setVFO(engine->getLastVFOHz(), k * 1000.0); });
   };
-  hwTable["setOSDOffset"] = setOsdOffsetFn;
-  hwTable["setQSDOffset"] = setOsdOffsetFn;
+  hwTable["setOSDOffset"] = setOSDOffsetFn;
+  hwTable["setQSDOffset"] = setOSDOffsetFn;
   hwTable["setCalibration"] = [engine](int ch, double gainDB, double phaseDeg, sol::optional<double> alignR, sol::optional<double> alignI) {
     engine->getDSP().setCalibration(ch, static_cast<float>(gainDB), static_cast<float>(phaseDeg),
                                     static_cast<float>(alignR.value_or(1.0)),
                                     static_cast<float>(alignI.value_or(0.0)));
   };
   hwTable["setRFAttenuation"] = hwTable["setAttenuation"];
-  
+
   lua["hw"] = hwTable;
 
   // 3. RX Control (rx table)
@@ -153,7 +157,8 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   rxTable["getStats"] = [engine](sol::this_state s) {
     auto& d = engine->getDSP().getDiagnostics();
-    sol::state_view lView(s); sol::table t = lView.create_table();
+    sol::state_view lView(s);
+    sol::table t = lView.create_table();
     t["rms"] = d.signalRms.load();
     t["maxAudio"] = d.maxAudio.load();
     return t;
@@ -167,31 +172,39 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   waterfallTable["addRow"] = [engine](sol::object obj) {
     if (!obj.is<sol::table>()) return;
     sol::table t = obj.as<sol::table>();
-    std::vector<float> data; data.reserve(t.size());
-    for (size_t i = 1; i <= t.size(); ++i) { sol::object item = t[i]; data.push_back(item.is<float>() ? item.as<float>() : -100.0f); }
-    engine->getWaterfall().addRow(data.data(), (int)data.size());
+    std::vector<float> data;
+    data.reserve(t.size());
+    for (int i = 1; i <= static_cast<int>(t.size()); ++i) {
+      sol::object item = t[i];
+      data.push_back(item.is<float>() ? item.as<float>() : -100.0f);
+    }
+    engine->getWaterfall().addRow(data.data(), static_cast<int>(data.size()));
   };
   waterfallTable["renderSpectrum"] = [engine](sol::object obj, float x, float y, float w, float h) {
     if (!obj.is<sol::table>()) return;
     sol::table t = obj.as<sol::table>();
-    std::vector<float> data; data.reserve(t.size());
-    for (size_t i = 1; i <= t.size(); ++i) { sol::object item = t[i]; data.push_back(item.is<float>() ? item.as<float>() : -100.0f); }
-    
+    std::vector<float> data;
+    data.reserve(t.size());
+    for (int i = 1; i <= static_cast<int>(t.size()); ++i) {
+      sol::object item = t[i];
+      data.push_back(item.is<float>() ? item.as<float>() : -100.0f);
+    }
+
     // We must ensure Raylib's internal state is flushed before raw GL calls
-    rlDrawRenderBatchActive(); 
-    engine->getWaterfall().renderSpectrum(data.data(), (int)data.size(), x, y, w, h);
-  };
-  waterfallTable["render"] = [engine](float x, float y, float w, float h, float zoom, float center) { 
     rlDrawRenderBatchActive();
-    engine->getWaterfall().render(x, y, w, h, zoom, center); 
+    engine->getWaterfall().renderSpectrum(data.data(), static_cast<int>(data.size()), x, y, w, h);
+  };
+  waterfallTable["render"] = [engine](float x, float y, float w, float h, float zoom, float center) {
+    rlDrawRenderBatchActive();
+    engine->getWaterfall().render(x, y, w, h, zoom, center);
   };
   waterfallTable["setColormapData"] = [engine](sol::object obj) {
     if (!obj.is<sol::table>()) return;
     sol::table t = obj.as<sol::table>();
     std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>> grad;
-    for (size_t i = 1; i <= t.size(); ++i) {
-      sol::table s = t[i]; 
-      grad.push_back({s[1].get_or(0.0f), (uint8_t)s[2].get_or(0), (uint8_t)s[3].get_or(0), (uint8_t)s[4].get_or(0)});
+    for (int i = 1; i <= static_cast<int>(t.size()); ++i) {
+      sol::table s = t[i];
+      grad.push_back({s[1].get_or(0.0f), static_cast<uint8_t>(s[2].get_or(0)), static_cast<uint8_t>(s[3].get_or(0)), static_cast<uint8_t>(s[4].get_or(0))});
     }
     engine->getWaterfall().setColormapData(grad);
   };
@@ -199,12 +212,18 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
 
   // 5. Audio Control (audio table)
   sol::table audioTable = lua.create_table();
-  audioTable["isInitialized"] = [engine]() { return true; }; // Engine init is checked in C++
+  audioTable["isInitialized"] = [engine]() { return true; };
   audioTable["start"] = [engine]() { return engine->getAudio().start(); };
   audioTable["stop"] = [engine]() { engine->getAudio().stop(); };
   audioTable["setVolume"] = [engine](float db) {
     float linear = (db <= -60.0f) ? 0.0f : std::pow(10.0f, db / 20.0f);
     engine->getAudio().setVolume(linear);
+  };
+  audioTable["setMuted"] = [engine](bool muted) {
+    engine->getAudio().setMuted(muted);
+  };
+  audioTable["setTestTone"] = [engine](bool en) {
+    engine->getAudio().setTestTone(en);
   };
   lua["audio"] = audioTable;
 
@@ -225,38 +244,38 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
 
 void AppLuaBridge::setFont(Font font) { currentFont = font; }
 
-void AppLuaBridge::drawRect(float x, float y, float w, float h, sol::table color) { 
-  DrawRectangleRec({x, y, w, h}, tableToColor(color)); 
+void AppLuaBridge::drawRect(float x, float y, float w, float h, sol::table color) {
+  DrawRectangleRec({x, y, w, h}, tableToColor(color));
 }
 
-void AppLuaBridge::drawRectLines(float x, float y, float w, float h, float thickness, sol::table color) { 
-  DrawRectangleLinesEx({x, y, w, h}, thickness, tableToColor(color)); 
+void AppLuaBridge::drawRectLines(float x, float y, float w, float h, float thickness, sol::table color) {
+  DrawRectangleLinesEx({x, y, w, h}, thickness, tableToColor(color));
 }
 
 void AppLuaBridge::drawRoundedRect(float x, float y, float w, float h, float radius, sol::table color) {
-  DrawRectangleRounded({x, y, w, h}, radius / (h/2.0f), 8, tableToColor(color));
+  DrawRectangleRounded({x, y, w, h}, radius / (h / 2.0f), 8, tableToColor(color));
 }
 
 void AppLuaBridge::drawCircle(float x, float y, float radius, sol::table color) {
-  DrawCircle((int)x, (int)y, radius, tableToColor(color));
+  DrawCircle(static_cast<int>(x), static_cast<int>(y), radius, tableToColor(color));
 }
 
 void AppLuaBridge::drawCircleOutline(float x, float y, float radius, float thickness, sol::table color) {
-  DrawCircleLines((int)x, (int)y, radius, tableToColor(color));
+  DrawCircleLines(static_cast<int>(x), static_cast<int>(y), radius, tableToColor(color));
 }
 
-void AppLuaBridge::drawLine(float x1, float y1, float x2, float y2, float thickness, sol::table color) { 
-  DrawLineEx({x1, y1}, {x2, y2}, thickness, tableToColor(color)); 
+void AppLuaBridge::drawLine(float x1, float y1, float x2, float y2, float thickness, sol::table color) {
+  DrawLineEx({x1, y1}, {x2, y2}, thickness, tableToColor(color));
 }
 
 void AppLuaBridge::drawText(const char* text, float x, float y, int fontSize, sol::table color) {
-  if (currentFont.texture.id == 0) DrawText(text, (int)x, (int)y, fontSize, tableToColor(color));
-  else DrawTextEx(currentFont, text, {x, y}, (float)fontSize, 1.0f, tableToColor(color));
+  if (currentFont.texture.id == 0) DrawText(text, static_cast<int>(x), static_cast<int>(y), fontSize, tableToColor(color));
+  else DrawTextEx(currentFont, text, {x, y}, static_cast<float>(fontSize), 1.0f, tableToColor(color));
 }
 
 float AppLuaBridge::measureText(const char* text, int fontSize) {
-  if (currentFont.texture.id == 0) return (float)MeasureText(text, fontSize);
-  return MeasureTextEx(currentFont, text, (float)fontSize, 1.0f).x;
+  if (currentFont.texture.id == 0) return static_cast<float>(MeasureText(text, fontSize));
+  return MeasureTextEx(currentFont, text, static_cast<float>(fontSize), 1.0f).x;
 }
 
 void AppLuaBridge::traceLog(int logLevel, sol::variadic_args args, sol::this_state L) {
@@ -268,7 +287,7 @@ void AppLuaBridge::traceLog(int logLevel, sol::variadic_args args, sol::this_sta
     if (args.size() == 2) formatted = sv["tostring"](args[1]).template get<std::string>();
     else {
       std::vector<sol::object> formatArgs;
-      for (size_t i = 1; i < args.size(); ++i) formatArgs.push_back(args[i]);
+      for (int i = 1; i < static_cast<int>(args.size()); ++i) formatArgs.push_back(args[i]);
       formatted = format(sol::as_args(formatArgs));
     }
     TraceLog(logLevel, "%s", formatted.c_str());

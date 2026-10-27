@@ -6,7 +6,7 @@
 #include <csignal>
 #include <cbor.h>
 
-GUIEngine::GUIEngine(DSPEngine& dsp) : dsp_(dsp) {}
+GUIEngine::GUIEngine(DSPEngine& dspRef) : dsp(dspRef) {}
 
 GUIEngine::~GUIEngine() {
   shutdown();
@@ -24,7 +24,7 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
   if (font.texture.id == 0) font = LoadFontEx("../fonts/DejaVuSans.ttf", 32, NULL, 0);
   if (font.texture.id == 0) font = LoadFontEx("uitest/fonts/DejaVuSans.ttf", 32, NULL, 0);
   if (font.texture.id == 0) font = LoadFontEx("../uitest/fonts/DejaVuSans.ttf", 32, NULL, 0);
-  
+
   if (font.texture.id != 0) {
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
     AppLuaBridge::setFont(font);
@@ -41,15 +41,17 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
   audioConfig.lowThreshold = 0.15f;
   audioConfig.highThreshold = 0.65f;
   audioConfig.enableAdaptation = true;
-  dsp_.getAudioBuffer().configure(audioConfig);
+  dsp.getAudioBuffer().configure(audioConfig);
 
   audio.setCallback([this](float* out, uint32_t fC, uint32_t ch) {
     thread_local std::vector<float> tmp;
     tmp.resize(fC);
-    size_t read = dsp_.getAudioBuffer().read(std::span<float>(tmp.data(), fC));
-    for (uint32_t i = 0; i < fC; ++i) {
-      float s = (i < read) ? tmp[i] : 0.0f;
-      for (uint32_t c = 0; c < ch; ++c) out[i*ch + c] = s;
+    size_t read = dsp.getAudioBuffer().read(std::span<float>(tmp.data(), fC));
+    for (int i = 0; i < static_cast<int>(fC); ++i) {
+      float s = (static_cast<size_t>(i) < read) ? tmp[i] : 0.0f;
+      for (int c = 0; c < static_cast<int>(ch); ++c) {
+        out[i * ch + c] = s;
+      }
     }
   });
 
@@ -64,18 +66,18 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
   lua["basePath"] = prefix + "lua/";
   std::string pkgPath = prefix + "lua/?.lua;" + prefix + "lua/?/init.lua;" + prefix + "?.lua;" + prefix + "?/init.lua;lua/?.lua;lua/?/init.lua";
   lua["package"]["path"] = pkgPath;
-  
+
   AppLuaBridge::registerWithLua(lua, this);
 
   try {
     // Load SetBox first as it's a core dependency
     lua.safe_script_file(prefix + "lua/SetBox.lua");
-    
+
     // Load the main entry point
     lua.safe_script_file(prefix + "lua/Main.lua");
-    
+
     // In our new architecture, Main.lua should return the UI module with standard hooks
-    uiModule = lua["UI"]; 
+    uiModule = lua["UI"];
   } catch (const sol::error& e) {
     std::cerr << "Lua load error: " << e.what() << std::endl;
     return false;
@@ -85,7 +87,11 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
   sol::protected_function initFn = lua["init"];
   if (initFn.valid()) {
     auto res = initFn();
-    if (!res.valid()) { sol::error err = res; std::cerr << "Lua init() error: " << err.what() << std::endl; return false; }
+    if (!res.valid()) {
+      sol::error err = res;
+      std::cerr << "Lua init() error: " << err.what() << std::endl;
+      return false;
+    }
   }
 
   startCommandThread();
@@ -107,61 +113,81 @@ void GUIEngine::update(float dt) {
   // 1. Poll input and dispatch to Lua UI if needed
   if (uiModule != sol::nil) {
     Vector2 mousePos = GetMousePosition();
-    
+    int mods = 0;
+    if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) mods |= 1;
+    if (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) mods |= 2;
+    if (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) mods |= 4;
+
     // Mouse Buttons & Wheel
     sol::function onMouseEvent = uiModule["onMouseEvent"];
     if (onMouseEvent.valid()) {
-        int mods = 0;
-        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) mods |= 1;
-        if (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) mods |= 2;
-        if (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) mods |= 4;
+      // Motion dispatch (ensure mouse coordinates are updated)
+      onMouseEvent("motion", mousePos.x, mousePos.y, 0, false, mods);
 
-        // Motion dispatch (ensure mouse coordinates are updated)
-        onMouseEvent("motion", mousePos.x, mousePos.y, 0, false, mods);
-
-        for (int b = 0; b < 3; b++) {
-            if (IsMouseButtonPressed(b)) onMouseEvent("button", mousePos.x, mousePos.y, b, true, mods);
-            else if (IsMouseButtonReleased(b)) onMouseEvent("button", mousePos.x, mousePos.y, b, false, mods);
+      for (int b = 0; b < 3; ++b) {
+        if (IsMouseButtonPressed(b)) {
+          onMouseEvent("button", mousePos.x, mousePos.y, b, true, mods);
+        } else if (IsMouseButtonReleased(b)) {
+          onMouseEvent("button", mousePos.x, mousePos.y, b, false, mods);
         }
+      }
 
-        // Mouse Wheel
-        float wheel = GetMouseWheelMove();
-        if (wheel != 0) onMouseEvent("wheel", mousePos.x, mousePos.y, (int)wheel, false, mods);
+      // Mouse Wheel
+      float wheel = GetMouseWheelMove();
+      if (wheel != 0.0f) {
+        onMouseEvent("wheel", mousePos.x, mousePos.y, static_cast<int>(wheel), false, mods);
+      }
     }
 
-    // Keys (Simplified: Raylib doesn't have a clean event queue for releases/repeats without more work)
+    // Keys
     sol::function onKeyEvent = uiModule["onKeyEvent"];
     if (onKeyEvent.valid()) {
-        // Handle character input (digits, letters, etc)
-        int charCode = GetCharPressed();
-        while (charCode > 0) {
-            sol::function onTextInput = uiModule["onTextInput"];
-            if (onTextInput.valid()) {
-                char text[2] = {(char)charCode, 0};
-                onTextInput(text);
-            }
-            charCode = GetCharPressed();
+      int charCode = GetCharPressed();
+      while (charCode > 0) {
+        sol::function onTextInput = uiModule["onTextInput"];
+        if (onTextInput.valid()) {
+          char text[2] = { static_cast<char>(charCode), 0 };
+          onTextInput(text);
         }
+        charCode = GetCharPressed();
+      }
 
-        // Handle special keys (Arrow keys, ENTER, BACKSPACE, ESC)
-        int keys[] = {KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN, KEY_ENTER, KEY_BACKSPACE, KEY_ESCAPE, KEY_F};
-        for (int k : keys) {
-            if (IsKeyPressed(k)) {
-                // std::cout << "[C++] Key Pressed: " << k << std::endl;
-                onKeyEvent(k, true, 0);
-            }
-            else if (IsKeyReleased(k)) {
-                onKeyEvent(k, false, 0);
-            }
+      static constexpr int polledKeys[] = {
+        KEY_SPACE, KEY_APOSTROPHE, KEY_COMMA, KEY_MINUS, KEY_PERIOD, KEY_SLASH,
+        KEY_ZERO, KEY_ONE, KEY_TWO, KEY_THREE, KEY_FOUR,
+        KEY_FIVE, KEY_SIX, KEY_SEVEN, KEY_EIGHT, KEY_NINE,
+        KEY_SEMICOLON, KEY_EQUAL,
+        KEY_A, KEY_B, KEY_C, KEY_D, KEY_E, KEY_F, KEY_G, KEY_H, KEY_I, KEY_J,
+        KEY_K, KEY_L, KEY_M, KEY_N, KEY_O, KEY_P, KEY_Q, KEY_R, KEY_S, KEY_T,
+        KEY_U, KEY_V, KEY_W, KEY_X, KEY_Y, KEY_Z,
+        KEY_LEFT_BRACKET, KEY_BACKSLASH, KEY_RIGHT_BRACKET, KEY_GRAVE,
+        KEY_ESCAPE, KEY_ENTER, KEY_TAB, 259, KEY_INSERT, KEY_DELETE,
+        KEY_RIGHT, KEY_LEFT, KEY_DOWN, KEY_UP,
+        KEY_PAGE_UP, KEY_PAGE_DOWN, KEY_HOME, KEY_END,
+        KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
+        KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12
+      };
+      constexpr int nPolledKeys = static_cast<int>(sizeof(polledKeys) / sizeof(polledKeys[0]));
+      for (int i = 0; i < nPolledKeys; ++i) {
+        int k = polledKeys[i];
+        if (IsKeyPressed(k)) {
+          onKeyEvent(k, true, mods);
+        } else if (IsKeyReleased(k)) {
+          onKeyEvent(k, false, mods);
         }
+      }
     }
   }
 
   // 2. Lua update hook
   sol::protected_function updateFn = lua["update"];
-  if (updateFn.valid()) { 
-    auto res = updateFn(dt); 
-    if (!res.valid()) { sol::error err = res; std::cerr << "Lua update() error: " << err.what() << std::endl; running = false; } 
+  if (updateFn.valid()) {
+    auto res = updateFn(dt);
+    if (!res.valid()) {
+      sol::error err = res;
+      std::cerr << "Lua update() error: " << err.what() << std::endl;
+      running = false;
+    }
   }
 
   // 3. Periodic 1-second diagnostics (Stages C & D)
@@ -172,20 +198,20 @@ void GUIEngine::update(float dt) {
     uint64_t curFrames = twinHost.getFramesReceived();
     uint64_t curNetDropped = twinHost.getFramesDropped();
     uint64_t curOverruns = twinHost.getBufferOverruns();
-    uint64_t curDspFrames = dsp_.getDiagnostics().framesProcessed.load();
-    const auto& aStats = dsp_.getAudioBuffer().stats();
+    uint64_t curDSPFrames = dsp.getDiagnostics().framesProcessed.load();
+    const auto& aStats = dsp.getAudioBuffer().stats();
     uint64_t curAudioWritten = aStats.samplesWritten.load();
     uint64_t curAudioRead = aStats.samplesRead.load();
     uint64_t curAudioDrops = aStats.dropsOverflow.load();
     uint64_t curAudioUnderruns = aStats.underruns.load();
     uint64_t curAudioStretch = aStats.stretchCount.load();
-    float fillPct = dsp_.getAudioBuffer().getFillRatio() * 100.0f;
+    float fillPct = dsp.getAudioBuffer().getFillRatio() * 100.0f;
 
     float ingestKsps = static_cast<float>(curFrames - lastStatFrames) / 1000.0f;
     float pktsPerSec = static_cast<float>(curPkts - lastStatPkts);
     uint64_t netDroppedDelta = curNetDropped - lastStatNetDropped;
     uint64_t overrunsDelta = curOverruns - lastStatOverruns;
-    float dspKsps = static_cast<float>(curDspFrames - lastStatDspFrames) / 1000.0f;
+    float dspKsps = static_cast<float>(curDSPFrames - lastStatDSPFrames) / 1000.0f;
     float audioGenRate = static_cast<float>(curAudioWritten - lastStatAudioWritten);
     float audioPlayRate = static_cast<float>(curAudioRead - lastStatAudioRead);
     uint64_t audioDropsDelta = curAudioDrops - lastStatAudioDrops;
@@ -196,7 +222,7 @@ void GUIEngine::update(float dt) {
     lastStatFrames = curFrames;
     lastStatNetDropped = curNetDropped;
     lastStatOverruns = curOverruns;
-    lastStatDspFrames = curDspFrames;
+    lastStatDSPFrames = curDSPFrames;
     lastStatAudioWritten = curAudioWritten;
     lastStatAudioRead = curAudioRead;
     lastStatAudioDrops = curAudioDrops;
@@ -204,14 +230,14 @@ void GUIEngine::update(float dt) {
     lastStatAudioStretch = curAudioStretch;
 
     if (twinConnected.load()) {
-      std::cout << "[App Stats 1s] Stage C Ingest: " << std::fixed << std::setprecision(1) << ingestKsps 
+      std::cout << "[App Stats 1s] Stage C Ingest: " << std::fixed << std::setprecision(1) << ingestKsps
                 << " ksps (" << std::setprecision(0) << pktsPerSec << " pkts/s) | Net Lost: "
-                << netDroppedDelta << " (total " << curNetDropped << ") | Overruns: " 
-                << overrunsDelta << " (total " << curOverruns << ") | Stage D DSP: " 
-                << std::setprecision(1) << dspKsps << " ksps -> Audio Gen: " 
-                << std::setprecision(0) << audioGenRate << " s/s | Playback: " << audioPlayRate 
-                << " s/s (fill " << std::setprecision(1) << fillPct << "%, drops " 
-                << audioDropsDelta << ", underruns " << audioUnderrunsDelta 
+                << netDroppedDelta << " (total " << curNetDropped << ") | Overruns: "
+                << overrunsDelta << " (total " << curOverruns << ") | Stage D DSP: "
+                << std::setprecision(1) << dspKsps << " ksps -> Audio Gen: "
+                << std::setprecision(0) << audioGenRate << " s/s | Playback: " << audioPlayRate
+                << " s/s (fill " << std::setprecision(1) << fillPct << "%, drops "
+                << audioDropsDelta << ", underruns " << audioUnderrunsDelta
                 << ", stretch " << audioStretchDelta << ")" << std::endl;
     }
   }
@@ -352,7 +378,7 @@ bool GUIEngine::connectTwin(const std::string& host, int cp, int sp) {
       }
     }
 
-    twinHost.setFrameCallback([this](const nexrx::IQFrame& f) { dsp_.processIQFrame(f); });
+    twinHost.setFrameCallback([this](const nexrx::IQFrame& f) { dsp.processIQFrame(f); });
     if (twinHost.startReceiving()) {
       twinConnected.store(true);
       twinHost.startStream();

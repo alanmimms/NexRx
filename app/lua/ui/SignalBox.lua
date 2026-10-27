@@ -31,10 +31,10 @@ setbox.rule {
 }
 
 function SignalBox:init(def)
+    def = def or {}
     Widget.init(self, def)
     self.boxIndex = def.index or 1
     self.dragging = false
-    -- Capture start state for stable dragging
     self.dragStartMouseX = 0
     self.dragStartBoxX = 0
 end
@@ -46,29 +46,27 @@ function SignalBox:onEvent(event)
     if event.type == "mouseButton" and event.button == "LEFT" then
         if event.isDown then
             self.dragging = true
-            -- Use global gx for stable dragging
-            self.dragStartMouseX = event.gx
-            self.dragStartBoxX = self.props.x
-            
+            self.dragStartMouseX = event.gx or event.x or 0
+            self.dragStartBoxX = self.props.x or 0
+
             state.setActive(self.id)
+            if self.lwc then self.lwc:addTag("state.Active") end
             Model.selectedSignalBoxIndex:set(self.boxIndex)
             return true
         else
             self.dragging = false
             state.setActive(nil)
+            if self.lwc then self.lwc:removeTag("state.Active") end
             return true
         end
     elseif event.type == "mouseMotion" and self.dragging then
-        local totalDeltaPx = event.gx - self.dragStartMouseX
+        local totalDeltaPx = (event.gx or event.x or 0) - self.dragStartMouseX
         local newBoxX = self.dragStartBoxX + totalDeltaPx
-        
-        -- Update pixel position immediately for the 'stuck' feel
+
         self.props.x = newBoxX
-        
-        -- Update model from the new pixel position
+
         if self.parent and self.parent.getFreqAtPx then
-            -- SignalBox frequency is its center
-            local newFreq = self.parent:getFreqAtPx(newBoxX + self.props.w / 2)
+            local newFreq = self.parent:getFreqAtPx(newBoxX + (self.props.w or 0) / 2)
             if math.abs(box.frequency - newFreq) > 0.1 then
                 Model.set("rx.VFO.activeValue", newFreq)
             end
@@ -80,48 +78,46 @@ function SignalBox:onEvent(event)
 end
 
 function SignalBox:drawSelf()
-    local w, h = self.props.w, self.props.h
-    local lwc = self.lwc
-    
-    local isGhost = lwc:hasTag("state.Ghost")
+    local w, h = self.props.w or 0, self.props.h or 0
+    local isGhost = self:hasTag("state.Ghost")
     local isSelected = (Model.selectedSignalBoxIndex:get() == self.boxIndex)
-    
-    -- Style resolution
-    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#facc15"))
-    local fgR, fgG, fgB = state.hexToRgb(lwc:optString("foreground", "#ffffff"))
-    local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#facc15"))
-    
-    local alpha = lwc:optNumber("opacity", 0.3)
-    local bWidth = lwc:optNumber("borderWidth", 1)
-    
-    if isSelected then
-        alpha = lwc:optNumber("selectedOpacity", 0.6)
-        bWidth = lwc:optNumber("selectedBorderWidth", 3)
-    elseif isGhost then
-        alpha = lwc:optNumber("ghostOpacity", 0.2)
+
+    if self.lwc then
+        self.lwc:setTag("state.Selected", isSelected)
     end
-    
-    -- 1. Draw the translucent box
+
+    local bgR, bgG, bgB = state.hexToRgb(self.props.background or "#facc15")
+    local fgR, fgG, fgB = state.hexToRgb(self.props.foreground or "#ffffff")
+    local bR, bG, bB = state.hexToRgb(self.props.border or "#facc15")
+
+    local alpha = self.props.opacity or 0.3
+    local bWidth = self.props.borderWidth or 1
+
+    if isSelected then
+        alpha = self.props.selectedOpacity or 0.6
+        bWidth = self.props.selectedBorderWidth or 3
+    elseif isGhost then
+        alpha = self.props.ghostOpacity or 0.2
+    end
+
     System.drawRect(0, 0, w, h, {bgR, bgG, bgB, alpha})
-    
-    -- 2. Draw border
+
     if bWidth > 0 then
         System.drawLine(0, 0, 0, h, bWidth, {bR, bG, bB, alpha})
         System.drawLine(w, 0, w, h, bWidth, {bR, bG, bB, alpha})
         System.drawLine(0, 0, w, 0, bWidth, {bR, bG, bB, alpha})
     end
-    
-    -- 3. Draw the numeric tag at the bottom
+
     local box = Model.signalBoxes:peek()[self.boxIndex]
     local label = box and (box.name or tostring(box.mode)) or "?"
-    
-    local tagH = lwc:optNumber("tagHeight", 20)
-    local tagW = lwc:optNumber("tagWidth", 40)
+
+    local tagH = self.props.tagHeight or 20
+    local tagW = self.props.tagWidth or 40
     local tx = (w - tagW) / 2
     local ty = h - tagH
-    
+
     System.drawRoundedRect(tx, ty, tagW, tagH, 4, {bgR, bgG, bgB, 1.0})
-    
+
     local labelW = System.measureText(tostring(label), 14)
     local lineH = 14
     System.drawText(tostring(label), tx + (tagW - labelW) / 2, ty + (tagH - lineH) / 2, 14, {fgR, fgG, fgB, 1.0})

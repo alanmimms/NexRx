@@ -50,6 +50,8 @@ local testModules = {
     {"AnimateTest", "Animation System"},
     {"BandsTest", "Band Detection"},
     {"SetBoxTest", "SetBox Engine"},
+    {"GeneralizationTest", "Rule Generalization"},
+    {"WidgetPropsTest", "Reactive Widget Properties"},
 }
 
 for _, info in ipairs(testModules) do
@@ -72,8 +74,8 @@ for _, info in ipairs(testModules) do
             print("  ERROR running tests: " .. tostring(result))
         end
     else
-        print("  Could not load module: " .. tostring(testModule))
         -- Try alternate path
+        local firstErr = testModule
         ok, testModule = pcall(require, moduleName)
         if ok then
             local testOk, result = pcall(testModule.runAll)
@@ -89,6 +91,7 @@ for _, info in ipairs(testModules) do
                 table.insert(modules, {name = description, status = "ERROR"})
             end
         else
+            print("  Could not load module: " .. tostring(firstErr))
             table.insert(modules, {name = description, status = "SKIPPED (not found)"})
         end
     end

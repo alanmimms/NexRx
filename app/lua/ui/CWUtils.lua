@@ -1,18 +1,18 @@
 --[[
   CW Utilities Widget Module
   Modular UI component for CW-specific settings.
-  Style and layout driven entirely by SetBox rules.
+  Style and layout driven by SetBox rules and retained-mode Layout.
 ]]
 
-local state = require("ui.State")
+local Widget = require("ui.Widget")
+local Panel = require("ui.Panel")
 local Label = require("ui.Label")
 local Slider = require("ui.Slider")
-local layout = require("ui.Layout")
+local Layout = require("ui.Layout")
 local setbox = require("SetBox")
 local Model = require("Model")
 
-local CWUtils = {}
-CWUtils.__index = CWUtils
+local CWUtils = Widget.mkType("CWUtilsFrame", Panel)
 
 -- Define default rules for the CW Utils widget (very low priority)
 setbox.rule {
@@ -34,56 +34,53 @@ setbox.rule {
     }
 }
 
-function CWUtils.new(props)
-    local self = setmetatable({}, CWUtils)
-    self.rx = props.rx -- Model.rx
-    
-    -- Initialize widget instances
-    self.titleLabel = Label.new()
-    self.pitchSlider = Slider.new({
-        valueObs = self.rx.CW.pitch,
-        propertyName = "rx.CW.pitch"
+function CWUtils:init(def)
+    def = def or {}
+    def.layoutFunc = def.layoutFunc or Layout.vFlow
+    Panel.init(self, def)
+
+    self.rx = def.rx or Model.rx
+
+    self.titleLabel = Label({
+        id = self.id .. "-title",
+        parent = self,
+        prefH = 24,
+        stick = "LR",
+        margin = { left = 8, right = 8, top = 6, bottom = 4 },
+        getText = function() return self.props.title or "CW SETTINGS" end,
     })
-    self.pitchLabel = Label.new()
-    
-    return self
+
+    self.pitchLabel = Label({
+        id = self.id .. "-pitch-label",
+        parent = self,
+        prefH = 20,
+        stick = "LR",
+        margin = { left = 8, right = 8, top = 2, bottom = 2 },
+        getText = function()
+            local pitch = self.rx and self.rx.CW and self.rx.CW.pitch and self.rx.CW.pitch:get() or 700
+            return string.format("%s: %.0f", self.props.labelPitch or "CW Pitch (Hz)", pitch)
+        end,
+    })
+
+    self.pitchSlider = Slider({
+        id = self.id .. "-pitch-slider",
+        parent = self,
+        prefH = 24,
+        stick = "LR",
+        margin = { left = 8, right = 8, top = 2, bottom = 6 },
+        minVal = self.props.minPitch or 300,
+        maxVal = self.props.maxPitch or 1200,
+        valueObs = self.rx and self.rx.CW and self.rx.CW.pitch,
+        propertyName = "rx.CW.pitch",
+    })
+
+    self:add(self.titleLabel)
+    self:add(self.pitchLabel)
+    self:add(self.pitchSlider)
 end
 
-function CWUtils:draw(id, x, y, w, h, parentLWC)
-    local lwc = setbox.newContext({"widget.Panel", "widget.CWUtilsFrame", "id." .. id}, parentLWC)
-    
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
-    local radius = lwc:getNumber("borderRadius")
-    local alpha = lwc:getNumber("opacity")
-    local bWidth = lwc:getNumber("borderWidth")
-    
-    drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
-    if bWidth > 0 then
-        drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
-    end
-    
-    -- Title
-    self.titleLabel:draw(id .. "-title", x + 12, y + 8, w - 24, 20, lwc)
-    
-    local padding = lwc:getNumber("padding")
-    local topMargin = lwc:getNumber("topMargin")
-    layout.setRegion(x + padding, y + topMargin, w - padding * 2, h - topMargin - padding, id)
-    
-    local cx, cy = layout.getCursor()
-    self.pitchLabel.getText = function() 
-        return string.format("%s: %.0f", lwc:getString("labelPitch"), self.rx.CW.pitch:get())
-    end
-    self.pitchLabel:draw(id .. "-pitch-label", cx, cy, w - padding * 2, 20, lwc)
-    layout.newLine(24)
-    
-    cx, cy = layout.getCursor()
-    self.pitchSlider:draw(id .. "-pitch-slider", cx, cy, w - padding * 2, 24, lwc, 
-        lwc:getNumber("minPitch"), lwc:getNumber("maxPitch"), 
-        self.rx.CW.pitch:get())
-    layout.newLine(32)
-    
-    layout.endRegion()
+function CWUtils.new(def)
+    return CWUtils(def)
 end
 
 return CWUtils

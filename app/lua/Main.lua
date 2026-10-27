@@ -93,28 +93,6 @@ _G.isShiftDown = function() return (currentMods & 1) ~= 0 end
 _G.isCtrlDown = function() return (currentMods & 2) ~= 0 end
 _G.isAltDown = function() return (currentMods & 4) ~= 0 end
 
-local function onMouseMove_inner(x, y)
-  frameInput.mouseX, frameInput.mouseY = x, y
-  if not rxTree then return end
-  
-  -- SDL2/raylib usually don't send mods in mouse move, so we keep what we have
-  -- but if we want to be safe we can use a C++ hook or just rely on last known.
-
-  local eventData = {
-    type = "mouseMotion",
-    x = x, y = y,
-    modifiers = translateMods(currentMods)
-  }
-  
-  local activeId = uiState.getActive()
-  local activeWidget = activeId and rxTree:findByID(activeId)
-  local hit = Widget.updateGlobalMouse(rxTree, x, y)
-  local target = activeWidget or hit or rxTree
-  target:handleEvent(eventData)
-end
-
-local function onMouseMove(x, y) safeCall(onMouseMove_inner, x, y) end
-
 local function translateMods(mods)
   local t = {}
   if mods then
@@ -124,6 +102,25 @@ local function translateMods(mods)
   end
   return t
 end
+
+local function onMouseMove_inner(x, y)
+  frameInput.mouseX, frameInput.mouseY = x, y
+  if not rxTree then return end
+
+  local eventData = {
+    type = "mouseMotion",
+    x = x, y = y,
+    modifiers = translateMods(currentMods)
+  }
+
+  local activeId = uiState.getActive()
+  local activeWidget = activeId and rxTree:findByID(activeId)
+  local hit = Widget.updateGlobalMouse(rxTree, x, y)
+  local target = activeWidget or hit or rxTree
+  target:handleEvent(eventData)
+end
+
+local function onMouseMove(x, y) safeCall(onMouseMove_inner, x, y) end
 
 local function onMouseEvent_inner(type, x, y, button, isDown, mods)
   currentMods = mods or currentMods

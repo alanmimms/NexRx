@@ -1,8 +1,10 @@
 --[[
-    Unit tests for events.lua module
+    Unit tests for Events.lua and Widget hierarchical event handling
 ]]
 
 local events = require("Events")
+local Widget = require("ui.Widget")
+local setbox = require("SetBox")
 
 local Tests = {}
 local passed = 0
@@ -56,296 +58,122 @@ end
 -- Tests
 -- =============================================================================
 
-function Tests.test_init()
-    print("test_init")
-    events.init()
-
-    assert_eq(0, #(events.widgets or {}), "widgets empty after init")
-    assert_eq(1, events.nextZIndex, "zIndex reset to 1")
-    assert_nil(events._currentLayoutParent, "no current layout parent")
-end
-
-function Tests.test_register_widget()
-    print("test_register_widget")
-    events.init()
-
-    events.registerWidget("btn1", {x = 10, y = 20, w = 100, h = 32}, {"Button", "Primary"})
-
-    local widget = events.widgets["btn1"]
-    assert_true(widget ~= nil, "widget registered")
-    assert_eq(10, widget.bounds.x, "widget bounds x")
-    assert_eq(20, widget.bounds.y, "widget bounds y")
-    assert_eq(100, widget.bounds.w, "widget bounds w")
-    assert_eq(32, widget.bounds.h, "widget bounds h")
-    assert_eq(2, #widget.tags, "widget has 2 tags")
-    assert_eq("Button", widget.tags[1], "first tag is Button")
-    assert_eq(1, widget.zIndex, "widget zIndex is 1")
-end
-
-function Tests.test_zindex_increments()
-    print("test_zindex_increments")
-    events.init()
-
-    events.registerWidget("w1", {x = 0, y = 0, w = 50, h = 50}, {})
-    events.registerWidget("w2", {x = 0, y = 0, w = 50, h = 50}, {})
-    events.registerWidget("w3", {x = 0, y = 0, w = 50, h = 50}, {})
-
-    assert_eq(1, events.widgets["w1"].zIndex, "w1 zIndex")
-    assert_eq(2, events.widgets["w2"].zIndex, "w2 zIndex")
-    assert_eq(3, events.widgets["w3"].zIndex, "w3 zIndex")
-end
-
-function Tests.test_hit_testing()
-    print("test_hit_testing")
-    events.init()
-
-    events.registerWidget("btn1", {x = 10, y = 10, w = 100, h = 50}, {"Button"})
-    events.registerWidget("btn2", {x = 200, y = 10, w = 100, h = 50}, {"Button"})
-
-    -- Hit btn1
-    local hit = events.getWidgetAt(50, 30)
-    assert_true(hit ~= nil, "hit widget found")
-    assert_eq("btn1", hit.id, "hit correct widget")
-
-    -- Hit btn2
-    hit = events.getWidgetAt(250, 30)
-    assert_true(hit ~= nil, "hit widget found")
-    assert_eq("btn2", hit.id, "hit correct widget")
-
-    -- Miss both
-    hit = events.getWidgetAt(150, 30)
-    assert_nil(hit, "no hit in gap")
-
-    -- Miss above
-    hit = events.getWidgetAt(50, 5)
-    assert_nil(hit, "no hit above")
-end
-
-function Tests.test_hit_testing_zorder()
-    print("test_hit_testing_zorder")
-    events.init()
-
-    -- Two overlapping widgets
-    events.registerWidget("bottom", {x = 0, y = 0, w = 100, h = 100}, {"Panel"})
-    events.registerWidget("top", {x = 50, y = 50, w = 100, h = 100}, {"Button"})
-
-    -- Hit overlap area - should get top widget (higher zIndex)
-    local hit = events.getWidgetAt(75, 75)
-    assert_eq("top", hit.id, "hit top widget in overlap")
-
-    -- Hit bottom-only area
-    hit = events.getWidgetAt(25, 25)
-    assert_eq("bottom", hit.id, "hit bottom widget")
-
-    -- Hit top-only area
-    hit = events.getWidgetAt(125, 125)
-    assert_eq("top", hit.id, "hit top widget")
-end
-
-function Tests.test_point_in_widget()
-    print("test_point_in_widget")
-    events.init()
-
-    events.registerWidget("btn", {x = 100, y = 100, w = 50, h = 30}, {})
-
-    assert_true(events.isPointInWidget(110, 110, "btn"), "point inside")
-    assert_true(events.isPointInWidget(100, 100, "btn"), "point at corner")
-    assert_false(events.isPointInWidget(99, 110, "btn"), "point left of widget")
-    assert_false(events.isPointInWidget(150, 110, "btn"), "point right of widget")
-    assert_false(events.isPointInWidget(110, 99, "btn"), "point above widget")
-    assert_false(events.isPointInWidget(110, 130, "btn"), "point below widget")
-    assert_false(events.isPointInWidget(110, 110, "nonexistent"), "nonexistent widget")
-end
-
-function Tests.test_update_widget_bounds()
-    print("test_update_widget_bounds")
-    events.init()
-
-    events.registerWidget("btn", {x = 0, y = 0, w = 100, h = 32}, {})
-
-    events.updateWidgetBounds("btn", {x = 50, y = 60, w = 80, h = 40})
-
-    local widget = events.widgets["btn"]
-    assert_eq(50, widget.bounds.x, "updated x")
-    assert_eq(60, widget.bounds.y, "updated y")
-    assert_eq(80, widget.bounds.w, "updated w")
-    assert_eq(40, widget.bounds.h, "updated h")
-end
-
-function Tests.test_unregister_widget()
-    print("test_unregister_widget")
-    events.init()
-
-    events.registerWidget("btn", {x = 0, y = 0, w = 100, h = 32}, {})
-    assert_true(events.widgets["btn"] ~= nil, "widget exists")
-
-    events.unregisterWidget("btn")
-    assert_nil(events.widgets["btn"], "widget removed")
-end
-
-function Tests.test_clear_widgets()
-    print("test_clear_widgets")
-    events.init()
-
-    events.registerWidget("w1", {x = 0, y = 0, w = 50, h = 50}, {})
-    events.registerWidget("w2", {x = 0, y = 0, w = 50, h = 50}, {})
-    events.registerWidget("w3", {x = 0, y = 0, w = 50, h = 50}, {})
-
-    events.clearWidgets()
-
-    assert_nil(events.widgets["w1"], "w1 cleared")
-    assert_nil(events.widgets["w2"], "w2 cleared")
-    assert_nil(events.widgets["w3"], "w3 cleared")
-    assert_eq(1, events.nextZIndex, "zIndex reset")
-end
-
-function Tests.test_layout_parent_stack()
-    print("test_layout_parent_stack")
-    events.init()
-
-    assert_nil(events.getCurrentLayoutParent(), "no parent initially")
-
-    events.pushLayoutParent("region_1")
-    assert_eq("region_1", events.getCurrentLayoutParent(), "parent after push")
-
-    events.pushLayoutParent("region_2")
-    assert_eq("region_2", events.getCurrentLayoutParent(), "nested parent")
-
-    events.popLayoutParent()
-    assert_eq("region_1", events.getCurrentLayoutParent(), "parent after pop")
-
-    events.popLayoutParent()
-    assert_nil(events.getCurrentLayoutParent(), "no parent after all pops")
-end
-
-function Tests.test_widget_parent_from_layout()
-    print("test_widget_parent_from_layout")
-    events.init()
-
-    events.pushLayoutParent("sidebar")
-    events.registerWidget("btn1", {x = 0, y = 0, w = 50, h = 50}, {"Button"})
-    assert_eq("sidebar", events.widgets["btn1"].parent, "widget inherits layout parent")
-
-    events.popLayoutParent()
-    events.registerWidget("btn2", {x = 0, y = 0, w = 50, h = 50}, {"Button"})
-    assert_nil(events.widgets["btn2"].parent, "widget has no parent")
-end
-
-function Tests.test_widget_explicit_parent()
-    print("test_widget_explicit_parent")
-    events.init()
-
-    events.pushLayoutParent("default_parent")
-    events.registerWidget("btn", {x = 0, y = 0, w = 50, h = 50}, {"Button"}, "explicit_parent")
-    assert_eq("explicit_parent", events.widgets["btn"].parent, "explicit parent overrides layout")
-    events.popLayoutParent()
-end
-
-function Tests.test_register_handler()
-    print("test_register_handler")
+function Tests.test_init_and_register_handler()
+    print("test_init_and_register_handler")
     events.init()
 
     local called = false
-    events.registerHandler("test_handler", function(event, widget)
+    events.registerHandler("test_handler", function(event, widget, props)
         called = true
         return true
     end)
 
-    assert_true(events.handlers["test_handler"] ~= nil, "handler registered")
-    events.handlers["test_handler"]({}, nil)
+    assert_true(events.getHandler("test_handler") ~= nil, "handler registered")
+    events.getHandler("test_handler")({}, nil, {})
     assert_true(called, "handler was called")
 end
 
-function Tests.test_unregister_handler()
-    print("test_unregister_handler")
-    events.init()
-
-    events.registerHandler("test_handler", function() return true end)
-    assert_true(events.handlers["test_handler"] ~= nil, "handler exists")
-
-    events.unregisterHandler("test_handler")
-    assert_nil(events.handlers["test_handler"], "handler removed")
+function Tests.test_mode_tags()
+    print("test_mode_tags")
+    setbox.clear()
+    events.addModeTag("state.FreqEntryMode")
+    assert_true(events.hasModeTag("state.FreqEntryMode"), "mode tag added")
+    events.removeModeTag("state.FreqEntryMode")
+    assert_false(events.hasModeTag("state.FreqEntryMode"), "mode tag removed")
 end
 
-function Tests.test_build_event_tags()
-    print("test_build_event_tags")
-    events.init()
+function Tests.test_create_event_and_types()
+    print("test_create_event_and_types")
+    assert_eq("mouseButton", events.Type.MOUSE_DOWN, "MOUSE_DOWN")
+    assert_eq("mouseMotion", events.Type.MOUSE_MOVE, "MOUSE_MOVE")
+    assert_eq("mouseWheel", events.Type.MOUSE_WHEEL, "MOUSE_WHEEL")
+    assert_eq("key", events.Type.KEY_DOWN, "KEY_DOWN")
+    assert_eq("textInput", events.Type.TEXT_INPUT, "TEXT_INPUT")
 
-    local event = {
-        type = "MouseDown",
-        x = 100, y = 100,
-        modifiers = {"input.SHIFT", "input.CTRL"}
-    }
-
-    local widget = {
-        id = "btn",
-        tags = {"widget.Button", "widget.Primary"}
-    }
-
-    local tags = events._buildEventTags(event, widget)
-
-    assert_true(#tags >= 5, "at least 5 tags")
-    assert_eq("event.MouseDown", tags[1], "first tag is namespaced event")
-    -- Widget tags
-    local hasButton = false
-    local hasPrimary = false
-    local hasShift = false
-    local hasCtrl = false
-    for _, t in ipairs(tags) do
-        if t == "widget.Button" then hasButton = true end
-        if t == "widget.Primary" then hasPrimary = true end
-        if t == "input.SHIFT" then hasShift = true end
-        if t == "input.CTRL" then hasCtrl = true end
-    end
-    assert_true(hasButton, "has widget.Button tag")
-    assert_true(hasPrimary, "has widget.Primary tag")
-    assert_true(hasShift, "has input.SHIFT modifier")
-    assert_true(hasCtrl, "has input.CTRL modifier")
+    local ev = events.createEvent(events.Type.MOUSE_DOWN, { x = 150, y = 200, button = "LEFT", isDown = true })
+    assert_eq("mouseButton", ev.type, "event type")
+    assert_eq(150, ev.x, "event x")
+    assert_eq(200, ev.y, "event y")
+    assert_true(ev.timestamp ~= nil, "event has timestamp")
 end
 
-function Tests.test_build_event_tags_no_widget()
-    print("test_build_event_tags_no_widget")
-    events.init()
+function Tests.test_widget_hit_test_and_hover_tags()
+    print("test_widget_hit_test_and_hover_tags")
+    local btn1 = Widget({ id = "btn1", x = 10, y = 10, w = 100, h = 50 })
+    local btn2 = Widget({ id = "btn2", x = 200, y = 10, w = 100, h = 50 })
+    local root = Widget.Container({ id = "root", x = 0, y = 0, w = 400, h = 300, kids = { btn1, btn2 } })
 
-    local event = {
-        type = "KeyDown",
-        modifiers = {}
-    }
+    local hit1 = Widget.updateGlobalMouse(root, 50, 30)
+    assert_eq(btn1, hit1, "hit btn1")
+    assert_true(btn1:hasTag("state.Hovered"), "btn1 has state.Hovered")
+    assert_false(btn2:hasTag("state.Hovered"), "btn2 does not have state.Hovered")
 
-    local tags = events._buildEventTags(event, nil)
-    assert_eq(1, #tags, "only 1 tag for KeyDown without key info")
-    assert_eq("event.KeyDown", tags[1], "first tag is namespaced event")
+    local hit2 = Widget.updateGlobalMouse(root, 250, 30)
+    assert_eq(btn2, hit2, "hit btn2")
+    assert_false(btn1:hasTag("state.Hovered"), "btn1 lost state.Hovered")
+    assert_true(btn2:hasTag("state.Hovered"), "btn2 gained state.Hovered")
+
+    local hitRoot = Widget.updateGlobalMouse(root, 150, 30)
+    assert_eq(root, hitRoot, "hit root in gap")
+
+    local miss = Widget.updateGlobalMouse(root, 500, 500)
+    assert_nil(miss, "outside root returns nil")
 end
 
-function Tests.test_create_event()
-    print("test_create_event")
-    events.init()
+function Tests.test_hierarchical_event_bubbling()
+    print("test_hierarchical_event_bubbling")
+    local childSeenLocalX = nil
+    local parentSeenLocalX = nil
 
-    local event = events.createEvent(events.Type.MOUSE_DOWN, {
-        x = 150,
-        y = 200,
-        button = 1
+    local child = Widget({
+        id = "child",
+        x = 20, y = 30, w = 50, h = 50,
+        mouseAction = function(self, ev)
+            childSeenLocalX = ev.x
+            return false -- Do not consume, let it bubble
+        end
     })
 
-    assert_eq("MouseDown", event.type, "event type")
-    assert_eq(150, event.x, "event x")
-    assert_eq(200, event.y, "event y")
-    assert_eq(1, event.button, "event button")
-    assert_true(event.timestamp ~= nil, "event has timestamp")
-    assert_true(event.modifiers ~= nil, "event has modifiers array")
+    local parent = Widget.Container({
+        id = "parent",
+        x = 100, y = 100, w = 200, h = 200,
+        kids = { child },
+        mouseAction = function(self, ev)
+            parentSeenLocalX = ev.x
+            return true -- Consume at parent
+        end
+    })
+
+    local consumed = child:handleEvent({ type = "mouseButton", x = 135, y = 145, button = "LEFT", isDown = true })
+    assert_true(consumed, "parent consumed bubbled event")
+    assert_eq(15, childSeenLocalX, "child received localized x (135 - 100 - 20)")
+    assert_eq(35, parentSeenLocalX, "parent received localized x (135 - 100)")
 end
 
-function Tests.test_event_types()
-    print("test_event_types")
+function Tests.test_setbox_rule_dispatch()
+    print("test_setbox_rule_dispatch")
+    setbox.clear()
+    events.init()
 
-    assert_eq("MouseDown", events.Type.MOUSE_DOWN, "MOUSE_DOWN")
-    assert_eq("MouseUp", events.Type.MOUSE_UP, "MOUSE_UP")
-    assert_eq("MouseMove", events.Type.MOUSE_MOVE, "MOUSE_MOVE")
-    assert_eq("MouseWheel", events.Type.MOUSE_WHEEL, "MOUSE_WHEEL")
-    assert_eq("KeyDown", events.Type.KEY_DOWN, "KEY_DOWN")
-    assert_eq("KeyUp", events.Type.KEY_UP, "KEY_UP")
-    assert_eq("TextInput", events.Type.TEXT_INPUT, "TEXT_INPUT")
-    assert_eq("WindowResize", events.Type.WINDOW_RESIZE, "WINDOW_RESIZE")
+    setbox.rule {
+        id = "vfo-wheel-rule",
+        tags = { "event.MouseWheel", "widget.VFOControl" },
+        priority = 10,
+        apply = { handler = "vfo_wheel", step = 500 }
+    }
+
+    local handledStep = nil
+    events.registerHandler("vfo_wheel", function(event, widget, props)
+        handledStep = props.step * event.delta
+        return true
+    end)
+
+    local vfoWidget = Widget({ id = "vfo", tags = { "widget.VFOControl" } })
+    local ev = { type = "mouseWheel", delta = 2 }
+    local handled = events.dispatch(ev, vfoWidget)
+
+    assert_true(handled, "dispatched via SetBox rule")
+    assert_eq(1000, handledStep, "resolved step property from rule")
 end
 
 -- =============================================================================
@@ -357,24 +185,12 @@ function Tests.runAll()
     passed = 0
     failed = 0
 
-    Tests.test_init()
-    Tests.test_register_widget()
-    Tests.test_zindex_increments()
-    Tests.test_hit_testing()
-    Tests.test_hit_testing_zorder()
-    Tests.test_point_in_widget()
-    Tests.test_update_widget_bounds()
-    Tests.test_unregister_widget()
-    Tests.test_clear_widgets()
-    Tests.test_layout_parent_stack()
-    Tests.test_widget_parent_from_layout()
-    Tests.test_widget_explicit_parent()
-    Tests.test_register_handler()
-    Tests.test_unregister_handler()
-    Tests.test_build_event_tags()
-    Tests.test_build_event_tags_no_widget()
-    Tests.test_create_event()
-    Tests.test_event_types()
+    Tests.test_init_and_register_handler()
+    Tests.test_mode_tags()
+    Tests.test_create_event_and_types()
+    Tests.test_widget_hit_test_and_hover_tags()
+    Tests.test_hierarchical_event_bubbling()
+    Tests.test_setbox_rule_dispatch()
 
     print(string.format("\nResults: %d passed, %d failed\n", passed, failed))
     return failed == 0

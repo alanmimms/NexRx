@@ -31,7 +31,7 @@ public:
   void shutdown();
 
   // Getters for Lua Bridge
-  DSPEngine& getDSP() { return dsp_; }
+  DSPEngine& getDSP() { return dsp; }
   AudioEngine& getAudio() { return audio; }
   WaterfallRenderer& getWaterfall() { return waterfall; }
   nexrx::TwinConn& getTwinConn() { return twinHost; }
@@ -52,7 +52,7 @@ private:
   void startCommandThread();
   void stopCommandThread();
 
-  DSPEngine& dsp_;
+  DSPEngine& dsp;
   
   sol::state lua;
   sol::table uiModule;
@@ -83,7 +83,7 @@ private:
   uint64_t lastStatFrames = 0;
   uint64_t lastStatNetDropped = 0;
   uint64_t lastStatOverruns = 0;
-  uint64_t lastStatDspFrames = 0;
+  uint64_t lastStatDSPFrames = 0;
   uint64_t lastStatAudioWritten = 0;
   uint64_t lastStatAudioRead = 0;
   uint64_t lastStatAudioDrops = 0;

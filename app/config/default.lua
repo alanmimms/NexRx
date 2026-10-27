@@ -32,10 +32,10 @@ rule {
         fontPaths = { "fonts/DejaVuSans.ttf" },
         ["locale.thousandsSeparator"] = ",",
 
-        stickLeft = false, stickRight = false, stickTop = false, stickBottom = false,
-        width = 0, height = 0, 
-        minWidth = 0, minHeight = 0, maxWidth = 9999, maxHeight = 9999,
-        springX = 0, springY = 0,
+        stick = "LT",
+        prefW = 0, prefH = 0,
+        minW = 0, minH = 0, maxW = 10000, maxH = 10000,
+        flexW = 0, flexH = 0,
         spacing = 4,
         padding = 12,
         background = "#1a1a2e",
@@ -48,67 +48,67 @@ rule {
 -- Root Containers
 -- =============================================================================
 
-rule { id = "top-bar", tags = {"widget.TopBar"}, apply = { height = 32, stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "top-bar", tags = {"widget.TopBar"}, apply = { prefH = 32, stick = "TLR" } }
 
-rule { id = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = { minWidth = 280, stickLeft = true, stickTop = true, stickBottom = true, background = "#0f172a" } }
+rule { id = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"}, apply = { minW = 280, prefW = 280, stick = "TLB", background = "#0f172a" } }
 
-rule { id = "right-sidebar", tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = { minWidth = 300, stickRight = true, stickTop = true, stickBottom = true, background = "#0f172a" } }
+rule { id = "right-sidebar", tags = {"widget.Sidebar", "widget.RightSidebar"}, apply = { minW = 300, prefW = 300, stick = "TRB", background = "#0f172a" } }
 
-rule { id = "center-area", tags = {"widget.CenterArea"}, apply = { stickTop = true, stickBottom = true, stickLeft = true, stickRight = true, springX = 1.0 } }
+rule { id = "center-area", tags = {"widget.CenterArea"}, apply = { stick = "TLBR", flexW = 1.0 } }
 
 -- =============================================================================
--- Left Sidebar Children (Exploded)
+-- Left Sidebar Children
 -- =============================================================================
 
-rule { id = "id-rx-freq", tags = {"id.id-rx-freq", "widget.FrequencyDisplay"}, apply = { parent = "left-sidebar", order = 1, height = 36, stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-rx-freq", tags = {"id.id-rx-freq", "widget.FrequencyDisplay"}, apply = { prefH = 40, stick = "TLR" } }
 
-rule { id = "id-rx-r1k", tags = {"id.id-rx-r1k", "widget.Button"}, apply = { parent = "left-sidebar", order = 2, height = 24, group = "rx-round", springX = 1, stickTop = true, stickLeft = true, stickRight = true } }
-rule { id = "id-rx-r100", tags = {"id.id-rx-r100", "widget.Button"}, apply = { parent = "left-sidebar", order = 2, height = 24, group = "rx-round", springX = 1, stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-rx-r1k", tags = {"id.id-rx-r1k", "widget.Button"}, apply = { prefH = 24, flexW = 1, stick = "TLRB" } }
+rule { id = "id-rx-r100", tags = {"id.id-rx-r100", "widget.Button"}, apply = { prefH = 24, flexW = 1, stick = "TLRB" } }
 
-rule { id = "id-rx-slider", tags = {"id.id-rx-slider", "widget.Slider"}, apply = { parent = "left-sidebar", order = 3, height = 32, stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-rx-slider", tags = {"id.id-rx-slider", "widget.Slider"}, apply = { prefH = 20, stick = "TLR" } }
 
 -- Mode buttons
-for i, m in ipairs({"LSB", "USB", "AM", "CW", "FM"}) do
-    rule { id = "id-rx-mode-" .. m, tags = {"id.id-rx-mode-" .. m, "widget.Button"}, apply = { parent = "left-sidebar", order = 4, height = 26, group = "rx-modes", springX = 1, stickTop = true, stickLeft = true, stickRight = true, label = m } }
+for _, m in ipairs({"LSB", "USB", "AM", "CW", "FM"}) do
+    rule { id = "id-rx-mode-" .. m, tags = {"id.id-rx-mode-" .. m, "widget.Button"}, apply = { prefH = 26, flexW = 1, stick = "TLRB", label = m } }
 end
 
 -- Band buttons
-for i, b in ipairs({"160m","80m","40m","20m","15m","10m"}) do
-    rule { id = "id-rx-band-" .. b, tags = {"id.id-rx-band-" .. b, "widget.Button"}, apply = { parent = "left-sidebar", order = 5, height = 26, group = "rx-bands", springX = 1, stickTop = true, stickLeft = true, stickRight = true, label = b } }
+for _, b in ipairs({"160m","80m","40m","20m","15m","10m"}) do
+    rule { id = "id-rx-band-" .. b, tags = {"id.id-rx-band-" .. b, "widget.Button"}, apply = { prefH = 26, flexW = 1, stick = "TLRB", label = b } }
 end
 
-rule { id = "id-rx-vol", tags = {"id.id-rx-vol", "widget.Slider"}, apply = { parent = "left-sidebar", order = 7, height = 32, label = "Volume", stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-rx-vol", tags = {"id.id-rx-vol", "widget.Slider"}, apply = { prefH = 20, stick = "TLR" } }
 
-rule { id = "id-rx-gain", tags = {"id.id-rx-gain", "widget.Slider"}, apply = { parent = "left-sidebar", order = 9, height = 32, label = "RF Gain", stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-rx-gain", tags = {"id.id-rx-gain", "widget.Slider"}, apply = { prefH = 20, stick = "TLR" } }
 
 -- =============================================================================
 -- Right Sidebar Children
 -- =============================================================================
 
-rule { id = "id-smeter", tags = {"id.id-smeter", "widget.SMeter"}, apply = { parent = "right-sidebar", order = 1, height = 70, stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-smeter", tags = {"id.id-smeter", "widget.SMeter"}, apply = { prefH = 66, stick = "TLR" } }
 
-rule { id = "id-cal", tags = {"id.id-cal", "widget.Button"}, apply = { parent = "right-sidebar", order = 5, height = 30, label = "I/Q BAL CAL", stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-cal", tags = {"id.id-cal", "widget.Button"}, apply = { prefH = 30, label = "I/Q BAL CAL", stick = "TLR" } }
 
-rule { id = "id-isg", tags = {"id.id-isg", "widget.ISGFrame"}, apply = { parent = "right-sidebar", order = 10, height = 240, background = "#00000000", stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-isg", tags = {"id.id-isg", "widget.ISGFrame"}, apply = { prefH = 240, background = "#00000000", stick = "TLR" } }
 
-rule { id = "id-agc", tags = {"id.id-agc", "widget.AGCFrame"}, apply = { parent = "right-sidebar", order = 30, height = 80, background = "#00000000", stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-agc", tags = {"id.id-agc", "widget.AGCFrame"}, apply = { prefH = 80, background = "#00000000", stick = "TLR" } }
 
-rule { id = "id-audio", tags = {"id.id-audio", "widget.AudioUtilsFrame"}, apply = { parent = "right-sidebar", order = 40, height = 100, background = "#00000000", stickTop = true, stickLeft = true, stickRight = true } }
+rule { id = "id-audio", tags = {"id.id-audio", "widget.AudioUtilsFrame"}, apply = { prefH = 100, background = "#00000000", stick = "TLR" } }
 
 -- =============================================================================
 -- Center Area Children
 -- =============================================================================
 
-rule { id = "id-spec", tags = {"id.id-spec", "widget.Spectrum"}, apply = { parent = "center-area", order = 10, stickTop = true, stickLeft = true, stickRight = true, springY = 2.0 } }
+rule { id = "id-spec", tags = {"id.id-spec", "widget.Spectrum"}, apply = { stick = "TLBR", flexH = 1.0, minH = 150 } }
 
-rule { id = "id-wf", tags = {"id.id-wf", "widget.Waterfall"}, apply = { parent = "center-area", order = 20, stickTop = true, stickBottom = true, stickLeft = true, stickRight = true, springY = 1.0 } }
+rule { id = "id-wf", tags = {"id.id-wf", "widget.Waterfall"}, apply = { stick = "TLBR", flexH = 1.0, minH = 200 } }
 
 -- =============================================================================
 -- Far Right Sidebar
 -- =============================================================================
 
-rule { id = "active-tags", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"}, apply = { minWidth = 250, stickRight = true, stickTop = true, stickBottom = true, background = "#08081a" } }
+rule { id = "active-tags", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"}, apply = { minW = 180, prefW = 180, stick = "TRB", background = "#08081a" } }
 
-rule { id = "id-active-tags", tags = {"id.id-active-tags", "widget.DebugPanel"}, apply = { parent = "active-tags", order = 10, stickTop = true, stickBottom = true, stickLeft = true, stickRight = true } }
+rule { id = "id-active-tags", tags = {"id.id-active-tags", "widget.ActiveTags"}, apply = { stick = "TLBR", flexH = 1 } }
 
-print("[default.lua] Exploded configuration loaded")
+print("[default.lua] Configuration loaded")

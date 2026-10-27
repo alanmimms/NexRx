@@ -1,18 +1,18 @@
 --[[
   AGC Widget Module
   Modular UI component for Automatic Gain Control.
-  Style and layout driven entirely by SetBox rules.
+  Style and layout driven by SetBox rules and retained-mode Layout.
 ]]
 
-local state = require("ui.State")
+local Widget = require("ui.Widget")
+local Panel = require("ui.Panel")
 local Label = require("ui.Label")
 local Button = require("ui.Button")
-local layout = require("ui.Layout")
+local Layout = require("ui.Layout")
 local setbox = require("SetBox")
 local Model = require("Model")
 
-local AGC = {}
-AGC.__index = AGC
+local AGC = Widget.mkType("AGCFrame", Panel)
 
 -- Default rules for the AGC widget (very low priority)
 setbox.rule {
@@ -29,11 +29,8 @@ setbox.rule {
         opacity = 1.0,
         padding = 12,
         topMargin = 32,
-        buttonHeight = 18,
+        buttonHeight = 24,
         buttonGap = 4,
-        height = function(lwc)
-            return lwc:getNumber("topMargin") + lwc:getNumber("buttonHeight") + lwc:getNumber("padding") + 12
-        end,
         labelOff = "Off",
         labelSlow = "Slow",
         labelMed = "Med",
@@ -41,80 +38,72 @@ setbox.rule {
     }
 }
 
-function AGC.new(props)
-    local self = setmetatable({}, AGC)
-    self.AGC = props.AGC -- Model.rx.AGC
-    
-    -- Initialize widget instances
-    self.titleLabel = Label.new({ 
-        getText = function(lwc) 
-            return lwc and lwc:getString("title") or "AGC" 
-        end 
+function AGC:init(def)
+    def = def or {}
+    def.layoutFunc = def.layoutFunc or Layout.vFlow
+    Panel.init(self, def)
+
+    self.AGC = def.AGC or (Model.rx and Model.rx.AGC)
+
+    self.titleLabel = Label({
+        id = self.id .. "-title",
+        parent = self,
+        prefH = 24,
+        stick = "LR",
+        margin = { left = 8, right = 8, top = 6, bottom = 4 },
+        getText = function() return self.props.title or "AGC" end,
     })
-    self.modeButtons = {
-        off  = Button.new({ onClick = function() Model.set("rx.AGC.mode", 0) end }),
-        slow = Button.new({ onClick = function() Model.set("rx.AGC.mode", 3) end }),
-        med  = Button.new({ onClick = function() Model.set("rx.AGC.mode", 2) end }),
-        fast = Button.new({ onClick = function() Model.set("rx.AGC.mode", 1) end })
+
+    local modes = {
+        { id = "off",  prop = "labelOff",  default = "Off",  val = 0 },
+        { id = "slow", prop = "labelSlow", default = "Slow", val = 3 },
+        { id = "med",  prop = "labelMed",  default = "Med",  val = 2 },
+        { id = "fast", prop = "labelFast", default = "Fast", val = 1 },
     }
-    return self
+
+    self.modeButtons = {}
+    local btnRowKids = {}
+    for _, m in ipairs(modes) do
+        local btn = Button({
+            id = self.id .. "-mode-" .. m.id,
+            flexW = 1,
+            prefH = self.props.buttonHeight or 24,
+            stick = "TLRB",
+            margin = 2,
+            getText = function() return self.props[m.prop] or m.default end,
+            onClick = function() Model.set("rx.AGC.mode", m.val) end,
+        })
+        self.modeButtons[m.id] = { widget = btn, val = m.val }
+        table.insert(btnRowKids, btn)
+    end
+
+    self.buttonRow = Widget.Row({
+        id = self.id .. "-modes",
+        parent = self,
+        prefH = 30,
+        stick = "LR",
+        margin = { left = 6, right = 6, top = 2, bottom = 6 },
+        kids = btnRowKids,
+    })
+
+    self:add(self.titleLabel)
+    self:add(self.buttonRow)
 end
 
-function AGC:draw(id, x, y, w, h, parentLWC)
-    local lwc = setbox.newContext({"widget.Panel", "widget.AGCFrame", "id." .. id}, parentLWC)
-    
-    -- Background and border
-    local bgR, bgG, bgB = state.hexToRgb(lwc:getString("background"))
-    local bR, bG, bB = state.hexToRgb(lwc:getString("border"))
-    local radius = lwc:getNumber("borderRadius")
-    local alpha = lwc:getNumber("opacity")
-    local bWidth = lwc:getNumber("borderWidth")
-    
-    drawRoundedRect(x, y, w, h, radius, bgR, bgG, bgB, alpha)
-    if bWidth > 0 then
-        drawRectOutline(x, y, w, h, bR, bG, bB, alpha, bWidth)
-    end
-    
-    -- Title
-    self.titleLabel.getText = function() return lwc:getString("title") or "AGC" end
-    self.titleLabel:draw(id .. "-title", x + 12, y + 8, w - 24, 20, lwc)
-    
-    local padding = lwc:getNumber("padding")
-    local topMargin = lwc:getNumber("topMargin")
-    local regionW = w - padding * 2
-    layout.setRegion(x + padding, y + topMargin, regionW, h - topMargin - padding, id)
-    
-    local currentMode = self.AGC.mode:get()
-    local bH = lwc:getNumber("buttonHeight")
-    local bG = lwc:getNumber("buttonGap")
-    
-    local modes = {
-        { id = "off",  label = lwc:getString("labelOff"),  val = 0 },
-        { id = "slow", label = lwc:getString("labelSlow"), val = 3 },
-        { id = "med",  label = lwc:getString("labelMed"),  val = 2 },
-        { id = "fast", label = lwc:getString("labelFast"), val = 1 }
-    }
-    
-    local buttonW = (regionW - (bG * (#modes - 1))) / #modes
-    
-    layout.beginHorizontal(0)
-    for i, m in ipairs(modes) do
-        local bx, by = layout.reserveSpace(buttonW, bH)
-        local btn = self.modeButtons[m.id]
-        
-        -- Use a closure to get label from rules dynamically
-        btn.getText = function() return m.label end
-        
-        -- Add active state tag if matches current mode
-        local activeTags = (currentMode == m.val) and {"state.Active"} or {}
-        
-        btn:draw(id .. "-mode-" .. m.id, bx, by, buttonW, bH, lwc, activeTags)
-        
-        if i < #modes then layout.space(bG) end
-    end
-    layout.endHorizontal()
+function AGC.new(def)
+    return AGC(def)
+end
 
-    layout.endRegion()
+function AGC:drawSelf()
+    local currentMode = self.AGC and self.AGC.mode and self.AGC.mode:get() or 0
+    for _, entry in pairs(self.modeButtons) do
+        local active = (currentMode == entry.val)
+        entry.widget.props.selected = active
+        if entry.widget.lwc then
+            entry.widget.lwc:setTag("state.Active", active)
+        end
+    end
+    Panel.drawSelf(self)
 end
 
 return AGC

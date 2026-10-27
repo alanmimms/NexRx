@@ -1,7 +1,7 @@
 --[[
   Checkbox Widget
   Modular UI component for boolean toggles.
-  Fully rule-driven via SetBox.
+  Driven by SetBox rules and reactive self.props.
 ]]
 
 local setbox = require("SetBox")
@@ -26,91 +26,115 @@ setbox.rule {
         spacing = 8,
         opacity = 1.0,
         label = "Checkbox",
+        fontSize = 20,
     }
 }
 
 function Checkbox:init(def)
+    def = def or {}
     Widget.init(self, def)
     self.getText = def.getText
     self.onToggle = def.onToggle
     self.valueObs = def.valueObs
+    self.isDown = false
+end
+
+function Checkbox:isChecked(overrideChecked)
+    if overrideChecked ~= nil then return not not overrideChecked end
+    if self.valueObs then return not not self.valueObs:get() end
+    return not not self.props.checked
+end
+
+function Checkbox:resolveLabel()
+    if self.getText then
+        return tostring(self.getText() or "")
+    end
+    return tostring(self.props.label or self.props.text or "Checkbox")
 end
 
 function Checkbox:calcMetrics()
-    local boxSize = self.lwc:optNumber("boxSize", 18)
-    local spacing = self.lwc:optNumber("spacing", 8)
-    local label = self.getText and self.getText() or self.lwc:optString("label", "Checkbox")
-    local labelW = System.measureText(label, 20)
-    
-    if self.metrics.prefW == 0 then self.metrics.prefW = boxSize + spacing + labelW end
-    if self.metrics.prefH == 0 then self.metrics.prefH = math.max(boxSize, 20) end
+    local boxSize = self.props.boxSize or 18
+    local spacing = self.props.spacing or 8
+    local fontSize = self.props.fontSize or 20
+    local label = self:resolveLabel()
+    local labelW = TextMixin.measure(label, fontSize)
+
+    if (self.props.prefW or 0) == 0 then
+        self.props.prefW = boxSize + spacing + labelW
+    end
+    if (self.props.prefH or 0) == 0 then
+        self.props.prefH = math.max(boxSize, fontSize)
+    end
+end
+
+function Checkbox:onEvent(event)
+    if event.type == "mouseButton" and event.button == "LEFT" then
+        if event.isDown then
+            self.isDown = true
+            state.setActive(self.id)
+            if self.lwc then
+                self.lwc:addTag("state.Pressed")
+                self.lwc:addTag("state.Active")
+            end
+            return true
+        else
+            local wasDown = self.isDown or state.isActive(self.id)
+            self.isDown = false
+            state.setActive(nil)
+            if self.lwc then
+                self.lwc:removeTag("state.Pressed")
+                self.lwc:removeTag("state.Active")
+            end
+            if wasDown and self:contains(event.x or 0, event.y or 0) then
+                local newVal = not self:isChecked()
+                self.props.checked = newVal
+                if self.lwc then
+                    self.lwc:setTag("state.Checked", newVal)
+                end
+                if self.valueObs and self.valueObs.set then
+                    self.valueObs:set(newVal)
+                end
+                if self.onToggle then
+                    self.onToggle(newVal)
+                end
+            end
+            return true
+        end
+    end
+    return Widget.onEvent(self, event)
 end
 
 function Checkbox:drawSelf(checked)
-    local id, w, h = self.id, self.props.w, self.props.h
-    
-    if self.valueObs then checked = self.valueObs:get() end
+    local h = self.props.h or 0
+    local isChecked = self:isChecked(checked)
 
-    local tags = {"widget.Checkbox", "id." .. id}
-    if self.tags then
-        for _, t in ipairs(self.tags) do table.insert(tags, t) end
+    if self.lwc then
+        self.lwc:setTag("state.Checked", isChecked)
     end
-    if checked then table.insert(tags, "state.Checked") end
-    
-    -- Interaction tags
-    if state.isActive(id) then table.insert(tags, "state.Pressed")
-    elseif state.isHot(id) then table.insert(tags, "state.Hovered") end
-    
-    local lwc = self.lwc
-    
-    -- Resolved properties
-    local boxSize = lwc:optNumber("boxSize", 18)
-    local spacing = lwc:optNumber("spacing", 8)
-    
-    local label = ""
-    if self.getText then
-        label = self.getText()
-    else
-        label = lwc:optString("label", "Checkbox")
-    end
-    
-    state.registerWidget(id, {x=0, y=0, w=w, h=h}, tags)
-    
-    -- Hit testing (Local 0,0)
-    if state.pointInRect(state.mouseX, state.mouseY, 0, 0, w, h) then
-        state.setHot(id)
-        if state.mouseClicked then state.setActive(id) end
-    end
-    
-    -- Styling from rules
-    local bgR, bgG, bgB = state.hexToRgb(lwc:optString("background", "#1e293b"))
-    local fgR, fgG, fgB = state.hexToRgb(lwc:optString("foreground", "#ffffff"))
-    local bR, bG, bB = state.hexToRgb(lwc:optString("border", "#475569"))
-    local aR, aG, aB = state.hexToRgb(lwc:optString("accent", "#3b82f6"))
-    local bWidth = lwc:optNumber("borderWidth", 1)
-    local alpha = lwc:optNumber("opacity", 1.0)
-    
-    -- Draw box
-    System.drawRoundedRect(0, (h - boxSize)/2, boxSize, boxSize, 3, {bgR, bgG, bgB, alpha})
+
+    local boxSize = self.props.boxSize or 18
+    local spacing = self.props.spacing or 8
+    local fontSize = self.props.fontSize or 20
+    local label = self:resolveLabel()
+
+    local bgR, bgG, bgB, bgA = state.hexToRgb(self.props.background or "#1e293b")
+    local bR, bG, bB, bA = state.hexToRgb(self.props.border or "#475569")
+    local aR, aG, aB, aA = state.hexToRgb(self.props.accent or "#3b82f6")
+    local bWidth = self.props.borderWidth or 1
+    local alpha = self.props.opacity or 1.0
+
+    local bx, by = 0, (h - boxSize) / 2
+    System.drawRoundedRect(bx, by, boxSize, boxSize, 3, {bgR, bgG, bgB, (bgA or 1.0) * alpha})
     if bWidth > 0 then
-        System.drawRectLines(0, (h - boxSize)/2, boxSize, boxSize, bWidth, {bR, bG, bB, alpha})
+        System.drawRectLines(bx, by, boxSize, boxSize, bWidth, {bR, bG, bB, (bA or 1.0) * alpha})
     end
-    
-    if checked then
-        -- Draw checkmark
-        local bx, by = 0, (h - boxSize)/2
-        System.drawLine(bx + 4, by + boxSize/2, bx + boxSize/2 - 1, by + boxSize - 5, 2, {aR, aG, aB, alpha})
-        System.drawLine(bx + boxSize/2 - 1, by + boxSize - 5, bx + boxSize - 4, by + 4, 2, {aR, aG, aB, alpha})
+
+    if isChecked then
+        System.drawLine(bx + 4, by + boxSize / 2, bx + boxSize / 2 - 1, by + boxSize - 5, 2, {aR, aG, aB, (aA or 1.0) * alpha})
+        System.drawLine(bx + boxSize / 2 - 1, by + boxSize - 5, bx + boxSize - 4, by + 4, 2, {aR, aG, aB, (aA or 1.0) * alpha})
     end
-    
-    -- Draw label
-    TextMixin.draw(boxSize + spacing, (h - 20) / 2, label, lwc)
-    
-    if state.wasClicked(id) then
-        local newVal = not checked
-        if self.onToggle then self.onToggle(newVal) end
-        if self.valueObs and self.valueObs.set then self.valueObs:set(newVal) end
-    end
+
+    TextMixin.draw(boxSize + spacing, (h - fontSize) / 2, label, self, fontSize)
 end
 
 return Checkbox
