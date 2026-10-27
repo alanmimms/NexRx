@@ -102,19 +102,9 @@ class FrameBuffer {
     if (w == 0 || h == 0) return;
 
     if (h == 0) {			// Horizontal line
-      const uint8_t mask = maskForY(y);
-      const uint8_t page = y >> 3;
-
-      for (uint8_t xOffset=0; xOffset < w; ++xOffset) {
-	bitsP[page * width + xOffset] |= mask;
-      }
+      drawFilledRect(x, y, w, 1);
     } else if (width == 0) {	// Vertical line
-      const uint8_t mask = maskForY(y);
-
-      for (uint8_t yOffset=0; yOffset < h; ++yOffset) {
-	const uint8_t page = (y + yOffset) >> 3;
-	bitsP[page * width + x] |= mask;
-      }
+      drawFilledRect(x, y, 1, h);
     } else {			// Bresenham line
       int m = 2 * h;
       int slopeErr = m - w;
