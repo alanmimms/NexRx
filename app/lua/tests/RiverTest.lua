@@ -176,8 +176,157 @@ function Tests.test_signalbox_river_geometry()
   assert_eq(2800, box.bandwidth, "box bandwidth")
 
   -- Dragging top chevron handle adjusts bandwidth
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, y = 2 })
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 4 })
   assert_eq("topHandle", box.dragMode, "top chevron handle engaged")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 4 })
+
+  -- Dragging bottom chevron handle
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 36 })
+  assert_eq("bottomHandle", box.dragMode, "bottom chevron handle engaged")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 36 })
+
+  -- Clicking mode badge cycles mode
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 20, y = 20 })
+  assert_eq("LSB", box.mode, "clicking mode badge cycled USB to LSB")
+end
+
+function Tests.test_decoder_track_lod()
+  print("test_decoder_track_lod")
+  local DecoderTrack = require("ui.DecoderTrack")
+
+  -- 1. Base fallback color
+  local trBase = DecoderTrack({
+    freq = 14.074e6,
+    mode = "UNKNOWN",
+  })
+  local baseCol = trBase:getRibbonColor()
+  assert_true(baseCol ~= nil, "base ribbon color present")
+
+  -- 2. Tag-driven customization by mode
+  setbox.rule {
+    id = "user-custom-ft8-ribbon",
+    tags = { "widget.DecoderTrack", "mode.FT8" },
+    priority = 200,
+    apply = {
+      ribbonColor = "#ffaa00",
+      textColor = "#ffffff",
+    }
+  }
+
+  local tr = DecoderTrack({
+    freq = 14.074e6,
+    mode = "FT8",
+    callsign = "W1AW",
+    text = "CQ W1AW FN31"
+  })
+
+  local col = tr:getRibbonColor()
+  assert_close(1.0, col[1], 0.01, "FT8 custom tag color red channel")
+  assert_close(0.667, col[2], 0.01, "FT8 custom tag color green channel")
+
+  -- Render inline without error
+  tr:renderInline(100, 800, 30.0, 20.0, false, 0, 0)
+  assert_true(true, "rendered inline track")
+end
+
+function Tests.test_river_view_tab_cycling_and_spawning()
+  print("test_river_view_tab_cycling_and_spawning")
+  local rv = RiverView({
+    freqMin = 14.0e6,
+    freqMax = 14.35e6,
+    w = 800,
+    h = 450,
+    signalBoxes = {
+      { index = 1, carrierFreq = 14.025e6, mode = "CW" },
+      { index = 2, carrierFreq = 14.225e6, mode = "USB" }
+    }
+  })
+  rv:layout(0, 0, 800, 450)
+
+  local Model = require("Model")
+  Model.selectedSignalBoxIndex:set(1)
+
+  -- TAB cycles to box 2
+  rv:onEvent({ type = "key", key = "TAB", isDown = true })
+  assert_eq(2, Model.selectedSignalBoxIndex:get(), "tab cycled to box 2")
+
+  -- TAB wraps back to box 1
+  rv:onEvent({ type = "key", key = "TAB", isDown = true })
+  assert_eq(1, Model.selectedSignalBoxIndex:get(), "tab cycled back to box 1")
+
+  -- Shift+Click drops a 3rd SignalBox
+  _G.isShiftDown = function() return true end
+  rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 400, y = 200 })
+  _G.isShiftDown = function() return false end
+  assert_eq(3, #rv.signalBoxes, "shift+click spawned 3rd signal box")
+end
+
+function Tests.test_river_view_cursor_centered_zoom()
+  print("test_river_view_cursor_centered_zoom")
+  local rv = RiverView({
+    freqMin = 14.0e6,
+    freqMax = 14.35e6,
+    centerFreq = 14.175e6,
+    bandwidth = 500e3,
+    w = 800,
+    h = 450,
+    signalBoxes = {
+      { index = 1, carrierFreq = 14.074e6, bandwidth = 25000, mode = "USB" }
+    }
+  })
+  rv:layout(0, 0, 800, 450)
+  local initialBoxH = rv.signalBoxes[1].props.h
+
+  -- Find y corresponding to 14.074 MHz
+  local rulerH = rv.props.rulerH or 22
+  local canvasH = 450 - rulerH
+  local normF = (14.074e6 - 14.0e6) / 350e3
+  local cursorY = rulerH + (1.0 - normF) * canvasH
+
+  -- Wheel zoom in with cursor at 14.074 MHz
+  rv:onEvent({ type = "mouseWheel", delta = 1, y = cursorY })
+
+  local newSpan = rv.freqMax - rv.freqMin
+  assert_true(newSpan < 350e3, "wheel zooms span in")
+  local freqAtCursor = rv:getFreqAtY(cursorY)
+  assert_close(14.074e6, freqAtCursor, 1000.0, "cursor frequency preserved after zoom")
+
+  -- SignalBox height should have expanded proportionally as we zoomed in
+  local zoomedBoxH = rv.signalBoxes[1].props.h
+  assert_true(zoomedBoxH > initialBoxH, "signal box height expands on zoom in")
+
+  -- Normalized coordinates for LiveTrace/River shrink within [0.0, 1.0]
+  local fMinNorm, fMaxNorm = rv:getNormalizedFreqRange()
+  assert_true(fMinNorm >= 0.0 and fMaxNorm <= 1.0, "normalized coordinates within [0, 1]")
+  assert_true((fMaxNorm - fMinNorm) < (350e3 / 500e3), "normalized span shrinks on zoom in")
+end
+
+function Tests.test_spacer_non_interactive()
+  print("test_spacer_non_interactive")
+  local Widget = require("ui.Widget")
+  local Stick = require("ui.Stick")
+
+  local spacer = Widget.Spacer{
+    name = "top-bar-spacer",
+    metrics = { stick = Stick.L, flexW = 1 }
+  }
+  spacer:layout(0, 0, 200, 38)
+
+  assert_true(spacer.interactive == false, "spacer has interactive=false")
+  assert_true(spacer:contains(50, 19), "spacer geometry contains point")
+  assert_true(spacer:hitTest(50, 19) == nil, "spacer hitTest returns nil")
+
+  local root = Widget.Row{
+    name = "bar",
+    interactive = false,
+    kids = {
+      spacer
+    }
+  }
+  root:layout(0, 0, 200, 38)
+  local hit = Widget.updateGlobalMouse(root, 50, 19)
+  assert_true(hit == nil, "updateGlobalMouse does not hover spacer")
+  assert_true(spacer.isMouseOver ~= true, "spacer is not marked as mouse over")
 end
 
 -- =============================================================================
@@ -192,10 +341,14 @@ function Tests.runAll()
   Tests.test_river_behaviors()
   Tests.test_river_view_normalized_coords()
   Tests.test_river_view_split_navigation()
+  Tests.test_river_view_cursor_centered_zoom()
   Tests.test_frequency_ruler_events()
   Tests.test_smeter_dual_decay()
   Tests.test_gutter_left_off_screen_piles()
   Tests.test_signalbox_river_geometry()
+  Tests.test_decoder_track_lod()
+  Tests.test_river_view_tab_cycling_and_spawning()
+  Tests.test_spacer_non_interactive()
 
   print(string.format("\nResults: %d passed, %d failed\n", passed, failed))
   return failed == 0

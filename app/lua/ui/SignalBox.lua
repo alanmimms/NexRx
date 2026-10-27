@@ -55,24 +55,74 @@ function SignalBox:init(def)
   self.playbackX = 0
 end
 
+function SignalBox:cycleMode()
+  local modeList = { "USB", "LSB", "CW", "AM", "FM" }
+  local curIdx = 1
+  for i, m in ipairs(modeList) do
+    if m == self.mode then curIdx = i; break end
+  end
+  local nextIdx = (curIdx % #modeList) + 1
+  self.mode = modeList[nextIdx]
+  Model.set("rx.selectedMode", self.mode)
+  local river = self.parent
+  if river and river.layout then
+    river:layout(river.props.x or 0, river.props.y or 0, river.props.w or 800, river.props.h or 450)
+  end
+end
+
 function SignalBox:onEvent(event)
   if event.type == "mouseButton" and event.button == "LEFT" then
     if event.isDown then
+      local lx = event.x or 0
       local ly = event.y or 0
+      local w = self.props.w or 100
       local h = self.props.h or 10
 
-      if ly <= 6 then
+      -- Check if clicked on the Mode badge on the left (x: 8 to 72)
+      if lx >= 8 and lx <= 72 and ly >= 2 and ly <= h - 2 then
+        self:cycleMode()
+        Model.selectedSignalBoxIndex:set(self.boxIndex)
+        self:setFocus()
+        return true
+      end
+
+      -- Generous chevron handle hit targets on right edge (x >= w - 55)
+      if lx >= w - 55 then
+        if ly <= math.max(12, h * 0.45) then
+          self.dragMode = "topHandle"
+        elseif ly >= math.min(h - 12, h * 0.55) then
+          self.dragMode = "bottomHandle"
+        else
+          self.dragMode = "move"
+        end
+      elseif ly <= 8 then
         self.dragMode = "topHandle"
-      elseif ly >= h - 6 then
+      elseif ly >= h - 8 then
         self.dragMode = "bottomHandle"
       else
         self.dragMode = "move"
       end
 
+      local bw = self.bandwidth or 2800
+      local cFreq = self.carrierFreq or 14.2e6
+      local lowFreq, highFreq
+      if self.mode == "USB" then
+        lowFreq = cFreq
+        highFreq = cFreq + bw
+      elseif self.mode == "LSB" then
+        lowFreq = cFreq - bw
+        highFreq = cFreq
+      else
+        lowFreq = cFreq - bw / 2
+        highFreq = cFreq + bw / 2
+      end
+      self.dragStartLowFreq = lowFreq
+      self.dragStartHighFreq = highFreq
+      self.dragStartCarrier = cFreq
+      self.dragStartBw = bw
+
       self.isDragging = true
       self.dragStartY = event.gy or event.y or 0
-      self.dragStartCarrier = self.carrierFreq
-      self.dragStartBw = self.bandwidth
 
       state.setActive(self.id)
       Model.selectedSignalBoxIndex:set(self.boxIndex)
@@ -88,8 +138,9 @@ function SignalBox:onEvent(event)
     local dy = (event.gy or event.y or 0) - self.dragStartY
     local river = self.parent
     local hzPerPx = 100
-    if river and river.props and river.props.h and river.props.freqMax and river.props.freqMin then
-      hzPerPx = (river.props.freqMax - river.props.freqMin) / river.props.h
+    if river and river.freqMax and river.freqMin then
+      local canvasH = math.max(10, (river.props.h or 450) - (river.props.rulerH or 22))
+      hzPerPx = (river.freqMax - river.freqMin) / canvasH
     end
 
     if self.dragMode == "move" then
@@ -97,15 +148,49 @@ function SignalBox:onEvent(event)
       self.carrierFreq = self.dragStartCarrier - (dy * hzPerPx)
       Model.set("rx.VFO.activeValue", self.carrierFreq)
     elseif self.dragMode == "topHandle" then
-      -- Top handle: adjust upper skirt
-      local deltaBw = -(dy * hzPerPx)
-      self.bandwidth = math.max(200, self.dragStartBw + deltaBw)
+      -- Dragging top chevron moves upper skirt while anchoring lower skirt
+      local deltaHz = (dy * hzPerPx)
+      local newHighFreq = math.max(self.dragStartLowFreq + 200, self.dragStartHighFreq - deltaHz)
+      if self.mode == "USB" then
+        self.bandwidth = math.max(200, math.floor(newHighFreq - self.dragStartLowFreq))
+      elseif self.mode == "LSB" then
+        self.carrierFreq = newHighFreq
+        self.bandwidth = math.max(200, math.floor(newHighFreq - self.dragStartLowFreq))
+        Model.set("rx.VFO.activeValue", self.carrierFreq)
+      else
+        self.carrierFreq = math.floor((newHighFreq + self.dragStartLowFreq) / 2)
+        self.bandwidth = math.max(200, math.floor(newHighFreq - self.dragStartLowFreq))
+        Model.set("rx.VFO.activeValue", self.carrierFreq)
+      end
+      Model.set("rx.bandpass.width", self.bandwidth)
     elseif self.dragMode == "bottomHandle" then
-      -- Bottom handle: adjust lower skirt
-      local deltaBw = (dy * hzPerPx)
-      self.bandwidth = math.max(200, self.dragStartBw + deltaBw)
+      -- Dragging bottom chevron moves lower skirt while anchoring upper skirt
+      local deltaHz = (dy * hzPerPx)
+      local newLowFreq = math.min(self.dragStartHighFreq - 200, self.dragStartLowFreq - deltaHz)
+      if self.mode == "USB" then
+        self.carrierFreq = newLowFreq
+        self.bandwidth = math.max(200, math.floor(self.dragStartHighFreq - newLowFreq))
+        Model.set("rx.VFO.activeValue", self.carrierFreq)
+      elseif self.mode == "LSB" then
+        self.bandwidth = math.max(200, math.floor(self.dragStartHighFreq - newLowFreq))
+      else
+        self.carrierFreq = math.floor((self.dragStartHighFreq + newLowFreq) / 2)
+        self.bandwidth = math.max(200, math.floor(self.dragStartHighFreq - newLowFreq))
+        Model.set("rx.VFO.activeValue", self.carrierFreq)
+      end
+      Model.set("rx.bandpass.width", self.bandwidth)
+    end
+
+    -- Live visual update of SignalBox height and position on the River canvas
+    if river and river.layout then
+      river:layout(river.props.x or 0, river.props.y or 0, river.props.w or 800, river.props.h or 450)
     end
     return true
+  elseif event.type == "mouseWheel" then
+    local river = self.parent
+    if river and river.handleWheelZoom then
+      return river:handleWheelZoom(event)
+    end
   end
 
   return Widget.onEvent(self, event)
@@ -129,35 +214,50 @@ function SignalBox:drawSelf()
   System.drawRect(0, 0, w, h, { bgR, bgG, bgB, alpha })
 
   -- Upper and lower skirt boundary lines
-  System.drawLine(0, 0, w, 0, bWidth, { bR, bG, bB, 0.85 })
-  System.drawLine(0, h, w, h, bWidth, { bR, bG, bB, 0.85 })
+  System.drawLine(0, 0, w, 0, bWidth, { bR, bG, bB, 0.9 })
+  System.drawLine(0, h, w, h, bWidth, { bR, bG, bB, 0.9 })
 
-  -- Virtual carrier frequency line (dashed or subtle solid)
+  -- Virtual carrier frequency line
   local carrierY = (self.mode == "USB") and h or ((self.mode == "LSB") and 0 or (h / 2))
-  System.drawLine(0, carrierY, w, carrierY, 1.0, { 1.0, 1.0, 1.0, 0.6 })
+  System.drawLine(0, carrierY, w, carrierY, 1.5, { 1.0, 1.0, 1.0, 0.75 })
 
-  -- Outward-facing bracket / chevron handles (only on focused SignalBox)
+  -- Interactive Chevrons & Handles (prominently rendered on focused SignalBox)
   if isSelected then
     local hR, hG, hB = state.hexToRgb(self.props.handleColor or "#38bdf8")
-    local hx = w - 18
-    -- Top chevron (v) sitting above upper skirt
-    System.drawLine(hx, -4, hx + 5, -1, 2.0, { hR, hG, hB, 0.95 })
-    System.drawLine(hx + 5, -1, hx + 10, -4, 2.0, { hR, hG, hB, 0.95 })
+    local hx = w - 42
 
-    -- Bottom chevron (^) sitting below lower skirt
-    System.drawLine(hx, h + 4, hx + 5, h + 1, 2.0, { hR, hG, hB, 0.95 })
-    System.drawLine(hx + 5, h + 1, hx + 10, h + 4, 2.0, { hR, hG, hB, 0.95 })
+    -- Top chevron (pointing upward / outward)
+    System.drawRect(hx - 2, 0, 36, 6, { hR, hG, hB, 0.4 })
+    System.drawLine(hx, 5, hx + 16, 1, 2.5, { hR, hG, hB, 0.95 })
+    System.drawLine(hx + 16, 1, hx + 32, 5, 2.5, { hR, hG, hB, 0.95 })
+
+    -- Bottom chevron (pointing downward / outward)
+    System.drawRect(hx - 2, h - 6, 36, 6, { hR, hG, hB, 0.4 })
+    System.drawLine(hx, h - 5, hx + 16, h - 1, 2.5, { hR, hG, hB, 0.95 })
+    System.drawLine(hx + 16, h - 1, hx + 32, h - 5, 2.5, { hR, hG, hB, 0.95 })
   end
 
-  -- Label: e.g. "CQ W1AW (USB)"
-  local tagText = string.format("%s (%s)", tostring(self.label), tostring(self.mode))
-  System.drawText(tagText, 10, clamp(h / 2 - 7, 2, h - 16), 13, { 1.0, 1.0, 1.0, 0.95 })
+  -- Mode Badge on the left (clickable to cycle mode)
+  local modeBadgeW = 54
+  local badgeH = math.min(22, math.max(14, h - 4))
+  local badgeY = clamp(h / 2 - badgeH / 2, 2, h - badgeH - 2)
+  local badgeBg = isSelected and { 0.1, 0.15, 0.25, 0.85 } or { 0.05, 0.08, 0.15, 0.75 }
+  System.drawRoundedRect(8, badgeY, modeBadgeW, badgeH, 3, badgeBg)
+  System.drawRectLines(8, badgeY, modeBadgeW, badgeH, 1.0, { bR, bG, bB, 0.7 })
+
+  local modeStr = tostring(self.mode)
+  local mw = System.measureText(modeStr, 12) or (#modeStr * 8)
+  System.drawText(modeStr, 8 + (modeBadgeW - mw) / 2, badgeY + (badgeH - 12) / 2, 12, { 1.0, 1.0, 1.0, 0.95 })
+
+  -- Label & Bandwidth: e.g. "CQ W1AW | 2.8 kHz"
+  local bwKhz = string.format("%.1f kHz", self.bandwidth / 1000)
+  local labelText = string.format("%s  (%s)", tostring(self.label), bwKhz)
+  System.drawText(labelText, 70, clamp(h / 2 - 6, 2, h - 14), 12, { 0.95, 0.95, 0.95, 0.9 })
 
   -- Amber Playback Cursor (if time-machine playback is active)
   if self.playbackActive and self.playbackX > 0 and self.playbackX < w then
     local pbR, pbG, pbB = state.hexToRgb(self.props.playbackColor or "#f59e0b")
     System.drawLine(self.playbackX, -6, self.playbackX, h + 6, 2.0, { pbR, pbG, pbB, 1.0 })
-    -- Scoped diamond head
     System.drawCircle(self.playbackX, carrierY, 3.5, { pbR, pbG, pbB, 1.0 })
   end
 end

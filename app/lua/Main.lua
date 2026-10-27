@@ -50,6 +50,7 @@ _G.lastSpectrumData = {}
 local frameCount = 0
 local fps = 0
 local rxTree = nil
+local riverViewRef = nil
 
 -- Data for widgets
 _G.freqEntryText = ""; _G.freqEntryCursor = 0
@@ -280,27 +281,10 @@ function init()
       end
    end
 
-   local modeStops = {}
-   for _, name in ipairs(Modes.names) do
-      table.insert(modeStops, {label = name, value = name})
-   end
-
-   local bandStops = {}
-   for _, name in ipairs(_G.bands.getAllNames()) do
-      table.insert(bandStops, {label = name, value = name})
-   end
-
-   local initialVFO = Model.rx.VFO.activeValue:get() or 14.240e6
+   local initialVFO = Model.rx.VFO.activeValue:get() or 14.200e6
    local initialBand = _G.bands.getBand(Model.rx.selectedBand:get() or "20m")
    local initFMin = initialBand and initialBand.lowerEdge or 14.0e6
    local initFMax = initialBand and initialBand.upperEdge or 14.35e6
-
-   local vfoDisp = FrequencyDisplay{
-      id = "id-rx-freq",
-      valueObs = Model.rx.VFO.activeValue,
-      tags = {"widget.VFOControl"},
-      metrics = { stick = Stick.L, prefW = 180, prefH = 32, margin = { left = 10, top = 3 } }
-   }
 
    local riverView = RiverView{
       id = "id-river-view",
@@ -309,8 +293,8 @@ function init()
       timeOffset = 0.0,
       freqMin = initFMin,
       freqMax = initFMax,
-      centerFreq = initialVFO,
-      bandwidth = 350e3,
+      centerFreq = (initFMin + initFMax) / 2,
+      bandwidth = math.max(500e3, (initFMax - initFMin) * 1.25),
       metrics = { stick = Stick.TLBR, flexW = 1, flexH = 1 },
       signalBoxes = {
          {
@@ -321,19 +305,22 @@ function init()
             bandwidth = 2800,
             label = "CQ W1AW"
          }
+      },
+      decoderTracks = {
+         { freq = 14.074e6, mode = "FT8", callsign = "K1JT", text = "CQ K1JT FN20" },
+         { freq = 14.075e6, mode = "FT8", callsign = "W3LPL", text = "K1JT W3LPL -08" },
+         { freq = 14.025e6, mode = "CW", callsign = "W1AW", text = "CQ CQ DE W1AW K" },
+         { freq = 14.225e6, mode = "USB", callsign = "N2AA", text = "59 IN NY 73" }
       }
    }
+   riverViewRef = riverView
 
    local freqRuler = FrequencyRuler{
       id = "id-freq-ruler",
       tags = {"widget.FrequencyRuler"},
       freqMin = initFMin,
       freqMax = initFMax,
-      metrics = { stick = Stick.TRB, prefW = 60, flexH = 1 },
-      onFrequencyChange = function(self, fMin, fMax)
-         riverView.freqMin = fMin
-         riverView.freqMax = fMax
-      end
+      metrics = { stick = Stick.TRB, prefW = 60, flexH = 1 }
    }
 
    local liveTrace = LiveTrace{
@@ -349,16 +336,58 @@ function init()
       tags = {"widget.GutterLeft"},
       freqMin = initFMin,
       freqMax = initFMax,
-      boxes = {
-         { carrierFreq = initialVFO, mode = "USB" }
-      },
+      boxes = riverView.signalBoxes,
       metrics = { stick = Stick.TLB, prefW = 68, flexH = 1 }
    }
+
+   local function updateFrequencyRange(fMin, fMax)
+      riverView.freqMin = fMin
+      riverView.freqMax = fMax
+      riverView:layout(riverView.props.x or 0, riverView.props.y or 0, riverView.props.w or 800, riverView.props.h or 450)
+
+      freqRuler.props.freqMin = fMin
+      freqRuler.props.freqMax = fMax
+
+      gutterLeft.props.freqMin = fMin
+      gutterLeft.props.freqMax = fMax
+
+      local fMinNorm, fMaxNorm = riverView:getNormalizedFreqRange()
+      liveTrace.props.freqMinNorm = fMinNorm
+      liveTrace.props.freqMaxNorm = fMaxNorm
+   end
+
+   riverView.onSignalBoxesChanged = function(self, boxes)
+      gutterLeft.activeBoxes = boxes
+   end
+
+   riverView.onFrequencyChange = function(self, fMin, fMax)
+      updateFrequencyRange(fMin, fMax)
+   end
+
+   freqRuler.onFrequencyChange = function(self, fMin, fMax)
+      updateFrequencyRange(fMin, fMax)
+   end
+
+   freqRuler.onSelectBand = function(self, bandName)
+      local b = _G.bands.getBand(bandName)
+      if b then
+         updateFrequencyRange(b.lowerEdge, b.upperEdge)
+      end
+   end
+
+   gutterLeft.onTopPileClick = function(self)
+      local span = riverView.freqMax - riverView.freqMin
+      updateFrequencyRange(riverView.freqMin + span * 0.5, riverView.freqMax + span * 0.5)
+   end
+
+   gutterLeft.onBottomPileClick = function(self)
+      local span = riverView.freqMax - riverView.freqMin
+      updateFrequencyRange(riverView.freqMin - span * 0.5, riverView.freqMax - span * 0.5)
+   end
 
    -- Reactive synchronization between VFO, Mode, Band, and The River
    Model.rx.VFO.activeValue:watch(function(freq)
       if riverView and freq then
-         riverView.hwCenterFreq = freq
          if riverView.signalBoxes and riverView.signalBoxes[1] then
             riverView.signalBoxes[1].carrierFreq = freq
          end
@@ -377,16 +406,14 @@ function init()
    Model.rx.selectedBand:watch(function(bandName)
       if _G.bands and bandName then
          local b = _G.bands.getBand(bandName)
-         if b and riverView and freqRuler and gutterLeft then
-            riverView.freqMin = b.lowerEdge
-            riverView.freqMax = b.upperEdge
-            freqRuler.props.freqMin = b.lowerEdge
-            freqRuler.props.freqMax = b.upperEdge
-            gutterLeft.props.freqMin = b.lowerEdge
-            gutterLeft.props.freqMax = b.upperEdge
+         if b and riverView then
+            updateFrequencyRange(b.lowerEdge, b.upperEdge)
          end
       end
    end)
+
+   -- Initial synchronization across all River widgets
+   updateFrequencyRange(initFMin, initFMax)
 
    rxTree = Widget.Window{
       name = "id-root-window",
@@ -398,18 +425,15 @@ function init()
                Widget.Row{
                   name = "top-bar", metrics = { stick = Stick.TLR, prefH = 38 },
                   backgroundColor = Color("#0b1220"),
+                  interactive = false,
                   kids = {
-                     Widget.Label{ id = "titleLabel", text = "NexRx SDR | The River", metrics = {stick = Stick.L, prefW = 160, margin = {left = 8, top = 8}} },
-                     vfoDisp,
-                     Widget.Label{ text = "Mode:", metrics = {stick = Stick.L, prefW = 42, margin = {left = 10, top = 8}} },
-                     Slider.DiscreteSlider{ id = "id-mode-slider", valueObs = Model.rx.selectedMode, stops = modeStops, metrics = { stick = Stick.L, prefW = 130, prefH = 26, margin = {top = 6}} },
-                     Widget.Label{ text = "Band:", metrics = {stick = Stick.L, prefW = 40, margin = {left = 10, top = 8}} },
-                     Slider.DiscreteSlider{ id = "id-band-slider", valueObs = Model.rx.selectedBand, stops = bandStops, metrics = { stick = Stick.L, prefW = 110, prefH = 26, margin = {top = 6}} },
-                     Widget.Label{ text = "Vol:", metrics = {stick = Stick.L, prefW = 28, margin = {left = 10, top = 8}} },
-                     Slider{ id = "id-rx-vol", valueObs = Model.rx.volume.DB, minVal = -60, maxVal = 0, metrics = { stick = Stick.L, prefW = 75, prefH = 20, margin = {top = 9}} },
-                     Widget.Label{ text = "Gain:", metrics = {stick = Stick.L, prefW = 34, margin = {left = 8, top = 8}} },
-                     Slider{ id = "id-rx-gain", valueObs = Model.rx.RF.gainDB, minVal = -20, maxVal = 60, metrics = { stick = Stick.L, prefW = 75, prefH = 20, margin = {top = 9}} },
-                     Widget.Label{ id = "fpsLabel", text = "0 FPS", metrics = {stick = Stick.R, prefW = 70, margin = {right = 8, top = 8}} }
+                     Widget.Label{ id = "titleLabel", text = "NexRx SDR | The River", metrics = {stick = Stick.L, prefW = 180, margin = {left = 12, top = 8}} },
+                     Widget.Spacer{ name = "top-bar-spacer", metrics = { stick = Stick.L, flexW = 1 } },
+                     Widget.Label{ text = "Vol:", metrics = {stick = Stick.R, prefW = 32, margin = {right = 4, top = 8}} },
+                     Slider{ id = "id-rx-vol", valueObs = Model.rx.volume.DB, minVal = -60, maxVal = 0, metrics = { stick = Stick.R, prefW = 140, prefH = 20, margin = {right = 16, top = 9}} },
+                     Widget.Label{ text = "RF Gain:", metrics = {stick = Stick.R, prefW = 56, margin = {right = 4, top = 8}} },
+                     Slider{ id = "id-rx-gain", valueObs = Model.rx.RF.gainDB, minVal = -20, maxVal = 60, metrics = { stick = Stick.R, prefW = 140, prefH = 20, margin = {right = 16, top = 9}} },
+                     Widget.Label{ id = "fpsLabel", text = "0 FPS", metrics = {stick = Stick.R, prefW = 60, margin = {right = 10, top = 8}} }
                   }
                },
                Widget.Row{
@@ -461,7 +485,43 @@ function update(dt)
    else
       if _G.frameCount % 2 == 0 then
          local dummy = {}
-         for i = 1, 1024 do dummy[i] = -100 + 20 * math.sin(i / 50 + _G.frameCount/10) + 5 * math.random() end
+         local noiseFloor = -105
+         for i = 1, 1024 do
+            dummy[i] = noiseFloor + 8 * math.sin(i / 60 + _G.frameCount / 25) + 4 * math.random()
+         end
+
+         -- Inject simulated spectral peaks matching decoder tracks and active VFO
+         local hwCenter = (riverViewRef and riverViewRef.hwCenterFreq) or 14.175e6
+         local hwBw = (riverViewRef and riverViewRef.hwBandwidth) or 500e3
+         local hwMin = hwCenter - hwBw / 2
+
+         local function addPeak(freq, strengthDb, widthBins)
+            local bin = 1 + math.floor(((freq - hwMin) / hwBw) * 1024)
+            for off = -widthBins, widthBins do
+               local b = bin + off
+               if b >= 1 and b <= 1024 then
+                  local attenuation = (off * off) * (18.0 / (widthBins * widthBins))
+                  local p = strengthDb - attenuation
+                  if p > dummy[b] then dummy[b] = p end
+               end
+            end
+         end
+
+         -- FT8 signals at 14.074 MHz (distinct sharp tones)
+         addPeak(14.074e6, -55, 3)
+         addPeak(14.074350e6, -60, 2)
+         addPeak(14.075e6, -68, 3)
+
+         -- CW signal at 14.025 MHz
+         addPeak(14.025e6, -48, 2)
+
+         -- SSB phone signal at 14.225 MHz
+         addPeak(14.225e6, -62, 8)
+
+         -- Tuned VFO carrier peak
+         local vfo = Model.rx.VFO.activeValue:get() or 14.240e6
+         addPeak(vfo, -50, 4)
+
          _G.lastSpectrumData = dummy
          if riverEngine and riverEngine.addRow then
             riverEngine.addRow(_G.lastSpectrumData)

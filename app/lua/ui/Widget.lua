@@ -642,7 +642,12 @@ function Widget:drawSelf()
     end
   end
 
-  if (showBorder and border) or self.isMouseOver then
+  local showHighlight = (self.showHighlight ~= nil) and self.showHighlight or self.props.showHighlight
+  if showHighlight == nil then
+    showHighlight = (self.interactive ~= false and self.props.interactive ~= false)
+  end
+
+  if (showBorder and border) or (self.isMouseOver and showHighlight) then
     local thickness = self.isMouseOver and 3 or (self.props.borderWidth or 1)
     local bTbl = toColorTable(border or DEFAULT_HIGHLIGHT_COLOR, alpha)
     if bTbl then
@@ -776,6 +781,10 @@ function Widget:hitTest(x, y)
     if hit then return hit end
   end
 
+  if self.interactive == false or self.props.interactive == false then
+    return nil
+  end
+
   return self
 end
 
@@ -901,10 +910,25 @@ end
 function Window:calcMetrics() Container.calcMetrics(self) end
 function Window:onResize(w, h) self.props.w, self.props.h = w, h end
 
+-- --- Spacer Class ---
+local Spacer = Widget.mkType("Spacer", Widget)
+function Spacer:init(def)
+  def = def or {}
+  def.interactive = false
+  Widget.init(self, def)
+  self.interactive = false
+  self.props.interactive = false
+end
+
+function Spacer:drawSelf()
+  -- Spacers are non-interactive layout spacers and render nothing
+end
+
 Widget.Container = Container
 Widget.Column = Column
 Widget.Row = Row
 Widget.Window = Window
+Widget.Spacer = Spacer
 Widget.Stick = Stick
 Widget.batch = R.batch
 

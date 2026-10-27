@@ -84,4 +84,14 @@ function LiveTrace:drawSelf()
   end
 end
 
+function LiveTrace:onEvent(event)
+  if event.type == "mouseWheel" then
+    local river = self.parent and self.parent:findByName("id-river-view")
+    if river and river.handleWheelZoom then
+      return river:handleWheelZoom(event)
+    end
+  end
+  return false
+end
+
 return LiveTrace

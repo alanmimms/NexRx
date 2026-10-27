@@ -12,10 +12,10 @@ rule {
     priority = -100,
     apply = {
         ["rx.VFO.active"] = "A",
-        ["rx.VFO.A"] = 7.1e6,
-        ["rx.VFO.B"] = 14.2e6,
-        ["rx.selectedMode"] = "LSB",
-        ["rx.selectedBand"] = "40m",
+        ["rx.VFO.A"] = 14.2e6,
+        ["rx.VFO.B"] = 7.1e6,
+        ["rx.selectedMode"] = "USB",
+        ["rx.selectedBand"] = "20m",
         ["rx.active"] = true,
         ["rx.volume.DB"] = -20,
         ["rx.volume.muted"] = false,
@@ -111,5 +111,18 @@ rule { id = "river-view-style", tags = {"widget.RiverView"}, apply = { backgroun
 rule { id = "gutter-left-style", tags = {"widget.GutterLeft"}, apply = { background = "#070c16", border = "#131f33", prefW = 68, stick = "TLB", flexH = 1.0 } }
 rule { id = "live-trace-style", tags = {"widget.LiveTrace"}, apply = { background = "#070c16", border = "#131f33", prefW = 90, stick = "TRB", flexH = 1.0 } }
 rule { id = "frequency-ruler-style", tags = {"widget.FrequencyRuler"}, apply = { background = "#0c101c", border = "#1e293b", prefW = 60, stick = "TRB", flexH = 1.0 } }
+
+-- =============================================================================
+-- DecoderTrack Mode Ribbons (Tag-Driven Customization)
+-- =============================================================================
+
+rule { id = "track-cw", tags = {"widget.DecoderTrack", "mode.CW"}, apply = { ribbonColor = "#3b82f6", textColor = "#93c5fd" } }
+rule { id = "track-ft8", tags = {"widget.DecoderTrack", "mode.FT8"}, apply = { ribbonColor = "#f59e0b", textColor = "#fde68a" } }
+rule { id = "track-js8", tags = {"widget.DecoderTrack", "mode.JS8"}, apply = { ribbonColor = "#f97316", textColor = "#fed7aa" } }
+rule { id = "track-rtty", tags = {"widget.DecoderTrack", "mode.RTTY"}, apply = { ribbonColor = "#a855f7", textColor = "#e9d5ff" } }
+rule { id = "track-usb", tags = {"widget.DecoderTrack", "mode.USB"}, apply = { ribbonColor = "#10b981", textColor = "#a7f3d0" } }
+rule { id = "track-lsb", tags = {"widget.DecoderTrack", "mode.LSB"}, apply = { ribbonColor = "#06b6d4", textColor = "#cffafe" } }
+rule { id = "track-am", tags = {"widget.DecoderTrack", "mode.AM"}, apply = { ribbonColor = "#ec4899", textColor = "#fbcfe8" } }
+rule { id = "track-fm", tags = {"widget.DecoderTrack", "mode.FM"}, apply = { ribbonColor = "#84cc16", textColor = "#d9f99d" } }
 
 print("[default.lua] Configuration loaded")

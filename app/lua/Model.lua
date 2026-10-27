@@ -125,7 +125,7 @@ Model.rx = {
         return box and box.mode or "USB"
     end),
     
-    selectedBand = projection("rx.selectedBand", Types.String, "40m"),
+    selectedBand = projection("rx.selectedBand", Types.String, "20m"),
     volume = {
         DB = projection("rx.volume.DB", Types.Number, -20),
         muted = projection("rx.volume.muted", Types.Bool, false)

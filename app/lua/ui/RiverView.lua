@@ -2,7 +2,8 @@
   RiverView.lua - The River primary viewport and spectral workspace
 
   Implements the split-river canvas, top time ruler, CAD discontinuity
-  break line, live-pinned region, and 2D time-frequency navigation.
+  break line, live-pinned region, inline decoded tracks, bubble loupe,
+  and 2D time-frequency navigation.
 ]]
 
 local setbox = require("SetBox")
@@ -11,6 +12,7 @@ local Widget = require("ui.Widget")
 local Model = require("Model")
 local SignalBox = require("ui.SignalBox")
 local RiverBehaviors = require("ui.RiverBehaviors")
+local DecoderTrack = require("ui.DecoderTrack")
 
 local function clamp(v, minV, maxV)
   if v < minV then return minV end
@@ -56,10 +58,21 @@ function RiverView:init(def)
   self.dragStartTimeOffset = 0
   self.dragStartCenterFreq = 0
 
+  self.hoverActive = false
+  self.hoverX = 0
+  self.hoverY = 0
+
   self.signalBoxes = {}
   if def.signalBoxes then
     for _, boxDef in ipairs(def.signalBoxes) do
       self:addSignalBox(boxDef)
+    end
+  end
+
+  self.decoderTracks = {}
+  if def.decoderTracks then
+    for _, tDef in ipairs(def.decoderTracks) do
+      self:addDecoderTrack(tDef)
     end
   end
 end
@@ -69,6 +82,48 @@ function RiverView:addSignalBox(boxDef)
   table.insert(self.signalBoxes, box)
   self:add(box)
   return box
+end
+
+function RiverView:addDecoderTrack(trackDef)
+  local track = (trackDef.renderInline) and trackDef or DecoderTrack(trackDef)
+  table.insert(self.decoderTracks, track)
+  return track
+end
+
+function RiverView:getFreqAtY(yPx)
+  local rulerH = self.props.rulerH or 22
+  local canvasH = math.max(10, (self.props.h or 450) - rulerH)
+  local relY = clamp(yPx - rulerH, 0, canvasH)
+  local normY = 1.0 - (relY / canvasH)
+  local fSpan = math.max(1000, self.freqMax - self.freqMin)
+  return self.freqMin + (normY * fSpan)
+end
+
+function RiverView:getAutoModeForFreq(freq)
+  if _G.bands and _G.bands.getSegmentsForSpan then
+    local segs = _G.bands.getSegmentsForSpan(freq - 100, freq + 100)
+    if segs and #segs > 0 and segs[1].mode then
+      return segs[1].mode
+    end
+  end
+  return (freq > 10.0e6) and "USB" or "LSB"
+end
+
+function RiverView:cycleSignalBoxFocus(reverse)
+  if #self.signalBoxes == 0 then return end
+  local cur = Model.selectedSignalBoxIndex:get() or 1
+  local nextIdx = reverse and (cur - 1) or (cur + 1)
+  if nextIdx < 1 then nextIdx = #self.signalBoxes end
+  if nextIdx > #self.signalBoxes then nextIdx = 1 end
+
+  Model.selectedSignalBoxIndex:set(nextIdx)
+  local box = self.signalBoxes[nextIdx]
+  if box then
+    box:setFocus()
+    if box.carrierFreq then
+      Model.set("rx.VFO.activeValue", box.carrierFreq)
+    end
+  end
 end
 
 function RiverView:calcMetrics()
@@ -82,8 +137,17 @@ end
 function RiverView:getNormalizedFreqRange()
   local hwMin = self.hwCenterFreq - self.hwBandwidth / 2
   local hwMax = self.hwCenterFreq + self.hwBandwidth / 2
-  local hwSpan = math.max(1, hwMax - hwMin)
 
+  if self.freqMin < hwMin or self.freqMax > hwMax then
+    local visibleSpan = self.freqMax - self.freqMin
+    local visibleCenter = (self.freqMin + self.freqMax) / 2
+    self.hwBandwidth = math.max(self.hwBandwidth, visibleSpan * 1.25)
+    self.hwCenterFreq = visibleCenter
+    hwMin = self.hwCenterFreq - self.hwBandwidth / 2
+    hwMax = self.hwCenterFreq + self.hwBandwidth / 2
+  end
+
+  local hwSpan = math.max(1, hwMax - hwMin)
   local fMinNorm = clamp((self.freqMin - hwMin) / hwSpan, 0.0, 1.0)
   local fMaxNorm = clamp((self.freqMax - hwMin) / hwSpan, 0.0, 1.0)
   if fMaxNorm <= fMinNorm then fMaxNorm = fMinNorm + 0.001 end
@@ -116,6 +180,8 @@ function RiverView:layout(x, y, w, h)
 
     box:layout(0, boxY, w, boxH)
   end
+  self.lastLaidOutSpan = fSpan
+  self.lastLaidOutMin = self.freqMin
 end
 
 function RiverView:drawSelf()
@@ -126,6 +192,13 @@ function RiverView:drawSelf()
   local rulerH = self.props.rulerH or 22
   local canvasY = rulerH
   local canvasH = math.max(10, h - rulerH)
+  local fSpan = math.max(1000, self.freqMax - self.freqMin)
+  local hzPerPx = fSpan / canvasH
+
+  -- Re-layout SignalBoxes if frequency zoom or bounds have changed
+  if self.lastLaidOutSpan ~= fSpan or self.lastLaidOutMin ~= self.freqMin then
+    self:layout(self.props.x or 0, self.props.y or 0, w, h)
+  end
 
   local fMinNorm, fMaxNorm = self:getNormalizedFreqRange()
   local riverEngine = _G.river or _G.waterfall
@@ -177,7 +250,7 @@ function RiverView:drawSelf()
       local gapSec = math.floor(self.timeOffsetSec + 0.5)
       local dimText = string.format("|<-- %ds -->|", gapSec)
       local dimColor = self.props.cadDimensionColor or { 0.95, 0.8, 0.25, 0.9 }
-      local dw = System.measureText(dimText, 11)
+      local dw = System.measureText(dimText, 11) or (#dimText * 8)
       System.drawText(dimText, bx - dw / 2, 4, 11, dimColor)
     end
   end
@@ -192,7 +265,30 @@ function RiverView:drawSelf()
     end
   end
 
-  -- 3. Top Time Ruler
+  -- 3. Inline Decoded Tracks & Bubble Zoom Loupe
+  local loupeActive = false
+  if self.hoverActive and self.hoverY and #self.decoderTracks > 0 then
+    local nearby = {}
+    for _, tr in ipairs(self.decoderTracks) do
+      local ty = canvasY + canvasH - ((tr.freq - self.freqMin) / fSpan * canvasH)
+      table.insert(nearby, { y = ty })
+    end
+    loupeActive = RiverBehaviors.bubbleLoupe.shouldActivateBubble(self.hoverX, self.hoverY, nearby, 1.0)
+  end
+
+  for _, tr in ipairs(self.decoderTracks or {}) do
+    if tr.freq >= self.freqMin and tr.freq <= self.freqMax then
+      local ty = canvasY + canvasH - ((tr.freq - self.freqMin) / fSpan * canvasH)
+      tr:renderInline(ty, w, self.timeSpanSec, hzPerPx, loupeActive, self.hoverX, self.hoverY)
+    end
+  end
+
+  if loupeActive and self.hoverX and self.hoverY then
+    local rad = RiverBehaviors.bubbleLoupe.radius or 60
+    System.drawCircleOutline(self.hoverX, self.hoverY, rad, { 0.35, 0.85, 1.0, 0.75 })
+  end
+
+  -- 4. Top Time Ruler
   local rBgR, rBgG, rBgB = state.hexToRgb(self.props.rulerBg or "#0a0f1d")
   System.drawRect(0, 0, w, rulerH, { rBgR, rBgG, rBgB, 0.95 })
   System.drawLine(0, rulerH, w, rulerH, 1.0, { 0.2, 0.25, 0.35, 0.8 })
@@ -216,15 +312,43 @@ function RiverView:drawSelf()
 end
 
 function RiverView:onEvent(event)
+  -- TAB / Shift+TAB to cycle SignalBox focus
+  if event.type == "key" and event.key == "TAB" and event.isDown then
+    local isShift = _G.isShiftDown and _G.isShiftDown()
+    self:cycleSignalBoxFocus(isShift)
+    return true
+  end
+
   if event.type == "mouseButton" and event.button == "LEFT" then
     if event.isDown then
       local rx = event.x or 0
+      local ry = event.y or 0
       local w = self.props.w or 800
       local pinnedW = self.props.pinnedSliverW or 60
 
       -- Clicking in live pinned sliver snaps back to real time
       if self.timeOffsetSec > 0 and rx >= w - pinnedW then
         self.timeOffsetSec = 0.0
+        return true
+      end
+
+      -- Shift+Click drops a new SignalBox
+      local isShift = _G.isShiftDown and _G.isShiftDown()
+      if isShift then
+        local clickFreq = self:getFreqAtY(ry)
+        local autoMode = self:getAutoModeForFreq(clickFreq)
+        local newBox = self:addSignalBox({
+          id = "box-" .. tostring(#self.signalBoxes + 1),
+          index = #self.signalBoxes + 1,
+          mode = autoMode,
+          carrierFreq = clickFreq,
+          bandwidth = (autoMode == "CW") and 500 or 2800,
+          label = "NEW BOX"
+        })
+        Model.selectedSignalBoxIndex:set(newBox.boxIndex)
+        Model.set("rx.VFO.activeValue", clickFreq)
+        newBox:setFocus()
+        if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
         return true
       end
 
@@ -240,35 +364,67 @@ function RiverView:onEvent(event)
       state.setActive(nil)
       return true
     end
-  elseif event.type == "mouseMotion" and self.isNavigating then
-    local dx = (event.gx or event.x or 0) - self.dragStartX
-    local dy = (event.gy or event.y or 0) - self.dragStartY
+  elseif event.type == "mouseMotion" then
+    self.hoverActive = true
+    self.hoverX = event.x or 0
+    self.hoverY = event.y or 0
 
-    -- Horizontal drag scrubs time (dragging right pulls forward towards NOW, dragging left pulls into history)
-    local secPerPx = self.timeSpanSec / (self.props.w or 800)
-    local newOffset = self.dragStartTimeOffset + (dx * secPerPx)
-    self.timeOffsetSec = clamp(newOffset, 0.0, self.totalBufferSec - self.timeSpanSec)
+    if self.isNavigating then
+      local dx = (event.gx or event.x or 0) - self.dragStartX
+      local dy = (event.gy or event.y or 0) - self.dragStartY
 
-    -- Vertical drag pans frequency
-    local fSpan = self.freqMax - self.freqMin
-    local hzPerPx = fSpan / (self.props.h or 450)
-    local newCenter = self.dragStartCenterFreq + (dy * hzPerPx)
-    self.freqMin = newCenter - fSpan / 2
-    self.freqMax = newCenter + fSpan / 2
-    return true
-  elseif event.type == "mouseWheel" then
-    -- Mouse wheel zooms frequency (or time if Shift/Ctrl)
-    local factor = (event.delta > 0) and 0.85 or 1.15
-    local center = (self.freqMin + self.freqMax) / 2
-    local newSpan = (self.freqMax - self.freqMin) * factor
-    if newSpan >= 10e3 and newSpan <= 2e6 then
-      self.freqMin = center - newSpan / 2
-      self.freqMax = center + newSpan / 2
+      -- Horizontal drag scrubs time (dragging right pulls forward towards NOW, dragging left pulls into history)
+      local secPerPx = self.timeSpanSec / (self.props.w or 800)
+      local newOffset = self.dragStartTimeOffset + (dx * secPerPx)
+      self.timeOffsetSec = clamp(newOffset, 0.0, self.totalBufferSec - self.timeSpanSec)
+
+      -- Vertical drag pans frequency
+      local fSpan = self.freqMax - self.freqMin
+      local hzPerPx = fSpan / (self.props.h or 450)
+      local newCenter = self.dragStartCenterFreq + (dy * hzPerPx)
+      self.freqMin = newCenter - fSpan / 2
+      self.freqMax = newCenter + fSpan / 2
+      self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
+      if self.onFrequencyChange then
+        self:onFrequencyChange(self.freqMin, self.freqMax)
+      end
+      return true
     end
-    return true
+  elseif event.type == "mouseWheel" then
+    return self:handleWheelZoom(event)
   end
 
   return false
+end
+
+function RiverView:handleWheelZoom(event)
+  local isShift = (event.modifiers and event.modifiers.shift) or (_G.isShiftDown and _G.isShiftDown())
+
+  if isShift then
+    -- Shift + scroll: scrub time horizontally
+    local stepSec = (event.delta > 0 and 1 or -1) * (self.timeSpanSec * 0.1)
+    self.timeOffsetSec = clamp(self.timeOffsetSec + stepSec, 0.0, self.totalBufferSec - self.timeSpanSec)
+    return true
+  else
+    -- Cursor-centered frequency zoom
+    local factor = (event.delta > 0) and 0.85 or 1.15
+    local ax, ay = self:getAbsolutePos()
+    local gy = event.gy or (event.y and (event.y + ay)) or (ay + (self.props.h or 450) / 2)
+    local localY = clamp(gy - ay, 0, self.props.h or 450)
+    local cursorFreq = self:getFreqAtY(localY)
+    local curSpan = self.freqMax - self.freqMin
+    local newSpan = curSpan * factor
+    if newSpan >= 10e3 and newSpan <= 2e6 then
+      local ratio = clamp((cursorFreq - self.freqMin) / curSpan, 0.0, 1.0)
+      self.freqMin = cursorFreq - (ratio * newSpan)
+      self.freqMax = cursorFreq + ((1.0 - ratio) * newSpan)
+      self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
+      if self.onFrequencyChange then
+        self:onFrequencyChange(self.freqMin, self.freqMax)
+      end
+    end
+    return true
+  end
 end
 
 return RiverView
