@@ -1,4 +1,4 @@
-NexRx UI Architecture Guide
+NexRx UI Overview
 
 ## Overview
 

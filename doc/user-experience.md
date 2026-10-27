@@ -242,33 +242,29 @@ cleanly execute the two-pass layout algorithm without glitches.
 | Cleanup/disposal | Yes |
 
 
-# The Front Panel OLED
+# The Front Panel Display
 
 This display is useful for determining if things have gone wrong, to
 prompt the user for various fixes that might be necessary to get USB
 connection to the host working, to show firmware and booting problems,
 and to show NexRx operational status.
 
-If only text is displayed, the display can show 12 columns x 4 lines.
+If only 12pt 7x16 text is displayed, the display can show 27 (rounded
+down) columns x 4 lines.
 
 * Start of each boot phase. In case one of them fails the last one
   shown is the likely culprit. Last boot phase shows firmware revision
   and "Connecting to Host..." until USB connection is established.
 
-* Status display is four rows of up to 12 characters: S-meter bar
-  chart, demodulation mode and frequency, GNSS time, USB status.
+* Status display is four rows of up to 27 characters: S-meter bar
+  chart (in both peak and fast views), GNSS time/date/day of week,
+  demodulation mode (USB, LSB, CW, AM, FM, FT8, FT4, etc) and
+  frequency, USB status.
 
-			1: SSSSSSSSSSSS
-			2: US12.456.789
-				or
-			2: LS12.456.789
-				or
-			2: CW12.456.789
-				or
-			2: AM12.456.789
-				or
-			2: FM12.456.789
-			3: 00:00:00 UTC
-			4: USB conn'ed 
-				or
-			4: USB not conn
+               012345678901234567890123456
+            0: S0 3 9         00:00:00 UTC
+            1: ---SMETER--- DAY YYYY-MM-DD
+            2:      USB 12,456,789
+            3: USB data connected 
+                or
+            3: No USB data linked!
