@@ -165,11 +165,12 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   lua["rx"] = rxTable;
 
-  // 4. Waterfall / Specialized (waterfall table)
-  sol::table waterfallTable = lua.create_table();
-  waterfallTable["init"] = [engine](int b, int r) { return engine->getWaterfall().init(b, r); };
-  waterfallTable["setRange"] = [engine](float min, float max) { engine->getWaterfall().setRange(min, max); };
-  waterfallTable["addRow"] = [engine](sol::object obj) {
+  // 4. River / Spectral Renderer (river table, aliased to waterfall)
+  sol::table riverTable = lua.create_table();
+  riverTable["init"] = [engine](int b, int r) { return engine->getRiver().init(b, r); };
+  riverTable["setRange"] = [engine](float minVal, float maxVal) { engine->getRiver().setRange(minVal, maxVal); };
+  riverTable["getRange"] = [engine]() { return std::make_tuple(engine->getRiver().getMinDB(), engine->getRiver().getMaxDB()); };
+  riverTable["addRow"] = [engine](sol::object obj) {
     if (!obj.is<sol::table>()) return;
     sol::table t = obj.as<sol::table>();
     std::vector<float> data;
@@ -178,9 +179,20 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
       sol::object item = t[i];
       data.push_back(item.is<float>() ? item.as<float>() : -100.0f);
     }
-    engine->getWaterfall().addRow(data.data(), static_cast<int>(data.size()));
+    engine->getRiver().addRow(data.data(), static_cast<int>(data.size()));
   };
-  waterfallTable["renderSpectrum"] = [engine](sol::object obj, float x, float y, float w, float h) {
+  riverTable["renderRiver"] = [engine](float x, float y, float w, float h,
+                                       sol::optional<float> timeSpan, sol::optional<float> timeOffset,
+                                       sol::optional<float> freqMinNorm, sol::optional<float> freqMaxNorm) {
+    rlDrawRenderBatchActive();
+    engine->getRiver().renderRiver(x, y, w, h,
+                                   timeSpan.value_or(1.0f),
+                                   timeOffset.value_or(0.0f),
+                                   freqMinNorm.value_or(0.0f),
+                                   freqMaxNorm.value_or(1.0f));
+  };
+  riverTable["renderLiveTrace"] = [engine](sol::object obj, float x, float y, float w, float h,
+                                           sol::optional<float> freqMinNorm, sol::optional<float> freqMaxNorm) {
     if (!obj.is<sol::table>()) return;
     sol::table t = obj.as<sol::table>();
     std::vector<float> data;
@@ -189,16 +201,27 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
       sol::object item = t[i];
       data.push_back(item.is<float>() ? item.as<float>() : -100.0f);
     }
-
-    // We must ensure Raylib's internal state is flushed before raw GL calls
     rlDrawRenderBatchActive();
-    engine->getWaterfall().renderSpectrum(data.data(), static_cast<int>(data.size()), x, y, w, h);
+    engine->getRiver().renderLiveTrace(data.data(), static_cast<int>(data.size()), x, y, w, h,
+                                       freqMinNorm.value_or(0.0f), freqMaxNorm.value_or(1.0f));
   };
-  waterfallTable["render"] = [engine](float x, float y, float w, float h, float zoom, float center) {
+  riverTable["renderSpectrum"] = [engine](sol::object obj, float x, float y, float w, float h) {
+    if (!obj.is<sol::table>()) return;
+    sol::table t = obj.as<sol::table>();
+    std::vector<float> data;
+    data.reserve(t.size());
+    for (int i = 1; i <= static_cast<int>(t.size()); ++i) {
+      sol::object item = t[i];
+      data.push_back(item.is<float>() ? item.as<float>() : -100.0f);
+    }
     rlDrawRenderBatchActive();
-    engine->getWaterfall().render(x, y, w, h, zoom, center);
+    engine->getRiver().renderSpectrum(data.data(), static_cast<int>(data.size()), x, y, w, h);
   };
-  waterfallTable["setColormapData"] = [engine](sol::object obj) {
+  riverTable["render"] = [engine](float x, float y, float w, float h, float zoom, float center) {
+    rlDrawRenderBatchActive();
+    engine->getRiver().render(x, y, w, h, zoom, center);
+  };
+  riverTable["setColormapData"] = [engine](sol::object obj) {
     if (!obj.is<sol::table>()) return;
     sol::table t = obj.as<sol::table>();
     std::vector<std::tuple<float, uint8_t, uint8_t, uint8_t>> grad;
@@ -206,9 +229,10 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
       sol::table s = t[i];
       grad.push_back({s[1].get_or(0.0f), static_cast<uint8_t>(s[2].get_or(0)), static_cast<uint8_t>(s[3].get_or(0)), static_cast<uint8_t>(s[4].get_or(0))});
     }
-    engine->getWaterfall().setColormapData(grad);
+    engine->getRiver().setColormapData(grad);
   };
-  lua["waterfall"] = waterfallTable;
+  lua["river"] = riverTable;
+  lua["waterfall"] = riverTable;
 
   // 5. Audio Control (audio table)
   sol::table audioTable = lua.create_table();

@@ -84,6 +84,13 @@ function Reactive.observable(initialValue)
         dependents[computed] = true
     end
 
+    function self:watch(fn)
+        return Reactive.watch(function()
+            local v = self:get()
+            fn(v)
+        end)
+    end
+
     self._isObservable = true
     return self
 end
@@ -160,6 +167,13 @@ function Reactive.computed(computeFn)
 
     function self:isDirty()
         return dirty
+    end
+
+    function self:watch(fn)
+        return Reactive.watch(function()
+            local v = self:get()
+            fn(v)
+        end)
     end
 
     self._isComputed = true

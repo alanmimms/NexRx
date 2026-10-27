@@ -17,7 +17,7 @@
 #include <functional>
 
 #include "AudioEngine.hpp"
-#include "WaterfallRenderer.hpp"
+#include "RiverRenderer.hpp"
 #include "TwinConn.hpp"
 #include "DSPEngine.hpp"
 
@@ -33,7 +33,8 @@ public:
   // Getters for Lua Bridge
   DSPEngine& getDSP() { return dsp; }
   AudioEngine& getAudio() { return audio; }
-  WaterfallRenderer& getWaterfall() { return waterfall; }
+  RiverRenderer& getRiver() { return river; }
+  RiverRenderer& getWaterfall() { return river; }
   nexrx::TwinConn& getTwinConn() { return twinHost; }
   
   bool connectTwin(const std::string& host, int cp, int sp);
@@ -58,7 +59,7 @@ private:
   sol::table uiModule;
   
   AudioEngine audio;
-  WaterfallRenderer waterfall;
+  RiverRenderer river;
   nexrx::TwinConn twinHost;
   
   int windowWidth, windowHeight;

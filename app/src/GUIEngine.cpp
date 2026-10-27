@@ -30,9 +30,9 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
     AppLuaBridge::setFont(font);
   }
 
-  // 3. Audio & Waterfall init
+  // 3. Audio & River init
   if (!audio.init(48000, 2)) return false;
-  if (!waterfall.init(DSPEngine::FFT_SIZE, 256)) return false;
+  if (!river.init(DSPEngine::FFT_SIZE, 512)) return false;
 
   // Configure audio buffer for smooth jitter absorption with 50ms batches
   BufferConfig audioConfig;
@@ -341,7 +341,7 @@ void GUIEngine::shutdown() {
   stopCommandThread();
   twinHost.shutdown();
   audio.shutdown();
-  waterfall.shutdown();
+  river.shutdown();
   CloseWindow();
 }
 

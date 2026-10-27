@@ -114,11 +114,14 @@ function Bands.getBandInfo(bandName)
     if not bandName then return nil end
     for _, band in ipairs(Bands.definitions) do
         if band.name == bandName then
+            band.lowerEdge = band.startHz
+            band.upperEdge = band.endHz
             return band
         end
     end
     return nil
 end
+Bands.getBand = Bands.getBandInfo
 
 --- Check if a frequency is within a specific band
 -- @param freqHz frequency in Hz

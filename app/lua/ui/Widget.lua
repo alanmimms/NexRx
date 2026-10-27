@@ -58,8 +58,11 @@ local sysMT = {
   __index = function(_, key)
     local orig = RealSystem and RealSystem[key]
 
-    -- If missing, return a no-op function to prevent crashes
+    -- If missing, return a safe fallback function
     if type(orig) ~= "function" then
+      if key == "measureText" then
+        return function(txt, sz) return #(tostring(txt or "")) * 8, sz or 16 end
+      end
       return function() end
     end
 

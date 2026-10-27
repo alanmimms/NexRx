@@ -145,7 +145,7 @@ add_executable(nexrx-app
   src/AudioEngine.cpp
   src/BasebandFilter.cpp
   src/FontRenderer.cpp
-  src/WaterfallRenderer.cpp
+  src/RiverRenderer.cpp
 )
 
 # Find Dependencies

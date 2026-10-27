@@ -38,6 +38,10 @@ local FrequencyDisplay = require("ui.FrequencyDisplay")
 local Label = require("ui.Label")
 local Waterfall = require("ui.Waterfall")
 local Spectrum = require("ui.Spectrum")
+local RiverView = require("ui.RiverView")
+local FrequencyRuler = require("ui.FrequencyRuler")
+local LiveTrace = require("ui.LiveTrace")
+local GutterLeft = require("ui.GutterLeft")
 
 _G.lowestFreq = 100.0e3
 _G.highestFreq = 30.0e6
@@ -267,10 +271,13 @@ function init()
    end
    
    if audio.isInitialized() then audio.start() end
-   waterfall.init(1024, 256)
-   waterfall.setRange(Model.waterfall.minDB:get(), Model.waterfall.maxDB:get())
-   if _G.colormaps and _G.colormaps[Model.waterfall.colormap:get()] then 
-      waterfall.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
+   local riverEngine = _G.river or _G.waterfall
+   if riverEngine and riverEngine.init then
+      riverEngine.init(1024, 512)
+      riverEngine.setRange(Model.waterfall.minDB:get(), Model.waterfall.maxDB:get())
+      if _G.colormaps and _G.colormaps[Model.waterfall.colormap:get()] then 
+         riverEngine.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
+      end
    end
 
    local modeStops = {}
@@ -283,9 +290,103 @@ function init()
       table.insert(bandStops, {label = name, value = name})
    end
 
-   local vfoDisp = FrequencyDisplay{ id = "id-rx-freq", valueObs = Model.rx.VFO.activeValue, tags = {"widget.VFOControl"}, metrics = { stick = "TLR", prefH = 40 } }
-   local spec = Spectrum{ id = "id-spec", tags = {"widget.Spectrum", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 150 } }
-   local wf = Waterfall{ id = "id-wf", tags = {"widget.Waterfall", "widget.VFOControl"}, metrics = { stick = "TLBR", flexH = 1, minH = 200 } }
+   local initialVFO = Model.rx.VFO.activeValue:get() or 14.240e6
+   local initialBand = _G.bands.getBand(Model.rx.selectedBand:get() or "20m")
+   local initFMin = initialBand and initialBand.lowerEdge or 14.0e6
+   local initFMax = initialBand and initialBand.upperEdge or 14.35e6
+
+   local vfoDisp = FrequencyDisplay{
+      id = "id-rx-freq",
+      valueObs = Model.rx.VFO.activeValue,
+      tags = {"widget.VFOControl"},
+      metrics = { stick = Stick.L, prefW = 180, prefH = 32, margin = { left = 10, top = 3 } }
+   }
+
+   local riverView = RiverView{
+      id = "id-river-view",
+      tags = {"widget.RiverView"},
+      timeSpan = 30.0,
+      timeOffset = 0.0,
+      freqMin = initFMin,
+      freqMax = initFMax,
+      centerFreq = initialVFO,
+      bandwidth = 350e3,
+      metrics = { stick = Stick.TLBR, flexW = 1, flexH = 1 },
+      signalBoxes = {
+         {
+            id = "id-primary-box",
+            index = 1,
+            mode = Model.rx.selectedMode:get() or "USB",
+            carrierFreq = initialVFO,
+            bandwidth = 2800,
+            label = "CQ W1AW"
+         }
+      }
+   }
+
+   local freqRuler = FrequencyRuler{
+      id = "id-freq-ruler",
+      tags = {"widget.FrequencyRuler"},
+      freqMin = initFMin,
+      freqMax = initFMax,
+      metrics = { stick = Stick.TRB, prefW = 60, flexH = 1 },
+      onFrequencyChange = function(self, fMin, fMax)
+         riverView.freqMin = fMin
+         riverView.freqMax = fMax
+      end
+   }
+
+   local liveTrace = LiveTrace{
+      id = "id-live-trace",
+      tags = {"widget.LiveTrace"},
+      freqMinNorm = 0.0,
+      freqMaxNorm = 1.0,
+      metrics = { stick = Stick.TRB, prefW = 90, flexH = 1 }
+   }
+
+   local gutterLeft = GutterLeft{
+      id = "id-gutter-left",
+      tags = {"widget.GutterLeft"},
+      freqMin = initFMin,
+      freqMax = initFMax,
+      boxes = {
+         { carrierFreq = initialVFO, mode = "USB" }
+      },
+      metrics = { stick = Stick.TLB, prefW = 68, flexH = 1 }
+   }
+
+   -- Reactive synchronization between VFO, Mode, Band, and The River
+   Model.rx.VFO.activeValue:watch(function(freq)
+      if riverView and freq then
+         riverView.hwCenterFreq = freq
+         if riverView.signalBoxes and riverView.signalBoxes[1] then
+            riverView.signalBoxes[1].carrierFreq = freq
+         end
+         if gutterLeft and gutterLeft.activeBoxes and gutterLeft.activeBoxes[1] then
+            gutterLeft.activeBoxes[1].carrierFreq = freq
+         end
+      end
+   end)
+
+   Model.rx.selectedMode:watch(function(mode)
+      if riverView and riverView.signalBoxes and riverView.signalBoxes[1] and mode then
+         riverView.signalBoxes[1].mode = mode
+      end
+   end)
+
+   Model.rx.selectedBand:watch(function(bandName)
+      if _G.bands and bandName then
+         local b = _G.bands.getBand(bandName)
+         if b and riverView and freqRuler and gutterLeft then
+            riverView.freqMin = b.lowerEdge
+            riverView.freqMax = b.upperEdge
+            freqRuler.props.freqMin = b.lowerEdge
+            freqRuler.props.freqMax = b.upperEdge
+            gutterLeft.props.freqMin = b.lowerEdge
+            gutterLeft.props.freqMax = b.upperEdge
+         end
+      end
+   end)
 
    rxTree = Widget.Window{
       name = "id-root-window",
@@ -295,48 +396,29 @@ function init()
             metrics = { stick = Stick.TLBR, flexW = 1, flexH = 1 },
             kids = {
                Widget.Row{
-                  name = "top-bar", metrics = { stick = Stick.TLR, prefH = 32 },
-                  backgroundColor = Color("#111b2b"),
+                  name = "top-bar", metrics = { stick = Stick.TLR, prefH = 38 },
+                  backgroundColor = Color("#0b1220"),
                   kids = {
-                     Widget.Label{ id = "titleLabel", text = "NexRx SDR", metrics = {stick = Stick.L, flexW = 1} },
-                     Widget.Label{ id = "fpsLabel", text = "0 FPS", metrics = {stick = Stick.R, prefW = 100} }
+                     Widget.Label{ id = "titleLabel", text = "NexRx SDR | The River", metrics = {stick = Stick.L, prefW = 160, margin = {left = 8, top = 8}} },
+                     vfoDisp,
+                     Widget.Label{ text = "Mode:", metrics = {stick = Stick.L, prefW = 42, margin = {left = 10, top = 8}} },
+                     Slider.DiscreteSlider{ id = "id-mode-slider", valueObs = Model.rx.selectedMode, stops = modeStops, metrics = { stick = Stick.L, prefW = 130, prefH = 26, margin = {top = 6}} },
+                     Widget.Label{ text = "Band:", metrics = {stick = Stick.L, prefW = 40, margin = {left = 10, top = 8}} },
+                     Slider.DiscreteSlider{ id = "id-band-slider", valueObs = Model.rx.selectedBand, stops = bandStops, metrics = { stick = Stick.L, prefW = 110, prefH = 26, margin = {top = 6}} },
+                     Widget.Label{ text = "Vol:", metrics = {stick = Stick.L, prefW = 28, margin = {left = 10, top = 8}} },
+                     Slider{ id = "id-rx-vol", valueObs = Model.rx.volume.DB, minVal = -60, maxVal = 0, metrics = { stick = Stick.L, prefW = 75, prefH = 20, margin = {top = 9}} },
+                     Widget.Label{ text = "Gain:", metrics = {stick = Stick.L, prefW = 34, margin = {left = 8, top = 8}} },
+                     Slider{ id = "id-rx-gain", valueObs = Model.rx.RF.gainDB, minVal = -20, maxVal = 60, metrics = { stick = Stick.L, prefW = 75, prefH = 20, margin = {top = 9}} },
+                     Widget.Label{ id = "fpsLabel", text = "0 FPS", metrics = {stick = Stick.R, prefW = 70, margin = {right = 8, top = 8}} }
                   }
                },
                Widget.Row{
-                  name = "main-area", metrics = { stick = Stick.TLBR, flexW = 1, flexH = 1 },
+                  name = "river-workspace", metrics = { stick = Stick.TLBR, flexW = 1, flexH = 1 },
                   kids = {
-                     Widget.Column{
-                        name = "left-sidebar", tags = {"widget.Sidebar", "widget.LeftSidebar"},
-                        metrics = { stick = "TLB", prefW = 280, margin = 8 },
-                        kids = {
-                           vfoDisp,
-                           Slider{ id = "id-rx-slider", valueObs = Model.rx.VFO.activeValue, minVal = _G.lowestFreq, maxVal = _G.highestFreq, metrics = { stick = "TLR", prefH = 20 } },
-                           Widget.Label{text = "Mode", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
-                           Slider.DiscreteSlider{ id = "id-mode-slider", valueObs = Model.rx.selectedMode, stops = modeStops, metrics = { stick = "TLR", prefH = 30 } },
-                           Widget.Label{text = "Band", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
-                           Slider.DiscreteSlider{ id = "id-band-slider", valueObs = Model.rx.selectedBand, stops = bandStops, metrics = { stick = "TLR", prefH = 30 } },
-                           Widget.Label{text = "Volume", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
-                           Slider{ id = "id-rx-vol", valueObs = Model.rx.volume.DB, minVal = -60, maxVal = 0, metrics = { stick = "TLR", prefH = 20 } },
-                           Widget.Label{text = "RF Gain", metrics = {stick = "TLR", prefH = 20, margin={top=10}}},
-                           Slider{ id = "id-rx-gain", valueObs = Model.rx.RF.gainDB, minVal = -20, maxVal = 60, metrics = { stick = "TLR", prefH = 20 } }
-                        }
-                     },
-                     Widget.Column{
-                        name = "center-area", tags = {"widget.CenterArea"},
-                        metrics = { stick = "TLBR", flexW = 1 },
-                        kids = {
-                           spec,
-                           wf
-                        }
-                     },
-                     Widget.Column{
-                        name = "active-tags-sidebar", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"},
-                        metrics = { stick = "TRB", prefW = 180, margin = 8 },
-                        kids = {
-                           SMeter{ id = "id-smeter", metrics = { stick = "TLR", prefH = 66 } },
-                           ActiveTags{ id = "id-active-tags", metrics = { flexH = 1 } }
-                        }
-                     }
+                     gutterLeft,
+                     riverView,
+                     liveTrace,
+                     freqRuler
                   }
                }
             }
@@ -351,7 +433,7 @@ function init()
    end
    rxTree:layout(0, 0, sw, sh)
 
-   print("[Main] init() complete.")
+   print("[Main] init() complete. The River workspace active.")
 end
 
 function update(dt)
@@ -366,19 +448,24 @@ function update(dt)
 
    AppController.sync()
    
+   local riverEngine = _G.river or _G.waterfall
    if Hardware.isHardwareEnabled() then
       if _G.frameCount % 10 == 0 then AppController.pollState() end
       local hwSpec = Hardware.getSpectrum()
       if hwSpec and #hwSpec > 0 then 
          _G.lastSpectrumData = hwSpec
-         Hardware.updateWaterfall(_G.lastSpectrumData) 
+         if riverEngine and riverEngine.addRow then
+            riverEngine.addRow(_G.lastSpectrumData)
+         end
       end
    else
       if _G.frameCount % 2 == 0 then
          local dummy = {}
          for i = 1, 1024 do dummy[i] = -100 + 20 * math.sin(i / 50 + _G.frameCount/10) + 5 * math.random() end
          _G.lastSpectrumData = dummy
-         Hardware.updateWaterfall(_G.lastSpectrumData)
+         if riverEngine and riverEngine.addRow then
+            riverEngine.addRow(_G.lastSpectrumData)
+         end
       end
    end
 end

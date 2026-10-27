@@ -52,6 +52,7 @@ local testModules = {
     {"SetBoxTest", "SetBox Engine"},
     {"GeneralizationTest", "Rule Generalization"},
     {"WidgetPropsTest", "Reactive Widget Properties"},
+    {"RiverTest", "The River Workspace"},
 }
 
 for _, info in ipairs(testModules) do

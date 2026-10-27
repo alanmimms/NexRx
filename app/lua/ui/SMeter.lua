@@ -103,58 +103,73 @@ setbox.rule {
 
 function SMeter:init(def)
     Widget.init(self, def)
+    self.peakUnits = 0.0
+    self.lastPeakTime = 0.0
 end
 
 function SMeter:calcMetrics()
-    if (self.props.prefW or 0) == 0 then self.props.prefW = 200 end
-    if (self.props.prefH or 0) == 0 then self.props.prefH = 66 end
+    if (self.props.prefW or 0) == 0 then self.props.prefW = 160 end
+    if (self.props.prefH or 0) == 0 then self.props.prefH = 34 end
 end
 
 function SMeter:drawSelf(reading)
     local w = self.props.w or 0
     reading = reading or SMeter.getReading()
 
+    -- Dual-decay peak tracking
+    local now = os.clock()
+    local dt = now - (self.lastPeakTime or now)
+    self.lastPeakTime = now
+    if (reading.sUnits or 0) >= (self.peakUnits or 0) then
+        self.peakUnits = reading.sUnits
+    else
+        -- Slow decay (~2 S-units per second)
+        self.peakUnits = math.max(reading.sUnits, (self.peakUnits or 0) - dt * 2.0)
+    end
+
     local bgR, bgG, bgB = state.hexToRgb(self.props.background or "#0f172a")
     local weakR, weakG, weakB = state.hexToRgb(self.props.colorWeak or "#22c55e")
     local midR, midG, midB = state.hexToRgb(self.props.colorMid or "#eab308")
     local strongR, strongG, strongB = state.hexToRgb(self.props.colorStrong or "#ef4444")
     local offR, offG, offB = state.hexToRgb(self.props.colorOff or "#1e293b")
-    local radius = self.props.borderRadius or 4
     local alpha = self.props.opacity or 1.0
-    local pad = self.props.padding or 4
-    local barCount = self.props.barCount or 12
+    local pad = self.props.padding or 2
+    local barCount = self.props.barCount or 15
     local barGap = self.props.barGap or 2
 
-    local title = self.props.title or "S-METER"
-    System.drawText(title, 0, 0, 16, {0.7, 0.7, 0.8, alpha})
-
-    local barY = 18
-    local barActualH = 28
-    System.drawRoundedRect(0, barY, w, barActualH, radius, {bgR, bgG, bgB, alpha})
+    local barActualH = 14
+    local barY = 2
+    System.drawRoundedRect(0, barY, w, barActualH, 2, {bgR, bgG, bgB, alpha * 0.7})
 
     local barW = (w - pad * 2 - barGap * (barCount - 1)) / barCount
     local barH = barActualH - pad * 2
 
     for i = 0, barCount - 1 do
         local barX = pad + i * (barW + barGap)
-        local barThreshold = (i < 9) and (i + 1) or (9 + (i - 8) * (20 / 6))
+        local barThreshold = (i < 9) and (i + 1) or (9 + (i - 8) * (30 / (barCount - 9)))
+
+        local r, g, b = weakR, weakG, weakB
+        if i >= 9 then r, g, b = strongR, strongG, strongB
+        elseif i >= 6 then r, g, b = midR, midG, midB end
 
         if reading.sUnits >= barThreshold then
-            local r, g, b = weakR, weakG, weakB
-            if i >= 9 then r, g, b = strongR, strongG, strongB
-            elseif i >= 6 then r, g, b = midR, midG, midB end
+            -- Solidly filled with high saturation up to instantaneous level
             System.drawRect(barX, barY + pad, barW, barH, {r, g, b, alpha})
+        elseif (self.peakUnits or 0) >= barThreshold then
+            -- Hollow box outline up to slow-decay peak
+            System.drawRectLines(barX, barY + pad, barW, barH, 1, {r, g, b, alpha * 0.7})
         else
-            System.drawRect(barX, barY + pad, barW, barH, {offR, offG, offB, alpha})
+            -- Off segment
+            System.drawRect(barX, barY + pad, barW, barH, {offR, offG, offB, alpha * 0.4})
         end
     end
 
-    local ty = barY + barActualH + 4
-    local sW = System.measureText(reading.sText, 14)
-    local dW = System.measureText(reading.dBmText, 14)
-    local startX = (w - (sW + 10 + dW)) / 2
-    System.drawText(reading.sText, startX, ty, 14, {0.9, 0.9, 0.95, alpha})
-    System.drawText(reading.dBmText, startX + sW + 10, ty, 14, {0.5, 0.5, 0.55, alpha})
+    local ty = barY + barActualH + 3
+    local sText = reading.sText or "S0"
+    local dbmText = reading.dBmText or "-120 dBm"
+    System.drawText(sText, 2, ty, 13, {0.9, 0.9, 0.95, alpha})
+    local dbmW = System.measureText(dbmText, 13) or (#dbmText * 8)
+    System.drawText(dbmText, w - dbmW - 2, ty, 13, {0.55, 0.55, 0.6, alpha})
 end
 
 return SMeter

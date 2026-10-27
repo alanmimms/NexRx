@@ -104,11 +104,12 @@ rule { id = "id-spec", tags = {"id.id-spec", "widget.Spectrum"}, apply = { stick
 rule { id = "id-wf", tags = {"id.id-wf", "widget.Waterfall"}, apply = { stick = "TLBR", flexH = 1.0, minH = 200 } }
 
 -- =============================================================================
--- Far Right Sidebar
+-- The River Workspace
 -- =============================================================================
 
-rule { id = "active-tags", tags = {"widget.Sidebar", "widget.ActiveTagsSidebar"}, apply = { minW = 180, prefW = 180, stick = "TRB", background = "#08081a" } }
-
-rule { id = "id-active-tags", tags = {"id.id-active-tags", "widget.ActiveTags"}, apply = { stick = "TLBR", flexH = 1 } }
+rule { id = "river-view-style", tags = {"widget.RiverView"}, apply = { background = "#050811", border = "#1e293b", stick = "TLBR", flexW = 1.0, flexH = 1.0 } }
+rule { id = "gutter-left-style", tags = {"widget.GutterLeft"}, apply = { background = "#070c16", border = "#131f33", prefW = 68, stick = "TLB", flexH = 1.0 } }
+rule { id = "live-trace-style", tags = {"widget.LiveTrace"}, apply = { background = "#070c16", border = "#131f33", prefW = 90, stick = "TRB", flexH = 1.0 } }
+rule { id = "frequency-ruler-style", tags = {"widget.FrequencyRuler"}, apply = { background = "#0c101c", border = "#1e293b", prefW = 60, stick = "TRB", flexH = 1.0 } }
 
 print("[default.lua] Configuration loaded")
