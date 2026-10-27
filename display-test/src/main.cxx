@@ -17,7 +17,6 @@
 #include "FrameBuffer.h"
 #include <memory>
 
-extern const FrameBuffer::Font UbuntuM16;
 extern const FrameBuffer::Font PlexL12;
 
 const FrameBuffer::Font &defaultFont = PlexL12;
@@ -188,17 +187,32 @@ int main(void) {
   printk("Back from drawFilledRect\n");
 #endif
 
+#if 0
   unsigned width = fbP->measureString("This is a test!", defaultFont);
   printk("Back from measureString = %d\n", width);
   fbP->drawString("This is a test!", 11, 19, defaultFont);
   printk("Back from drawString\n");
+#endif
+
+  extern const FrameBuffer::Font UbuntuB16;
+  extern const FrameBuffer::Font UbuntuM15;
+  extern const FrameBuffer::Font UbuntuB14;
+  extern const FrameBuffer::Font UbuntuM13;
+  extern const FrameBuffer::Font UbuntuB12;
+
+  fbP->drawString("UbuntuB16", 0, 0, UbuntuB16);
+  fbP->drawString("UbuntuM15", 0, 16, UbuntuM15);
+  fbP->drawString("UbuntuB14", 0, 32, UbuntuB14);
+  fbP->drawString("UbuntuM13", 0, 48, UbuntuM13);
+  fbP->drawString("UbuntuB12", 96, 48, UbuntuB12);
+
 
   updateFB();
   printk("Back from first updateFB\n");
 
-  time_t startTime = tmToEpochUTC(&startTM);
-
   return 0;
+
+  time_t startTime = tmToEpochUTC(&startTM);
 
   for (;;) {
     printk("Tick\n");
@@ -217,7 +231,7 @@ int main(void) {
     drawUSBStatus(true);
 
     updateFB();
-    k_msleep(30000);
+    k_msleep(1000);
   }
 
   return 0;

@@ -26,7 +26,11 @@ function(genFont ttf points fontName)
   )
 endfunction()
 
-genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf 16 UbuntuM16)
+genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf 16 UbuntuB16)
+genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf 15 UbuntuM15)
+genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf 14 UbuntuB14)
+genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf 13 UbuntuM13)
+genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf 12 UbuntuB12)
 genFont(/usr/share/fonts/truetype/ibm-plex/IBMPlexSans-Light.ttf 12 PlexL12)
 
 project(display)
