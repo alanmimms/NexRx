@@ -146,8 +146,14 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   rxTable["getSignalRms"] = [engine]() { return engine->getDSP().getDiagnostics().signalRms.load(); };
   rxTable["setBfoOffset"] = [engine](float hz) { engine->getDSP().getDemod().setBfoOffset(hz); };
   rxTable["setBandpassEnabled"] = [engine](bool en) { engine->getDSP().getFilter().setBandpassEnabled(en); };
-  rxTable["setBandpassCenter"] = [engine](float hz) { engine->getDSP().getFilter().setBandpassCenter(hz); };
-  rxTable["setBandpassWidth"] = [engine](float hz) { engine->getDSP().getFilter().setBandpassWidth(hz); };
+  rxTable["setBandpassCenter"] = [engine](float hz) {
+    engine->getDSP().getFilter().setBandpassCenter(hz);
+    engine->getDSP().getFilter().recompute();
+  };
+  rxTable["setBandpassWidth"] = [engine](float hz) {
+    engine->getDSP().getFilter().setBandpassWidth(hz);
+    engine->getDSP().getFilter().recompute();
+  };
   rxTable["setTuningOffset"] = [engine](double hz) { engine->getDSP().setTuningOffset(hz); };
   rxTable["setMute"] = [engine](bool en) { engine->getAudio().setMuted(en); };
   rxTable["setVFO"] = [engine](double f) {

@@ -293,8 +293,6 @@ function init()
       timeOffset = 0.0,
       freqMin = initFMin,
       freqMax = initFMax,
-      centerFreq = (initFMin + initFMax) / 2,
-      bandwidth = math.max(500e3, (initFMax - initFMin) * 1.25),
       metrics = { stick = Stick.TLBR, flexW = 1, flexH = 1 },
       signalBoxes = {
          {
@@ -385,21 +383,46 @@ function init()
       updateFrequencyRange(riverView.freqMin - span * 0.5, riverView.freqMax - span * 0.5)
    end
 
+   gutterLeft.onSelectBox = function(self, idx)
+      if riverView and riverView.signalBoxes and riverView.signalBoxes[idx] then
+         local box = riverView.signalBoxes[idx]
+         box:setFocus()
+         Model.set("rx.VFO.activeValue", box.carrierFreq)
+         Model.set("rx.selectedMode", box.mode)
+         riverView:layout(riverView.props.x or 0, riverView.props.y or 0, riverView.props.w or 800, riverView.props.h or 450)
+      end
+   end
+
    -- Reactive synchronization between VFO, Mode, Band, and The River
    Model.rx.VFO.activeValue:watch(function(freq)
       if riverView and freq then
-         if riverView.signalBoxes and riverView.signalBoxes[1] then
-            riverView.signalBoxes[1].carrierFreq = freq
+         local activeIdx = Model.selectedSignalBoxIndex:get() or 1
+         if riverView.signalBoxes and riverView.signalBoxes[activeIdx] then
+            riverView.signalBoxes[activeIdx].carrierFreq = freq
          end
-         if gutterLeft and gutterLeft.activeBoxes and gutterLeft.activeBoxes[1] then
-            gutterLeft.activeBoxes[1].carrierFreq = freq
+         if gutterLeft and gutterLeft.activeBoxes and gutterLeft.activeBoxes[activeIdx] then
+            gutterLeft.activeBoxes[activeIdx].carrierFreq = freq
          end
       end
    end)
 
    Model.rx.selectedMode:watch(function(mode)
-      if riverView and riverView.signalBoxes and riverView.signalBoxes[1] and mode then
-         riverView.signalBoxes[1].mode = mode
+      if riverView and mode then
+         local activeIdx = Model.selectedSignalBoxIndex:get() or 1
+         if riverView.signalBoxes and riverView.signalBoxes[activeIdx] then
+            riverView.signalBoxes[activeIdx].mode = mode
+         end
+      end
+   end)
+
+   Model.selectedSignalBoxIndex:watch(function(idx)
+      if riverView and riverView.signalBoxes and idx then
+         local box = riverView.signalBoxes[idx]
+         if box then
+            box:setFocus()
+            Model.set("rx.VFO.activeValue", box.carrierFreq)
+            Model.set("rx.selectedMode", box.mode)
+         end
       end
    end)
 
@@ -471,6 +494,15 @@ function update(dt)
    end
 
    AppController.sync()
+
+   if riverViewRef and riverViewRef.getNormalizedFreqRange then
+      local fMinNorm, fMaxNorm = riverViewRef:getNormalizedFreqRange()
+      local liveTrace = rxTree and rxTree:findByName("id-live-trace")
+      if liveTrace then
+         liveTrace.props.freqMinNorm = fMinNorm
+         liveTrace.props.freqMaxNorm = fMaxNorm
+      end
+   end
    
    local riverEngine = _G.river or _G.waterfall
    if Hardware.isHardwareEnabled() then
@@ -491,8 +523,8 @@ function update(dt)
          end
 
          -- Inject simulated spectral peaks matching decoder tracks and active VFO
-         local hwCenter = (riverViewRef and riverViewRef.hwCenterFreq) or 14.175e6
-         local hwBw = (riverViewRef and riverViewRef.hwBandwidth) or 500e3
+         local hwCenter = (Model.spectrumCenterFreq and Model.spectrumCenterFreq:peek()) or (riverViewRef and riverViewRef.hwCenterFreq) or 14.2e6
+         local hwBw = _G.sampleRate or (riverViewRef and riverViewRef.hwBandwidth) or 384e3
          local hwMin = hwCenter - hwBw / 2
 
          local function addPeak(freq, strengthDb, widthBins)

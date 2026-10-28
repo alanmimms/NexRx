@@ -71,8 +71,27 @@ function SignalBox:cycleMode()
 end
 
 function SignalBox:onEvent(event)
+  if event.type == "key" then
+    if event.key == "TAB" then
+      return false -- Bubble to RiverView to cycle focus
+    elseif (event.key == "DELETE" or event.key == "BACKSPACE") and event.isDown then
+      if self.parent and self.parent.removeFocusedSignalBox then
+        return self.parent:removeFocusedSignalBox()
+      end
+    end
+  end
+
   if event.type == "mouseButton" and event.button == "LEFT" then
     if event.isDown then
+      local isShift = (event.modifiers and (event.modifiers.shift or (event.modifiers[1] == "input.SHIFT"))) or (_G.isShiftDown and _G.isShiftDown())
+      if isShift and self.parent and self.parent.spawnSignalBox then
+        local river = self.parent
+        local gy = event.gy or (event.y + (self.props.y or 0))
+        local clickFreq = river:getFreqAtY(gy - (river.props.y or 0))
+        river:spawnSignalBox(clickFreq)
+        return true
+      end
+
       local lx = event.x or 0
       local ly = event.y or 0
       local w = self.props.w or 100
@@ -83,23 +102,22 @@ function SignalBox:onEvent(event)
         self:cycleMode()
         Model.selectedSignalBoxIndex:set(self.boxIndex)
         self:setFocus()
+        Model.set("rx.VFO.activeValue", self.carrierFreq)
+        Model.set("rx.selectedMode", self.mode)
         return true
       end
 
-      -- Generous chevron handle hit targets on right edge (x >= w - 55)
+      -- Chevron handle hit targets are ONLY on the right edge where chevrons are drawn (lx >= w - 55)
       if lx >= w - 55 then
-        if ly <= math.max(12, h * 0.45) then
+        if ly <= math.max(8, h * 0.45) then
           self.dragMode = "topHandle"
-        elseif ly >= math.min(h - 12, h * 0.55) then
+        elseif ly >= math.min(h - 8, h * 0.55) then
           self.dragMode = "bottomHandle"
         else
           self.dragMode = "move"
         end
-      elseif ly <= 8 then
-        self.dragMode = "topHandle"
-      elseif ly >= h - 8 then
-        self.dragMode = "bottomHandle"
       else
+        -- Clicking/dragging anywhere else across the body of the SignalBox is "move" (tuning the box)
         self.dragMode = "move"
       end
 
@@ -127,6 +145,8 @@ function SignalBox:onEvent(event)
       state.setActive(self.id)
       Model.selectedSignalBoxIndex:set(self.boxIndex)
       self:setFocus()
+      Model.set("rx.VFO.activeValue", self.carrierFreq)
+      Model.set("rx.selectedMode", self.mode)
       return true
     else
       self.isDragging = false
@@ -144,38 +164,44 @@ function SignalBox:onEvent(event)
     end
 
     if self.dragMode == "move" then
-      -- Dragging up increases frequency
-      self.carrierFreq = self.dragStartCarrier - (dy * hzPerPx)
+      -- Dragging up increases frequency; 1:1 on the River canvas
+      local newFreq = self.dragStartCarrier - (dy * hzPerPx)
+      if river and river.freqMin and river.freqMax then
+        newFreq = math.max(river.freqMin, math.min(river.freqMax, newFreq))
+      end
+      self.carrierFreq = newFreq
       Model.set("rx.VFO.activeValue", self.carrierFreq)
     elseif self.dragMode == "topHandle" then
-      -- Dragging top chevron moves upper skirt while anchoring lower skirt
-      local deltaHz = (dy * hzPerPx)
-      local newHighFreq = math.max(self.dragStartLowFreq + 200, self.dragStartHighFreq - deltaHz)
+      -- Vernier scaling for chevrons: 25 Hz per pixel for fine, controllable filter adjustments
+      local vernierHzPerPx = 25.0
+      local deltaHz = (dy * vernierHzPerPx)
+      local newHighFreq = math.max(self.dragStartLowFreq + 200, math.min(self.dragStartLowFreq + 16000, self.dragStartHighFreq - deltaHz))
       if self.mode == "USB" then
-        self.bandwidth = math.max(200, math.floor(newHighFreq - self.dragStartLowFreq))
+        self.bandwidth = math.max(200, math.min(16000, math.floor(newHighFreq - self.dragStartLowFreq)))
       elseif self.mode == "LSB" then
         self.carrierFreq = newHighFreq
-        self.bandwidth = math.max(200, math.floor(newHighFreq - self.dragStartLowFreq))
+        self.bandwidth = math.max(200, math.min(16000, math.floor(newHighFreq - self.dragStartLowFreq)))
         Model.set("rx.VFO.activeValue", self.carrierFreq)
       else
         self.carrierFreq = math.floor((newHighFreq + self.dragStartLowFreq) / 2)
-        self.bandwidth = math.max(200, math.floor(newHighFreq - self.dragStartLowFreq))
+        self.bandwidth = math.max(200, math.min(16000, math.floor(newHighFreq - self.dragStartLowFreq)))
         Model.set("rx.VFO.activeValue", self.carrierFreq)
       end
       Model.set("rx.bandpass.width", self.bandwidth)
     elseif self.dragMode == "bottomHandle" then
-      -- Dragging bottom chevron moves lower skirt while anchoring upper skirt
-      local deltaHz = (dy * hzPerPx)
-      local newLowFreq = math.min(self.dragStartHighFreq - 200, self.dragStartLowFreq - deltaHz)
+      -- Vernier scaling for chevrons: 25 Hz per pixel for fine, controllable filter adjustments
+      local vernierHzPerPx = 25.0
+      local deltaHz = (dy * vernierHzPerPx)
+      local newLowFreq = math.min(self.dragStartHighFreq - 200, math.max(self.dragStartHighFreq - 16000, self.dragStartLowFreq - deltaHz))
       if self.mode == "USB" then
         self.carrierFreq = newLowFreq
-        self.bandwidth = math.max(200, math.floor(self.dragStartHighFreq - newLowFreq))
+        self.bandwidth = math.max(200, math.min(16000, math.floor(self.dragStartHighFreq - newLowFreq)))
         Model.set("rx.VFO.activeValue", self.carrierFreq)
       elseif self.mode == "LSB" then
-        self.bandwidth = math.max(200, math.floor(self.dragStartHighFreq - newLowFreq))
+        self.bandwidth = math.max(200, math.min(16000, math.floor(self.dragStartHighFreq - newLowFreq)))
       else
         self.carrierFreq = math.floor((self.dragStartHighFreq + newLowFreq) / 2)
-        self.bandwidth = math.max(200, math.floor(self.dragStartHighFreq - newLowFreq))
+        self.bandwidth = math.max(200, math.min(16000, math.floor(self.dragStartHighFreq - newLowFreq)))
         Model.set("rx.VFO.activeValue", self.carrierFreq)
       end
       Model.set("rx.bandpass.width", self.bandwidth)

@@ -114,7 +114,10 @@ Model.rx = {
             -- Track revision
             getPropertyVersion("rx.VFO.activeValue"):get()
             local box = Model.getSelectedSignalBox()
-            return box and box.frequency or 14.2e6
+            if box and box.frequency then return box.frequency end
+            local ok, val = pcall(setbox.getNumber, "rx.VFO.activeValue")
+            if ok and val ~= nil then return val end
+            return 14.2e6
         end)
     },
     
@@ -122,7 +125,10 @@ Model.rx = {
     selectedMode = R.computed(function()
         getPropertyVersion("rx.selectedMode"):get()
         local box = Model.getSelectedSignalBox()
-        return box and box.mode or "USB"
+        if box and box.mode then return box.mode end
+        local ok, val = pcall(setbox.get, "rx.selectedMode")
+        if ok and val ~= nil then return val end
+        return "USB"
     end),
     
     selectedBand = projection("rx.selectedBand", Types.String, "20m"),
@@ -199,20 +205,29 @@ function Model.set(name, value)
     -- Handle special proxy cases for backward compatibility
     if name == "rx.selectedMode" then
         local box = Model.getSelectedSignalBox()
-        if box and box.mode ~= value then 
-            box.mode = value 
-            local obs = getPropertyVersion("rx.selectedMode")
-            obs:set(obs:peek() + 1)
+        if box then
+            if box.mode ~= value then 
+                box.mode = value 
+                local obs = getPropertyVersion("rx.selectedMode")
+                obs:set(obs:peek() + 1)
+            end
+            return
         end
-        return
     elseif name:match("^rx%.VFO%.") then
         local box = Model.getSelectedSignalBox()
-        if box and box.frequency ~= value then 
-            box.frequency = value 
-            local obs = getPropertyVersion("rx.VFO.activeValue")
-            obs:set(obs:peek() + 1)
+        if box then
+            if box.frequency ~= value then 
+                box.frequency = value 
+                local obs = getPropertyVersion("rx.VFO.activeValue")
+                obs:set(obs:peek() + 1)
+            end
+            return
         end
-        return
+    elseif name == "rx.bandpass.width" then
+        local box = Model.getSelectedSignalBox()
+        if box then
+            box.bandwidth = value
+        end
     end
 
     -- For standard properties, check if it actually changed before bumping revision

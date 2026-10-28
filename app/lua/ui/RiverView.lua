@@ -49,8 +49,10 @@ function RiverView:init(def)
 
   self.freqMin = def.freqMin or 14.0e6
   self.freqMax = def.freqMax or 14.35e6
-  self.hwCenterFreq = def.centerFreq or 14.175e6
-  self.hwBandwidth = def.bandwidth or 350e3
+  self.customCenterFreq = (def.centerFreq ~= nil)
+  self.customBandwidth = (def.bandwidth ~= nil)
+  self.hwCenterFreq = def.centerFreq or (Model.spectrumCenterFreq and Model.spectrumCenterFreq:peek()) or 14.2e6
+  self.hwBandwidth = def.bandwidth or _G.sampleRate or 384e3
 
   self.isNavigating = false
   self.dragStartX = 0
@@ -110,7 +112,7 @@ function RiverView:getAutoModeForFreq(freq)
 end
 
 function RiverView:cycleSignalBoxFocus(reverse)
-  if #self.signalBoxes == 0 then return end
+  if #self.signalBoxes <= 1 then return end
   local cur = Model.selectedSignalBoxIndex:get() or 1
   local nextIdx = reverse and (cur - 1) or (cur + 1)
   if nextIdx < 1 then nextIdx = #self.signalBoxes end
@@ -123,7 +125,85 @@ function RiverView:cycleSignalBoxFocus(reverse)
     if box.carrierFreq then
       Model.set("rx.VFO.activeValue", box.carrierFreq)
     end
+    if box.mode then
+      Model.set("rx.selectedMode", box.mode)
+    end
   end
+  self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
+  if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
+end
+
+function RiverView:spawnSignalBox(freq)
+  local newIdx = #self.signalBoxes + 1
+  local autoMode = self:getAutoModeForFreq(freq)
+  local newBox = self:addSignalBox({
+    id = "box-" .. tostring(newIdx),
+    index = newIdx,
+    mode = autoMode,
+    carrierFreq = freq,
+    bandwidth = (autoMode == "CW") and 500 or 2800,
+    label = "BOX " .. tostring(newIdx)
+  })
+  Model.selectedSignalBoxIndex:set(newIdx)
+  Model.set("rx.VFO.activeValue", freq)
+  Model.set("rx.selectedMode", autoMode)
+  newBox:setFocus()
+  self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
+  if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
+  return newBox
+end
+
+function RiverView:tuneActiveSignalBox(freq)
+  local curIdx = Model.selectedSignalBoxIndex:get() or 1
+  local box = self.signalBoxes[curIdx]
+  if not box then
+    return self:spawnSignalBox(freq)
+  end
+
+  box.carrierFreq = freq
+  local autoMode = self:getAutoModeForFreq(freq)
+  if autoMode and autoMode ~= box.mode then
+    box.mode = autoMode
+    Model.set("rx.selectedMode", autoMode)
+  end
+  Model.set("rx.VFO.activeValue", freq)
+  box:setFocus()
+  self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
+  if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
+  return box
+end
+
+function RiverView:removeFocusedSignalBox()
+  if #self.signalBoxes <= 1 then return false end
+  local curIdx = Model.selectedSignalBoxIndex:get() or 1
+  local box = self.signalBoxes[curIdx]
+  if not box then return false end
+
+  for i, kid in ipairs(self.kids) do
+    if kid == box then
+      table.remove(self.kids, i)
+      break
+    end
+  end
+
+  table.remove(self.signalBoxes, curIdx)
+  for i, b in ipairs(self.signalBoxes) do
+    b.boxIndex = i
+    b.id = "box-" .. tostring(i)
+  end
+
+  local nextIdx = math.min(curIdx, #self.signalBoxes)
+  Model.selectedSignalBoxIndex:set(nextIdx)
+  local newFocused = self.signalBoxes[nextIdx]
+  if newFocused then
+    newFocused:setFocus()
+    Model.set("rx.VFO.activeValue", newFocused.carrierFreq)
+    Model.set("rx.selectedMode", newFocused.mode)
+  end
+
+  self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
+  if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
+  return true
 end
 
 function RiverView:calcMetrics()
@@ -135,21 +215,19 @@ function RiverView:calcMetrics()
 end
 
 function RiverView:getNormalizedFreqRange()
-  local hwMin = self.hwCenterFreq - self.hwBandwidth / 2
-  local hwMax = self.hwCenterFreq + self.hwBandwidth / 2
-
-  if self.freqMin < hwMin or self.freqMax > hwMax then
-    local visibleSpan = self.freqMax - self.freqMin
-    local visibleCenter = (self.freqMin + self.freqMax) / 2
-    self.hwBandwidth = math.max(self.hwBandwidth, visibleSpan * 1.25)
-    self.hwCenterFreq = visibleCenter
-    hwMin = self.hwCenterFreq - self.hwBandwidth / 2
-    hwMax = self.hwCenterFreq + self.hwBandwidth / 2
+  if not self.customCenterFreq and Model.spectrumCenterFreq then
+    self.hwCenterFreq = Model.spectrumCenterFreq:peek()
+  end
+  if not self.customBandwidth and _G.sampleRate then
+    self.hwBandwidth = _G.sampleRate
   end
 
-  local hwSpan = math.max(1, hwMax - hwMin)
-  local fMinNorm = clamp((self.freqMin - hwMin) / hwSpan, 0.0, 1.0)
-  local fMaxNorm = clamp((self.freqMax - hwMin) / hwSpan, 0.0, 1.0)
+  local hwCenter = self.hwCenterFreq
+  local hwSpan = self.hwBandwidth
+
+  local hwMin = hwCenter - hwSpan / 2.0
+  local fMinNorm = (self.freqMin - hwMin) / hwSpan
+  local fMaxNorm = (self.freqMax - hwMin) / hwSpan
   if fMaxNorm <= fMinNorm then fMaxNorm = fMinNorm + 0.001 end
   return fMinNorm, fMaxNorm
 end
@@ -285,7 +363,7 @@ function RiverView:drawSelf()
 
   if loupeActive and self.hoverX and self.hoverY then
     local rad = RiverBehaviors.bubbleLoupe.radius or 60
-    System.drawCircleOutline(self.hoverX, self.hoverY, rad, { 0.35, 0.85, 1.0, 0.75 })
+    System.drawCircleOutline(self.hoverX, self.hoverY, rad, 1.5, { 0.35, 0.85, 1.0, 0.75 })
   end
 
   -- 4. Top Time Ruler
@@ -314,18 +392,25 @@ end
 function RiverView:onEvent(event)
   -- TAB / Shift+TAB to cycle SignalBox focus
   if event.type == "key" and event.key == "TAB" and event.isDown then
-    local isShift = _G.isShiftDown and _G.isShiftDown()
+    local isShift = (event.modifiers and (event.modifiers.shift or (event.modifiers[1] == "input.SHIFT"))) or (_G.isShiftDown and _G.isShiftDown())
     self:cycleSignalBoxFocus(isShift)
     return true
   end
 
-  if event.type == "mouseButton" and event.button == "LEFT" then
-    if event.isDown then
-      local rx = event.x or 0
-      local ry = event.y or 0
-      local w = self.props.w or 800
-      local pinnedW = self.props.pinnedSliverW or 60
+  -- DELETE / BACKSPACE to remove focused secondary SignalBox
+  if event.type == "key" and (event.key == "DELETE" or event.key == "BACKSPACE") and event.isDown then
+    if self:removeFocusedSignalBox() then
+      return true
+    end
+  end
 
+  if event.type == "mouseButton" and event.button == "LEFT" then
+    local rx = event.x or 0
+    local ry = event.y or 0
+    local w = self.props.w or 800
+    local pinnedW = self.props.pinnedSliverW or 60
+
+    if event.isDown then
       -- Clicking in live pinned sliver snaps back to real time
       if self.timeOffsetSec > 0 and rx >= w - pinnedW then
         self.timeOffsetSec = 0.0
@@ -333,26 +418,16 @@ function RiverView:onEvent(event)
       end
 
       -- Shift+Click drops a new SignalBox
-      local isShift = _G.isShiftDown and _G.isShiftDown()
+      local isShift = (event.modifiers and (event.modifiers.shift or (event.modifiers[1] == "input.SHIFT"))) or (_G.isShiftDown and _G.isShiftDown())
       if isShift then
         local clickFreq = self:getFreqAtY(ry)
-        local autoMode = self:getAutoModeForFreq(clickFreq)
-        local newBox = self:addSignalBox({
-          id = "box-" .. tostring(#self.signalBoxes + 1),
-          index = #self.signalBoxes + 1,
-          mode = autoMode,
-          carrierFreq = clickFreq,
-          bandwidth = (autoMode == "CW") and 500 or 2800,
-          label = "NEW BOX"
-        })
-        Model.selectedSignalBoxIndex:set(newBox.boxIndex)
-        Model.set("rx.VFO.activeValue", clickFreq)
-        newBox:setFocus()
-        if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
+        self:spawnSignalBox(clickFreq)
         return true
       end
 
       self.isNavigating = true
+      self.clickStartX = rx
+      self.clickStartY = ry
       self.dragStartX = event.gx or event.x or 0
       self.dragStartY = event.gy or event.y or 0
       self.dragStartTimeOffset = self.timeOffsetSec
@@ -360,8 +435,21 @@ function RiverView:onEvent(event)
       state.setActive(self.id)
       return true
     else
+      local wasNavigating = self.isNavigating
       self.isNavigating = false
       state.setActive(nil)
+
+      if wasNavigating and self.clickStartX and self.clickStartY then
+        local dx = rx - self.clickStartX
+        local dy = ry - self.clickStartY
+        local dist = math.sqrt(dx * dx + dy * dy)
+        if dist < 6 then
+          -- Direct click-to-tune on the River!
+          local clickFreq = self:getFreqAtY(self.clickStartY)
+          self:tuneActiveSignalBox(clickFreq)
+          return true
+        end
+      end
       return true
     end
   elseif event.type == "mouseMotion" then

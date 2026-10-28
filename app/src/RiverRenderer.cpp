@@ -144,8 +144,16 @@ void RiverRenderer::renderRiver(float x, float y, float w, float h,
 
   float span = std::clamp(timeSpan, 0.01f, 1.0f);
   float offset = std::clamp(timeOffset, 0.0f, 1.0f - span);
-  float fMin = std::clamp(freqMinNorm, 0.0f, 1.0f);
-  float fMax = std::clamp(freqMaxNorm, fMin + 0.001f, 1.0f);
+  float normSpan = freqMaxNorm - freqMinNorm;
+  if (normSpan <= 0.0001f) {
+    normSpan = 0.0001f;
+  }
+
+  float vMin = std::max(0.0f, std::min(1.0f, freqMinNorm));
+  float vMax = std::max(0.0f, std::min(1.0f, freqMaxNorm));
+  if (vMax <= vMin) {
+    return;
+  }
 
   // Time in texture coordinates:
   // t = 0 is oldest, t = historyDepth is NOW.
@@ -155,11 +163,17 @@ void RiverRenderer::renderRiver(float x, float y, float w, float h,
 
   // Frequency in texture coordinates:
   // Y = 0 is fMax = 1.0, Y = freqBins is fMin = 0.0
-  float yStart = (1.0f - fMax) * (float)freqBins;
-  float yEnd = (1.0f - fMin) * (float)freqBins;
+  float yStart = (1.0f - vMax) * (float)freqBins;
+  float yEnd = (1.0f - vMin) * (float)freqBins;
 
   Rectangle source = { tStart, yStart, tEnd - tStart, yEnd - yStart };
-  Rectangle dest = { x, y, w, h };
+
+  // Screen Y mapping:
+  // Bottom of canvas (y + h) corresponds to freqMinNorm.
+  // Top of canvas (y) corresponds to freqMaxNorm.
+  float destY = y + h - ((vMax - freqMinNorm) / normSpan) * h;
+  float destH = ((vMax - vMin) / normSpan) * h;
+  Rectangle dest = { x, destY, w, destH };
 
   DrawTexturePro(riverTexture, source, dest, { 0, 0 }, 0.0f, WHITE);
 }
@@ -171,11 +185,19 @@ void RiverRenderer::renderLiveTrace(const float* data, int count,
     return;
   }
 
-  float fMin = std::clamp(freqMinNorm, 0.0f, 1.0f);
-  float fMax = std::clamp(freqMaxNorm, fMin + 0.001f, 1.0f);
+  float normSpan = freqMaxNorm - freqMinNorm;
+  if (normSpan <= 0.0001f) {
+    normSpan = 0.0001f;
+  }
 
-  int startBin = (int)(fMin * (float)(count - 1));
-  int endBin = (int)(fMax * (float)(count - 1));
+  float vMin = std::max(0.0f, std::min(1.0f, freqMinNorm));
+  float vMax = std::max(0.0f, std::min(1.0f, freqMaxNorm));
+  if (vMax <= vMin) {
+    return;
+  }
+
+  int startBin = (int)(vMin * (float)(count - 1));
+  int endBin = (int)(vMax * (float)(count - 1));
   if (endBin <= startBin) {
     endBin = startBin + 1;
   }
@@ -191,9 +213,10 @@ void RiverRenderer::renderLiveTrace(const float* data, int count,
 
   for (int i = 0; i < numPoints; ++i) {
     int bin = startBin + i;
-    float normFreq = (float)(bin - startBin) / (float)(numPoints - 1);
+    float binNorm = (float)bin / (float)(count - 1);
+    float normCanvas = (binNorm - freqMinNorm) / normSpan;
     // Vertical position: frequency increases upwards
-    float py = y + h - (normFreq * h);
+    float py = y + h - (normCanvas * h);
 
     float db = std::clamp(data[bin], minDB, maxDB);
     float normAmp = (db - minDB) / dbRange;

@@ -82,6 +82,9 @@ local sysMT = {
       elseif key == "drawRect" or key == "drawRectLines" or key == "drawRoundedRect" or key == "drawCircle" or key == "drawCircleOutline" then
         if args[1] then args[1] = args[1] + ox end
         if args[2] then args[2] = args[2] + oy end
+        if key == "drawCircleOutline" and type(args[4]) == "table" and args[5] == nil then
+          table.insert(args, 4, 1.0)
+        end
       end
       return orig(table.unpack(args))
     end

@@ -292,6 +292,30 @@ function AppController.init()
         Modes.setMode(m)
     end)
 
+    -- Watch Bandpass filter width and center
+    R.watch(function()
+        local bw = Model.rx.bandpass.width:get()
+        local box = Model.getSelectedSignalBox()
+        local mode = (box and box.mode) or Model.rx.selectedMode:get() or "USB"
+        if box and box.bandwidth then
+            bw = box.bandwidth
+        end
+        if rx then
+            local center = 0.0
+            if mode == "USB" then
+                center = bw / 2.0
+            elseif mode == "LSB" then
+                center = -bw / 2.0
+            elseif mode == "CW" then
+                center = (Model.rx.CW and Model.rx.CW.pitch:peek()) or 700.0
+            elseif mode == "AM" then
+                center = 0.0
+            end
+            if rx.setBandpassCenter then rx.setBandpassCenter(center) end
+            if rx.setBandpassWidth then rx.setBandpassWidth(bw) end
+        end
+    end)
+
     -- Watch selected band
     R.watch(function()
         local b = Model.rx.selectedBand:get()

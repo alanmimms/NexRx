@@ -10,6 +10,7 @@ local GutterLeft = require("ui.GutterLeft")
 local SMeter = require("ui.SMeter")
 local SignalBox = require("ui.SignalBox")
 local setbox = require("SetBox")
+local Model = require("Model")
 
 local Tests = {}
 local passed = 0
@@ -160,6 +161,33 @@ function Tests.test_gutter_left_off_screen_piles()
   assert_true(clickedTop, "clicked top off-screen pile")
 end
 
+function Tests.test_gutter_left_tab_click_selection()
+  print("test_gutter_left_tab_click_selection")
+  local gutter = GutterLeft({
+    freqMin = 14.0e6,
+    freqMax = 14.35e6,
+    boxes = {
+      { boxIndex = 1, carrierFreq = 14.050e6, mode = "CW", bandwidth = 500 },
+      { boxIndex = 2, carrierFreq = 14.250e6, mode = "USB", bandwidth = 2800 }
+    },
+    w = 68,
+    h = 350,
+  })
+  gutter:layout(0, 0, 68, 350)
+  gutter:drawSelf()
+
+  local selectedIdx = nil
+  gutter.onSelectBox = function(self, idx) selectedIdx = idx end
+
+  assert_true(#gutter.tabHitBoxes >= 2, "gutter recorded tab hit boxes")
+  local tab2 = gutter.tabHitBoxes[2]
+  assert_true(tab2 ~= nil, "tab 2 hit box exists")
+
+  gutter:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, y = tab2.y + 5 })
+  assert_eq(2, selectedIdx, "clicking tab in GutterLeft triggers onSelectBox with index 2")
+  assert_eq(2, Model.selectedSignalBoxIndex:get(), "clicking tab sets Model.selectedSignalBoxIndex")
+end
+
 function Tests.test_signalbox_river_geometry()
   print("test_signalbox_river_geometry")
   local box = SignalBox({
@@ -180,9 +208,23 @@ function Tests.test_signalbox_river_geometry()
   assert_eq("topHandle", box.dragMode, "top chevron handle engaged")
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 4 })
 
-  -- Dragging bottom chevron handle
+  -- Clicking across the body of the box engages "move", NOT chevron handles
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 400, y = 36 })
+  assert_eq("move", box.dragMode, "clicking body of the box engages move mode")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 400, y = 36 })
+
+  -- Dragging bottom chevron handle uses fine vernier scaling (25 Hz/pixel)
+  box.mode = "USB"
+  box.bandwidth = 2800
+  box.carrierFreq = 14.240e6
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 36 })
   assert_eq("bottomHandle", box.dragMode, "bottom chevron handle engaged")
+  box:onEvent({ type = "mouseMotion", x = 760, y = 46 }) -- moved down 10px
+  assert_eq(3050, box.bandwidth, "vernier scaling: 10px moves bandwidth by 250 Hz to 3050 Hz")
+  assert_close(14.2428e6 - 3050, box.carrierFreq, 1.0, "carrier lowered by 250 Hz while upper skirt anchored")
+  box:onEvent({ type = "mouseMotion", x = 760, y = 36 }) -- moved back up 10px
+  assert_eq(2800, box.bandwidth, "moving cursor back restores exact initial bandwidth")
+  assert_close(14.240e6, box.carrierFreq, 1.0, "moving cursor back restores exact carrier frequency")
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 36 })
 
   -- Clicking mode badge cycles mode
@@ -250,15 +292,34 @@ function Tests.test_river_view_tab_cycling_and_spawning()
   rv:onEvent({ type = "key", key = "TAB", isDown = true })
   assert_eq(2, Model.selectedSignalBoxIndex:get(), "tab cycled to box 2")
 
-  -- TAB wraps back to box 1
+  -- Shift+TAB cycles backwards to box 1
+  _G.isShiftDown = function() return true end
   rv:onEvent({ type = "key", key = "TAB", isDown = true })
-  assert_eq(1, Model.selectedSignalBoxIndex:get(), "tab cycled back to box 1")
+  _G.isShiftDown = function() return false end
+  assert_eq(1, Model.selectedSignalBoxIndex:get(), "shift+tab cycled back to box 1")
+
+  -- TAB wraps back to box 2
+  rv:onEvent({ type = "key", key = "TAB", isDown = true })
+  assert_eq(2, Model.selectedSignalBoxIndex:get(), "tab cycled back to box 2")
 
   -- Shift+Click drops a 3rd SignalBox
   _G.isShiftDown = function() return true end
   rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 400, y = 200 })
   _G.isShiftDown = function() return false end
   assert_eq(3, #rv.signalBoxes, "shift+click spawned 3rd signal box")
+  assert_eq(3, Model.selectedSignalBoxIndex:get(), "new box 3 is selected")
+
+  -- DELETE key removes focused box 3
+  rv:onEvent({ type = "key", key = "DELETE", isDown = true })
+  assert_eq(2, #rv.signalBoxes, "delete removed focused 3rd box")
+  assert_eq(2, Model.selectedSignalBoxIndex:get(), "focus fell back to box 2")
+
+  -- Direct click to tune on the River
+  local targetFreq = rv:getFreqAtY(150)
+  rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 400, y = 150 })
+  rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 400, y = 150 })
+  assert_close(targetFreq, rv.signalBoxes[2].carrierFreq, 1.0, "direct click tunes focused box to target freq")
+  assert_close(targetFreq, Model.rx.VFO.activeValue:get(), 1.0, "direct click updates VFO active value")
 end
 
 function Tests.test_river_view_cursor_centered_zoom()
@@ -345,6 +406,7 @@ function Tests.runAll()
   Tests.test_frequency_ruler_events()
   Tests.test_smeter_dual_decay()
   Tests.test_gutter_left_off_screen_piles()
+  Tests.test_gutter_left_tab_click_selection()
   Tests.test_signalbox_river_geometry()
   Tests.test_decoder_track_lod()
   Tests.test_river_view_tab_cycling_and_spawning()
