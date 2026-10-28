@@ -237,6 +237,9 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
     }
     engine->getRiver().setColormapData(grad);
   };
+  riverTable["shiftFrequency"] = [engine](float deltaHz, sol::optional<float> sampleRate) {
+    engine->getRiver().shiftFrequency(deltaHz, sampleRate.value_or(384000.0f));
+  };
   lua["river"] = riverTable;
   lua["waterfall"] = riverTable;
 
@@ -254,6 +257,18 @@ void AppLuaBridge::registerWithLua(sol::state& lua, GUIEngine* engine) {
   };
   audioTable["setTestTone"] = [engine](bool en) {
     engine->getAudio().setTestTone(en);
+  };
+  audioTable["seekPlayback"] = [engine](float offsetSec) {
+    engine->getDSP().seekPlayback(offsetSec);
+  };
+  audioTable["stopPlayback"] = [engine]() {
+    engine->getDSP().stopPlayback();
+  };
+  audioTable["isPlaybackActive"] = [engine]() {
+    return engine->getDSP().isPlaybackActive();
+  };
+  audioTable["getPlaybackOffset"] = [engine]() {
+    return engine->getDSP().getPlaybackOffsetSec();
   };
   lua["audio"] = audioTable;
 

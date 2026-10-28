@@ -56,6 +56,9 @@ function FrequencyRuler:drawSelf()
   System.drawRect(0, 0, w, h, { bgR, bgG, bgB, 0.95 })
   System.drawRectLines(0, 0, w, h, 1, { 0.15, 0.2, 0.3, 0.8 })
 
+  local rulerH = self.props.rulerH or 22
+  local canvasH = math.max(10, h - rulerH)
+
   -- 1. Band-Plan Mode Shading
   if _G.bands and _G.bands.getSegmentsForSpan then
     local segments = _G.bands.getSegmentsForSpan(fMin, fMax)
@@ -63,8 +66,8 @@ function FrequencyRuler:drawSelf()
       local s0 = math.max(fMin, seg.startFreq)
       local s1 = math.min(fMax, seg.endFreq)
       if s1 > s0 then
-        local yBottom = h - ((s0 - fMin) / span * h)
-        local yTop = h - ((s1 - fMin) / span * h)
+        local yBottom = rulerH + canvasH - ((s0 - fMin) / span * canvasH)
+        local yTop = rulerH + canvasH - ((s1 - fMin) / span * canvasH)
         local segH = math.max(1, yBottom - yTop)
 
         local color = self.props.voiceColor
@@ -82,16 +85,16 @@ function FrequencyRuler:drawSelf()
   -- 2. Band Pill Header at the top of the ruler
   local curBand = (Model.rx.selectedBand and Model.rx.selectedBand:get()) or "20m"
   local pillW = w - 8
-  local pillH = 20
+  local pillH = 18
   local pillBg = self.bandMenuOpen and { 0.2, 0.35, 0.55, 0.95 } or { 0.12, 0.18, 0.28, 0.85 }
   System.drawRoundedRect(4, 2, pillW, pillH, 3, pillBg)
   System.drawRectLines(4, 2, pillW, pillH, 1.0, { 0.3, 0.45, 0.65, 0.8 })
   local pillText = string.format("%s v", curBand)
   local ptw = System.measureText(pillText, 11) or (#pillText * 7)
-  System.drawText(pillText, 4 + (pillW - ptw) / 2, 6, 11, { 0.9, 0.95, 1.0, 0.95 })
+  System.drawText(pillText, 4 + (pillW - ptw) / 2, 5, 11, { 0.9, 0.95, 1.0, 0.95 })
 
   -- 3. Ticks and Labels
-  local idealTickCount = math.max(4, math.floor(h / 36))
+  local idealTickCount = math.max(4, math.floor(canvasH / 36))
   local rawStep = span / idealTickCount
   local step = 50e3
   if rawStep <= 10e3 then step = 10e3
@@ -104,9 +107,9 @@ function FrequencyRuler:drawSelf()
   local cur = firstTick
   while cur <= fMax do
     local norm = (cur - fMin) / span
-    local y = h - (norm * h)
+    local y = rulerH + canvasH - (norm * canvasH)
 
-    if y >= 24 then
+    if y >= rulerH then
       -- Tick mark
       System.drawLine(0, y, 6, y, 1.5, { 0.6, 0.65, 0.75, 0.9 })
 
@@ -183,19 +186,23 @@ function FrequencyRuler:onEvent(event)
       else
         self.isDragging = false
         state.setActive(nil)
+        if self.onFrequencyChange then
+          self:onFrequencyChange(self.props.freqMin, self.props.freqMax, true)
+        end
         return true
       end
     end
   elseif event.type == "mouseMotion" and self.isDragging then
     local dy = (event.gy or event.y or 0) - self.dragStartY
     local span = self.props.freqMax - self.props.freqMin
-    local hzPerPx = span / (self.props.h or 300)
+    local canvasH = math.max(10, (self.props.h or 300) - (self.props.rulerH or 22))
+    local hzPerPx = span / canvasH
     -- Dragging down pulls lower frequencies down
     local newCenter = self.dragStartCenter + (dy * hzPerPx)
     self.props.freqMin = newCenter - span / 2
     self.props.freqMax = newCenter + span / 2
     if self.onFrequencyChange then
-      self:onFrequencyChange(self.props.freqMin, self.props.freqMax)
+      self:onFrequencyChange(self.props.freqMin, self.props.freqMax, false)
     end
     return true
   elseif event.type == "mouseWheel" then
@@ -210,7 +217,7 @@ function FrequencyRuler:onEvent(event)
       self.props.freqMin = center - newSpan / 2
       self.props.freqMax = center + newSpan / 2
       if self.onFrequencyChange then
-        self:onFrequencyChange(self.props.freqMin, self.props.freqMax)
+        self:onFrequencyChange(self.props.freqMin, self.props.freqMax, true)
       end
     end
     return true

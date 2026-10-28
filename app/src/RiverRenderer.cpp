@@ -109,6 +109,15 @@ void RiverRenderer::horizontalShift(int bins) {
   textureDirty = true;
 }
 
+void RiverRenderer::shiftFrequency(float deltaHz, float sampleRate) {
+  if (!initialized || std::abs(deltaHz) < 1.0f || sampleRate <= 0.0f) {
+    return;
+  }
+  float hzPerBin = sampleRate / static_cast<float>(freqBins);
+  int bins = -static_cast<int>(std::round(deltaHz / hzPerBin));
+  horizontalShift(bins);
+}
+
 void RiverRenderer::updateRiverTexture() {
   if (!initialized || !textureDirty) {
     return;

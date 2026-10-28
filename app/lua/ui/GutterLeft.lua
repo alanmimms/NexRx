@@ -23,7 +23,7 @@ setbox.rule {
   tags = { "widget.GutterLeft" },
   priority = -1000,
   apply = {
-    prefW = 68,
+    prefW = 76,
     background = "#070c16",
     border = "#131f33",
     tabBg = "#1e293b",
@@ -37,10 +37,15 @@ function GutterLeft:init(def)
   Widget.init(self, def)
   self.activeBoxes = def.boxes or {}
   self.alerts = def.alerts or {}
+  self.topPileBoxes = {}
+  self.bottomPileBoxes = {}
+  self.topPileAlerts = {}
+  self.bottomPileAlerts = {}
+  self.hoveredPile = nil
 end
 
 function GutterLeft:calcMetrics()
-  if (self.props.prefW or 0) == 0 then self.props.prefW = 68 end
+  if (self.props.prefW or 0) == 0 then self.props.prefW = 76 end
   if (self.props.prefH or 0) == 0 then self.props.prefH = 300 end
 end
 
@@ -56,6 +61,14 @@ function GutterLeft:drawSelf()
   local bgR, bgG, bgB = state.hexToRgb(self.props.background or "#070c16")
   System.drawRect(0, 0, w, h, { bgR, bgG, bgB, 0.95 })
   System.drawRectLines(0, 0, w, h, 1, { 0.15, 0.2, 0.3, 0.8 })
+
+  local rulerH = self.props.rulerH or 22
+  local canvasH = math.max(10, h - rulerH)
+
+  self.topPileBoxes = {}
+  self.bottomPileBoxes = {}
+  self.topPileAlerts = {}
+  self.bottomPileAlerts = {}
 
   local topPileCount = 0
   local bottomPileCount = 0
@@ -78,16 +91,18 @@ function GutterLeft:drawSelf()
 
     if carrierFreq > fMax and highFreq > fMax then
       topPileCount = topPileCount + 1
+      table.insert(self.topPileBoxes, box)
     elseif carrierFreq < fMin and lowFreq < fMin then
       bottomPileCount = bottomPileCount + 1
+      table.insert(self.bottomPileBoxes, box)
     else
       local normCarrier = clamp((carrierFreq - fMin) / span, 0.0, 1.0)
       local normHigh = clamp((highFreq - fMin) / span, 0.0, 1.0)
       local normLow = clamp((lowFreq - fMin) / span, 0.0, 1.0)
 
-      local cy = h - (normCarrier * h)
-      local topY = h - (normHigh * h)
-      local botY = h - (normLow * h)
+      local cy = rulerH + canvasH - (normCarrier * canvasH)
+      local topY = rulerH + canvasH - (normHigh * canvasH)
+      local botY = rulerH + canvasH - (normLow * canvasH)
 
       local tabBgR, tabBgG, tabBgB = state.hexToRgb(self.props.tabBg or "#1e293b")
       local tabBorderR, tabBorderB, tabBorderG
@@ -103,92 +118,178 @@ function GutterLeft:drawSelf()
       System.drawLine(w - 7, topY, w, topY, 1.5, { tabBorderR, tabBorderG, tabBorderB, 0.95 })
       System.drawLine(w - 7, botY, w, botY, 1.5, { tabBorderR, tabBorderG, tabBorderB, 0.95 })
 
-      -- Carrier pointer tick
-      System.drawLine(w - 12, cy, w, cy, 2.0, { 1.0, 1.0, 1.0, 0.95 })
-
-      local tabW = w - 6
+      local tabW = w - 8
       local tabX = 2
-      local bwStr = string.format("%.1fk", bw / 1000.0)
+      local bwStr = (bw < 1000) and string.format("%dHz", bw) or string.format("%.1fk", bw / 1000.0)
       local cfLabel = string.format("%.3f", carrierFreq / 1e6)
       local highLabel = string.format("%.3f", highFreq / 1e6)
       local lowLabel = string.format("%.3f", lowFreq / 1e6)
+      local row2Text = string.format("%s %s", bwStr, mode)
+
+      local carrierTabH = 28
+      local carrierTabY
+      local targetLineY
 
       if mode == "USB" then
-        -- Carrier is at botY (below modulation). Top boundary is at topY (above carrier).
-        local carrierTabH = 20
-        local carrierTabY = clamp(botY - carrierTabH / 2, 2, h - carrierTabH - 2)
-        table.insert(self.tabHitBoxes, { y = carrierTabY, h = carrierTabH, index = box.boxIndex or i })
+        targetLineY = botY
+      elseif mode == "LSB" then
+        targetLineY = topY
+      else
+        targetLineY = cy
+      end
 
-        -- Carrier tag at botY
-        System.drawRoundedRect(tabX, carrierTabY, tabW, carrierTabH, 3, { tabBgR, tabBgG, tabBgB, 0.92 })
-        System.drawRectLines(tabX, carrierTabY, tabW, carrierTabH, isSelected and 2 or 1, { tabBorderR, tabBorderG, tabBorderB, 0.85 })
-        System.drawText(cfLabel, tabX + 3, carrierTabY + 4, 11, { 1.0, 1.0, 1.0, 1.0 })
-        System.drawText(mode, tabX + tabW - (#mode * 6) - 3, carrierTabY + 5, 9, { 0.5, 0.8, 1.0, 0.9 })
+      carrierTabY = math.floor(targetLineY - carrierTabH / 2 + 0.5)
+      carrierTabY = clamp(carrierTabY, rulerH + 2, h - carrierTabH - 2)
+      table.insert(self.tabHitBoxes, { y = carrierTabY, h = carrierTabH, index = box.boxIndex or i })
 
-        -- Top edge frequency & bandwidth tag at topY
+      -- Carrier tag with 2 rows of text: frequency on top, bandwidth below
+      System.drawRoundedRect(tabX, carrierTabY, tabW, carrierTabH, 3, { tabBgR, tabBgG, tabBgB, 0.94 })
+      System.drawRectLines(tabX, carrierTabY, tabW, carrierTabH, isSelected and 2 or 1, { tabBorderR, tabBorderG, tabBorderB, isSelected and 0.95 or 0.75 })
+
+      -- Row 1 (top): Frequency
+      System.drawText(cfLabel, tabX + 4, carrierTabY + 2, 11, { 1.0, 1.0, 1.0, 1.0 })
+      -- Row 2 (bottom): Bandwidth & Mode
+      System.drawText(row2Text, tabX + 4, carrierTabY + 14, 10, { 0.55, 0.85, 1.0, 0.95 })
+      -- Pointer tick to the exact carrier frequency on the River
+      System.drawLine(tabX + tabW, targetLineY, w, targetLineY, 2.0, { 1.0, 1.0, 1.0, 0.95 })
+
+      -- Secondary boundary tag at the other skirt edge if space allows
+      if mode == "USB" and (botY - topY) >= 36 then
         local topTabH = 16
-        local topTabY = clamp(topY - topTabH / 2, 2, h - topTabH - 2)
+        local topTabY = math.floor(topY - topTabH / 2 + 0.5)
+        topTabY = clamp(topTabY, rulerH + 2, h - topTabH - 2)
         if topTabY + topTabH < carrierTabY - 2 then
           table.insert(self.tabHitBoxes, { y = topTabY, h = topTabH, index = box.boxIndex or i })
           System.drawRoundedRect(tabX + 4, topTabY, tabW - 4, topTabH, 2, { tabBgR, tabBgG, tabBgB, 0.85 })
           System.drawRectLines(tabX + 4, topTabY, tabW - 4, topTabH, 1, { tabBorderR, tabBorderG, tabBorderB, 0.6 })
-          System.drawText(highLabel, tabX + 6, topTabY + 2, 9, { 0.7, 0.85, 1.0, 0.9 })
-          System.drawText(bwStr, tabX + tabW - (#bwStr * 6) - 3, topTabY + 2, 9, { 0.95, 0.8, 0.25, 0.95 })
+          System.drawText(highLabel, tabX + 6, math.floor(topY - 4), 9, { 0.7, 0.85, 1.0, 0.9 })
+          System.drawLine(tabX + tabW, topY, w, topY, 1.5, { tabBorderR, tabBorderG, tabBorderB, 0.95 })
         end
-      elseif mode == "LSB" then
-        -- Carrier is at topY (above modulation). Low boundary is at botY (below carrier).
-        local carrierTabH = 20
-        local carrierTabY = clamp(topY - carrierTabH / 2, 2, h - carrierTabH - 2)
-        table.insert(self.tabHitBoxes, { y = carrierTabY, h = carrierTabH, index = box.boxIndex or i })
-
-        -- Carrier tag at topY
-        System.drawRoundedRect(tabX, carrierTabY, tabW, carrierTabH, 3, { tabBgR, tabBgG, tabBgB, 0.92 })
-        System.drawRectLines(tabX, carrierTabY, tabW, carrierTabH, isSelected and 2 or 1, { tabBorderR, tabBorderG, tabBorderB, 0.85 })
-        System.drawText(cfLabel, tabX + 3, carrierTabY + 4, 11, { 1.0, 1.0, 1.0, 1.0 })
-        System.drawText(mode, tabX + tabW - (#mode * 6) - 3, carrierTabY + 5, 9, { 0.5, 0.8, 1.0, 0.9 })
-
-        -- Low edge tag at botY
+      elseif mode == "LSB" and (botY - topY) >= 36 then
         local botTabH = 16
-        local botTabY = clamp(botY - botTabH / 2, 2, h - botTabH - 2)
+        local botTabY = math.floor(botY - botTabH / 2 + 0.5)
+        botTabY = clamp(botTabY, rulerH + 2, h - botTabH - 2)
         if botTabY > carrierTabY + carrierTabH + 2 then
           table.insert(self.tabHitBoxes, { y = botTabY, h = botTabH, index = box.boxIndex or i })
           System.drawRoundedRect(tabX + 4, botTabY, tabW - 4, botTabH, 2, { tabBgR, tabBgG, tabBgB, 0.85 })
           System.drawRectLines(tabX + 4, botTabY, tabW - 4, botTabH, 1, { tabBorderR, tabBorderG, tabBorderB, 0.6 })
-          System.drawText(lowLabel, tabX + 6, botTabY + 2, 9, { 0.7, 0.85, 1.0, 0.9 })
-          System.drawText(bwStr, tabX + tabW - (#bwStr * 6) - 3, botTabY + 2, 9, { 0.95, 0.8, 0.25, 0.95 })
+          System.drawText(lowLabel, tabX + 6, math.floor(botY - 4), 9, { 0.7, 0.85, 1.0, 0.9 })
+          System.drawLine(tabX + tabW, botY, w, botY, 1.5, { tabBorderR, tabBorderG, tabBorderB, 0.95 })
         end
-      else
-        -- CW / AM / FM: Carrier centered at cy
-        local tabH = 22
-        local tabY = clamp(cy - tabH / 2, 2, h - tabH - 2)
-        table.insert(self.tabHitBoxes, { y = tabY, h = tabH, index = box.boxIndex or i })
-
-        System.drawRoundedRect(tabX, tabY, tabW, tabH, 3, { tabBgR, tabBgG, tabBgB, 0.92 })
-        System.drawRectLines(tabX, tabY, tabW, tabH, isSelected and 2 or 1, { tabBorderR, tabBorderG, tabBorderB, 0.85 })
-        System.drawText(cfLabel, tabX + 3, tabY + 4, 11, { 1.0, 1.0, 1.0, 1.0 })
-        System.drawText(bwStr, tabX + tabW - (#bwStr * 6) - 3, tabY + 5, 9, { 0.95, 0.8, 0.25, 0.95 })
       end
     end
   end
 
   -- 2. Ambient Alert Ticks
   for _, alert in ipairs(self.alerts or {}) do
-    local f = alert.freq
-    if f >= fMin and f <= fMax then
+    local f = alert.freq or 0
+    if f > fMax then
+      topPileCount = topPileCount + 1
+      table.insert(self.topPileAlerts, alert)
+    elseif f < fMin then
+      bottomPileCount = bottomPileCount + 1
+      table.insert(self.bottomPileAlerts, alert)
+    else
       local norm = (f - fMin) / span
-      local ay = h - (norm * h)
+      local ay = rulerH + canvasH - (norm * canvasH)
       System.drawRect(w - 6, ay - 2, 5, 4, { 1.0, 0.2, 0.2, 0.9 })
     end
   end
 
   -- 3. Top and Bottom Off-Screen Piles
   if topPileCount > 0 then
-    System.drawRoundedRect(2, 2, w - 4, 18, 3, { 0.2, 0.25, 0.35, 0.9 })
-    System.drawText(string.format("▲ %d off", topPileCount), 6, 5, 11, { 1.0, 0.8, 0.3, 1.0 })
+    local isHov = (self.hoveredPile == "top")
+    local pillBg = isHov and { 0.28, 0.35, 0.48, 0.95 } or { 0.2, 0.25, 0.35, 0.9 }
+    System.drawRoundedRect(2, 2, w - 4, 18, 3, pillBg)
+    System.drawRectLines(2, 2, w - 4, 18, 1, isHov and { 0.95, 0.8, 0.3, 0.9 } or { 0.4, 0.5, 0.65, 0.7 })
+    System.drawText(string.format("▲ %d off", topPileCount), 6, 5, 11, { 1.0, 0.85, 0.35, 1.0 })
+
+    -- Hover Tooltip Card below top pill
+    if isHov then
+      local cardW = 160
+      local items = {}
+      for _, b in ipairs(self.topPileBoxes) do
+        table.insert(items, string.format("%.3f %s %s", (b.carrierFreq or 0) / 1e6, b.mode or "", b.label or ""))
+      end
+      for _, a in ipairs(self.topPileAlerts) do
+        table.insert(items, string.format("%.3f %s", (a.freq or 0) / 1e6, a.label or "Alert"))
+      end
+      local nShow = math.min(#items, 4)
+      local cardH = 18 + nShow * 14 + 6
+      System.drawRoundedRect(2, 22, cardW, cardH, 4, { 0.08, 0.12, 0.22, 0.95 })
+      System.drawRectLines(2, 22, cardW, cardH, 1, { 0.35, 0.5, 0.75, 0.9 })
+      System.drawText(string.format("▲ %d ABOVE VISIBLE", topPileCount), 6, 26, 10, { 0.95, 0.8, 0.3, 1.0 })
+      for j = 1, nShow do
+        System.drawText(items[j], 8, 26 + j * 14, 10, { 0.9, 0.95, 1.0, 0.95 })
+      end
+    end
   end
+
   if bottomPileCount > 0 then
-    System.drawRoundedRect(2, h - 20, w - 4, 18, 3, { 0.2, 0.25, 0.35, 0.9 })
-    System.drawText(string.format("▼ %d off", bottomPileCount), 6, h - 17, 11, { 1.0, 0.8, 0.3, 1.0 })
+    local isHov = (self.hoveredPile == "bottom")
+    local pillBg = isHov and { 0.28, 0.35, 0.48, 0.95 } or { 0.2, 0.25, 0.35, 0.9 }
+    System.drawRoundedRect(2, h - 20, w - 4, 18, 3, pillBg)
+    System.drawRectLines(2, h - 20, w - 4, 18, 1, isHov and { 0.95, 0.8, 0.3, 0.9 } or { 0.4, 0.5, 0.65, 0.7 })
+    System.drawText(string.format("▼ %d off", bottomPileCount), 6, h - 17, 11, { 1.0, 0.85, 0.35, 1.0 })
+
+    -- Hover Tooltip Card above bottom pill
+    if isHov then
+      local cardW = 160
+      local items = {}
+      for _, b in ipairs(self.bottomPileBoxes) do
+        table.insert(items, string.format("%.3f %s %s", (b.carrierFreq or 0) / 1e6, b.mode or "", b.label or ""))
+      end
+      for _, a in ipairs(self.bottomPileAlerts) do
+        table.insert(items, string.format("%.3f %s", (a.freq or 0) / 1e6, a.label or "Alert"))
+      end
+      local nShow = math.min(#items, 4)
+      local cardH = 18 + nShow * 14 + 6
+      local cardY = h - 22 - cardH
+      System.drawRoundedRect(2, cardY, cardW, cardH, 4, { 0.08, 0.12, 0.22, 0.95 })
+      System.drawRectLines(2, cardY, cardW, cardH, 1, { 0.35, 0.5, 0.75, 0.9 })
+      System.drawText(string.format("▼ %d BELOW VISIBLE", bottomPileCount), 6, cardY + 4, 10, { 0.95, 0.8, 0.3, 1.0 })
+      for j = 1, nShow do
+        System.drawText(items[j], 8, cardY + 4 + j * 14, 10, { 0.9, 0.95, 1.0, 0.95 })
+      end
+    end
+  end
+end
+
+function GutterLeft:onTopPileClick()
+  local fMax = self.props.freqMax or 14.35e6
+  local targetFreq = nil
+  local minAbove = math.huge
+  local boxes = (#self.topPileBoxes > 0) and self.topPileBoxes or (self.activeBoxes or {})
+  for _, box in ipairs(boxes) do
+    local f = box.carrierFreq or box.freq or 0
+    if f > fMax and f < minAbove then minAbove = f; targetFreq = f end
+  end
+  local alerts = (#self.topPileAlerts > 0) and self.topPileAlerts or (self.alerts or {})
+  for _, a in ipairs(alerts) do
+    local f = a.freq or 0
+    if f > fMax and f < minAbove then minAbove = f; targetFreq = f end
+  end
+  if targetFreq and self.onCenterFrequency then
+    self:onCenterFrequency(targetFreq)
+  end
+end
+
+function GutterLeft:onBottomPileClick()
+  local fMin = self.props.freqMin or 14.0e6
+  local targetFreq = nil
+  local maxBelow = -math.huge
+  local boxes = (#self.bottomPileBoxes > 0) and self.bottomPileBoxes or (self.activeBoxes or {})
+  for _, box in ipairs(boxes) do
+    local f = box.carrierFreq or box.freq or 0
+    if f < fMin and f > maxBelow then maxBelow = f; targetFreq = f end
+  end
+  local alerts = (#self.bottomPileAlerts > 0) and self.bottomPileAlerts or (self.alerts or {})
+  for _, a in ipairs(alerts) do
+    local f = a.freq or 0
+    if f < fMin and f > maxBelow then maxBelow = f; targetFreq = f end
+  end
+  if targetFreq and self.onCenterFrequency then
+    self:onCenterFrequency(targetFreq)
   end
 end
 
@@ -198,6 +299,17 @@ function GutterLeft:onEvent(event)
     if river and river.handleWheelZoom then
       return river:handleWheelZoom(event)
     end
+  elseif event.type == "mouseMotion" then
+    local ey = event.y or 0
+    local h = self.props.h or 300
+    if ey <= 22 and (#self.topPileBoxes + #self.topPileAlerts > 0) then
+      self.hoveredPile = "top"
+    elseif ey >= h - 22 and (#self.bottomPileBoxes + #self.bottomPileAlerts > 0) then
+      self.hoveredPile = "bottom"
+    else
+      self.hoveredPile = nil
+    end
+    return false
   elseif event.type == "mouseButton" and event.button == "LEFT" and event.isDown then
     local ey = event.y or 0
     if ey < 22 and self.onTopPileClick then

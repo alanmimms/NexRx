@@ -108,7 +108,7 @@ rule { id = "id-wf", tags = {"id.id-wf", "widget.Waterfall"}, apply = { stick = 
 -- =============================================================================
 
 rule { id = "river-view-style", tags = {"widget.RiverView"}, apply = { background = "#050811", border = "#1e293b", stick = "TLBR", flexW = 1.0, flexH = 1.0 } }
-rule { id = "gutter-left-style", tags = {"widget.GutterLeft"}, apply = { background = "#070c16", border = "#131f33", prefW = 68, stick = "TLB", flexH = 1.0 } }
+rule { id = "gutter-left-style", tags = {"widget.GutterLeft"}, apply = { background = "#070c16", border = "#131f33", prefW = 76, stick = "TLB", flexH = 1.0 } }
 rule { id = "live-trace-style", tags = {"widget.LiveTrace"}, apply = { background = "#070c16", border = "#131f33", prefW = 90, stick = "TRB", flexH = 1.0 } }
 rule { id = "frequency-ruler-style", tags = {"widget.FrequencyRuler"}, apply = { background = "#0c101c", border = "#1e293b", prefW = 60, stick = "TRB", flexH = 1.0 } }
 
@@ -124,5 +124,18 @@ rule { id = "track-usb", tags = {"widget.DecoderTrack", "mode.USB"}, apply = { r
 rule { id = "track-lsb", tags = {"widget.DecoderTrack", "mode.LSB"}, apply = { ribbonColor = "#06b6d4", textColor = "#cffafe" } }
 rule { id = "track-am", tags = {"widget.DecoderTrack", "mode.AM"}, apply = { ribbonColor = "#ec4899", textColor = "#fbcfe8" } }
 rule { id = "track-fm", tags = {"widget.DecoderTrack", "mode.FM"}, apply = { ribbonColor = "#84cc16", textColor = "#d9f99d" } }
+
+-- =============================================================================
+-- SignalBox Mode Styling (Tag-Driven Customization)
+-- =============================================================================
+
+rule { id = "sigbox-cw", tags = {"widget.SignalBox", "mode.CW"}, apply = { background = "#3b82f6", border = "#60a5fa" } }
+rule { id = "sigbox-ft8", tags = {"widget.SignalBox", "mode.FT8"}, apply = { background = "#f59e0b", border = "#fbbf24" } }
+rule { id = "sigbox-js8", tags = {"widget.SignalBox", "mode.JS8"}, apply = { background = "#f97316", border = "#fb923c" } }
+rule { id = "sigbox-rtty", tags = {"widget.SignalBox", "mode.RTTY"}, apply = { background = "#a855f7", border = "#c084fc" } }
+rule { id = "sigbox-usb", tags = {"widget.SignalBox", "mode.USB"}, apply = { background = "#10b981", border = "#34d399" } }
+rule { id = "sigbox-lsb", tags = {"widget.SignalBox", "mode.LSB"}, apply = { background = "#06b6d4", border = "#22d3ee" } }
+rule { id = "sigbox-am", tags = {"widget.SignalBox", "mode.AM"}, apply = { background = "#ec4899", border = "#f472b6" } }
+rule { id = "sigbox-fm", tags = {"widget.SignalBox", "mode.FM"}, apply = { background = "#84cc16", border = "#a3e635" } }
 
 print("[default.lua] Configuration loaded")

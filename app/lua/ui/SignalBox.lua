@@ -45,6 +45,10 @@ function SignalBox:init(def)
   self.bandwidth = def.bandwidth or 2800
   self.label = def.label or "CQ"
 
+  if self.lwc then
+    self.lwc:setTag("mode." .. self.mode:upper(), true)
+  end
+
   self.isDragging = false
   self.dragMode = nil -- "move", "topHandle", "bottomHandle"
   self.dragStartY = 0
@@ -53,6 +57,23 @@ function SignalBox:init(def)
 
   self.playbackActive = false
   self.playbackX = 0
+  self.playbackOffsetSec = 0
+end
+
+function SignalBox:setMode(newMode)
+  if not newMode then return end
+  local oldTag = "mode." .. tostring(self.mode):upper()
+  self.mode = newMode
+  local newTag = "mode." .. tostring(self.mode):upper()
+  if self.lwc then
+    self.lwc:setTag(oldTag, false)
+    self.lwc:setTag(newTag, true)
+  end
+  Model.set("rx.selectedMode", self.mode)
+  local river = self.parent
+  if river and river.layout then
+    river:layout(river.props.x or 0, river.props.y or 0, river.props.w or 800, river.props.h or 450)
+  end
 end
 
 function SignalBox:cycleMode()
@@ -62,12 +83,7 @@ function SignalBox:cycleMode()
     if m == self.mode then curIdx = i; break end
   end
   local nextIdx = (curIdx % #modeList) + 1
-  self.mode = modeList[nextIdx]
-  Model.set("rx.selectedMode", self.mode)
-  local river = self.parent
-  if river and river.layout then
-    river:layout(river.props.x or 0, river.props.y or 0, river.props.w or 800, river.props.h or 450)
-  end
+  self:setMode(modeList[nextIdx])
 end
 
 function SignalBox:onEvent(event)
@@ -97,7 +113,7 @@ function SignalBox:onEvent(event)
       local w = self.props.w or 100
       local h = self.props.h or 10
 
-      -- Check if clicked on the Mode badge on the left (x: 8 to 72)
+      -- 1. Mode Badge on the left (x: 8 to 72)
       if lx >= 8 and lx <= 72 and ly >= 2 and ly <= h - 2 then
         self:cycleMode()
         Model.selectedSignalBoxIndex:set(self.boxIndex)
@@ -107,8 +123,16 @@ function SignalBox:onEvent(event)
         return true
       end
 
-      -- Chevron handle hit targets are ONLY on the right edge where chevrons are drawn (lx >= w - 55)
-      if lx >= w - 55 then
+      -- 2. "Always Live" zone near the right edge (lx >= w - 60): Chevron handles & live tuning
+      if lx >= w - 60 then
+        -- Clicking in the live zone cancels historical playback
+        if self.playbackActive then
+          self.playbackActive = false
+          if _G.audio and _G.audio.stopPlayback then
+            _G.audio.stopPlayback()
+          end
+        end
+
         if ly <= math.max(8, h * 0.45) then
           self.dragMode = "topHandle"
         elseif ly >= math.min(h - 8, h * 0.55) then
@@ -117,7 +141,29 @@ function SignalBox:onEvent(event)
           self.dragMode = "move"
         end
       else
-        -- Clicking/dragging anywhere else across the body of the SignalBox is "move" (tuning the box)
+        -- 3. Historical Audio Area: Strictly to the left of the live zone and CAD break
+        local river = self.parent
+        local historyW = w
+        local tOffset = (river and river.timeOffsetSec) or 0.0
+        local tSpan = (river and river.timeSpanSec) or 30.0
+        if river and river.timeOffsetSec and river.timeOffsetSec > 0.01 then
+          local breakW = 24
+          local pinnedW = (river.props and river.props.pinnedSliverW) or 60
+          historyW = math.max(20, w - breakW - pinnedW)
+        end
+
+        local maxHistClickX = math.min(historyW - 15, w - 60)
+        if lx >= 75 and lx <= maxHistClickX then
+          local normX = clamp(lx / historyW, 0.0, 1.0)
+          local offsetSec = tOffset + (1.0 - normX) * tSpan
+          self.playbackActive = true
+          self.playbackX = lx
+          self.playbackOffsetSec = offsetSec
+          if _G.audio and _G.audio.seekPlayback then
+            _G.audio.seekPlayback(offsetSec)
+          end
+        end
+
         self.dragMode = "move"
       end
 
@@ -281,10 +327,68 @@ function SignalBox:drawSelf()
   System.drawText(labelText, 70, clamp(h / 2 - 6, 2, h - 14), 12, { 0.95, 0.95, 0.95, 0.9 })
 
   -- Amber Playback Cursor (if time-machine playback is active)
+  if _G.audio and _G.audio.isPlaybackActive and isSelected then
+    local active = _G.audio.isPlaybackActive()
+    if active then
+      self.playbackActive = true
+      local curOffset = (_G.audio.getPlaybackOffset and _G.audio.getPlaybackOffset()) or 0.0
+      self.playbackOffsetSec = curOffset
+      local river = self.parent
+      local historyW = w
+      local tOffset = (river and river.timeOffsetSec) or 0.0
+      local tSpan = (river and river.timeSpanSec) or 30.0
+      if river and river.timeOffsetSec and river.timeOffsetSec > 0.01 then
+        local breakW = 24
+        local pinnedW = (river.props and river.props.pinnedSliverW) or 60
+        historyW = math.max(20, w - breakW - pinnedW)
+      end
+      local norm = 1.0 - clamp((curOffset - tOffset) / tSpan, 0.0, 1.0)
+      self.playbackX = norm * historyW
+    else
+      self.playbackActive = false
+    end
+  end
+
   if self.playbackActive and self.playbackX > 0 and self.playbackX < w then
     local pbR, pbG, pbB = state.hexToRgb(self.props.playbackColor or "#f59e0b")
-    System.drawLine(self.playbackX, -6, self.playbackX, h + 6, 2.0, { pbR, pbG, pbB, 1.0 })
-    System.drawCircle(self.playbackX, carrierY, 3.5, { pbR, pbG, pbB, 1.0 })
+    local px = self.playbackX
+
+    -- 1. Full height vertical amber playback line
+    System.drawLine(px, 0, px, h, 2.0, { pbR, pbG, pbB, 1.0 })
+
+    -- 2. Outward chevrons: (v) at top skirt, (^) at bottom skirt, (|) at carrier line
+    System.drawLine(px - 5, -5, px, 0, 2.0, { pbR, pbG, pbB, 1.0 })
+    System.drawLine(px + 5, -5, px, 0, 2.0, { pbR, pbG, pbB, 1.0 })
+
+    System.drawLine(px - 5, h + 5, px, h, 2.0, { pbR, pbG, pbB, 1.0 })
+    System.drawLine(px + 5, h + 5, px, h, 2.0, { pbR, pbG, pbB, 1.0 })
+
+    System.drawCircle(px, carrierY, 3.5, { pbR, pbG, pbB, 1.0 })
+
+    -- 3. Scoped Tektronix phosphor-green mini-trace riding directly on playback cursor
+    local traceHalfW = 16
+    local traceYMid = h / 2
+    local traceAmp = math.min(h * 0.35, 12)
+    local tPoints = 14
+    local lastTx, lastTy
+    local phase = (self.playbackOffsetSec or 0.0) * 12.0
+    for pt = 0, tPoints do
+      local tNorm = pt / tPoints
+      local tx = px - traceHalfW + (tNorm * traceHalfW * 2)
+      local wave = math.sin(tNorm * 4.0 * math.pi + phase) * math.cos(tNorm * 2.0 * math.pi)
+      local ty = traceYMid + (wave * traceAmp)
+      if lastTx then
+        System.drawLine(lastTx, lastTy, tx, ty, 1.5, { 0.25, 0.95, 0.45, 0.85 })
+      end
+      lastTx, lastTy = tx, ty
+    end
+
+    -- 4. Instantaneous single-bar S-meter alongside the cursor
+    local smeterW = 3
+    local smeterH = math.max(8, math.min(h - 4, 20))
+    local smeterY = clamp(carrierY - smeterH / 2, 2, h - smeterH - 2)
+    System.drawRect(px + 5, smeterY, smeterW, smeterH, { 0.1, 0.2, 0.15, 0.7 })
+    System.drawRect(px + 5, smeterY + smeterH * 0.35, smeterW, smeterH * 0.65, { 0.3, 0.9, 0.4, 0.9 })
   end
 end
 

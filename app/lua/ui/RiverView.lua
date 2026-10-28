@@ -43,9 +43,9 @@ function RiverView:init(def)
   def = def or {}
   Widget.Container.init(self, def)
 
-  self.timeSpanSec = def.timeSpan or 30.0
-  self.timeOffsetSec = def.timeOffset or 0.0
-  self.totalBufferSec = 60.0
+  self.timeSpanSec = def.timeSpanSec or def.timeSpan or 30.0
+  self.timeOffsetSec = def.timeOffsetSec or def.timeOffset or 0.0
+  self.totalBufferSec = def.totalBufferSec or def.totalBuffer or 60.0
 
   self.freqMin = def.freqMin or 14.0e6
   self.freqMax = def.freqMax or 14.35e6
@@ -101,14 +101,44 @@ function RiverView:getFreqAtY(yPx)
   return self.freqMin + (normY * fSpan)
 end
 
-function RiverView:getAutoModeForFreq(freq)
+local knownStimuli = {
+  { freq = 15.0000e6, mode = "AM",  bw = 10000, label = "WWV 15", tol = 50e3 },
+  { freq = 14.2500e6, mode = "AM",  bw = 6000,  label = "AM Beacon", tol = 6e3 },
+  { freq = 14.0750e6, mode = "CW",  bw = 500,   label = "CW Beacon", tol = 6e3 },
+  { freq = 14.0250e6, mode = "CW",  bw = 500,   label = "W1AW CQ", tol = 6e3 },
+  { freq = 14.1200e6, mode = "USB", bw = 2800,  label = "2-Tone", tol = 6e3 },
+  { freq = 14.1500e6, mode = "USB", bw = 2800,  label = "SSB Tone", tol = 6e3 },
+  { freq = 14.2000e6, mode = "USB", bw = 2800,  label = "Voice ID", tol = 12e3 },
+}
+
+function RiverView:getAutoSignalDef(freq)
+  for _, stim in ipairs(knownStimuli) do
+    local tol = stim.tol or 10e3
+    if math.abs(freq - stim.freq) <= tol then
+      return stim.mode, stim.bw, stim.label
+    end
+  end
+
+  local defaultMode = (freq >= 8.0e6) and "USB" or "LSB"
+
   if _G.bands and _G.bands.getSegmentsForSpan then
     local segs = _G.bands.getSegmentsForSpan(freq - 100, freq + 100)
     if segs and #segs > 0 and segs[1].mode then
-      return segs[1].mode
+      local m = segs[1].mode
+      if m == "SSB" or m == "PHONE" then
+        m = defaultMode
+      end
+      local bw = (m == "CW") and 500 or ((m == "AM") and 6000 or 2800)
+      return m, bw, m
     end
   end
-  return (freq > 10.0e6) and "USB" or "LSB"
+
+  return defaultMode, 2800, defaultMode
+end
+
+function RiverView:getAutoModeForFreq(freq)
+  local mode = self:getAutoSignalDef(freq)
+  return mode
 end
 
 function RiverView:cycleSignalBoxFocus(reverse)
@@ -135,18 +165,19 @@ end
 
 function RiverView:spawnSignalBox(freq)
   local newIdx = #self.signalBoxes + 1
-  local autoMode = self:getAutoModeForFreq(freq)
+  local autoMode, autoBw, autoLabel = self:getAutoSignalDef(freq)
   local newBox = self:addSignalBox({
     id = "box-" .. tostring(newIdx),
     index = newIdx,
     mode = autoMode,
     carrierFreq = freq,
-    bandwidth = (autoMode == "CW") and 500 or 2800,
-    label = "BOX " .. tostring(newIdx)
+    bandwidth = autoBw or ((autoMode == "CW") and 500 or 2800),
+    label = autoLabel or ("BOX " .. tostring(newIdx))
   })
   Model.selectedSignalBoxIndex:set(newIdx)
   Model.set("rx.VFO.activeValue", freq)
   Model.set("rx.selectedMode", autoMode)
+  Model.set("rx.bandpass.width", newBox.bandwidth)
   newBox:setFocus()
   self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
   if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
@@ -161,10 +192,11 @@ function RiverView:tuneActiveSignalBox(freq)
   end
 
   box.carrierFreq = freq
-  local autoMode = self:getAutoModeForFreq(freq)
+  local autoMode, autoBw, autoLabel = self:getAutoSignalDef(freq)
   if autoMode and autoMode ~= box.mode then
-    box.mode = autoMode
-    Model.set("rx.selectedMode", autoMode)
+    box:setMode(autoMode)
+    if autoBw then box.bandwidth = autoBw end
+    Model.set("rx.bandpass.width", box.bandwidth)
   end
   Model.set("rx.VFO.activeValue", freq)
   box:setFocus()
@@ -286,50 +318,60 @@ function RiverView:drawSelf()
   local isSplit = (self.timeOffsetSec > 0.01)
 
   -- 1. Main River Texture Pass
+  local breakW = 24
+  local historyW = isSplit and math.max(20, w - breakW - pinnedW) or w
+
   if riverEngine and riverEngine.renderRiver then
     if not isSplit then
       -- Continuous single River canvas flush to NOW line
       riverEngine.renderRiver(ox, oy + canvasY, w, canvasH,
                               1.0, 0.0, fMinNorm, fMaxNorm)
     else
-      -- Split River: History Region + CAD Break Gap + Live Pinned Sliver
-      local breakW = 24
-      local historyW = math.max(20, w - breakW - pinnedW)
+      -- Split River: Scrolled History Region + Real-time Live Pinned Region (1-2s sliver)
       local histOffsetNorm = clamp(self.timeOffsetSec / self.totalBufferSec, 0.0, 0.8)
       local histSpanNorm = clamp(self.timeSpanSec / self.totalBufferSec, 0.1, 1.0 - histOffsetNorm)
 
-      -- Left: Scrolled History Region
       riverEngine.renderRiver(ox, oy + canvasY, historyW, canvasH,
                               histSpanNorm, histOffsetNorm, fMinNorm, fMaxNorm)
 
-      -- Right: Real-time Live Pinned Region (1-2s sliver)
       local liveSpanNorm = clamp(2.0 / self.totalBufferSec, 0.02, 0.1)
       riverEngine.renderRiver(ox + historyW + breakW, oy + canvasY, pinnedW, canvasH,
                               liveSpanNorm, 0.0, fMinNorm, fMaxNorm)
+    end
+  end
 
-      -- Middle: CAD-style Discontinuity Break Line
-      local bx = historyW + breakW / 2
-      local cadColor = self.props.cadBreakColor or { 0.75, 0.8, 0.9, 0.75 }
-      local zigzagStep = 18
-      local zigzagAmp = 6
-      local curY = canvasY
-      local sign = 1
+  -- CAD Break Gap and Jump Scroll for Split River
+  if isSplit then
+    local bx = historyW + breakW / 2
+    local cadColor = self.props.cadBreakColor or { 0.75, 0.8, 0.9, 0.75 }
+    local zigzagStep = 18
+    local zigzagAmp = 6
+    local curY = canvasY
+    local sign = 1
 
-      while curY < canvasY + canvasH do
-        local nextY = math.min(canvasY + canvasH, curY + zigzagStep)
-        local curX = bx + (sign * zigzagAmp)
-        local nextX = bx - (sign * zigzagAmp)
-        System.drawLine(curX, curY, nextX, nextY, 1.5, cadColor)
-        curY = nextY
-        sign = -sign
+    while curY < canvasY + canvasH do
+      local nextY = math.min(canvasY + canvasH, curY + zigzagStep)
+      local curX = bx + (sign * zigzagAmp)
+      local nextX = bx - (sign * zigzagAmp)
+      System.drawLine(curX, curY, nextX, nextY, 1.5, cadColor)
+      curY = nextY
+      sign = -sign
+    end
+
+    -- Dimension line across CAD gap in Top Ruler
+    local gapSec = math.floor(self.timeOffsetSec + 0.5)
+    local dimText = string.format("|<-- %ds -->|", gapSec)
+    local dimColor = self.props.cadDimensionColor or { 0.95, 0.8, 0.25, 0.9 }
+    local dw = System.measureText(dimText, 11) or (#dimText * 8)
+    System.drawText(dimText, bx - dw / 2, 4, 11, dimColor)
+
+    -- 50% Jump-Scroll when playback line reaches right boundary of history
+    for _, box in ipairs(self.signalBoxes or {}) do
+      if box.playbackActive and box.playbackX and box.playbackX >= historyW - 10 then
+        local RiverBehaviors = require("ui.RiverBehaviors")
+        self.timeOffsetSec = RiverBehaviors.jumpScroll.calculateJumpTarget(self.timeOffsetSec, self.timeSpanSec, 0.5)
+        break
       end
-
-      -- Dimension line across CAD gap in Top Ruler
-      local gapSec = math.floor(self.timeOffsetSec + 0.5)
-      local dimText = string.format("|<-- %ds -->|", gapSec)
-      local dimColor = self.props.cadDimensionColor or { 0.95, 0.8, 0.25, 0.9 }
-      local dw = System.measureText(dimText, 11) or (#dimText * 8)
-      System.drawText(dimText, bx - dw / 2, 4, 11, dimColor)
     end
   end
 

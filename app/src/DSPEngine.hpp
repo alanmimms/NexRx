@@ -70,6 +70,12 @@ public:
   Demodulator& getDemod() { return demod; }
   BasebandFilter& getFilter() { return basebandFilter; }
 
+  // Time Machine Historical Audio Playback
+  void seekPlayback(float offsetSec);
+  void stopPlayback();
+  bool isPlaybackActive() const { return playbackActive.load(); }
+  float getPlaybackOffsetSec() const;
+
 private:
   void fftInPlace(float* re, float* im, size_t n);
 
@@ -137,4 +143,10 @@ private:
   BasebandFilter basebandFilter{48000};
   DSPDiagnostics dspDiag;
   RateAdaptiveBuffer<float> audioBuffer;
+
+  static constexpr size_t audioHistoryCapacity = 48000 * 60;
+  std::vector<float> audioHistoryRing;
+  std::atomic<uint64_t> audioHistoryWritePos{0};
+  std::atomic<uint64_t> playbackReadPos{0};
+  std::atomic<bool> playbackActive{false};
 };

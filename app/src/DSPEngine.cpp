@@ -16,6 +16,7 @@ DSPEngine::DSPEngine() {
   spectrumData.assign(FFT_SIZE, -100.0f);
   audioBuffer.configure(nexrx::BufferConfig{32768});
   demod.setSampleRate(48000.0f);
+  audioHistoryRing.assign(audioHistoryCapacity, 0.0f);
   
   // Default alignment for Dual-OSD
   staticCal[0].alignR = 1.0f; staticCal[0].alignI = 0.0f;
@@ -176,7 +177,23 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     dspDiag.signalRms.store(demod.getSignalLevelRMS());
     if (std::abs(aOut) > dspDiag.maxAudio.load()) dspDiag.maxAudio.store(std::abs(aOut));
 
-    audioBuffer.write(aOut);
+    uint64_t wPos = audioHistoryWritePos.load(std::memory_order_relaxed);
+    audioHistoryRing[wPos % audioHistoryCapacity] = aOut;
+    audioHistoryWritePos.store(wPos + 1, std::memory_order_release);
+
+    if (playbackActive.load(std::memory_order_acquire)) {
+      uint64_t rPos = playbackReadPos.load(std::memory_order_relaxed);
+      if (rPos < wPos) {
+        float histSample = audioHistoryRing[rPos % audioHistoryCapacity];
+        playbackReadPos.store(rPos + 1, std::memory_order_release);
+        audioBuffer.write(histSample);
+      } else {
+        playbackActive.store(false, std::memory_order_release);
+        audioBuffer.write(aOut);
+      }
+    } else {
+      audioBuffer.write(aOut);
+    }
   }
   totalSamplesProcessed++;
   dspDiag.framesProcessed++;
@@ -233,4 +250,32 @@ void DSPEngine::computeSpectrum() {
   if (!avgI || avgS.size() != FFT_SIZE) { avgS = lS; avgI = true; } 
   else { for (size_t k=0; k<FFT_SIZE; ++k) avgS[k] = 0.6f*lS[k] + 0.4f*avgS[k]; }
   { std::lock_guard<std::mutex> l(spectrumMutex); spectrumData = avgS; }
+}
+
+void DSPEngine::seekPlayback(float offsetSec) {
+  if (offsetSec <= 0.0f) {
+    stopPlayback();
+    return;
+  }
+  uint64_t curW = audioHistoryWritePos.load(std::memory_order_acquire);
+  uint64_t maxAvailable = std::min<uint64_t>(curW, audioHistoryCapacity - 1);
+  uint64_t offsetSamples = static_cast<uint64_t>(offsetSec * outputAudioRate);
+  if (offsetSamples > maxAvailable) {
+    offsetSamples = maxAvailable;
+  }
+  audioBuffer.clear();
+  playbackReadPos.store(curW - offsetSamples, std::memory_order_release);
+  playbackActive.store(true, std::memory_order_release);
+}
+
+void DSPEngine::stopPlayback() {
+  playbackActive.store(false, std::memory_order_release);
+}
+
+float DSPEngine::getPlaybackOffsetSec() const {
+  if (!playbackActive.load(std::memory_order_acquire)) return 0.0f;
+  uint64_t curW = audioHistoryWritePos.load(std::memory_order_relaxed);
+  uint64_t curR = playbackReadPos.load(std::memory_order_relaxed);
+  if (curR >= curW) return 0.0f;
+  return static_cast<float>(curW - curR) / static_cast<float>(outputAudioRate);
 }

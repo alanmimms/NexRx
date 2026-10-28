@@ -390,6 +390,156 @@ function Tests.test_spacer_non_interactive()
   assert_true(spacer.isMouseOver ~= true, "spacer is not marked as mouse over")
 end
 
+function Tests.test_auto_demod_from_stimuli()
+  print("test_auto_demod_from_stimuli")
+  local rv = RiverView({
+    freqMin = 14.0e6,
+    freqMax = 15.5e6,
+    w = 800,
+    h = 450
+  })
+
+  -- 15.000 MHz -> WWV 15 should be AM
+  local modeWwv, bwWwv, labelWwv = rv:getAutoSignalDef(15.000e6)
+  assert_eq("AM", modeWwv, "15 MHz WWV mode is AM")
+  assert_eq(10000, bwWwv, "15 MHz WWV bandwidth is 10000")
+  assert_eq("WWV 15", labelWwv, "15 MHz WWV label is WWV 15")
+
+  -- 14.250 MHz -> AM Beacon
+  local modeAm, bwAm = rv:getAutoSignalDef(14.250e6)
+  assert_eq("AM", modeAm, "14.25 MHz mode is AM")
+  assert_eq(6000, bwAm, "14.25 MHz bandwidth is 6000")
+
+  -- 14.025 MHz -> CW
+  local modeCw, bwCw = rv:getAutoSignalDef(14.025e6)
+  assert_eq("CW", modeCw, "14.025 MHz mode is CW")
+  assert_eq(500, bwCw, "14.025 MHz bandwidth is 500")
+
+  -- 14.200 MHz -> USB Voice ID
+  local modeUsb, bwUsb = rv:getAutoSignalDef(14.200e6)
+  assert_eq("USB", modeUsb, "14.200 MHz mode is USB")
+  assert_eq(2800, bwUsb, "14.200 MHz bandwidth is 2800")
+
+  -- 14.275 MHz image signal -> USB (above 8 MHz and outside AM beacon tolerance)
+  local modeImg, bwImg = rv:getAutoSignalDef(14.275e6)
+  assert_eq("USB", modeImg, "14.275 MHz voice beacon image is USB, not AM")
+  assert_eq(2800, bwImg, "14.275 MHz bandwidth is 2800")
+
+  -- Below 8 MHz -> LSB
+  local mode40m = rv:getAutoSignalDef(7.150e6)
+  assert_eq("LSB", mode40m, "below 8 MHz defaults to LSB")
+
+  -- Above 8 MHz -> USB
+  local mode17m = rv:getAutoSignalDef(18.100e6)
+  assert_eq("USB", mode17m, "above 8 MHz defaults to USB")
+
+  -- Spawning a box at 15.0 MHz produces AM box
+  local boxWwv = rv:spawnSignalBox(15.000e6)
+  assert_eq("AM", boxWwv.mode, "spawned box at 15MHz is AM")
+  assert_eq(10000, boxWwv.bandwidth, "spawned box at 15MHz has 10kHz bandwidth")
+end
+
+function Tests.test_signalbox_mode_styling()
+  print("test_signalbox_mode_styling")
+  setbox.rule {
+    id = "test-sigbox-cw-style",
+    tags = { "widget.SignalBox", "mode.CW" },
+    apply = { background = "#3b82f6" }
+  }
+  setbox.rule {
+    id = "test-sigbox-usb-style",
+    tags = { "widget.SignalBox", "mode.USB" },
+    apply = { background = "#10b981" }
+  }
+
+  local box = SignalBox({ mode = "CW" })
+  assert_eq("CW", box.mode, "box initial mode CW")
+  assert_eq("#3b82f6", box.props.background, "CW box resolved background from mode tag")
+
+  box:setMode("USB")
+  assert_eq("USB", box.mode, "box updated to USB")
+  assert_eq("#10b981", box.props.background, "USB box dynamically updated background from mode tag")
+end
+
+function Tests.test_gutter_left_pile_centering()
+  print("test_gutter_left_pile_centering")
+  local gutter = GutterLeft({
+    freqMin = 14.1e6,
+    freqMax = 14.2e6,
+    boxes = {
+      { carrierFreq = 14.35e6, mode = "USB" },
+      { carrierFreq = 14.05e6, mode = "CW" },
+    },
+    w = 68,
+    h = 300,
+  })
+  gutter:layout(0, 0, 68, 300)
+
+  local centeredFreq = nil
+  gutter.onCenterFrequency = function(self, targetFreq)
+    centeredFreq = targetFreq
+  end
+
+  gutter:onTopPileClick()
+  assert_eq(14.35e6, centeredFreq, "clicking top pile centers on 14.35 MHz station")
+
+  gutter:onBottomPileClick()
+  assert_eq(14.05e6, centeredFreq, "clicking bottom pile centers on 14.05 MHz station")
+end
+
+function Tests.test_time_machine_playback_cursor()
+  print("test_time_machine_playback_cursor")
+  local rv = RiverView({
+    freqMin = 14.0e6,
+    freqMax = 14.35e6,
+    timeSpanSec = 30.0,
+    timeOffsetSec = 0.0,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box = rv:spawnSignalBox(14.2e6)
+  box:layout(0, 50, 800, 30)
+
+  local seekOffset = nil
+  _G.audio = _G.audio or {}
+  _G.audio.seekPlayback = function(off) seekOffset = off end
+
+  -- Click in historical area (e.g. x = 200 on an 800px wide box)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 200, y = 15 })
+  assert_true(box.playbackActive, "playback active after clicking historical area")
+  assert_eq(200, box.playbackX, "playback cursor placed at click X")
+  assert_true(seekOffset ~= nil and seekOffset > 20.0, "audio.seekPlayback invoked with past offset")
+
+  -- Click in always-live chevron area near right edge (x = 760 on 800px box)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 15 })
+  assert_true(not box.playbackActive, "clicking in always-live right edge zone cancels playback")
+  assert_eq("move", box.dragMode, "clicking in live zone tunes or drags chevrons without seeking history")
+end
+
+function Tests.test_jump_scroll_on_cad_break()
+  print("test_jump_scroll_on_cad_break")
+  local rv = RiverView({
+    freqMin = 14.0e6,
+    freqMax = 14.35e6,
+    timeSpanSec = 20.0,
+    timeOffsetSec = 15.0,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box = rv:spawnSignalBox(14.2e6)
+  box:layout(0, 50, 800, 30)
+
+  -- In split mode, historyW is w - breakW - pinnedW = 800 - 24 - 60 = 716
+  box.playbackActive = true
+  box.playbackX = 712 -- >= historyW - 10
+
+  rv:drawSelf()
+  -- Jump scroll should have triggered: timeOffsetSec reduced by 50% of 20s (10s) -> 15 - 10 = 5s
+  assert_eq(5.0, rv.timeOffsetSec, "jump scroll pulled viewport forward by 50% of history span")
+end
+
 -- =============================================================================
 -- Test Suite Runner
 -- =============================================================================
@@ -411,6 +561,11 @@ function Tests.runAll()
   Tests.test_decoder_track_lod()
   Tests.test_river_view_tab_cycling_and_spawning()
   Tests.test_spacer_non_interactive()
+  Tests.test_auto_demod_from_stimuli()
+  Tests.test_signalbox_mode_styling()
+  Tests.test_gutter_left_pile_centering()
+  Tests.test_time_machine_playback_cursor()
+  Tests.test_jump_scroll_on_cad_break()
 
   print(string.format("\nResults: %d passed, %d failed\n", passed, failed))
   return failed == 0

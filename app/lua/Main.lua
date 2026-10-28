@@ -335,10 +335,24 @@ function init()
       freqMin = initFMin,
       freqMax = initFMax,
       boxes = riverView.signalBoxes,
-      metrics = { stick = Stick.TLB, prefW = 68, flexH = 1 }
+      metrics = { stick = Stick.TLB, prefW = 76, flexH = 1 }
    }
 
-   local function updateFrequencyRange(fMin, fMax)
+   local lastHwCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+   Model.spectrumCenterFreq:watch(function(newCenter)
+      local deltaHz = newCenter - lastHwCenter
+      lastHwCenter = newCenter
+      if math.abs(deltaHz) > 1.0 then
+         if _G.river and _G.river.shiftFrequency then
+            _G.river.shiftFrequency(deltaHz, _G.sampleRate or 384e3)
+         end
+         if riverView and riverView.layout then
+            riverView:layout(riverView.props.x or 0, riverView.props.y or 0, riverView.props.w or 800, riverView.props.h or 450)
+         end
+      end
+   end)
+
+   local function updateFrequencyRange(fMin, fMax, isFinal)
       riverView.freqMin = fMin
       riverView.freqMax = fMax
       riverView:layout(riverView.props.x or 0, riverView.props.y or 0, riverView.props.w or 800, riverView.props.h or 450)
@@ -349,6 +363,17 @@ function init()
       gutterLeft.props.freqMin = fMin
       gutterLeft.props.freqMax = fMax
 
+      local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+      local span = _G.sampleRate or 384e3
+      local hwMin = curCenter - span * 0.5
+      local hwMax = curCenter + span * 0.5
+
+      -- Only retune hardware LO when visible frequency window moves outside current hardware bandwidth
+      if fMin < hwMin or fMax > hwMax then
+         local visCenter = (fMin + fMax) / 2
+         Model.spectrumCenterFreq:set(visCenter)
+      end
+
       local fMinNorm, fMaxNorm = riverView:getNormalizedFreqRange()
       liveTrace.props.freqMinNorm = fMinNorm
       liveTrace.props.freqMaxNorm = fMaxNorm
@@ -358,29 +383,62 @@ function init()
       gutterLeft.activeBoxes = boxes
    end
 
-   riverView.onFrequencyChange = function(self, fMin, fMax)
-      updateFrequencyRange(fMin, fMax)
+   riverView.onFrequencyChange = function(self, fMin, fMax, isFinal)
+      updateFrequencyRange(fMin, fMax, isFinal)
    end
 
-   freqRuler.onFrequencyChange = function(self, fMin, fMax)
-      updateFrequencyRange(fMin, fMax)
+   freqRuler.onFrequencyChange = function(self, fMin, fMax, isFinal)
+      updateFrequencyRange(fMin, fMax, isFinal)
    end
 
    freqRuler.onSelectBand = function(self, bandName)
       local b = _G.bands.getBand(bandName)
       if b then
-         updateFrequencyRange(b.lowerEdge, b.upperEdge)
+         updateFrequencyRange(b.lowerEdge, b.upperEdge, true)
       end
    end
 
-   gutterLeft.onTopPileClick = function(self)
+   gutterLeft.onCenterFrequency = function(self, targetFreq)
       local span = riverView.freqMax - riverView.freqMin
-      updateFrequencyRange(riverView.freqMin + span * 0.5, riverView.freqMax + span * 0.5)
+      updateFrequencyRange(targetFreq - span * 0.5, targetFreq + span * 0.5, true)
+   end
+
+   gutterLeft.onTopPileClick = function(self)
+      local targetFreq = nil
+      local minAbove = math.huge
+      for _, box in ipairs(self.topPileBoxes or {}) do
+         local f = box.carrierFreq or box.freq or 0
+         if f < minAbove then minAbove = f; targetFreq = f end
+      end
+      for _, a in ipairs(self.topPileAlerts or {}) do
+         local f = a.freq or 0
+         if f < minAbove then minAbove = f; targetFreq = f end
+      end
+      if targetFreq then
+         self:onCenterFrequency(targetFreq)
+      else
+         local span = riverView.freqMax - riverView.freqMin
+         updateFrequencyRange(riverView.freqMin + span * 0.5, riverView.freqMax + span * 0.5, true)
+      end
    end
 
    gutterLeft.onBottomPileClick = function(self)
-      local span = riverView.freqMax - riverView.freqMin
-      updateFrequencyRange(riverView.freqMin - span * 0.5, riverView.freqMax - span * 0.5)
+      local targetFreq = nil
+      local maxBelow = -math.huge
+      for _, box in ipairs(self.bottomPileBoxes or {}) do
+         local f = box.carrierFreq or box.freq or 0
+         if f > maxBelow then maxBelow = f; targetFreq = f end
+      end
+      for _, a in ipairs(self.bottomPileAlerts or {}) do
+         local f = a.freq or 0
+         if f > maxBelow then maxBelow = f; targetFreq = f end
+      end
+      if targetFreq then
+         self:onCenterFrequency(targetFreq)
+      else
+         local span = riverView.freqMax - riverView.freqMin
+         updateFrequencyRange(riverView.freqMin - span * 0.5, riverView.freqMax - span * 0.5, true)
+      end
    end
 
    gutterLeft.onSelectBox = function(self, idx)
@@ -547,8 +605,15 @@ function update(dt)
          -- CW signal at 14.025 MHz
          addPeak(14.025e6, -48, 2)
 
-         -- SSB phone signal at 14.225 MHz
+         -- SSB phone signal at 14.200 and 14.225 MHz
+         addPeak(14.200e6, -46, 6)
          addPeak(14.225e6, -62, 8)
+
+         -- AM beacon on 14.250 MHz
+         addPeak(14.250e6, -50, 8)
+
+         -- WWV 15 MHz AM signal
+         addPeak(15.000e6, -45, 10)
 
          -- Tuned VFO carrier peak
          local vfo = Model.rx.VFO.activeValue:get() or 14.240e6

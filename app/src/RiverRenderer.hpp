@@ -50,6 +50,13 @@ public:
   void horizontalShift(int bins);
 
   /**
+   * @brief Shift past history rows when LO changes to preserve signal alignment
+   * @param deltaHz Frequency shift in Hz
+   * @param sampleRate Total capture sample rate in Hz
+   */
+  void shiftFrequency(float deltaHz, float sampleRate);
+
+  /**
    * @brief Render The River at the specified viewport
    * @param x X screen position
    * @param y Y screen position
