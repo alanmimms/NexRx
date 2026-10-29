@@ -203,29 +203,29 @@ function Tests.test_signalbox_river_geometry()
   assert_eq("USB", box.mode, "box mode")
   assert_eq(2800, box.bandwidth, "box bandwidth")
 
-  -- Dragging top chevron handle adjusts bandwidth
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 4 })
+  -- Dragging top chevron handle ([-15, 0] above box top) adjusts bandwidth
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = -5 })
   assert_eq("topHandle", box.dragMode, "top chevron handle engaged")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = -5 })
+
+  -- Clicking across the body of the box (even inside right side) engages "move", NOT chevron handles
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 4 })
+  assert_eq("move", box.dragMode, "clicking inside box body engages move mode")
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 4 })
 
-  -- Clicking across the body of the box engages "move", NOT chevron handles
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 400, y = 36 })
-  assert_eq("move", box.dragMode, "clicking body of the box engages move mode")
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 400, y = 36 })
-
-  -- Dragging bottom chevron handle moves 1:1 stuck to the mouse cursor
+  -- Dragging bottom chevron handle ([h, h + 15] below box bottom) moves 1:1 stuck to the mouse cursor
   box.mode = "USB"
   box.bandwidth = 2800
   box.carrierFreq = 14.240e6
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 36 })
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 45 })
   assert_eq("bottomHandle", box.dragMode, "bottom chevron handle engaged")
-  box:onEvent({ type = "mouseMotion", x = 760, y = 46 }) -- moved down 10px (100 Hz/px default when no parent)
+  box:onEvent({ type = "mouseMotion", x = 760, y = 55 }) -- moved down 10px (100 Hz/px default when no parent)
   assert_eq(3800, box.bandwidth, "1:1 mouse tracking: 10px moves bandwidth by 1000 Hz to 3800 Hz")
   assert_close(14.2428e6 - 3800, box.carrierFreq, 1.0, "carrier lowered by 1000 Hz while upper skirt anchored")
-  box:onEvent({ type = "mouseMotion", x = 760, y = 36 }) -- moved back up 10px
+  box:onEvent({ type = "mouseMotion", x = 760, y = 45 }) -- moved back up 10px
   assert_eq(2800, box.bandwidth, "moving cursor back restores exact initial bandwidth")
   assert_close(14.240e6, box.carrierFreq, 1.0, "moving cursor back restores exact carrier frequency")
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 36 })
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 45 })
 
   -- Clicking mode badge cycles mode
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 20, y = 20 })
@@ -689,10 +689,12 @@ function Tests.test_history_drag_threshold_parametric_locking()
   -- Mouse down at (200, 200)
   rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 200, y = 200 })
 
-  -- Dragging vertically with 15px horizontal jitter: lock to vertical pan
+  -- Dragging vertically with 15px horizontal jitter: neither vertical frequency scrolling nor horizontal scrub occurs
   rv:onEvent({ type = "mouseMotion", x = 215, y = 250, gx = 215, gy = 250 })
-  assert_eq("vertical", rv.dragAxis, "gesture locked to vertical axis")
-  assert_eq(0.0, rv.timeOffsetSec, "timeOffsetSec strictly unchanged during vertical pan with jitter")
+  assert_eq(nil, rv.dragAxis, "vertical drag in river never locks vertical axis")
+  assert_eq(14.0e6, rv.freqMin, "freqMin strictly unchanged during vertical drag in river")
+  assert_eq(14.35e6, rv.freqMax, "freqMax strictly unchanged during vertical drag in river")
+  assert_eq(0.0, rv.timeOffsetSec, "timeOffsetSec strictly unchanged below 40px horizontal threshold")
 
   -- Release drag
   rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 215, y = 250 })
@@ -710,30 +712,18 @@ function Tests.test_river_vertical_scroll_is_final()
   local rv = RiverView({ w = 800, h = 450, freqMin = 14.0e6, freqMax = 14.35e6 })
   rv:layout(0, 0, 800, 450)
 
-  local motionEvents = {}
-  local releaseEvents = {}
-
-  rv.onFrequencyChange = function(self, fMin, fMax, isFinal)
-    if isFinal then
-      table.insert(releaseEvents, { fMin = fMin, fMax = fMax, isFinal = isFinal })
-    else
-      table.insert(motionEvents, { fMin = fMin, fMax = fMax, isFinal = isFinal })
-    end
+  local freqEvents = 0
+  rv.onFrequencyChange = function()
+    freqEvents = freqEvents + 1
   end
 
-  -- Mouse down at (200, 200)
+  -- Mouse down and vertical drag in River area MUST NEVER cause vertical frequency scrolling
   rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 200, y = 200 })
-
-  -- Vertical drag motion: should report isFinal == false
   rv:onEvent({ type = "mouseMotion", x = 200, y = 240, gx = 200, gy = 240 })
-  assert_eq(1, #motionEvents, "motion event recorded with isFinal=false")
-  assert_eq(false, motionEvents[1].isFinal, "motion event has isFinal false")
-  assert_eq(0, #releaseEvents, "no final events during dragging")
-
-  -- Mouse up release: should report isFinal == true
   rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 200, y = 240 })
-  assert_eq(1, #releaseEvents, "release event recorded with isFinal=true")
-  assert_eq(true, releaseEvents[1].isFinal, "release event has isFinal true")
+  assert_eq(0, freqEvents, "dragging vertically in river area never triggers frequency scroll")
+  assert_eq(14.0e6, rv.freqMin, "freqMin unchanged after vertical drag in river")
+  assert_eq(14.35e6, rv.freqMax, "freqMax unchanged after vertical drag in river")
 end
 
 function Tests.test_zoom_out_hardware_lo_stability()
@@ -1066,63 +1056,63 @@ function Tests.test_signalbox_chevron_drag_modifier_snapping()
   box:layout(0, 50, 800, 30)
 
   -- Initial USB: lowFreq = 14.200 MHz, highFreq = 14.2028 MHz
-  -- 1. Test top chevron drag with Shift (delta = 1 kHz)
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 4 })
+  -- 1. Test top chevron drag (in [-15, 0]) with Shift (delta = 1 kHz)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = -5 })
   assert_eq("topHandle", box.dragMode, "top chevron handle engaged")
   assert_eq(14202800, box.currentDragFreq, "initial drag frequency is 14202800 Hz")
 
   -- First motion UP (decreasing Y) with Shift: snaps in direction of motion to nearest multiple of 1 kHz
-  box:onEvent({ type = "mouseMotion", x = 760, y = 2, modifiers = { shift = true } })
+  box:onEvent({ type = "mouseMotion", x = 760, y = -7, modifiers = { shift = true } })
   assert_eq(14203000, box.currentDragFreq, "snapped UP to nearest 1 kHz multiple (14203000 Hz)")
   assert_eq(1000, box.dragActiveDelta, "dragActiveDelta is 1000 Hz")
   assert_eq(0, box.currentDragFreq % 1000, "currentDragFreq is integral multiple of 1 kHz")
 
   -- Subsequent motion UP with Shift: advances in 1 kHz increments and stays on multiples
-  box:onEvent({ type = "mouseMotion", x = 760, y = -6, modifiers = { shift = true } })
+  box:onEvent({ type = "mouseMotion", x = 760, y = -15, modifiers = { shift = true } })
   assert_eq(14204000, box.currentDragFreq, "stepped UP by 1 kHz to 14204000 Hz")
   assert_eq(0, box.currentDragFreq % 1000, "stays on integral multiple of 1 kHz during subsequent motion")
 
   -- 2. Switch modifier mid-drag to Ctrl (delta = 100 Hz), moving DOWN (increasing Y)
-  box:onEvent({ type = "mouseMotion", x = 760, y = -4, modifiers = { ctrl = true } })
+  box:onEvent({ type = "mouseMotion", x = 760, y = -13, modifiers = { ctrl = true } })
   assert_eq(14203900, box.currentDragFreq, "mid-drag switch to Ctrl snaps DOWN to nearest 100 Hz multiple (14203900 Hz)")
   assert_eq(100, box.dragActiveDelta, "dragActiveDelta updated to 100 Hz")
   assert_eq(0, box.currentDragFreq % 100, "currentDragFreq is integral multiple of 100 Hz")
 
   -- 3. Switch modifier mid-drag to Both Shift + Ctrl (delta = 10 kHz), moving UP (decreasing Y)
-  box:onEvent({ type = "mouseMotion", x = 760, y = -6, modifiers = { shift = true, ctrl = true } })
+  box:onEvent({ type = "mouseMotion", x = 760, y = -15, modifiers = { shift = true, ctrl = true } })
   assert_eq(14210000, box.currentDragFreq, "mid-drag switch to Shift+Ctrl snaps UP to nearest 10 kHz multiple (14210000 Hz)")
   assert_eq(10000, box.dragActiveDelta, "dragActiveDelta updated to 10 kHz")
   assert_eq(0, box.currentDragFreq % 10000, "currentDragFreq is integral multiple of 10 kHz")
 
   -- Subsequent motion UP with Shift + Ctrl: advances by 10 kHz
-  box:onEvent({ type = "mouseMotion", x = 760, y = -14, modifiers = { shift = true, ctrl = true } })
+  box:onEvent({ type = "mouseMotion", x = 760, y = -23, modifiers = { shift = true, ctrl = true } })
   assert_eq(14220000, box.currentDragFreq, "stepped UP by 10 kHz to 14220000 Hz")
   assert_eq(0, box.currentDragFreq % 10000, "stays on integral multiple of 10 kHz")
 
   -- 4. Release mouse button to finish top chevron drag
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = -14 })
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = -23 })
   assert_true(not box.isDragging, "dragging finished")
 
-  -- 5. Test bottom chevron drag with Ctrl (delta = 100 Hz)
+  -- 5. Test bottom chevron drag (in [h, h + 15] -> [30, 45]) with Ctrl (delta = 100 Hz)
   -- Reset box carrier to 14.200 MHz
   box.carrierFreq = 14.2e6
   box.bandwidth = 2800
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 26 })
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 35 })
   assert_eq("bottomHandle", box.dragMode, "bottom chevron handle engaged")
   assert_eq(14200000, box.currentDragFreq, "initial bottom drag frequency is carrier (14200000 Hz)")
 
   -- Move DOWN (increasing Y) with Ctrl: snaps DOWN in direction of motion to nearest 100 Hz multiple
-  box:onEvent({ type = "mouseMotion", x = 760, y = 28, modifiers = { ctrl = true } })
+  box:onEvent({ type = "mouseMotion", x = 760, y = 37, modifiers = { ctrl = true } })
   assert_eq(14199900, box.currentDragFreq, "snapped DOWN to nearest 100 Hz multiple (14199900 Hz)")
   assert_eq(100, box.dragActiveDelta, "dragActiveDelta is 100 Hz")
   assert_eq(0, box.currentDragFreq % 100, "currentDragFreq is integral multiple of 100 Hz")
 
   -- Subsequent motion DOWN with Ctrl: steps down by 100 Hz
-  box:onEvent({ type = "mouseMotion", x = 760, y = 36, modifiers = { ctrl = true } })
+  box:onEvent({ type = "mouseMotion", x = 760, y = 45, modifiers = { ctrl = true } })
   assert_eq(14199800, box.currentDragFreq, "stepped DOWN by 100 Hz to 14199800 Hz")
   assert_eq(0, box.currentDragFreq % 100, "stays on integral multiple of 100 Hz")
 
-  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 36 })
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 45 })
 end
 
 function Tests.test_scroll_past_passband_advances_150k()
@@ -1139,59 +1129,59 @@ function Tests.test_scroll_past_passband_advances_150k()
   rv:layout(0, 0, 800, 450)
   rv.hwCenterFreq = 14.25e6
 
-  -- Start vertical drag on River canvas
+  -- 1. Dragging vertically in River area MUST NEVER scroll frequency or move passband
   rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 400, y = 200 })
-  assert_true(rv.isNavigating, "navigation active")
+  rv:onEvent({ type = "mouseMotion", x = 400, y = 50 })
+  rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 400, y = 50 })
+  assert_eq(14.25e6, Model.spectrumCenterFreq:peek(), "dragging in River area never scrolls passband")
+  assert_eq(14.10e6, rv.freqMin, "rv.freqMin invariant during River vertical drag")
+  assert_eq(14.40e6, rv.freqMax, "rv.freqMax invariant during River vertical drag")
 
-  -- 1. Small drag UP of only 5 pixels beyond edge: must clamp at boundary and NOT skip LO (deliberate 20px threshold)
-  rv:onEvent({ type = "mouseMotion", x = 400, y = 195 })
-  assert_eq(14.25e6, Model.spectrumCenterFreq:peek(), "hardware passband stays invariant during small sub-threshold drag")
-  assert_true(rv.freqMax <= 14.40e6, "freqMax clamped at upper edge of current passband")
+  -- 2. Scrolling the passband from one 300kHz location to the next is done by dragging the FrequencyRuler
+  local ruler = FrequencyRuler({
+    freqMin = 14.10e6,
+    freqMax = 14.40e6,
+    w = 60,
+    h = 450,
+  })
+  ruler:layout(0, 0, 60, 450)
 
-  -- 2. Deliberate drag UP exceeding 20px threshold (y = 100):
-  -- Advances to next 150 kHz boundary (14.25 + 0.15 = 14.40 MHz)
-  rv:onEvent({ type = "mouseMotion", x = 400, y = 100 })
-  assert_eq("vertical", rv.dragAxis, "drag axis locked to vertical")
-  assert_eq(14.40e6, Model.spectrumCenterFreq:peek(), "hardware passband stepped to next 150 kHz boundary (14.40 MHz)")
-  assert_eq(14.40e6, rv.hwCenterFreq, "RiverView hwCenterFreq updated to 14.40 MHz")
-  assert_close(14.25e6, rv.freqMin, 1.0, "new passband starts at 14.25 MHz")
-  assert_close(14.55e6, rv.freqMax, 1.0, "new passband spans to 14.55 MHz")
+  -- Start vertical drag on FrequencyRuler at gy = 200
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 30, y = 200, gy = 200 })
 
-  -- 3. Deliberate drag DOWN exceeding 20px threshold (y = 500):
-  -- Retreats to next 150 kHz boundary below (14.40 - 0.15 = 14.25 MHz)
-  rv:onEvent({ type = "mouseMotion", x = 400, y = 500 })
-  assert_true(Model.spectrumCenterFreq:peek() <= 14.25e6, "hardware passband moved down to next lower 150 kHz boundary")
-  assert_true(rv.freqMin <= 14.10e6, "freqMin spans into lower passband")
+  -- Small drag UP of only 5 pixels (gy = 195): must NOT skip LO (deliberate 20px threshold)
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 195, gy = 195 })
+  assert_eq(14.25e6, Model.spectrumCenterFreq:peek(), "hardware passband stays invariant during sub-threshold ruler drag")
 
-  -- 4. Limits testing: bottom edge never below 1.8 MHz, top edge never above 30 MHz
-  rv.hwCenterFreq = 1.95e6
+  -- Deliberate drag UP exceeding 20px threshold (gy = 175): advances to next 150 kHz boundary (14.40 MHz)
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 175, gy = 175 })
+  assert_close(14.40e6, Model.spectrumCenterFreq:peek(), 1.0, "hardware passband stepped to next 150 kHz boundary (14.40 MHz)")
+  assert_close(14.25e6, ruler.props.freqMin, 1.0, "new passband starts at 14.25 MHz")
+  assert_close(14.55e6, ruler.props.freqMax, 1.0, "new passband spans to 14.55 MHz")
+
+  -- Deliberate drag DOWN exceeding 20px threshold (gy = 200): retreats to 14.25 MHz
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 200, gy = 200 })
+  assert_close(14.25e6, Model.spectrumCenterFreq:peek(), 1.0, "hardware passband moved down to 14.25 MHz")
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 30, y = 200, gy = 200 })
+
+  -- 3. Limits testing on FrequencyRuler: bottom edge never below 1.8 MHz, top edge never above 30 MHz
   Model.spectrumCenterFreq:set(1.95e6)
-  rv.freqMin = 1.80e6
-  rv.freqMax = 2.10e6
-  rv.dragStartCenterFreq = 1.95e6
-  rv.dragStartY = 200
-  rv.lastDragY = 200
-  rv.overscrollPx = 0
-  -- Drag down past 1.8 MHz
-  rv:onEvent({ type = "mouseMotion", x = 400, y = 300 })
-  assert_true(rv.freqMin >= 1.8e6, "bottom edge never goes below 1.8 MHz")
+  ruler.props.freqMin = 1.80e6
+  ruler.props.freqMax = 2.10e6
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 30, y = 200, gy = 200 })
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 230, gy = 230 })
+  assert_true(ruler.props.freqMin >= 1.8e6, "bottom edge never goes below 1.8 MHz")
   assert_true(Model.spectrumCenterFreq:peek() >= 1.95e6, "passband center never drops below 1.95 MHz")
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 30, y = 230, gy = 230 })
 
-  rv.hwCenterFreq = 29.85e6
   Model.spectrumCenterFreq:set(29.85e6)
-  rv.freqMin = 29.70e6
-  rv.freqMax = 30.00e6
-  rv.dragStartCenterFreq = 29.85e6
-  rv.dragStartY = 200
-  rv.lastDragY = 200
-  rv.overscrollPx = 0
-  -- Drag up past 30 MHz
-  rv:onEvent({ type = "mouseMotion", x = 400, y = 100 })
-  assert_true(rv.freqMax <= 30.0e6, "top edge never goes above 30.0 MHz")
+  ruler.props.freqMin = 29.70e6
+  ruler.props.freqMax = 30.00e6
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 30, y = 200, gy = 200 })
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 170, gy = 170 })
+  assert_true(ruler.props.freqMax <= 30.0e6, "top edge never goes above 30.0 MHz")
   assert_true(Model.spectrumCenterFreq:peek() <= 29.85e6, "passband center never exceeds 29.85 MHz")
-
-  rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 400, y = 100 })
-  assert_true(not rv.isNavigating, "navigation ended")
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 30, y = 170, gy = 170 })
 end
 
 function Tests.test_signalbox_move_drag_modifier_snapping()
@@ -1259,14 +1249,14 @@ function Tests.test_zoomed_out_signalbox_chevrons_fixed_above_and_below()
   box:layout(0, 50, 800, 4)
 
   -- 1. Hit testing with box:contains
-  -- Top chevron is above y = 0 (y in [-14, 0])
+  -- Top chevron extends 15px upward from top of signalbox: y in [-15, 0]
   assert_true(box:contains(760, -5), "contains point in top chevron area above box")
-  assert_true(box:contains(760, -14), "contains point at upper edge of top chevron")
+  assert_true(box:contains(760, -15), "contains point at upper edge of top chevron (-15px)")
   assert_true(not box:contains(760, -16), "rejects point outside top chevron")
 
-  -- Bottom chevron is below y = h (y in [h, h + 14] -> [4, 18])
+  -- Bottom chevron extends 15px downward from bottom of signalbox: y in [h, h + 15] -> [4, 19]
   assert_true(box:contains(760, 8), "contains point in bottom chevron area below box")
-  assert_true(box:contains(760, 18), "contains point at lower edge of bottom chevron")
+  assert_true(box:contains(760, 19), "contains point at lower edge of bottom chevron (h + 15px)")
   assert_true(not box:contains(760, 20), "rejects point outside bottom chevron")
 
   -- Interior of tiny box is for moving
@@ -1287,6 +1277,28 @@ function Tests.test_zoomed_out_signalbox_chevrons_fixed_above_and_below()
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 2 })
   assert_eq("move", box.dragMode, "clicking inside box engages move")
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 2 })
+
+  -- 3. Verify reactive watcher on selectedSignalBoxIndex calling Model.set("rx.VFO.activeValue", ...)
+  -- does not subscribe to VFO/box.frequency or cause C stack overflow during chevron dragging
+  local rv = RiverView({ freqMin = 14.05e6, freqMax = 14.35e6, w = 800, h = 450 })
+  rv:layout(0, 0, 800, 450)
+  local activeBox = rv:spawnSignalBox(14.200e6)
+  activeBox:layout(0, 100, 800, 20)
+  local watchCalls = 0
+  local unsub = Model.selectedSignalBoxIndex:watch(function(idx)
+    watchCalls = watchCalls + 1
+    local b = rv.signalBoxes and rv.signalBoxes[idx]
+    if b then
+      Model.set("rx.VFO.activeValue", b.carrierFreq)
+      Model.set("rx.selectedMode", b.mode)
+    end
+  end)
+  assert_eq(1, watchCalls, "initial watch call executed once")
+  activeBox:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = -5, gy = 95 })
+  activeBox:onEvent({ type = "mouseMotion", x = 760, y = -15, gy = 85 })
+  activeBox:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = -15, gy = 85 })
+  assert_eq(1, watchCalls, "chevron drag does not re-trigger selectedSignalBoxIndex watcher or overflow C stack")
+  unsub:dispose()
 end
 
 function Tests.test_unfocused_signalbox_resets_history_playback_to_live()

@@ -87,7 +87,13 @@ function Reactive.observable(initialValue)
     function self:watch(fn)
         return Reactive.watch(function()
             local v = self:get()
-            fn(v)
+            local prevComputed = currentComputed
+            currentComputed = nil
+            local ok, err = pcall(fn, v)
+            currentComputed = prevComputed
+            if not ok then
+                error(err, 0)
+            end
         end)
     end
 
@@ -172,7 +178,13 @@ function Reactive.computed(computeFn)
     function self:watch(fn)
         return Reactive.watch(function()
             local v = self:get()
-            fn(v)
+            local prevComputed = currentComputed
+            currentComputed = nil
+            local ok, err = pcall(fn, v)
+            currentComputed = prevComputed
+            if not ok then
+                error(err, 0)
+            end
         end)
     end
 
@@ -190,9 +202,11 @@ function Reactive.watch(fn)
     local watcher = {}
     watcher._dependencies = {}
     local disposed = false
+    local running = false
 
     local function run()
-        if disposed then return end
+        if disposed or running then return end
+        running = true
 
         -- Clear old dependencies
         for dep in pairs(watcher._dependencies) do
@@ -207,6 +221,7 @@ function Reactive.watch(fn)
         local ok, err = pcall(fn)
 
         currentComputed = prevComputed
+        running = false
 
         if not ok then
             print("[Reactive] Watch error: " .. tostring(err))
@@ -214,6 +229,7 @@ function Reactive.watch(fn)
     end
 
     function watcher:_markDirty()
+        if running then return end
         -- Watchers run immediately when marked dirty (unless batched)
         if batchDepth > 0 then
             pendingNotifications[watcher] = run

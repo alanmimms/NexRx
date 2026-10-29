@@ -113,9 +113,9 @@ function SignalBox:contains(x, y)
   if y >= 0 and y < h then return true end
 
   -- In chevron handle region near right edge (x >= w - 60):
-  -- Top chevron extends above the top: y in [-14, 0]
-  -- Bottom chevron extends below the bottom: y in [h, h + 14]
-  local chevronH = 14
+  -- Top chevron extends above the top: y in [-15, 0]
+  -- Bottom chevron extends below the bottom: y in [h, h + 15]
+  local chevronH = 15
   if x >= w - 60 then
     if y >= -chevronH and y <= h + chevronH then
       return true
@@ -227,8 +227,8 @@ function SignalBox:onEvent(event)
         -- Clicking in the live zone cancels historical playback
         self:stopPlayback()
 
-        local isTopChevron = (ly >= -14 and ly <= math.min(6, h * 0.35))
-        local isBottomChevron = (ly >= math.max(h - 6, h * 0.65) and ly <= h + 14)
+        local isTopChevron = (ly >= -15 and ly <= 0)
+        local isBottomChevron = (ly >= h and ly <= h + 15)
 
         if isTopChevron then
           self.dragMode = "topHandle"
@@ -606,17 +606,17 @@ function SignalBox:drawSelf()
     local hR, hG, hB = state.hexToRgb(self.props.handleColor or "#38bdf8")
     local hx = w - 42
 
-    -- Top chevron (fixed 14px area above top skirt, pointing upward / outward)
-    System.drawRect(hx - 2, -14, 36, 12, { hR, hG, hB, 0.35 })
-    System.drawRectLines(hx - 2, -14, 36, 12, 1.0, { hR, hG, hB, 0.75 })
-    System.drawLine(hx + 2, -4, hx + 16, -11, 2.5, { hR, hG, hB, 0.98 })
-    System.drawLine(hx + 16, -11, hx + 30, -4, 2.5, { hR, hG, hB, 0.98 })
+    -- Top chevron (fixed 15px area extending upward from top of signalbox y=0 to y=-15)
+    System.drawRect(hx - 2, -15, 36, 15, { hR, hG, hB, 0.35 })
+    System.drawRectLines(hx - 2, -15, 36, 15, 1.0, { hR, hG, hB, 0.75 })
+    System.drawLine(hx + 2, -4, hx + 16, -12, 2.5, { hR, hG, hB, 0.98 })
+    System.drawLine(hx + 16, -12, hx + 30, -4, 2.5, { hR, hG, hB, 0.98 })
 
-    -- Bottom chevron (fixed 14px area below bottom skirt, pointing downward / outward)
-    System.drawRect(hx - 2, h + 2, 36, 12, { hR, hG, hB, 0.35 })
-    System.drawRectLines(hx - 2, h + 2, 36, 12, 1.0, { hR, hG, hB, 0.75 })
-    System.drawLine(hx + 2, h + 5, hx + 16, h + 12, 2.5, { hR, hG, hB, 0.98 })
-    System.drawLine(hx + 16, h + 12, hx + 30, h + 5, 2.5, { hR, hG, hB, 0.98 })
+    -- Bottom chevron (fixed 15px area extending downward from bottom of signalbox y=h to y=h+15)
+    System.drawRect(hx - 2, h, 36, 15, { hR, hG, hB, 0.35 })
+    System.drawRectLines(hx - 2, h, 36, 15, 1.0, { hR, hG, hB, 0.75 })
+    System.drawLine(hx + 2, h + 4, hx + 16, h + 12, 2.5, { hR, hG, hB, 0.98 })
+    System.drawLine(hx + 16, h + 12, hx + 30, h + 4, 2.5, { hR, hG, hB, 0.98 })
   end
 
   -- Mode Badge on the left (clickable to cycle mode)

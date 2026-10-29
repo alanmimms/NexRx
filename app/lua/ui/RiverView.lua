@@ -750,10 +750,6 @@ function RiverView:onEvent(event)
           local clickFreq = self:getFreqAtY(self.clickStartY)
           self:tuneActiveSignalBox(clickFreq)
           return true
-        elseif wasDragAxis == "vertical" then
-          if self.onFrequencyChange then
-            self:onFrequencyChange(self.freqMin, self.freqMax, true)
-          end
         end
       end
       return true
@@ -780,12 +776,10 @@ function RiverView:onEvent(event)
       local absDy = math.abs(dy)
       local historyThreshold = self.props.historyDragThresholdPx or self.historyDragThresholdPx or 40
 
-      -- Gesture axis locking with parametric threshold to prevent accidental history scrubbing during vertical frequency pan
+      -- Dragging in the River area ONLY scrubs horizontal history; vertical frequency scrolling is exclusively on FrequencyRuler
       if not self.dragAxis then
         if absDx >= historyThreshold and absDx > absDy * 1.5 then
           self.dragAxis = "horizontal"
-        elseif absDy >= 6 and absDy > absDx then
-          self.dragAxis = "vertical"
         end
       end
 
@@ -798,124 +792,6 @@ function RiverView:onEvent(event)
           newOffset = 0.0
         end
         self.timeOffsetSec = clamp(newOffset, 0.0, self.totalBufferSec - self.timeSpanSec)
-      elseif self.dragAxis == "vertical" then
-        local curY = event.gy or event.y or 0
-        local stepY = curY - (self.lastDragY or curY)
-        self.lastDragY = curY
-
-        -- Vertical drag pans frequency; timeOffsetSec remains strictly unchanged
-        local fSpan = self.freqMax - self.freqMin
-        local rulerH = self.props.rulerH or 22
-        local canvasH = math.max(10, (self.props.h or 450) - rulerH)
-        local hzPerPx = fSpan / canvasH
-        local newCenter = self.dragStartCenterFreq - (dy * hzPerPx)
-        local fMin = newCenter - fSpan / 2
-        local fMax = newCenter + fSpan / 2
-
-        -- Move passband to next passband if deliberately scrolling past either edge
-        local hwCenter = self.hwCenterFreq or (Model.spectrumCenterFreq and Model.spectrumCenterFreq:peek()) or 14.2e6
-        local bandMin = hwCenter - 150e3
-        local bandMax = hwCenter + 150e3
-
-        local MIN_FREQ = 1.8e6
-        local MAX_FREQ = 30.0e6
-        local STEP_THRESHOLD_PX = 20
-        local STEP_HZ = 150e3
-
-        if fMax > bandMax then
-          fMax = bandMax
-          fMin = bandMax - fSpan
-          if stepY < 0 then -- Dragging UP (towards higher frequency)
-            self.overscrollPx = (self.overscrollPx or 0) + (-stepY)
-            if self.overscrollPx >= STEP_THRESHOLD_PX then
-              if bandMax < MAX_FREQ then
-                local rem = hwCenter % STEP_HZ
-                local newHwCenter
-                if rem < 1.0 or (STEP_HZ - rem) < 1.0 then
-                  newHwCenter = math.floor(hwCenter / STEP_HZ + 0.5) * STEP_HZ + STEP_HZ
-                else
-                  newHwCenter = math.ceil(hwCenter / STEP_HZ) * STEP_HZ
-                end
-                if newHwCenter + 150e3 > MAX_FREQ then
-                  newHwCenter = MAX_FREQ - 150e3
-                end
-                if newHwCenter > hwCenter then
-                  local shift = newHwCenter - hwCenter
-                  hwCenter = newHwCenter
-                  bandMin = hwCenter - 150e3
-                  bandMax = hwCenter + 150e3
-                  fMax = math.min(bandMax, fMax + shift)
-                  fMin = fMax - fSpan
-                  self.hwCenterFreq = hwCenter
-                  self.dragStartCenterFreq = (fMin + fMax) / 2
-                  self.dragStartY = curY
-                  self.overscrollPx = 0
-                  if Model.spectrumCenterFreq then
-                    Model.spectrumCenterFreq:set(hwCenter)
-                  end
-                end
-              else
-                self.overscrollPx = 0
-              end
-            end
-          end
-        elseif fMin < bandMin then
-          fMin = bandMin
-          fMax = bandMin + fSpan
-          if stepY > 0 then -- Dragging DOWN (towards lower frequency)
-            self.overscrollPx = (self.overscrollPx or 0) + stepY
-            if self.overscrollPx >= STEP_THRESHOLD_PX then
-              if bandMin > MIN_FREQ then
-                local rem = hwCenter % STEP_HZ
-                local newHwCenter
-                if rem < 1.0 or (STEP_HZ - rem) < 1.0 then
-                  newHwCenter = math.floor(hwCenter / STEP_HZ + 0.5) * STEP_HZ - STEP_HZ
-                else
-                  newHwCenter = math.floor(hwCenter / STEP_HZ) * STEP_HZ
-                end
-                if newHwCenter - 150e3 < MIN_FREQ then
-                  newHwCenter = MIN_FREQ + 150e3
-                end
-                if newHwCenter < hwCenter then
-                  local shift = newHwCenter - hwCenter
-                  hwCenter = newHwCenter
-                  bandMin = hwCenter - 150e3
-                  bandMax = hwCenter + 150e3
-                  fMin = math.max(bandMin, fMin + shift)
-                  fMax = fMin + fSpan
-                  self.hwCenterFreq = hwCenter
-                  self.dragStartCenterFreq = (fMin + fMax) / 2
-                  self.dragStartY = curY
-                  self.overscrollPx = 0
-                  if Model.spectrumCenterFreq then
-                    Model.spectrumCenterFreq:set(hwCenter)
-                  end
-                end
-              else
-                self.overscrollPx = 0
-              end
-            end
-          end
-        else
-          self.overscrollPx = 0
-        end
-
-        -- Strict HF limits [1.8 MHz, 30.0 MHz]
-        if fMin < MIN_FREQ then
-          fMin = MIN_FREQ
-          fMax = math.min(MAX_FREQ, fMin + fSpan)
-        end
-        if fMax > MAX_FREQ then
-          fMax = MAX_FREQ
-          fMin = math.max(MIN_FREQ, fMax - fSpan)
-        end
-
-        self.freqMin = fMin
-        self.freqMax = fMax
-        self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
-        if self.onFrequencyChange then
-          self:onFrequencyChange(self.freqMin, self.freqMax, false)
-        end
       end
       return true
     end

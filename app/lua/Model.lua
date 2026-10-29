@@ -106,7 +106,9 @@ function Model.ensureSignalBox(idx)
                 locked = false
             })
         end
-        Model.signalBoxes:set(newList)
+        R.untrack(function()
+            Model.signalBoxes:set(newList)
+        end)
         boxes = newList
     end
     return boxes[idx]
@@ -227,42 +229,46 @@ local mutationRules = {}
 
 --- Set a model value by creating a high-priority SetBox override rule
 function Model.set(name, value)
-    -- Handle special proxy cases for backward compatibility
-    if name == "rx.selectedMode" then
-        local box = Model.getSelectedSignalBox()
-        if box then
-            if box.mode ~= value then 
-                box.mode = value 
-                local obs = getPropertyVersion("rx.selectedMode")
-                obs:set(obs:peek() + 1)
+    R.untrack(function()
+        -- Handle special proxy cases for backward compatibility
+        if name == "rx.selectedMode" then
+            local box = Model.getSelectedSignalBox()
+            if box then
+                if box.mode ~= value then 
+                    box.mode = value 
+                    local obs = getPropertyVersion("rx.selectedMode")
+                    obs:set(obs:peek() + 1)
+                end
+                return
+            end
+        elseif name:match("^rx%.VFO%.") then
+            local box = Model.getSelectedSignalBox()
+            if box then
+                if box.frequency ~= value then 
+                    box.frequency = value 
+                    local obs = getPropertyVersion("rx.VFO.activeValue")
+                    obs:set(obs:peek() + 1)
+                end
+                return
+            end
+        elseif name == "rx.bandpass.width" then
+            local box = Model.getSelectedSignalBox()
+            if box then
+                box.bandwidth = value
             end
         end
-    elseif name:match("^rx%.VFO%.") then
-        local box = Model.getSelectedSignalBox()
-        if box then
-            if box.frequency ~= value then 
-                box.frequency = value 
-                local obs = getPropertyVersion("rx.VFO.activeValue")
-                obs:set(obs:peek() + 1)
-            end
-        end
-    elseif name == "rx.bandpass.width" then
-        local box = Model.getSelectedSignalBox()
-        if box then
-            box.bandwidth = value
-        end
-    end
 
-    -- For standard properties, check if it actually changed before bumping revision
-    if setbox.has(name) and setbox.get(name) == value then return end
+        -- For standard properties, check if it actually changed before bumping revision
+        if setbox.has(name) and setbox.get(name) == value then return end
 
-    -- Create or update a high-priority rule (1000) for this property.
-    -- SetBox.rule automatically increments setbox.getPropertyVersion(name).
-    mutationRules[name] = setbox.rule({
-        id = "override." .. name,
-        priority = 1000,
-        apply = { [name] = value }
-    })
+        -- Create or update a high-priority rule (1000) for this property.
+        -- SetBox.rule automatically increments setbox.getPropertyVersion(name).
+        mutationRules[name] = setbox.rule({
+            id = "override." .. name,
+            priority = 1000,
+            apply = { [name] = value }
+        })
+    end)
 end
 
 --- Round frequency to nearest step
