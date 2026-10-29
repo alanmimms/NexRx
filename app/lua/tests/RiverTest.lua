@@ -1486,6 +1486,75 @@ function Tests.test_14_2m_usb_mode_accuracy_after_15m_am()
   assert_eq("CQ WB7NAB", box2.label, "at 14.2M label is CQ WB7NAB")
 end
 
+function Tests.test_ctrl_z_y_undo_redo_and_100_depth_stack()
+  print("test_ctrl_z_y_undo_redo_and_100_depth_stack")
+  local Model = require("Model")
+  local rv = RiverView({
+    freqMin = 14.05e6,
+    freqMax = 14.35e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box = rv:spawnSignalBox(14.200e6)
+  box:layout(0, 100, 800, 30)
+  assert_eq(14.200e6, box.carrierFreq, "initial carrierFreq is 14.200 MHz")
+  assert_eq(2800, box.bandwidth, "initial bandwidth is 2800 Hz")
+  assert_eq(0, #rv.undoStack, "initial undoStack is empty")
+
+  -- 1. Drag signalbox body with Shift (1 kHz steps) to 14.202 MHz across two motion steps
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 15 })
+  box:onEvent({ type = "mouseMotion", x = 760, y = 13, modifiers = { shift = true } }) -- -> 14.201 MHz
+  box:onEvent({ type = "mouseMotion", x = 760, y = 5, modifiers = { shift = true } })  -- -> 14.202 MHz
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 5 })
+
+  assert_eq(14202000, box.carrierFreq, "dragged carrierFreq to 14.202 MHz")
+  assert_eq(1, #rv.undoStack, "entire drag gesture recorded as 1 entry on undoStack")
+
+  -- 2. Press Ctrl+Z on SignalBox to undo the mistaken drag
+  local handledUndo = box:onEvent({ type = "key", key = "Z", isDown = true, modifiers = { ctrl = true } })
+  assert_true(handledUndo, "Ctrl+Z handled")
+  assert_eq(14200000, box.carrierFreq, "Ctrl+Z restored carrierFreq to 14.200 MHz")
+  assert_eq(14200000, Model.rx.VFO.activeValue:get(), "Ctrl+Z synced active VFO back to 14.200 MHz")
+  assert_eq(0, #rv.undoStack, "undoStack empty after undo")
+  assert_eq(1, #rv.redoStack, "redoStack has 1 entry after undo")
+
+  -- 3. Press Ctrl+Y on RiverView to redo the undone drag
+  local handledRedo = rv:onEvent({ type = "key", key = "Y", isDown = true, modifiers = { ctrl = true } })
+  assert_true(handledRedo, "Ctrl+Y handled")
+  assert_eq(14202000, box.carrierFreq, "Ctrl+Y redid carrierFreq change to 14.202 MHz")
+  assert_eq(14202000, Model.rx.VFO.activeValue:get(), "Ctrl+Y synced active VFO to 14.202 MHz")
+  assert_eq(1, #rv.undoStack, "undoStack has 1 entry after redo")
+  assert_eq(0, #rv.redoStack, "redoStack empty after redo")
+
+  -- 4. Drag top chevron to change bandwidth, then Ctrl+Z and Ctrl+Y
+  box:layout(0, 100, 800, 30)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = -5 })
+  box:onEvent({ type = "mouseMotion", x = 760, y = -7, modifiers = { shift = true } }) -- snaps highFreq from 14204800 -> 14205000 (bw = 3000)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = -7 })
+  assert_eq(3000, box.bandwidth, "chevron drag changed bandwidth to 3000 Hz")
+  assert_eq(2, #rv.undoStack, "undoStack has 2 entries")
+
+  rv:onEvent({ type = "key", key = "Z", isDown = true, modifiers = { ctrl = true } })
+  assert_eq(2800, box.bandwidth, "Ctrl+Z undid chevron bandwidth change back to 2800 Hz")
+  rv:onEvent({ type = "key", key = "Y", isDown = true, modifiers = { ctrl = true } })
+  assert_eq(3000, box.bandwidth, "Ctrl+Y redid chevron bandwidth change to 3000 Hz")
+
+  -- 5. Verify maxUndoDepth = 100 cap
+  assert_eq(100, rv.maxUndoDepth, "default maxUndoDepth is 100")
+  for i = 1, 110 do
+    rv:tuneActiveSignalBox(14.100e6 + i * 1000)
+  end
+  assert_eq(100, #rv.undoStack, "undoStack capped at 100 entries after 110 operations")
+
+  -- Undoing 100 times succeeds and lands on the 10th tune (14.110 MHz)
+  for i = 1, 100 do
+    assert_true(rv:undo(), "undo step " .. tostring(i) .. " succeeds")
+  end
+  assert_eq(14.100e6 + 10 * 1000, box.carrierFreq, "after 100 undos, carrierFreq is at step 10 (14.110 MHz)")
+  assert_true(not rv:undo(), "101st undo returns false because stack is capped at 100")
+end
+
 -- =============================================================================
 -- Test Suite Runner
 -- =============================================================================
@@ -1535,6 +1604,7 @@ function Tests.runAll()
   Tests.test_chevrons_move_1_to_1_with_mouse_at_any_zoom_and_bottom_chevron_moves()
   Tests.test_frequency_ruler_detent_step_150khz_and_direction()
   Tests.test_14_2m_usb_mode_accuracy_after_15m_am()
+  Tests.test_ctrl_z_y_undo_redo_and_100_depth_stack()
 
   print(string.format("\nResults: %d passed, %d failed\n", passed, failed))
   return failed == 0

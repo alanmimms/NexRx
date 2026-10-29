@@ -68,6 +68,10 @@ function RiverView:init(def)
   self.hoverX = 0
   self.hoverY = 0
 
+  self.maxUndoDepth = def.maxUndoDepth or 100
+  self.undoStack = {}
+  self.redoStack = {}
+
   self.signalBoxes = {}
   if def.signalBoxes then
     for _, boxDef in ipairs(def.signalBoxes) do
@@ -292,9 +296,154 @@ function RiverView:cycleSignalBoxFocus(reverse)
   if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
 end
 
-function RiverView:spawnSignalBox(freq)
+function RiverView:captureUndoSnapshot()
+  local boxes = {}
+  for i, b in ipairs(self.signalBoxes) do
+    boxes[i] = {
+      boxIndex = b.boxIndex or i,
+      mode = b.mode,
+      carrierFreq = b.carrierFreq,
+      bandwidth = b.bandwidth,
+      label = b.label,
+      callerCallsign = b.callerCallsign,
+      respondentCallsign = b.respondentCallsign,
+      isLabelLocked = b.isLabelLocked,
+    }
+  end
+  return {
+    selectedBoxIndex = Model.selectedSignalBoxIndex:get() or 1,
+    boxes = boxes,
+  }
+end
+
+function RiverView:pushUndoSnapshot(snapshot)
+  snapshot = snapshot or self:captureUndoSnapshot()
+  table.insert(self.undoStack, snapshot)
+  local maxDepth = self.maxUndoDepth or 100
+  while #self.undoStack > maxDepth do
+    table.remove(self.undoStack, 1)
+  end
+  self.redoStack = {}
+end
+
+function RiverView:applyUndoSnapshot(snapshot)
+  if not snapshot or not snapshot.boxes then return end
+
+  -- Cancel any active drag on existing boxes
   for _, b in ipairs(self.signalBoxes) do
-    if b.stopPlayback then b:stopPlayback() end
+    b.isDragging = false
+    b.dragMode = nil
+    b.dragActiveDelta = nil
+    b.dragAccumPx = 0
+    b.dragPendingUndoSnapshot = nil
+    b.dragUndoCommitted = false
+  end
+
+  local targetCount = #snapshot.boxes
+  while #self.signalBoxes > targetCount do
+    local rem = table.remove(self.signalBoxes)
+    if rem then
+      if rem.stopPlayback then rem:stopPlayback() end
+      for kIdx, kid in ipairs(self.kids) do
+        if kid == rem then
+          table.remove(self.kids, kIdx)
+          break
+        end
+      end
+    end
+  end
+
+  while #self.signalBoxes < targetCount do
+    local nextIdx = #self.signalBoxes + 1
+    local bSnap = snapshot.boxes[nextIdx]
+    self:addSignalBox({
+      id = "box-" .. tostring(nextIdx),
+      index = nextIdx,
+      mode = bSnap.mode,
+      carrierFreq = bSnap.carrierFreq,
+      bandwidth = bSnap.bandwidth,
+      label = bSnap.label,
+      caller = bSnap.callerCallsign,
+      respondent = bSnap.respondentCallsign,
+      locked = bSnap.isLabelLocked,
+    })
+  end
+
+  for i, bSnap in ipairs(snapshot.boxes) do
+    local b = self.signalBoxes[i]
+    if b then
+      b.boxIndex = i
+      b.id = "box-" .. tostring(i)
+      b.carrierFreq = bSnap.carrierFreq
+      b.bandwidth = bSnap.bandwidth
+      if b.mode ~= bSnap.mode then
+        b:setMode(bSnap.mode)
+      end
+      b.label = bSnap.label
+      b.callerCallsign = bSnap.callerCallsign
+      b.respondentCallsign = bSnap.respondentCallsign
+      b.isLabelLocked = bSnap.isLabelLocked
+      Model.ensureSignalBox(i)
+    end
+  end
+
+  if #self.signalBoxes > 0 then
+    local selIdx = clamp(snapshot.selectedBoxIndex or 1, 1, #self.signalBoxes)
+    Model.selectedSignalBoxIndex:set(selIdx)
+    local activeBox = self.signalBoxes[selIdx]
+    if activeBox then
+      activeBox:setFocus()
+      Model.set("rx.VFO.activeValue", activeBox.carrierFreq)
+      Model.set("rx.selectedMode", activeBox.mode)
+      Model.set("rx.bandpass.width", activeBox.bandwidth)
+    end
+  else
+    Model.selectedSignalBoxIndex:set(0)
+    self:setFocus()
+  end
+
+  self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
+  if self.onSignalBoxesChanged then
+    self:onSignalBoxesChanged(self.signalBoxes)
+  end
+end
+
+function RiverView:undo()
+  if #self.undoStack == 0 then
+    return false
+  end
+  local curSnap = self:captureUndoSnapshot()
+  local prevSnap = table.remove(self.undoStack)
+  table.insert(self.redoStack, curSnap)
+  local maxDepth = self.maxUndoDepth or 100
+  while #self.redoStack > maxDepth do
+    table.remove(self.redoStack, 1)
+  end
+  self:applyUndoSnapshot(prevSnap)
+  return true
+end
+
+function RiverView:redo()
+  if #self.redoStack == 0 then
+    return false
+  end
+  local curSnap = self:captureUndoSnapshot()
+  local nextSnap = table.remove(self.redoStack)
+  table.insert(self.undoStack, curSnap)
+  local maxDepth = self.maxUndoDepth or 100
+  while #self.undoStack > maxDepth do
+    table.remove(self.undoStack, 1)
+  end
+  self:applyUndoSnapshot(nextSnap)
+  return true
+end
+
+function RiverView:spawnSignalBox(freq)
+  if #self.signalBoxes > 0 then
+    self:pushUndoSnapshot()
+  end
+  for _, b in ipairs(self.signalBoxes) do
+    if b.stopPlayback then b.stopPlayback(b) end
   end
   local newIdx = #self.signalBoxes + 1
   local autoMode, autoBw, autoLabel, autoCaller = self:getAutoSignalDef(freq)
@@ -325,6 +474,10 @@ function RiverView:tuneActiveSignalBox(freq)
     return self:spawnSignalBox(freq)
   end
 
+  if box.carrierFreq ~= freq then
+    self:pushUndoSnapshot()
+  end
+
   box.carrierFreq = freq
   self:updateBoxMetadataForFreq(box, freq, true)
   Model.set("rx.VFO.activeValue", freq)
@@ -340,6 +493,8 @@ function RiverView:removeFocusedSignalBox()
   local curIdx = Model.selectedSignalBoxIndex:get() or 1
   local box = self.signalBoxes[curIdx]
   if not box then return false end
+
+  self:pushUndoSnapshot()
 
   if box.stopPlayback then
     box:stopPlayback()
@@ -666,17 +821,51 @@ function RiverView:onEvent(event)
       self.isAltDown = event.isDown or false
       return true
     end
-    -- TAB / Shift+TAB to cycle SignalBox focus
-    if event.key == "TAB" and event.isDown then
-      local isShift = (event.modifiers and (event.modifiers.shift or (event.modifiers[1] == "input.SHIFT"))) or (_G.isShiftDown and _G.isShiftDown())
-      self:cycleSignalBoxFocus(isShift)
-      return true
-    end
 
-    -- DELETE / BACKSPACE to remove focused secondary SignalBox
-    if (event.key == "DELETE" or event.key == "BACKSPACE") and event.isDown then
-      if self:removeFocusedSignalBox() then
+    if event.isDown then
+      local isShift = false
+      local isCtrl = false
+      local isAlt = false
+      if event.modifiers then
+        if event.modifiers.shift or event.modifiers.SHIFT then isShift = true end
+        if event.modifiers.ctrl or event.modifiers.CTRL or event.modifiers.control or event.modifiers.CONTROL then isCtrl = true end
+        if event.modifiers.alt or event.modifiers.ALT then isAlt = true end
+        if type(event.modifiers) == "table" then
+          for _, m in ipairs(event.modifiers) do
+            if m == "input.SHIFT" or m == "shift" or m == "SHIFT" then isShift = true end
+            if m == "input.CTRL" or m == "ctrl" or m == "CTRL" or m == "control" then isCtrl = true end
+            if m == "input.ALT" or m == "alt" or m == "ALT" then isAlt = true end
+          end
+        end
+      end
+      if _G.isShiftDown and _G.isShiftDown() then isShift = true end
+      if _G.isCtrlDown and _G.isCtrlDown() then isCtrl = true end
+      if _G.isAltDown and _G.isAltDown() then isAlt = true end
+
+      local keyName = tostring(event.key or ""):upper()
+      if isCtrl and not isAlt then
+        if keyName == "Z" then
+          if isShift then
+            return self:redo()
+          else
+            return self:undo()
+          end
+        elseif keyName == "Y" then
+          return self:redo()
+        end
+      end
+
+      -- TAB / Shift+TAB to cycle SignalBox focus
+      if keyName == "TAB" then
+        self:cycleSignalBoxFocus(isShift)
         return true
+      end
+
+      -- DELETE / BACKSPACE to remove focused SignalBox
+      if keyName == "DELETE" or keyName == "BACKSPACE" then
+        if self:removeFocusedSignalBox() then
+          return true
+        end
       end
     end
   end

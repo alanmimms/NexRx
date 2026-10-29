@@ -95,6 +95,13 @@ function SignalBox:init(def)
   self.dragStartY = 0
   self.dragStartCarrier = self.carrierFreq
   self.dragStartBw = self.bandwidth
+  self.dragStartMode = self.mode
+  self.dragPendingUndoSnapshot = nil
+  self.dragUndoCommitted = false
+
+  self.maxUndoDepth = def.maxUndoDepth or 100
+  self.undoStack = {}
+  self.redoStack = {}
 
   self.playbackActive = false
   self.playbackX = 0
@@ -102,6 +109,95 @@ function SignalBox:init(def)
   self.hoverActive = false
   self.hoverX = 0
   self.hoverY = 0
+end
+
+function SignalBox:captureUndoSnapshot()
+  if self.parent and self.parent.captureUndoSnapshot then
+    return self.parent:captureUndoSnapshot()
+  end
+  return {
+    mode = self.mode,
+    carrierFreq = self.carrierFreq,
+    bandwidth = self.bandwidth,
+    label = self.label,
+    callerCallsign = self.callerCallsign,
+    respondentCallsign = self.respondentCallsign,
+    isLabelLocked = self.isLabelLocked,
+  }
+end
+
+function SignalBox:pushUndoSnapshot(snapshot)
+  if self.parent and self.parent.pushUndoSnapshot then
+    self.parent:pushUndoSnapshot(snapshot)
+    return
+  end
+  snapshot = snapshot or self:captureUndoSnapshot()
+  table.insert(self.undoStack, snapshot)
+  local maxDepth = self.maxUndoDepth or 100
+  while #self.undoStack > maxDepth do
+    table.remove(self.undoStack, 1)
+  end
+  self.redoStack = {}
+end
+
+function SignalBox:applyUndoSnapshot(snapshot)
+  if not snapshot then return end
+  self.isDragging = false
+  self.dragMode = nil
+  self.dragActiveDelta = nil
+  self.dragAccumPx = 0
+  self.dragPendingUndoSnapshot = nil
+  self.dragUndoCommitted = false
+
+  self.carrierFreq = snapshot.carrierFreq
+  self.bandwidth = snapshot.bandwidth
+  if self.mode ~= snapshot.mode then
+    self:setMode(snapshot.mode)
+  end
+  self.label = snapshot.label
+  self.callerCallsign = snapshot.callerCallsign
+  self.respondentCallsign = snapshot.respondentCallsign
+  self.isLabelLocked = snapshot.isLabelLocked
+
+  Model.set("rx.VFO.activeValue", self.carrierFreq)
+  Model.set("rx.selectedMode", self.mode)
+  Model.set("rx.bandpass.width", self.bandwidth)
+end
+
+function SignalBox:undo()
+  if self.parent and self.parent.undo then
+    return self.parent:undo()
+  end
+  if #self.undoStack == 0 then
+    return false
+  end
+  local curSnap = self:captureUndoSnapshot()
+  local prevSnap = table.remove(self.undoStack)
+  table.insert(self.redoStack, curSnap)
+  local maxDepth = self.maxUndoDepth or 100
+  while #self.redoStack > maxDepth do
+    table.remove(self.redoStack, 1)
+  end
+  self:applyUndoSnapshot(prevSnap)
+  return true
+end
+
+function SignalBox:redo()
+  if self.parent and self.parent.redo then
+    return self.parent:redo()
+  end
+  if #self.redoStack == 0 then
+    return false
+  end
+  local curSnap = self:captureUndoSnapshot()
+  local nextSnap = table.remove(self.redoStack)
+  table.insert(self.undoStack, curSnap)
+  local maxDepth = self.maxUndoDepth or 100
+  while #self.undoStack > maxDepth do
+    table.remove(self.undoStack, 1)
+  end
+  self:applyUndoSnapshot(nextSnap)
+  return true
 end
 
 function SignalBox:contains(x, y)
@@ -189,9 +285,24 @@ function SignalBox:onEvent(event)
   if event.type == "key" then
     if event.key == "TAB" then
       return false -- Bubble to RiverView to cycle focus
-    elseif (event.key == "DELETE" or event.key == "BACKSPACE") and event.isDown then
-      if self.parent and self.parent.removeFocusedSignalBox then
-        return self.parent:removeFocusedSignalBox()
+    elseif event.isDown then
+      local isShift, isCtrl, isAlt = getModifiers(event)
+      local keyName = tostring(event.key or ""):upper()
+      if isCtrl and not isAlt then
+        if keyName == "Z" then
+          if isShift then
+            return self:redo()
+          else
+            return self:undo()
+          end
+        elseif keyName == "Y" then
+          return self:redo()
+        end
+      end
+      if keyName == "DELETE" or keyName == "BACKSPACE" then
+        if self.parent and self.parent.removeFocusedSignalBox then
+          return self.parent:removeFocusedSignalBox()
+        end
       end
     end
   end
@@ -214,6 +325,7 @@ function SignalBox:onEvent(event)
 
       -- 1. Mode Badge on the left (x: 8 to 72)
       if lx >= 8 and lx <= 72 and ly >= math.min(0, h / 2 - 10) and ly <= math.max(h, h / 2 + 10) then
+        self:pushUndoSnapshot()
         self:cycleMode()
         Model.selectedSignalBoxIndex:set(self.boxIndex)
         self:setFocus()
@@ -281,6 +393,9 @@ function SignalBox:onEvent(event)
       self.dragStartHighFreq = highFreq
       self.dragStartCarrier = cFreq
       self.dragStartBw = bw
+      self.dragStartMode = self.mode
+      self.dragPendingUndoSnapshot = self:captureUndoSnapshot()
+      self.dragUndoCommitted = false
 
       self.isDragging = true
       self.dragStartY = event.gy or event.y or 0
@@ -306,6 +421,8 @@ function SignalBox:onEvent(event)
       self.dragMode = nil
       self.dragActiveDelta = nil
       self.dragAccumPx = 0
+      self.dragPendingUndoSnapshot = nil
+      self.dragUndoCommitted = false
       state.setActive(nil)
       return true
     end
@@ -552,6 +669,13 @@ function SignalBox:onEvent(event)
           end
           Model.set("rx.bandpass.width", self.bandwidth)
         end
+      end
+    end
+
+    if not self.dragUndoCommitted and self.dragPendingUndoSnapshot then
+      if self.carrierFreq ~= self.dragStartCarrier or self.bandwidth ~= self.dragStartBw or self.mode ~= self.dragStartMode then
+        self:pushUndoSnapshot(self.dragPendingUndoSnapshot)
+        self.dragUndoCommitted = true
       end
     end
 

@@ -1,3 +1,33 @@
+# TODO:
+* It should be graphically clear which part of the signalbox is
+  clickable for NOW and which part can be used to drag back in
+  history.
+  
+* There are many images right now.
+
+* AM should default signalbox to 8kHz bandwidth and AM demod.
+* USB and LSB should default signalbox to 3.5kHz bandwidth.
+* CW should default to 2*sidetone frequency bandwidth and CW demod.
+
+* We need a better way to distinguish moving the signalbox and moving
+  the timeline backward. It's too easy to drag the wrong axis. Maybe
+  going backward in time is only a click operation and not a drag.
+  
+* The history playback mode shows a strange green signal shape that is
+  basically useless. We should remove that and make it MUCH clearer
+  there is a time discontinuity with zigzag lines.
+  
+* The horizontal and vertical ruler grid lines aren't being drawn in
+  the river.
+  
+* Clicking to create or move a signalbox onto a new freq should
+  identify the signal's modulation type, its bandwidth, and set these
+  up in the signalbox automatically. As more info is available this
+  should be shown.
+  
+* Signalbox height is not being used to set the audio filtering
+  bandwidth but it should.
+
 # NexRx UI Architecture Specification: "The River"
 
 **The River** is the primary spectral, temporal, and decoding

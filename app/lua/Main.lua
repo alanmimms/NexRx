@@ -247,6 +247,21 @@ local function onKeyEvent_inner(key, isDown, mods)
     end
   end
 
+  -- Ctrl+Z / Ctrl+Y undo/redo for SignalBox operations
+  if isDown and _G.isCtrlDown() and not _G.isAltDown() and riverViewRef then
+    if keyName == "Z" then
+      if _G.isShiftDown() then
+        riverViewRef:redo()
+      else
+        riverViewRef:undo()
+      end
+      return
+    elseif keyName == "Y" then
+      riverViewRef:redo()
+      return
+    end
+  end
+
   local target = Widget.getFocused() or Widget.getHovered() or rxTree
   local handled = false
   if target then
