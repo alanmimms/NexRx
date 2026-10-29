@@ -51,6 +51,8 @@ local frameCount = 0
 local fps = 0
 local rxTree = nil
 local riverViewRef = nil
+local spectrumTimer = 0.0
+local spectrumInterval = 1.0 / 30.0 -- 30 Hz spectrum slice rate (33.333 ms)
 
 -- Data for widgets
 _G.freqEntryText = ""; _G.freqEntryCursor = 0
@@ -274,7 +276,7 @@ function init()
    if audio.isInitialized() then audio.start() end
    local riverEngine = _G.river or _G.waterfall
    if riverEngine and riverEngine.init then
-      riverEngine.init(1024, 512)
+      riverEngine.init(1024, 1800)
       riverEngine.setRange(Model.waterfall.minDB:get(), Model.waterfall.maxDB:get())
       if _G.colormaps and _G.colormaps[Model.waterfall.colormap:get()] then 
          riverEngine.setColormapData(_G.colormaps[Model.waterfall.colormap:get()]) 
@@ -282,9 +284,11 @@ function init()
    end
 
    local initialVFO = Model.rx.VFO.activeValue:get() or 14.200e6
-   local initialBand = _G.bands.getBand(Model.rx.selectedBand:get() or "20m")
-   local initFMin = initialBand and initialBand.lowerEdge or 14.0e6
-   local initFMax = initialBand and initialBand.upperEdge or 14.35e6
+   local initialBand = _G.bands and _G.bands.getBand(Model.rx.selectedBand:get() or "20m")
+   local initCenter = Model.spectrumCenterFreq:peek() or initialVFO
+   local initFMin = initCenter - 150e3
+   local initFMax = initCenter + 150e3
+   local autoMode, autoBw, autoLabel, autoCaller = RiverView:getAutoSignalDef(initialVFO)
 
    local riverView = RiverView{
       id = "id-river-view",
@@ -298,10 +302,11 @@ function init()
          {
             id = "id-primary-box",
             index = 1,
-            mode = Model.rx.selectedMode:get() or "USB",
+            mode = autoMode or Model.rx.selectedMode:get() or "USB",
             carrierFreq = initialVFO,
-            bandwidth = 2800,
-            label = "CQ W1AW"
+            bandwidth = autoBw or 2800,
+            label = autoLabel or "CQ",
+            caller = autoCaller
          }
       },
       decoderTracks = {
@@ -335,7 +340,7 @@ function init()
       freqMin = initFMin,
       freqMax = initFMax,
       boxes = riverView.signalBoxes,
-      metrics = { stick = Stick.TLB, prefW = 76, flexH = 1 }
+      metrics = { stick = Stick.TLB, prefW = 84, flexH = 1 }
    }
 
    local lastHwCenter = Model.spectrumCenterFreq:peek() or 14.2e6
@@ -343,6 +348,9 @@ function init()
       local deltaHz = newCenter - lastHwCenter
       lastHwCenter = newCenter
       if math.abs(deltaHz) > 1.0 then
+         if Hardware.isHardwareEnabled() then
+            Hardware.setVFO(newCenter)
+         end
          if _G.river and _G.river.shiftFrequency then
             _G.river.shiftFrequency(deltaHz, _G.sampleRate or 384e3)
          end
@@ -363,24 +371,43 @@ function init()
       gutterLeft.props.freqMin = fMin
       gutterLeft.props.freqMax = fMax
 
-      local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
-      local span = _G.sampleRate or 384e3
-      local hwMin = curCenter - span * 0.5
-      local hwMax = curCenter + span * 0.5
-
-      -- Only retune hardware LO when visible frequency window moves outside current hardware bandwidth
-      if fMin < hwMin or fMax > hwMax then
-         local visCenter = (fMin + fMax) / 2
-         Model.spectrumCenterFreq:set(visCenter)
-      end
-
       local fMinNorm, fMaxNorm = riverView:getNormalizedFreqRange()
       liveTrace.props.freqMinNorm = fMinNorm
       liveTrace.props.freqMaxNorm = fMaxNorm
    end
 
+   local function syncDSPToActiveSignalBox()
+      local curIdx = Model.selectedSignalBoxIndex:get() or 1
+      local activeBox = riverView and riverView.signalBoxes and riverView.signalBoxes[curIdx]
+      if not activeBox then return end
+      local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+      local carrier = activeBox.carrierFreq or curCenter
+      local tuneOffsetHz = carrier - curCenter
+
+      if _G.rx and _G.rx.setTuningOffset then
+         _G.rx.setTuningOffset(tuneOffsetHz)
+      end
+
+      local mode = activeBox.mode or "USB"
+      local modeId = 0
+      if mode == "USB" then modeId = 0
+      elseif mode == "LSB" then modeId = 1
+      elseif mode == "AM" then modeId = 2
+      elseif mode == "CW" then modeId = 3
+      end
+      if _G.rx and _G.rx.setModeId then
+         _G.rx.setModeId(modeId)
+      end
+
+      local bw = activeBox.bandwidth or 2800
+      if _G.rx and _G.rx.setBandpassWidth then
+         _G.rx.setBandpassWidth(bw)
+      end
+   end
+
    riverView.onSignalBoxesChanged = function(self, boxes)
       gutterLeft.activeBoxes = boxes
+      syncDSPToActiveSignalBox()
    end
 
    riverView.onFrequencyChange = function(self, fMin, fMax, isFinal)
@@ -392,15 +419,89 @@ function init()
    end
 
    freqRuler.onSelectBand = function(self, bandName)
-      local b = _G.bands.getBand(bandName)
+      local b = _G.bands and _G.bands.getBand(bandName)
       if b then
-         updateFrequencyRange(b.lowerEdge, b.upperEdge, true)
+         local bLower = b.lowerEdge or b.startHz
+         local bUpper = b.upperEdge or b.endHz
+         local bandSpan = bUpper - bLower
+         local centerFreq
+         if bandSpan > 300e3 then
+            centerFreq = bLower + 150e3
+         else
+            centerFreq = (bLower + bUpper) * 0.5
+         end
+
+         Model.spectrumCenterFreq:set(centerFreq)
+         updateFrequencyRange(centerFreq - 150e3, centerFreq + 150e3, true)
+         riverView:tuneActiveSignalBox(centerFreq)
+         Model.rx.selectedBand:set(bandName)
+      end
+   end
+
+   freqRuler.onManualTune = function(self, targetFreq)
+      local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+      local hwMin = curCenter - 150e3
+      local hwMax = curCenter + 150e3
+
+      if targetFreq < hwMin or targetFreq > hwMax then
+         -- Manual frequency setting outside current range: retune hardware LO and center 300 kHz on targetFreq
+         Model.spectrumCenterFreq:set(targetFreq)
+         updateFrequencyRange(targetFreq - 150e3, targetFreq + 150e3, true)
+         riverView:tuneActiveSignalBox(targetFreq)
+         if _G.bands and _G.bands._getBandForFreq then
+            local bName = _G.bands._getBandForFreq(targetFreq)
+            if bName and bName ~= "OOB" then
+               Model.rx.selectedBand:set(bName)
+            end
+         end
+      else
+         -- Target is within current 300 kHz range: LO DOES NOT CHANGE!
+         riverView:tuneActiveSignalBox(targetFreq)
+         local visSpan = riverView.freqMax - riverView.freqMin
+         if targetFreq < riverView.freqMin or targetFreq > riverView.freqMax then
+            local newMin = math.max(hwMin, math.min(hwMax - visSpan, targetFreq - visSpan * 0.5))
+            local newMax = newMin + visSpan
+            updateFrequencyRange(newMin, newMax, true)
+         end
+      end
+   end
+
+   freqRuler.onZoomPreset = function(self, presetHz)
+      local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+      local hwMin = curCenter - 150e3
+      local hwMax = curCenter + 150e3
+      local span = math.max(10e3, math.min(300e3, presetHz))
+      local curVisCenter = (riverView.freqMin + riverView.freqMax) * 0.5
+      local fMin = curVisCenter - span * 0.5
+      local fMax = curVisCenter + span * 0.5
+      if fMin < hwMin then
+         fMin = hwMin
+         fMax = fMin + span
+      elseif fMax > hwMax then
+         fMax = hwMax
+         fMin = fMax - span
+      end
+      updateFrequencyRange(fMin, fMax, true)
+   end
+
+   freqRuler.onCenterVFO = function(self)
+      local curIdx = Model.selectedSignalBoxIndex:get() or 1
+      local activeBox = riverView.signalBoxes and riverView.signalBoxes[curIdx]
+      local vfoFreq = activeBox and activeBox.carrierFreq or Model.get("rx.VFO.activeValue")
+      if vfoFreq then
+         Model.spectrumCenterFreq:set(vfoFreq)
+         updateFrequencyRange(vfoFreq - 150e3, vfoFreq + 150e3, true)
       end
    end
 
    gutterLeft.onCenterFrequency = function(self, targetFreq)
+      local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+      local hwMin = curCenter - 150e3
+      local hwMax = curCenter + 150e3
       local span = riverView.freqMax - riverView.freqMin
-      updateFrequencyRange(targetFreq - span * 0.5, targetFreq + span * 0.5, true)
+      local newMin = math.max(hwMin, math.min(hwMax - span, targetFreq - span * 0.5))
+      local newMax = newMin + span
+      updateFrequencyRange(newMin, newMax, true)
    end
 
    gutterLeft.onTopPileClick = function(self)
@@ -417,8 +518,12 @@ function init()
       if targetFreq then
          self:onCenterFrequency(targetFreq)
       else
+         local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+         local hwMax = curCenter + 150e3
          local span = riverView.freqMax - riverView.freqMin
-         updateFrequencyRange(riverView.freqMin + span * 0.5, riverView.freqMax + span * 0.5, true)
+         local newMax = math.min(hwMax, riverView.freqMax + span * 0.5)
+         local newMin = newMax - span
+         updateFrequencyRange(newMin, newMax, true)
       end
    end
 
@@ -436,8 +541,12 @@ function init()
       if targetFreq then
          self:onCenterFrequency(targetFreq)
       else
+         local curCenter = Model.spectrumCenterFreq:peek() or 14.2e6
+         local hwMin = curCenter - 150e3
          local span = riverView.freqMax - riverView.freqMin
-         updateFrequencyRange(riverView.freqMin - span * 0.5, riverView.freqMax - span * 0.5, true)
+         local newMin = math.max(hwMin, riverView.freqMin - span * 0.5)
+         local newMax = newMin + span
+         updateFrequencyRange(newMin, newMax, true)
       end
    end
 
@@ -462,6 +571,7 @@ function init()
             gutterLeft.activeBoxes[activeIdx].carrierFreq = freq
          end
       end
+      syncDSPToActiveSignalBox()
    end)
 
    Model.rx.selectedMode:watch(function(mode)
@@ -471,6 +581,7 @@ function init()
             riverView.signalBoxes[activeIdx].mode = mode
          end
       end
+      syncDSPToActiveSignalBox()
    end)
 
    Model.selectedSignalBoxIndex:watch(function(idx)
@@ -482,19 +593,34 @@ function init()
             Model.set("rx.selectedMode", box.mode)
          end
       end
+      syncDSPToActiveSignalBox()
    end)
 
    Model.rx.selectedBand:watch(function(bandName)
       if _G.bands and bandName then
          local b = _G.bands.getBand(bandName)
          if b and riverView then
-            updateFrequencyRange(b.lowerEdge, b.upperEdge)
+            local bLower = b.lowerEdge or b.startHz
+            local bUpper = b.upperEdge or b.endHz
+            local bandSpan = bUpper - bLower
+            local centerFreq
+            if bandSpan > 300e3 then
+               centerFreq = bLower + 150e3
+            else
+               centerFreq = (bLower + bUpper) * 0.5
+            end
+            if Model.spectrumCenterFreq:peek() ~= centerFreq then
+               Model.spectrumCenterFreq:set(centerFreq)
+               updateFrequencyRange(centerFreq - 150e3, centerFreq + 150e3, true)
+               riverView:tuneActiveSignalBox(centerFreq)
+            end
          end
       end
    end)
 
    -- Initial synchronization across all River widgets
    updateFrequencyRange(initFMin, initFMax)
+   syncDSPToActiveSignalBox()
 
    rxTree = Widget.Window{
       name = "id-root-window",
@@ -562,18 +688,26 @@ function update(dt)
       end
    end
    
-   local riverEngine = _G.river or _G.waterfall
    if Hardware.isHardwareEnabled() then
       if _G.frameCount % 10 == 0 then AppController.pollState() end
-      local hwSpec = Hardware.getSpectrum()
-      if hwSpec and #hwSpec > 0 then 
-         _G.lastSpectrumData = hwSpec
-         if riverEngine and riverEngine.addRow then
-            riverEngine.addRow(_G.lastSpectrumData)
+   end
+
+   local riverEngine = _G.river or _G.waterfall
+   local stepDt = dt or (1.0 / 60.0)
+   if stepDt > 0.2 then stepDt = 0.2 end
+   spectrumTimer = spectrumTimer + stepDt
+
+   while spectrumTimer >= spectrumInterval do
+      spectrumTimer = spectrumTimer - spectrumInterval
+      if Hardware.isHardwareEnabled() then
+         local hwSpec = Hardware.getSpectrum()
+         if hwSpec and #hwSpec > 0 then 
+            _G.lastSpectrumData = hwSpec
+            if riverEngine and riverEngine.addRow then
+               riverEngine.addRow(_G.lastSpectrumData)
+            end
          end
-      end
-   else
-      if _G.frameCount % 2 == 0 then
+      else
          local dummy = {}
          local noiseFloor = -105
          for i = 1, 1024 do

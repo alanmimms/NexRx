@@ -17,6 +17,28 @@ local function clamp(v, minV, maxV)
   return v
 end
 
+local function getModifiers(event)
+  local isShift = false
+  local isCtrl = false
+  local isAlt = false
+  if event and event.modifiers then
+    if event.modifiers.shift or event.modifiers.SHIFT then isShift = true end
+    if event.modifiers.ctrl or event.modifiers.CTRL or event.modifiers.control or event.modifiers.CONTROL then isCtrl = true end
+    if event.modifiers.alt or event.modifiers.ALT then isAlt = true end
+    if type(event.modifiers) == "table" then
+      for _, mod in ipairs(event.modifiers) do
+        if mod == "input.SHIFT" or mod == "shift" or mod == "SHIFT" then isShift = true end
+        if mod == "input.CTRL" or mod == "ctrl" or mod == "CTRL" or mod == "control" then isCtrl = true end
+        if mod == "input.ALT" or mod == "alt" or mod == "ALT" then isAlt = true end
+      end
+    end
+  end
+  if _G.isShiftDown and _G.isShiftDown() then isShift = true end
+  if _G.isCtrlDown and _G.isCtrlDown() then isCtrl = true end
+  if _G.isAltDown and _G.isAltDown() then isAlt = true end
+  return isShift, isCtrl, isAlt
+end
+
 local SignalBox = Widget.mkType("SignalBox", Widget)
 
 setbox.rule {
@@ -43,7 +65,26 @@ function SignalBox:init(def)
   self.mode = def.mode or "USB"
   self.carrierFreq = def.carrierFreq or 14.240e6
   self.bandwidth = def.bandwidth or 2800
-  self.label = def.label or "CQ"
+
+  self.callerCallsign = def.caller
+  self.respondentCallsign = def.respondent
+  self.isLabelLocked = def.locked or false
+
+  if def.label then
+    self.label = def.label
+    if not self.callerCallsign then
+      local extracted = self.label:match("CQ%s+([%w/]+)") or self.label:match("^([%w/]+)%s*/")
+      if extracted and #extracted >= 3 and not extracted:match("^BOX") then
+        self.callerCallsign = extracted
+      end
+    end
+  elseif self.callerCallsign and self.respondentCallsign then
+    self.label = string.format("%s / %s", self.callerCallsign, self.respondentCallsign)
+  elseif self.callerCallsign then
+    self.label = string.format("CQ %s", self.callerCallsign)
+  else
+    self.label = "CQ"
+  end
 
   if self.lwc then
     self.lwc:setTag("mode." .. self.mode:upper(), true)
@@ -58,6 +99,28 @@ function SignalBox:init(def)
   self.playbackActive = false
   self.playbackX = 0
   self.playbackOffsetSec = 0
+  self.hoverActive = false
+  self.hoverX = 0
+  self.hoverY = 0
+end
+
+function SignalBox:updateQSOState(caller, respondent)
+  if caller then self.callerCallsign = caller end
+  if respondent then self.respondentCallsign = respondent end
+  if not self.isLabelLocked then
+    if self.callerCallsign and self.respondentCallsign then
+      self.label = string.format("%s / %s", self.callerCallsign, self.respondentCallsign)
+    elseif self.callerCallsign then
+      self.label = string.format("CQ %s", self.callerCallsign)
+    end
+  end
+end
+
+function SignalBox:lockCustomLabel(name)
+  if name and #name > 0 then
+    self.label = name
+    self.isLabelLocked = true
+  end
 end
 
 function SignalBox:setMode(newMode)
@@ -99,8 +162,8 @@ function SignalBox:onEvent(event)
 
   if event.type == "mouseButton" and event.button == "LEFT" then
     if event.isDown then
-      local isShift = (event.modifiers and (event.modifiers.shift or (event.modifiers[1] == "input.SHIFT"))) or (_G.isShiftDown and _G.isShiftDown())
-      if isShift and self.parent and self.parent.spawnSignalBox then
+      local isShift, isCtrl, isAlt = getModifiers(event)
+      if (isAlt or (self.parent and self.parent.isAltDown)) and self.parent and self.parent.spawnSignalBox then
         local river = self.parent
         local gy = event.gy or (event.y + (self.props.y or 0))
         local clickFreq = river:getFreqAtY(gy - (river.props.y or 0))
@@ -147,7 +210,7 @@ function SignalBox:onEvent(event)
         local tOffset = (river and river.timeOffsetSec) or 0.0
         local tSpan = (river and river.timeSpanSec) or 30.0
         if river and river.timeOffsetSec and river.timeOffsetSec > 0.01 then
-          local breakW = 24
+          local breakW = (river.props and river.props.cadBreakW) or 0
           local pinnedW = (river.props and river.props.pinnedSliverW) or 60
           historyW = math.max(20, w - breakW - pinnedW)
         end
@@ -187,6 +250,10 @@ function SignalBox:onEvent(event)
 
       self.isDragging = true
       self.dragStartY = event.gy or event.y or 0
+      self.lastDragY = self.dragStartY
+      self.dragActiveDelta = nil
+      self.dragAccumPx = 0
+      self.currentDragFreq = (self.dragMode == "topHandle") and self.dragStartHighFreq or self.dragStartLowFreq
 
       state.setActive(self.id)
       Model.selectedSignalBoxIndex:set(self.boxIndex)
@@ -197,10 +264,18 @@ function SignalBox:onEvent(event)
     else
       self.isDragging = false
       self.dragMode = nil
+      self.dragActiveDelta = nil
+      self.dragAccumPx = 0
       state.setActive(nil)
       return true
     end
-  elseif event.type == "mouseMotion" and self.isDragging then
+  elseif event.type == "mouseMotion" then
+    self.hoverActive = true
+    self.hoverX = event.x or 0
+    self.hoverY = event.y or 0
+    if not self.isDragging then
+      return false
+    end
     local dy = (event.gy or event.y or 0) - self.dragStartY
     local river = self.parent
     local hzPerPx = 100
@@ -217,40 +292,153 @@ function SignalBox:onEvent(event)
       end
       self.carrierFreq = newFreq
       Model.set("rx.VFO.activeValue", self.carrierFreq)
-    elseif self.dragMode == "topHandle" then
-      -- Vernier scaling for chevrons: 25 Hz per pixel for fine, controllable filter adjustments
-      local vernierHzPerPx = 25.0
-      local deltaHz = (dy * vernierHzPerPx)
-      local newHighFreq = math.max(self.dragStartLowFreq + 200, math.min(self.dragStartLowFreq + 16000, self.dragStartHighFreq - deltaHz))
-      if self.mode == "USB" then
-        self.bandwidth = math.max(200, math.min(16000, math.floor(newHighFreq - self.dragStartLowFreq)))
-      elseif self.mode == "LSB" then
-        self.carrierFreq = newHighFreq
-        self.bandwidth = math.max(200, math.min(16000, math.floor(newHighFreq - self.dragStartLowFreq)))
-        Model.set("rx.VFO.activeValue", self.carrierFreq)
-      else
-        self.carrierFreq = math.floor((newHighFreq + self.dragStartLowFreq) / 2)
-        self.bandwidth = math.max(200, math.min(16000, math.floor(newHighFreq - self.dragStartLowFreq)))
-        Model.set("rx.VFO.activeValue", self.carrierFreq)
+    elseif self.dragMode == "topHandle" or self.dragMode == "bottomHandle" then
+      local isTop = (self.dragMode == "topHandle")
+      local curY = event.gy or event.y or 0
+      local stepY = curY - (self.lastDragY or curY)
+
+      local isShift, isCtrl = getModifiers(event)
+      local delta = nil
+      if isShift and isCtrl then
+        delta = 10000 -- 10 kHz
+      elseif isShift then
+        delta = 1000  -- 1 kHz
+      elseif isCtrl then
+        delta = 100   -- 100 Hz
       end
-      Model.set("rx.bandpass.width", self.bandwidth)
-    elseif self.dragMode == "bottomHandle" then
-      -- Vernier scaling for chevrons: 25 Hz per pixel for fine, controllable filter adjustments
-      local vernierHzPerPx = 25.0
-      local deltaHz = (dy * vernierHzPerPx)
-      local newLowFreq = math.min(self.dragStartHighFreq - 200, math.max(self.dragStartHighFreq - 16000, self.dragStartLowFreq - deltaHz))
-      if self.mode == "USB" then
-        self.carrierFreq = newLowFreq
-        self.bandwidth = math.max(200, math.min(16000, math.floor(self.dragStartHighFreq - newLowFreq)))
-        Model.set("rx.VFO.activeValue", self.carrierFreq)
-      elseif self.mode == "LSB" then
-        self.bandwidth = math.max(200, math.min(16000, math.floor(self.dragStartHighFreq - newLowFreq)))
+
+      local minBw = 200
+      local maxBw = 20000
+
+      if delta then
+        if self.dragActiveDelta ~= delta then
+          -- Modifier key was pressed or changed (even while mouse is already down).
+          -- "the next motion event moves to the nearest multiple of the delta
+          -- in the direction of the motion and stays on integral multiples of that delta during subsequent motion."
+          if stepY ~= 0 then
+            local dir = (stepY < 0) and 1 or -1 -- UP (negative stepY) increases frequency
+            local F = self.currentDragFreq or (isTop and self.dragStartHighFreq or self.dragStartLowFreq)
+            local snapped
+            if dir > 0 then
+              if F % delta == 0 then
+                snapped = F + delta
+              else
+                snapped = math.ceil(F / delta) * delta
+              end
+            else
+              if F % delta == 0 then
+                snapped = F - delta
+              else
+                snapped = math.floor(F / delta) * delta
+              end
+            end
+            self.currentDragFreq = snapped
+            self.dragActiveDelta = delta
+            self.dragAccumPx = 0
+            self.lastDragY = curY
+          end
+        else
+          -- Staying on integral multiples of that delta during subsequent motion
+          self.dragAccumPx = (self.dragAccumPx or 0) + stepY
+          self.lastDragY = curY
+          local pxPerStep = 8.0
+          if self.dragAccumPx <= -pxPerStep then
+            local nSteps = math.floor((-self.dragAccumPx) / pxPerStep)
+            self.currentDragFreq = self.currentDragFreq + (nSteps * delta)
+            self.dragAccumPx = self.dragAccumPx + (nSteps * pxPerStep)
+          elseif self.dragAccumPx >= pxPerStep then
+            local nSteps = math.floor(self.dragAccumPx / pxPerStep)
+            self.currentDragFreq = self.currentDragFreq - (nSteps * delta)
+            self.dragAccumPx = self.dragAccumPx - (nSteps * pxPerStep)
+          end
+        end
+
+        if isTop then
+          local minAllowedHigh = math.ceil((self.dragStartLowFreq + minBw) / delta) * delta
+          local maxAllowedHigh = math.floor((self.dragStartLowFreq + maxBw) / delta) * delta
+          self.currentDragFreq = math.max(minAllowedHigh, math.min(maxAllowedHigh, self.currentDragFreq))
+          local newHighFreq = self.currentDragFreq
+
+          if self.mode == "USB" then
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(newHighFreq - self.dragStartLowFreq)))
+          elseif self.mode == "LSB" then
+            self.carrierFreq = newHighFreq
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(newHighFreq - self.dragStartLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          else
+            self.carrierFreq = math.floor((newHighFreq + self.dragStartLowFreq) / 2)
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(newHighFreq - self.dragStartLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          end
+          Model.set("rx.bandpass.width", self.bandwidth)
+        else
+          local minAllowedLow = math.ceil((self.dragStartHighFreq - maxBw) / delta) * delta
+          local maxAllowedLow = math.floor((self.dragStartHighFreq - minBw) / delta) * delta
+          self.currentDragFreq = math.max(minAllowedLow, math.min(maxAllowedLow, self.currentDragFreq))
+          local newLowFreq = self.currentDragFreq
+
+          if self.mode == "USB" then
+            self.carrierFreq = newLowFreq
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(self.dragStartHighFreq - newLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          elseif self.mode == "LSB" then
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(self.dragStartHighFreq - newLowFreq)))
+          else
+            self.carrierFreq = math.floor((self.dragStartHighFreq + newLowFreq) / 2)
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(self.dragStartHighFreq - newLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          end
+          Model.set("rx.bandpass.width", self.bandwidth)
+        end
       else
-        self.carrierFreq = math.floor((self.dragStartHighFreq + newLowFreq) / 2)
-        self.bandwidth = math.max(200, math.min(16000, math.floor(self.dragStartHighFreq - newLowFreq)))
-        Model.set("rx.VFO.activeValue", self.carrierFreq)
+        -- Continuous vernier adjustment (no modifier held)
+        if self.dragActiveDelta ~= nil then
+          if isTop then
+            self.dragStartHighFreq = self.currentDragFreq or self.dragStartHighFreq
+          else
+            self.dragStartLowFreq = self.currentDragFreq or self.dragStartLowFreq
+          end
+          self.dragStartY = curY
+          self.dragActiveDelta = nil
+          self.dragAccumPx = 0
+        end
+
+        self.lastDragY = curY
+        local vernierHzPerPx = 25.0
+        local deltaHz = ((curY - self.dragStartY) * vernierHzPerPx)
+
+        if isTop then
+          local newHighFreq = math.max(self.dragStartLowFreq + minBw, math.min(self.dragStartLowFreq + maxBw, self.dragStartHighFreq - deltaHz))
+          self.currentDragFreq = newHighFreq
+          if self.mode == "USB" then
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(newHighFreq - self.dragStartLowFreq)))
+          elseif self.mode == "LSB" then
+            self.carrierFreq = newHighFreq
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(newHighFreq - self.dragStartLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          else
+            self.carrierFreq = math.floor((newHighFreq + self.dragStartLowFreq) / 2)
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(newHighFreq - self.dragStartLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          end
+          Model.set("rx.bandpass.width", self.bandwidth)
+        else
+          local newLowFreq = math.min(self.dragStartHighFreq - minBw, math.max(self.dragStartHighFreq - maxBw, self.dragStartLowFreq - deltaHz))
+          self.currentDragFreq = newLowFreq
+          if self.mode == "USB" then
+            self.carrierFreq = newLowFreq
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(self.dragStartHighFreq - newLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          elseif self.mode == "LSB" then
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(self.dragStartHighFreq - newLowFreq)))
+          else
+            self.carrierFreq = math.floor((self.dragStartHighFreq + newLowFreq) / 2)
+            self.bandwidth = math.max(minBw, math.min(maxBw, math.floor(self.dragStartHighFreq - newLowFreq)))
+            Model.set("rx.VFO.activeValue", self.carrierFreq)
+          end
+          Model.set("rx.bandpass.width", self.bandwidth)
+        end
       end
-      Model.set("rx.bandpass.width", self.bandwidth)
     end
 
     -- Live visual update of SignalBox height and position on the River canvas
@@ -338,7 +526,7 @@ function SignalBox:drawSelf()
       local tOffset = (river and river.timeOffsetSec) or 0.0
       local tSpan = (river and river.timeSpanSec) or 30.0
       if river and river.timeOffsetSec and river.timeOffsetSec > 0.01 then
-        local breakW = 24
+        local breakW = (river.props and river.props.cadBreakW) or 0
         local pinnedW = (river.props and river.props.pinnedSliverW) or 60
         historyW = math.max(20, w - breakW - pinnedW)
       end
@@ -389,6 +577,75 @@ function SignalBox:drawSelf()
     local smeterY = clamp(carrierY - smeterH / 2, 2, h - smeterH - 2)
     System.drawRect(px + 5, smeterY, smeterW, smeterH, { 0.1, 0.2, 0.15, 0.7 })
     System.drawRect(px + 5, smeterY + smeterH * 0.35, smeterW, smeterH * 0.65, { 0.3, 0.9, 0.4, 0.9 })
+  end
+
+  -- HamDB Station & Award Tooltip Card on Hover
+  local isHoveringLabel = (self.isMouseOver or self.hoverActive) and (self.hoverX >= 8 and self.hoverX <= 260)
+  if isHoveringLabel then
+    local HamDB = require("HamDB")
+    local primaryCall = self.callerCallsign or self.label
+    local st1 = HamDB.lookup(primaryCall)
+    if st1 then
+      local awards1 = HamDB.evaluateAwards(st1, _G.operatorWorkedLog)
+      if self.lwc then
+        for _, aw in ipairs(awards1) do
+          self.lwc:setTag(aw, true)
+        end
+      end
+
+      local st2 = self.respondentCallsign and HamDB.lookup(self.respondentCallsign)
+      local cardW = 230
+      local cardH = st2 and 124 or 74
+      local cardX = clamp(self.hoverX + 12, 10, w - cardW - 10)
+      local cardY = (h > 60) and 4 or (h + 4)
+
+      System.drawRoundedRect(cardX, cardY, cardW, cardH, 4, { 0.06, 0.09, 0.16, 0.96 })
+      System.drawRectLines(cardX, cardY, cardW, cardH, 1.0, { 0.25, 0.35, 0.5, 0.85 })
+
+      local header1 = string.format("%s - %s", st1.callsign, st1.name)
+      System.drawText(header1, cardX + 8, cardY + 6, 12, { 1.0, 1.0, 1.0, 0.98 })
+
+      local loc1 = st1.country
+      if st1.city and #st1.city > 0 and st1.state and #st1.state > 0 then
+        loc1 = string.format("%s, %s, %s", st1.city, st1.state, st1.country)
+      elseif st1.state and #st1.state > 0 then
+        loc1 = string.format("%s, %s", st1.state, st1.country)
+      elseif st1.city and #st1.city > 0 then
+        loc1 = string.format("%s, %s", st1.city, st1.country)
+      end
+      System.drawText(loc1, cardX + 8, cardY + 22, 11, { 0.75, 0.8, 0.9, 0.85 })
+
+      local rfStr1 = string.format("Grid: %s | %d deg | %d mi (%d km)", st1.grid, st1.bearing, st1.distMi, st1.distKm)
+      System.drawText(rfStr1, cardX + 8, cardY + 38, 10, { 0.38, 0.82, 0.95, 0.9 })
+
+      if #awards1 > 0 then
+        local awardNames = {}
+        for _, a in ipairs(awards1) do
+          table.insert(awardNames, "[" .. a:gsub("award%.", "") .. "]")
+        end
+        local awardStr = table.concat(awardNames, " ")
+        System.drawText(awardStr, cardX + 8, cardY + 54, 10, { 0.95, 0.8, 0.3, 0.95 })
+      end
+
+      if st2 then
+        System.drawLine(cardX + 6, cardY + 66, cardX + cardW - 6, cardY + 66, 1.0, { 0.2, 0.3, 0.4, 0.7 })
+        local header2 = string.format("%s - %s", st2.callsign, st2.name)
+        System.drawText(header2, cardX + 8, cardY + 72, 12, { 1.0, 1.0, 1.0, 0.98 })
+
+        local loc2 = st2.country
+        if st2.city and #st2.city > 0 and st2.state and #st2.state > 0 then
+          loc2 = string.format("%s, %s, %s", st2.city, st2.state, st2.country)
+        elseif st2.state and #st2.state > 0 then
+          loc2 = string.format("%s, %s", st2.state, st2.country)
+        elseif st2.city and #st2.city > 0 then
+          loc2 = string.format("%s, %s", st2.city, st2.country)
+        end
+        System.drawText(loc2, cardX + 8, cardY + 88, 11, { 0.75, 0.8, 0.9, 0.85 })
+
+        local rfStr2 = string.format("Grid: %s | %d deg | %d mi (%d km)", st2.grid, st2.bearing, st2.distMi, st2.distKm)
+        System.drawText(rfStr2, cardX + 8, cardY + 104, 10, { 0.38, 0.82, 0.95, 0.9 })
+      end
+    end
   end
 end
 

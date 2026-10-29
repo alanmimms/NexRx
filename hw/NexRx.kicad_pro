@@ -504,6 +504,10 @@
         ""
       ],
       [
+        "multiple_net_names|1168400|1701800|efea9f2c-e73c-4f0f-8512-01a046001013|a7c55e06-5f98-4792-ac78-bbdaf3c289db|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
         "multiple_net_names|1168400|1727200|f2b13167-d0c3-42f7-8656-d48534f849a5|f08be51f-4377-40f5-8809-73df614afa2d|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
@@ -529,6 +533,10 @@
       ],
       [
         "multiple_net_names|1168400|1905000|29a030a5-de64-4bfe-a984-be9001b96b0f|4b2ac7c3-e00b-4f7c-829e-1aff039f40b9|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|1168400|1955800|ff1158cc-6d5d-4bc5-9d29-47f2194a731b|d046bb70-d8bd-4864-a6a0-449955318861|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
@@ -593,6 +601,10 @@
       ],
       [
         "multiple_net_names|266700|1219200|22031725-34ed-4ff4-ba64-51c8288c6b22|50faa46b-ed24-4355-a1d5-31dfbac91437|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
+        ""
+      ],
+      [
+        "multiple_net_names|266700|1270000|6e31939d-ff11-4dd2-b89d-2ff7b650eca6|6705c71a-7579-40a6-870a-10de01763564|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543|/8ae46c04-d01a-4756-8774-512b694bfaff/c32f5700-dc71-4705-afb9-ca83a93b0543",
         ""
       ],
       [
@@ -5093,7 +5105,7 @@
           "show": false
         }
       ],
-      "filter_string": "c",
+      "filter_string": "r",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",

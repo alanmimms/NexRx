@@ -16,6 +16,23 @@ local function clamp(v, minV, maxV)
   return v
 end
 
+local function formatFreqHz(freq)
+  local f = tonumber(freq) or 0
+  if f >= 1e6 then
+    local mhz = math.floor(f / 1e6)
+    local rem = math.floor(f - mhz * 1e6 + 0.5)
+    local khz = math.floor(rem / 1e3)
+    local hz = rem % 1e3
+    return string.format("%d.%03d.%03d", mhz, khz, hz)
+  elseif f >= 1e3 then
+    local khz = math.floor(f / 1e3)
+    local hz = math.floor(f % 1e3 + 0.5)
+    return string.format("%d.%03d", khz, hz)
+  else
+    return string.format("%d", math.floor(f + 0.5))
+  end
+end
+
 local GutterLeft = Widget.mkType("GutterLeft", Widget)
 
 setbox.rule {
@@ -23,7 +40,7 @@ setbox.rule {
   tags = { "widget.GutterLeft" },
   priority = -1000,
   apply = {
-    prefW = 76,
+    prefW = 84,
     background = "#070c16",
     border = "#131f33",
     tabBg = "#1e293b",
@@ -45,7 +62,7 @@ function GutterLeft:init(def)
 end
 
 function GutterLeft:calcMetrics()
-  if (self.props.prefW or 0) == 0 then self.props.prefW = 76 end
+  if (self.props.prefW or 0) == 0 then self.props.prefW = 84 end
   if (self.props.prefH or 0) == 0 then self.props.prefH = 300 end
 end
 
@@ -121,9 +138,9 @@ function GutterLeft:drawSelf()
       local tabW = w - 8
       local tabX = 2
       local bwStr = (bw < 1000) and string.format("%dHz", bw) or string.format("%.1fk", bw / 1000.0)
-      local cfLabel = string.format("%.3f", carrierFreq / 1e6)
-      local highLabel = string.format("%.3f", highFreq / 1e6)
-      local lowLabel = string.format("%.3f", lowFreq / 1e6)
+      local cfLabel = formatFreqHz(carrierFreq)
+      local highLabel = formatFreqHz(highFreq)
+      local lowLabel = formatFreqHz(lowFreq)
       local row2Text = string.format("%s %s", bwStr, mode)
 
       local carrierTabH = 28
@@ -142,14 +159,20 @@ function GutterLeft:drawSelf()
       carrierTabY = clamp(carrierTabY, rulerH + 2, h - carrierTabH - 2)
       table.insert(self.tabHitBoxes, { y = carrierTabY, h = carrierTabH, index = box.boxIndex or i })
 
-      -- Carrier tag with 2 rows of text: frequency on top, bandwidth below
+      -- Carrier tag with 2 rows of text: frequency on top, bandwidth below (right-aligned)
       System.drawRoundedRect(tabX, carrierTabY, tabW, carrierTabH, 3, { tabBgR, tabBgG, tabBgB, 0.94 })
       System.drawRectLines(tabX, carrierTabY, tabW, carrierTabH, isSelected and 2 or 1, { tabBorderR, tabBorderG, tabBorderB, isSelected and 0.95 or 0.75 })
 
-      -- Row 1 (top): Frequency
-      System.drawText(cfLabel, tabX + 4, carrierTabY + 2, 11, { 1.0, 1.0, 1.0, 1.0 })
-      -- Row 2 (bottom): Bandwidth & Mode
-      System.drawText(row2Text, tabX + 4, carrierTabY + 14, 10, { 0.55, 0.85, 1.0, 0.95 })
+      -- Row 1 (top): Frequency in Hz resolution (right-aligned in tab)
+      local tw1 = System.measureText(cfLabel, 10) or (#cfLabel * 6.5)
+      local tx1 = math.max(tabX + 2, tabX + tabW - tw1 - 4)
+      System.drawText(cfLabel, tx1, carrierTabY + 2, 10, { 1.0, 1.0, 1.0, 1.0 })
+
+      -- Row 2 (bottom): Bandwidth & Mode (right-aligned in tab)
+      local tw2 = System.measureText(row2Text, 10) or (#row2Text * 6)
+      local tx2 = math.max(tabX + 2, tabX + tabW - tw2 - 4)
+      System.drawText(row2Text, tx2, carrierTabY + 14, 10, { 0.55, 0.85, 1.0, 0.95 })
+
       -- Pointer tick to the exact carrier frequency on the River
       System.drawLine(tabX + tabW, targetLineY, w, targetLineY, 2.0, { 1.0, 1.0, 1.0, 0.95 })
 
@@ -162,7 +185,9 @@ function GutterLeft:drawSelf()
           table.insert(self.tabHitBoxes, { y = topTabY, h = topTabH, index = box.boxIndex or i })
           System.drawRoundedRect(tabX + 4, topTabY, tabW - 4, topTabH, 2, { tabBgR, tabBgG, tabBgB, 0.85 })
           System.drawRectLines(tabX + 4, topTabY, tabW - 4, topTabH, 1, { tabBorderR, tabBorderG, tabBorderB, 0.6 })
-          System.drawText(highLabel, tabX + 6, math.floor(topY - 4), 9, { 0.7, 0.85, 1.0, 0.9 })
+          local twh = System.measureText(highLabel, 9) or (#highLabel * 5.5)
+          local txh = math.max(tabX + 4, tabX + tabW - twh - 4)
+          System.drawText(highLabel, txh, math.floor(topY - 4), 9, { 0.7, 0.85, 1.0, 0.9 })
           System.drawLine(tabX + tabW, topY, w, topY, 1.5, { tabBorderR, tabBorderG, tabBorderB, 0.95 })
         end
       elseif mode == "LSB" and (botY - topY) >= 36 then
@@ -173,7 +198,9 @@ function GutterLeft:drawSelf()
           table.insert(self.tabHitBoxes, { y = botTabY, h = botTabH, index = box.boxIndex or i })
           System.drawRoundedRect(tabX + 4, botTabY, tabW - 4, botTabH, 2, { tabBgR, tabBgG, tabBgB, 0.85 })
           System.drawRectLines(tabX + 4, botTabY, tabW - 4, botTabH, 1, { tabBorderR, tabBorderG, tabBorderB, 0.6 })
-          System.drawText(lowLabel, tabX + 6, math.floor(botY - 4), 9, { 0.7, 0.85, 1.0, 0.9 })
+          local twl = System.measureText(lowLabel, 9) or (#lowLabel * 5.5)
+          local txl = math.max(tabX + 4, tabX + tabW - twl - 4)
+          System.drawText(lowLabel, txl, math.floor(botY - 4), 9, { 0.7, 0.85, 1.0, 0.9 })
           System.drawLine(tabX + tabW, botY, w, botY, 1.5, { tabBorderR, tabBorderG, tabBorderB, 0.95 })
         end
       end
@@ -209,10 +236,10 @@ function GutterLeft:drawSelf()
       local cardW = 160
       local items = {}
       for _, b in ipairs(self.topPileBoxes) do
-        table.insert(items, string.format("%.3f %s %s", (b.carrierFreq or 0) / 1e6, b.mode or "", b.label or ""))
+        table.insert(items, string.format("%s %s %s", formatFreqHz(b.carrierFreq or 0), b.mode or "", b.label or ""))
       end
       for _, a in ipairs(self.topPileAlerts) do
-        table.insert(items, string.format("%.3f %s", (a.freq or 0) / 1e6, a.label or "Alert"))
+        table.insert(items, string.format("%s %s", formatFreqHz(a.freq or 0), a.label or "Alert"))
       end
       local nShow = math.min(#items, 4)
       local cardH = 18 + nShow * 14 + 6
@@ -237,10 +264,10 @@ function GutterLeft:drawSelf()
       local cardW = 160
       local items = {}
       for _, b in ipairs(self.bottomPileBoxes) do
-        table.insert(items, string.format("%.3f %s %s", (b.carrierFreq or 0) / 1e6, b.mode or "", b.label or ""))
+        table.insert(items, string.format("%s %s %s", formatFreqHz(b.carrierFreq or 0), b.mode or "", b.label or ""))
       end
       for _, a in ipairs(self.bottomPileAlerts) do
-        table.insert(items, string.format("%.3f %s", (a.freq or 0) / 1e6, a.label or "Alert"))
+        table.insert(items, string.format("%s %s", formatFreqHz(a.freq or 0), a.label or "Alert"))
       end
       local nShow = math.min(#items, 4)
       local cardH = 18 + nShow * 14 + 6

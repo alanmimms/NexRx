@@ -32,7 +32,7 @@ bool GUIEngine::init(const std::string& title, bool vsyncEnabled) {
 
   // 3. Audio & River init
   if (!audio.init(48000, 2)) return false;
-  if (!river.init(DSPEngine::FFT_SIZE, 512)) return false;
+  if (!river.init(DSPEngine::FFT_SIZE, 1800)) return false;
 
   // Configure audio buffer for smooth jitter absorption with 50ms batches
   BufferConfig audioConfig;

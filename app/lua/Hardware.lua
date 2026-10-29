@@ -194,9 +194,16 @@ function Hardware.disableWaterfall() waterfallEnabled = false end
 function Hardware.isHardwareEnabled() return hwEnabled end
 function Hardware.isWaterfallEnabled() return waterfallEnabled end
 
--- Generic VFO Setter (used for direct interaction if needed)
 function Hardware.setVFO(freqHz)
     if rx and rx.setVFO then rx.setVFO(freqHz) end
+end
+
+function Hardware.setTuningOffset(offsetHz)
+    if rx and rx.setTuningOffset then rx.setTuningOffset(offsetHz) end
+end
+
+function Hardware.setModeId(modeId)
+    if rx and rx.setModeId then rx.setModeId(modeId) end
 end
 
 return Hardware

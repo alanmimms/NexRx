@@ -83,27 +83,37 @@ function DecoderTrack:renderInline(yPx, wPx, timeSpanSec, hzPerPx, loupeActive, 
   local textCol = self:getTextColor()
   local ribbonWidth = self.props.ribbonWidth or 2.0
 
+  local inLoupe = false
+  local trackY = yPx
+  if loupeActive and loupeCy and loupeCx then
+    local rad = 60
+    if math.abs(yPx - loupeCy) <= rad then
+      inLoupe = true
+      trackY = loupeCy + (yPx - loupeCy) * 2.5
+    end
+  end
+
   -- Activity ribbon line
-  System.drawLine(0, yPx, wPx, yPx, ribbonWidth, ribbonCol)
+  System.drawLine(0, trackY, wPx, trackY, ribbonWidth, ribbonCol)
 
   -- Adaptive Level of Detail (LOD):
   -- If zoomed in (< 50 Hz/px) or inside magnifying loupe, render text inline
-  local showText = (hzPerPx < 50)
-  if not showText and loupeActive and loupeCy then
-    if math.abs(yPx - loupeCy) < 40 then
-      showText = true
-    end
-  end
+  local showText = (hzPerPx < 50) or inLoupe
 
   if showText then
     local label = string.format("%s: %s", tostring(self.callsign), tostring(self.text))
     local tw = System.measureText(label, 12) or (#label * 8)
-    local tx = math.max(12, wPx - tw - 30)
+    local tx
+    if inLoupe and loupeCx then
+      tx = math.max(10, math.min(wPx - tw - 10, math.floor(loupeCx - tw / 2)))
+    else
+      tx = math.max(12, wPx - tw - 30)
+    end
 
     -- Background badge behind text for legibility over spectrum
     local badgeCol = toRgba(self.props.badgeBackground or "#050811", 0.88)
-    System.drawRoundedRect(tx - 3, yPx - 8, tw + 6, 16, 3, badgeCol)
-    System.drawText(label, tx, yPx - 6, 12, textCol)
+    System.drawRoundedRect(tx - 3, trackY - 8, tw + 6, 16, 3, badgeCol)
+    System.drawText(label, tx, trackY - 6, 12, textCol)
   end
 end
 

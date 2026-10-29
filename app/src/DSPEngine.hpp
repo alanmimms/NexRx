@@ -144,9 +144,14 @@ private:
   DSPDiagnostics dspDiag;
   RateAdaptiveBuffer<float> audioBuffer;
 
-  static constexpr size_t audioHistoryCapacity = 48000 * 60;
-  std::vector<float> audioHistoryRing;
-  std::atomic<uint64_t> audioHistoryWritePos{0};
-  std::atomic<uint64_t> playbackReadPos{0};
+  struct PassbandSample {
+    float i;
+    float q;
+  };
+
+  static constexpr size_t passbandHistoryCapacity = static_cast<size_t>(inputSampleRate * 64.0);
+  std::vector<PassbandSample> passbandHistoryRing;
+  std::atomic<uint64_t> passbandHistoryWritePos{0};
+  std::atomic<uint64_t> passbandPlaybackReadPos{0};
   std::atomic<bool> playbackActive{false};
 };

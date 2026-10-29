@@ -30,20 +30,34 @@ RiverBehaviors.travelingScoped = {
 
 -- Bubble Zoom Loupe Strategy
 RiverBehaviors.bubbleLoupe = {
-  shouldActivateBubble = function(cursorX, cursorY, tracks, zoomFactor)
+  shouldActivateBubble = function(cursorX, cursorY, tracks, isAltActive)
+    if not isAltActive then return false end
     if not tracks or #tracks == 0 then return false end
-    -- Activate if multiple tracks collide within threshold
-    local collisionThresholdPx = 14
-    local nearbyCount = 0
+    local threshold = 30
     for _, track in ipairs(tracks) do
-      if math.abs((track.y or 0) - cursorY) < collisionThresholdPx then
-        nearbyCount = nearbyCount + 1
+      if math.abs((track.y or 0) - cursorY) <= threshold then
+        return true
       end
     end
-    return nearbyCount >= 2
+    return false
   end,
   radius = 60,
-  magnification = 2.0,
+  magnificationY = 2.5,
+  magnificationX = 1.5,
+
+  -- Anamorphic forward transform: (unmagnified -> magnified screen coordinate)
+  transformForward = function(x, y, cx, cy, magX, magY)
+    magX = magX or 1.5
+    magY = magY or 2.5
+    return cx + (x - cx) * magX, cy + (y - cy) * magY
+  end,
+
+  -- Anamorphic inverse transform: (magnified screen coordinate -> unmagnified canvas coordinate)
+  transformInverse = function(screenX, screenY, cx, cy, magX, magY)
+    magX = magX or 1.5
+    magY = magY or 2.5
+    return cx + (screenX - cx) / magX, cy + (screenY - cy) / magY
+  end,
 }
 
 return RiverBehaviors

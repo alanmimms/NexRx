@@ -16,7 +16,7 @@ DSPEngine::DSPEngine() {
   spectrumData.assign(FFT_SIZE, -100.0f);
   audioBuffer.configure(nexrx::BufferConfig{32768});
   demod.setSampleRate(48000.0f);
-  audioHistoryRing.assign(audioHistoryCapacity, 0.0f);
+  passbandHistoryRing.assign(passbandHistoryCapacity, {0.0f, 0.0f});
   
   // Default alignment for Dual-OSD
   staticCal[0].alignR = 1.0f; staticCal[0].alignI = 0.0f;
@@ -24,7 +24,12 @@ DSPEngine::DSPEngine() {
 }
 
 void DSPEngine::setVfo(double freqHz) {
-  lastVFOHz = freqHz;
+  if (std::abs(freqHz - lastVFOHz) > 1.0) {
+    stopPlayback();
+    passbandHistoryWritePos.store(0);
+    passbandPlaybackReadPos.store(0);
+    lastVFOHz = freqHz;
+  }
   basebandFilter.recompute();
 }
 
@@ -118,16 +123,36 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   iqBuffer[pos * 2 + 1] = qF;
   iqBufferWritePos.store((pos + 1) % FFT_SIZE, std::memory_order_release);
 
-  // 2. Apply digital gain and RF metering
+  // 2. Save entire raw passband signal (384ksps) in circular history buffer
+  uint64_t wPos = passbandHistoryWritePos.load(std::memory_order_relaxed);
+  passbandHistoryRing[wPos % passbandHistoryCapacity] = {iF, qF};
+  passbandHistoryWritePos.store(wPos + 1, std::memory_order_release);
+
+  // 3. Determine sample to demodulate: Live or Historical
+  float procI = iF;
+  float procQ = qF;
+  if (playbackActive.load(std::memory_order_acquire)) {
+    uint64_t rPos = passbandPlaybackReadPos.load(std::memory_order_relaxed);
+    if (rPos < wPos) {
+      PassbandSample histSample = passbandHistoryRing[rPos % passbandHistoryCapacity];
+      procI = histSample.i;
+      procQ = histSample.q;
+      passbandPlaybackReadPos.store(rPos + 1, std::memory_order_release);
+    } else {
+      playbackActive.store(false, std::memory_order_release);
+    }
+  }
+
+  // 4. Apply digital gain and RF metering
   float rfGain = std::pow(10.0f, rfGainDB.load() / 20.0f);
-  iF *= rfGain;
-  qF *= rfGain;
-  float maxR = std::max(std::abs(iF), std::abs(qF));
+  procI *= rfGain;
+  procQ *= rfGain;
+  float maxR = std::max(std::abs(procI), std::abs(procQ));
   if (maxR > dspDiag.maxRaw.load()) {
     dspDiag.maxRaw.store(maxR);
   }
 
-  // 3. Digital Tuning Shift (to bring selected frequency to DC for demod)
+  // 5. Digital Tuning Shift (to bring selected frequency to DC for demod)
   if (std::abs(tuningOffsetHz - lastTune_hz) > 0.1) {
     constexpr double sampleRate = 384000.0;
     double phaseInc = -2.0 * M_PI * tuningOffsetHz / sampleRate;
@@ -135,10 +160,10 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     tuneSin_d = std::sin(phaseInc);
     lastTune_hz = tuningOffsetHz;
   }
-  float iT = iF * (float)tuneCos - qF * (float)tuneSin;
-  float qT = qF * (float)tuneCos + iF * (float)tuneSin;
-  iF = iT;
-  qF = qT;
+  float iT = procI * static_cast<float>(tuneCos) - procQ * static_cast<float>(tuneSin);
+  float qT = procQ * static_cast<float>(tuneCos) + procI * static_cast<float>(tuneSin);
+  procI = iT;
+  procQ = qT;
 
   // Advance tuning phasors
   double nextTuneCos = tuneCos * tuneCos_d - tuneSin * tuneSin_d;
@@ -153,8 +178,8 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   }
 
   // Push tuned 384ksps sample into decimation delay line
-  decimHistoryI[decimRingPos] = iF;
-  decimHistoryQ[decimRingPos] = qF;
+  decimHistoryI[decimRingPos] = procI;
+  decimHistoryQ[decimRingPos] = procQ;
   decimRingPos = (decimRingPos + 1) & decimBufMask;
 
   // 8:1 decimation from 384ksps to 48ksps
@@ -177,23 +202,7 @@ void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
     dspDiag.signalRms.store(demod.getSignalLevelRMS());
     if (std::abs(aOut) > dspDiag.maxAudio.load()) dspDiag.maxAudio.store(std::abs(aOut));
 
-    uint64_t wPos = audioHistoryWritePos.load(std::memory_order_relaxed);
-    audioHistoryRing[wPos % audioHistoryCapacity] = aOut;
-    audioHistoryWritePos.store(wPos + 1, std::memory_order_release);
-
-    if (playbackActive.load(std::memory_order_acquire)) {
-      uint64_t rPos = playbackReadPos.load(std::memory_order_relaxed);
-      if (rPos < wPos) {
-        float histSample = audioHistoryRing[rPos % audioHistoryCapacity];
-        playbackReadPos.store(rPos + 1, std::memory_order_release);
-        audioBuffer.write(histSample);
-      } else {
-        playbackActive.store(false, std::memory_order_release);
-        audioBuffer.write(aOut);
-      }
-    } else {
-      audioBuffer.write(aOut);
-    }
+    audioBuffer.write(aOut);
   }
   totalSamplesProcessed++;
   dspDiag.framesProcessed++;
@@ -257,14 +266,14 @@ void DSPEngine::seekPlayback(float offsetSec) {
     stopPlayback();
     return;
   }
-  uint64_t curW = audioHistoryWritePos.load(std::memory_order_acquire);
-  uint64_t maxAvailable = std::min<uint64_t>(curW, audioHistoryCapacity - 1);
-  uint64_t offsetSamples = static_cast<uint64_t>(offsetSec * outputAudioRate);
+  uint64_t curW = passbandHistoryWritePos.load(std::memory_order_acquire);
+  uint64_t maxAvailable = std::min<uint64_t>(curW, passbandHistoryCapacity - 1);
+  uint64_t offsetSamples = static_cast<uint64_t>(offsetSec * inputSampleRate);
   if (offsetSamples > maxAvailable) {
     offsetSamples = maxAvailable;
   }
   audioBuffer.clear();
-  playbackReadPos.store(curW - offsetSamples, std::memory_order_release);
+  passbandPlaybackReadPos.store(curW - offsetSamples, std::memory_order_release);
   playbackActive.store(true, std::memory_order_release);
 }
 
@@ -273,9 +282,13 @@ void DSPEngine::stopPlayback() {
 }
 
 float DSPEngine::getPlaybackOffsetSec() const {
-  if (!playbackActive.load(std::memory_order_acquire)) return 0.0f;
-  uint64_t curW = audioHistoryWritePos.load(std::memory_order_relaxed);
-  uint64_t curR = playbackReadPos.load(std::memory_order_relaxed);
-  if (curR >= curW) return 0.0f;
-  return static_cast<float>(curW - curR) / static_cast<float>(outputAudioRate);
+  if (!playbackActive.load(std::memory_order_acquire)) {
+    return 0.0f;
+  }
+  uint64_t curW = passbandHistoryWritePos.load(std::memory_order_relaxed);
+  uint64_t curR = passbandPlaybackReadPos.load(std::memory_order_relaxed);
+  if (curR >= curW) {
+    return 0.0f;
+  }
+  return static_cast<float>(curW - curR) / static_cast<float>(inputSampleRate);
 }

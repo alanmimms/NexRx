@@ -108,7 +108,7 @@ rule { id = "id-wf", tags = {"id.id-wf", "widget.Waterfall"}, apply = { stick = 
 -- =============================================================================
 
 rule { id = "river-view-style", tags = {"widget.RiverView"}, apply = { background = "#050811", border = "#1e293b", stick = "TLBR", flexW = 1.0, flexH = 1.0 } }
-rule { id = "gutter-left-style", tags = {"widget.GutterLeft"}, apply = { background = "#070c16", border = "#131f33", prefW = 76, stick = "TLB", flexH = 1.0 } }
+rule { id = "gutter-left-style", tags = {"widget.GutterLeft"}, apply = { background = "#070c16", border = "#131f33", prefW = 84, stick = "TLB", flexH = 1.0 } }
 rule { id = "live-trace-style", tags = {"widget.LiveTrace"}, apply = { background = "#070c16", border = "#131f33", prefW = 90, stick = "TRB", flexH = 1.0 } }
 rule { id = "frequency-ruler-style", tags = {"widget.FrequencyRuler"}, apply = { background = "#0c101c", border = "#1e293b", prefW = 60, stick = "TRB", flexH = 1.0 } }
 
@@ -137,5 +137,13 @@ rule { id = "sigbox-usb", tags = {"widget.SignalBox", "mode.USB"}, apply = { bac
 rule { id = "sigbox-lsb", tags = {"widget.SignalBox", "mode.LSB"}, apply = { background = "#06b6d4", border = "#22d3ee" } }
 rule { id = "sigbox-am", tags = {"widget.SignalBox", "mode.AM"}, apply = { background = "#ec4899", border = "#f472b6" } }
 rule { id = "sigbox-fm", tags = {"widget.SignalBox", "mode.FM"}, apply = { background = "#84cc16", border = "#a3e635" } }
+
+-- =============================================================================
+-- Award Matcher Visual Rules (Tag-Driven Customization)
+-- =============================================================================
+
+rule { id = "award-needed-dx", tags = {"award.neededDX"}, apply = { border = "#f59e0b", badgeColor = "#d97706" } }
+rule { id = "award-new-to-me", tags = {"award.newToMe"}, apply = { border = "#10b981", badgeColor = "#059669" } }
+rule { id = "award-needed-was", tags = {"award.neededWAS"}, apply = { border = "#a855f7", badgeColor = "#7c3aed" } }
 
 print("[default.lua] Configuration loaded")
