@@ -104,6 +104,42 @@ function SignalBox:init(def)
   self.hoverY = 0
 end
 
+function SignalBox:contains(x, y)
+  local w = self.props.w or 0
+  local h = self.props.h or 0
+  if x < 0 or x >= w then return false end
+
+  -- Inside normal bounding box
+  if y >= 0 and y < h then return true end
+
+  -- In chevron handle region near right edge (x >= w - 60):
+  -- Top chevron extends above the top: y in [-14, 0]
+  -- Bottom chevron extends below the bottom: y in [h, h + 14]
+  local chevronH = 14
+  if x >= w - 60 then
+    if y >= -chevronH and y <= h + chevronH then
+      return true
+    end
+  end
+
+  return false
+end
+
+function SignalBox:stopPlayback()
+  if self.playbackActive then
+    self.playbackActive = false
+    self.playbackX = 0
+    self.playbackOffsetSec = 0
+    if _G.audio and _G.audio.stopPlayback then
+      _G.audio.stopPlayback()
+    end
+  end
+end
+
+function SignalBox:onBlur()
+  self:stopPlayback()
+end
+
 function SignalBox:updateQSOState(caller, respondent)
   if caller then self.callerCallsign = caller end
   if respondent then self.respondentCallsign = respondent end
@@ -177,7 +213,7 @@ function SignalBox:onEvent(event)
       local h = self.props.h or 10
 
       -- 1. Mode Badge on the left (x: 8 to 72)
-      if lx >= 8 and lx <= 72 and ly >= 2 and ly <= h - 2 then
+      if lx >= 8 and lx <= 72 and ly >= math.min(0, h / 2 - 10) and ly <= math.max(h, h / 2 + 10) then
         self:cycleMode()
         Model.selectedSignalBoxIndex:set(self.boxIndex)
         self:setFocus()
@@ -189,16 +225,14 @@ function SignalBox:onEvent(event)
       -- 2. "Always Live" zone near the right edge (lx >= w - 60): Chevron handles & live tuning
       if lx >= w - 60 then
         -- Clicking in the live zone cancels historical playback
-        if self.playbackActive then
-          self.playbackActive = false
-          if _G.audio and _G.audio.stopPlayback then
-            _G.audio.stopPlayback()
-          end
-        end
+        self:stopPlayback()
 
-        if ly <= math.max(8, h * 0.45) then
+        local isTopChevron = (ly >= -14 and ly <= math.min(6, h * 0.35))
+        local isBottomChevron = (ly >= math.max(h - 6, h * 0.65) and ly <= h + 14)
+
+        if isTopChevron then
           self.dragMode = "topHandle"
-        elseif ly >= math.min(h - 8, h * 0.55) then
+        elseif isBottomChevron then
           self.dragMode = "bottomHandle"
         else
           self.dragMode = "move"
@@ -253,7 +287,13 @@ function SignalBox:onEvent(event)
       self.lastDragY = self.dragStartY
       self.dragActiveDelta = nil
       self.dragAccumPx = 0
-      self.currentDragFreq = (self.dragMode == "topHandle") and self.dragStartHighFreq or self.dragStartLowFreq
+      if self.dragMode == "topHandle" then
+        self.currentDragFreq = self.dragStartHighFreq
+      elseif self.dragMode == "bottomHandle" then
+        self.currentDragFreq = self.dragStartLowFreq
+      else
+        self.currentDragFreq = self.dragStartCarrier
+      end
 
       state.setActive(self.id)
       Model.selectedSignalBoxIndex:set(self.boxIndex)
@@ -285,13 +325,87 @@ function SignalBox:onEvent(event)
     end
 
     if self.dragMode == "move" then
-      -- Dragging up increases frequency; 1:1 on the River canvas
-      local newFreq = self.dragStartCarrier - (dy * hzPerPx)
-      if river and river.freqMin and river.freqMax then
-        newFreq = math.max(river.freqMin, math.min(river.freqMax, newFreq))
+      local curY = event.gy or event.y or 0
+      local stepY = curY - (self.lastDragY or curY)
+
+      local isShift, isCtrl = getModifiers(event)
+      local delta = nil
+      if isShift and isCtrl then
+        delta = 10000 -- 10 kHz
+      elseif isShift then
+        delta = 1000  -- 1 kHz
+      elseif isCtrl then
+        delta = 100   -- 100 Hz
       end
-      self.carrierFreq = newFreq
-      Model.set("rx.VFO.activeValue", self.carrierFreq)
+
+      if delta then
+        if self.dragActiveDelta ~= delta then
+          if stepY ~= 0 then
+            local dir = (stepY < 0) and 1 or -1 -- UP (negative stepY) increases frequency
+            local F = self.currentDragFreq or self.dragStartCarrier
+            local snapped
+            if dir > 0 then
+              if F % delta == 0 then
+                snapped = F + delta
+              else
+                snapped = math.ceil(F / delta) * delta
+              end
+            else
+              if F % delta == 0 then
+                snapped = F - delta
+              else
+                snapped = math.floor(F / delta) * delta
+              end
+            end
+            self.currentDragFreq = snapped
+            self.dragActiveDelta = delta
+            self.dragAccumPx = 0
+            self.lastDragY = curY
+          end
+        else
+          self.dragAccumPx = (self.dragAccumPx or 0) + stepY
+          self.lastDragY = curY
+          local pxPerStep = 8.0
+          if self.dragAccumPx <= -pxPerStep then
+            local nSteps = math.floor((-self.dragAccumPx) / pxPerStep)
+            self.currentDragFreq = self.currentDragFreq + (nSteps * delta)
+            self.dragAccumPx = self.dragAccumPx + (nSteps * pxPerStep)
+          elseif self.dragAccumPx >= pxPerStep then
+            local nSteps = math.floor(self.dragAccumPx / pxPerStep)
+            self.currentDragFreq = self.currentDragFreq - (nSteps * delta)
+            self.dragAccumPx = self.dragAccumPx - (nSteps * pxPerStep)
+          end
+        end
+
+        local newFreq = self.currentDragFreq
+        if river and river.freqMin and river.freqMax then
+          newFreq = math.max(river.freqMin, math.min(river.freqMax, newFreq))
+        end
+        self.carrierFreq = newFreq
+        if river and river.updateBoxMetadataForFreq then
+          river:updateBoxMetadataForFreq(self, self.carrierFreq)
+        end
+        Model.set("rx.VFO.activeValue", self.carrierFreq)
+      else
+        if self.dragActiveDelta ~= nil then
+          self.dragStartCarrier = self.currentDragFreq or self.carrierFreq
+          self.dragStartY = curY
+          self.dragActiveDelta = nil
+          self.dragAccumPx = 0
+        end
+
+        self.lastDragY = curY
+        local newFreq = self.dragStartCarrier - (dy * hzPerPx)
+        if river and river.freqMin and river.freqMax then
+          newFreq = math.max(river.freqMin, math.min(river.freqMax, newFreq))
+        end
+        self.currentDragFreq = newFreq
+        self.carrierFreq = newFreq
+        if river and river.updateBoxMetadataForFreq then
+          river:updateBoxMetadataForFreq(self, self.carrierFreq)
+        end
+        Model.set("rx.VFO.activeValue", self.carrierFreq)
+      end
     elseif self.dragMode == "topHandle" or self.dragMode == "bottomHandle" then
       local isTop = (self.dragMode == "topHandle")
       local curY = event.gy or event.y or 0
@@ -308,7 +422,7 @@ function SignalBox:onEvent(event)
       end
 
       local minBw = 200
-      local maxBw = 20000
+      local maxBw = 100000
 
       if delta then
         if self.dragActiveDelta ~= delta then
@@ -391,7 +505,7 @@ function SignalBox:onEvent(event)
           Model.set("rx.bandpass.width", self.bandwidth)
         end
       else
-        -- Continuous vernier adjustment (no modifier held)
+        -- Continuous 1:1 mouse cursor tracking (no modifier held)
         if self.dragActiveDelta ~= nil then
           if isTop then
             self.dragStartHighFreq = self.currentDragFreq or self.dragStartHighFreq
@@ -404,7 +518,7 @@ function SignalBox:onEvent(event)
         end
 
         self.lastDragY = curY
-        local vernierHzPerPx = 25.0
+        local vernierHzPerPx = hzPerPx
         local deltaHz = ((curY - self.dragStartY) * vernierHzPerPx)
 
         if isTop then
@@ -445,6 +559,9 @@ function SignalBox:onEvent(event)
     if river and river.layout then
       river:layout(river.props.x or 0, river.props.y or 0, river.props.w or 800, river.props.h or 450)
     end
+    if river and river.onSignalBoxesChanged then
+      river:onSignalBoxesChanged(river.signalBoxes)
+    end
     return true
   elseif event.type == "mouseWheel" then
     local river = self.parent
@@ -463,6 +580,9 @@ function SignalBox:drawSelf()
   local isSelected = (Model.selectedSignalBoxIndex:get() == self.boxIndex)
   if self.lwc then
     self.lwc:setTag("state.Selected", isSelected)
+  end
+  if not isSelected and self.playbackActive then
+    self:stopPlayback()
   end
 
   local bgR, bgG, bgB = state.hexToRgb(self.props.background or "#facc15")
@@ -486,21 +606,23 @@ function SignalBox:drawSelf()
     local hR, hG, hB = state.hexToRgb(self.props.handleColor or "#38bdf8")
     local hx = w - 42
 
-    -- Top chevron (pointing upward / outward)
-    System.drawRect(hx - 2, 0, 36, 6, { hR, hG, hB, 0.4 })
-    System.drawLine(hx, 5, hx + 16, 1, 2.5, { hR, hG, hB, 0.95 })
-    System.drawLine(hx + 16, 1, hx + 32, 5, 2.5, { hR, hG, hB, 0.95 })
+    -- Top chevron (fixed 14px area above top skirt, pointing upward / outward)
+    System.drawRect(hx - 2, -14, 36, 12, { hR, hG, hB, 0.35 })
+    System.drawRectLines(hx - 2, -14, 36, 12, 1.0, { hR, hG, hB, 0.75 })
+    System.drawLine(hx + 2, -4, hx + 16, -11, 2.5, { hR, hG, hB, 0.98 })
+    System.drawLine(hx + 16, -11, hx + 30, -4, 2.5, { hR, hG, hB, 0.98 })
 
-    -- Bottom chevron (pointing downward / outward)
-    System.drawRect(hx - 2, h - 6, 36, 6, { hR, hG, hB, 0.4 })
-    System.drawLine(hx, h - 5, hx + 16, h - 1, 2.5, { hR, hG, hB, 0.95 })
-    System.drawLine(hx + 16, h - 1, hx + 32, h - 5, 2.5, { hR, hG, hB, 0.95 })
+    -- Bottom chevron (fixed 14px area below bottom skirt, pointing downward / outward)
+    System.drawRect(hx - 2, h + 2, 36, 12, { hR, hG, hB, 0.35 })
+    System.drawRectLines(hx - 2, h + 2, 36, 12, 1.0, { hR, hG, hB, 0.75 })
+    System.drawLine(hx + 2, h + 5, hx + 16, h + 12, 2.5, { hR, hG, hB, 0.98 })
+    System.drawLine(hx + 16, h + 12, hx + 30, h + 5, 2.5, { hR, hG, hB, 0.98 })
   end
 
   -- Mode Badge on the left (clickable to cycle mode)
   local modeBadgeW = 54
-  local badgeH = math.min(22, math.max(14, h - 4))
-  local badgeY = clamp(h / 2 - badgeH / 2, 2, h - badgeH - 2)
+  local badgeH = math.min(20, math.max(14, h - 2))
+  local badgeY = h / 2 - badgeH / 2
   local badgeBg = isSelected and { 0.1, 0.15, 0.25, 0.85 } or { 0.05, 0.08, 0.15, 0.75 }
   System.drawRoundedRect(8, badgeY, modeBadgeW, badgeH, 3, badgeBg)
   System.drawRectLines(8, badgeY, modeBadgeW, badgeH, 1.0, { bR, bG, bB, 0.7 })
@@ -512,7 +634,7 @@ function SignalBox:drawSelf()
   -- Label & Bandwidth: e.g. "CQ W1AW | 2.8 kHz"
   local bwKhz = string.format("%.1f kHz", self.bandwidth / 1000)
   local labelText = string.format("%s  (%s)", tostring(self.label), bwKhz)
-  System.drawText(labelText, 70, clamp(h / 2 - 6, 2, h - 14), 12, { 0.95, 0.95, 0.95, 0.9 })
+  System.drawText(labelText, 70, h / 2 - 6, 12, { 0.95, 0.95, 0.95, 0.9 })
 
   -- Amber Playback Cursor (if time-machine playback is active)
   if _G.audio and _G.audio.isPlaybackActive and isSelected then

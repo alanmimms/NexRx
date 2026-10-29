@@ -213,15 +213,15 @@ function Tests.test_signalbox_river_geometry()
   assert_eq("move", box.dragMode, "clicking body of the box engages move mode")
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 400, y = 36 })
 
-  -- Dragging bottom chevron handle uses fine vernier scaling (25 Hz/pixel)
+  -- Dragging bottom chevron handle moves 1:1 stuck to the mouse cursor
   box.mode = "USB"
   box.bandwidth = 2800
   box.carrierFreq = 14.240e6
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 36 })
   assert_eq("bottomHandle", box.dragMode, "bottom chevron handle engaged")
-  box:onEvent({ type = "mouseMotion", x = 760, y = 46 }) -- moved down 10px
-  assert_eq(3050, box.bandwidth, "vernier scaling: 10px moves bandwidth by 250 Hz to 3050 Hz")
-  assert_close(14.2428e6 - 3050, box.carrierFreq, 1.0, "carrier lowered by 250 Hz while upper skirt anchored")
+  box:onEvent({ type = "mouseMotion", x = 760, y = 46 }) -- moved down 10px (100 Hz/px default when no parent)
+  assert_eq(3800, box.bandwidth, "1:1 mouse tracking: 10px moves bandwidth by 1000 Hz to 3800 Hz")
+  assert_close(14.2428e6 - 3800, box.carrierFreq, 1.0, "carrier lowered by 1000 Hz while upper skirt anchored")
   box:onEvent({ type = "mouseMotion", x = 760, y = 36 }) -- moved back up 10px
   assert_eq(2800, box.bandwidth, "moving cursor back restores exact initial bandwidth")
   assert_close(14.240e6, box.carrierFreq, 1.0, "moving cursor back restores exact carrier frequency")
@@ -774,33 +774,58 @@ function Tests.test_frequency_ruler_context_menu_and_tuning()
   })
   ruler:layout(0, 0, 60, 300)
 
-  -- 1. Frequency Parsing
+  -- 1. Frequency Parsing (case-insensitive, suffixes, raw numbers, dots)
   assert_eq(14.074e6, ruler:parseFrequency("14.074"), "parse MHz float")
   assert_eq(14.074e6, ruler:parseFrequency("14.074 MHz"), "parse with MHz suffix")
   assert_eq(14.074e6, ruler:parseFrequency("14074"), "parse kHz integer")
   assert_eq(14.074e6, ruler:parseFrequency("14074000"), "parse Hz integer")
   assert_eq(7.15e6, ruler:parseFrequency("7150 kHz"), "parse with kHz suffix")
+  assert_eq(15.0e6, ruler:parseFrequency("15M"), "parse 15M suffix")
+  assert_eq(15.0e6, ruler:parseFrequency("15m"), "parse lowercase 15m suffix")
+  assert_eq(14.750e6, ruler:parseFrequency("14750k"), "parse 14750k suffix")
+  assert_eq(13123456, ruler:parseFrequency("13123456"), "parse 13123456 raw Hz")
+  assert_eq(15.1e6, ruler:parseFrequency("15.1M"), "parse 15.1M suffix")
+  assert_eq(14.980e6, ruler:parseFrequency("14.980M"), "parse 14.980M suffix")
+  assert_eq(14375150, ruler:parseFrequency("14375.150k"), "parse 14375.150k suffix")
   assert_eq(nil, ruler:parseFrequency("invalid"), "invalid frequency returns nil")
 
-  -- 2. Context Menu toggle via right-click
+  -- 2. Context Menu toggle via right-click and contains hit-testing
   assert_eq(false, ruler.contextMenuOpen, "context menu initially closed")
+  assert_true(not ruler:contains(-50, 50), "contains rejects popover coords when menu is closed")
   ruler:onEvent({ type = "mouseButton", button = "RIGHT", isDown = true, x = 20, y = 100 })
   assert_eq(true, ruler.contextMenuOpen, "context menu opened on right-click")
+  assert_eq(true, ruler.tuneInputActive, "tune input automatically active on right-click")
+  assert_true(ruler:contains(-50, 50), "contains accepts popover coords when menu is open")
+  assert_true(not ruler:contains(-200, 50), "contains rejects coords outside popover")
 
-  -- 3. Direct Tune input and commit
-  ruler.tuneInputActive = true
-  ruler:onEvent({ type = "textInput", text = "14.225" })
-  assert_eq("14.225", ruler.tuneInputText, "textInput received in tune input box")
+  -- 3. Direct Tune input without character duplication, and Set button click
+  ruler:onEvent({ type = "textInput", text = "15" })
+  ruler:onEvent({ type = "key", key = "1", isDown = true }) -- Key event must NOT duplicate
+  ruler:onEvent({ type = "textInput", text = "m" })
+  assert_eq("15m", ruler.tuneInputText, "textInput received '15m' without key event duplication")
 
   local tunedFreq = nil
-  ruler.onManualTune = function(self, freq)
+  ruler.onSetCenterFrequency = function(self, freq)
     tunedFreq = freq
   end
-  ruler:commitDirectTune()
-  assert_eq(14.225e6, tunedFreq, "commitDirectTune dispatched onManualTune")
-  assert_eq(false, ruler.contextMenuOpen, "context menu closed after tuning")
+  -- Click [Set] button at x = menuX + 120 = -46, y = 48
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = -40, y = 48 })
+  assert_eq(15.0e6, tunedFreq, "clicking [Set] button sets passband center to 15.0 MHz")
+  assert_eq(false, ruler.contextMenuOpen, "context menu closed after clicking [Set]")
 
-  -- 4. Band Selection callback
+  -- 4. Close [X] button dismisses dialog
+  ruler.contextMenuOpen = true
+  ruler.tuneInputActive = true
+  -- Click [X] at menuX + menuW - 10 = -166 + 162 - 10 = -14, y = 10
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = -10, y = 10 })
+  assert_eq(false, ruler.contextMenuOpen, "clicking [X] closes context menu")
+
+  -- 5. ESCAPE key dismisses dialog
+  ruler.contextMenuOpen = true
+  ruler:onEvent({ type = "key", key = "ESCAPE", isDown = true })
+  assert_eq(false, ruler.contextMenuOpen, "pressing ESCAPE closes context menu")
+
+  -- 6. Band Selection callback
   local selectedBand = nil
   ruler.onSelectBand = function(self, band)
     selectedBand = band
@@ -810,7 +835,7 @@ function Tests.test_frequency_ruler_context_menu_and_tuning()
   ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = -150, y = 115 })
   assert_eq("40m", selectedBand, "clicking band pill dispatches onSelectBand('40m')")
 
-  -- 5. Zoom Preset callback
+  -- 7. Zoom Preset callback
   local zoomPresetSpan = nil
   ruler.onZoomPreset = function(self, span)
     zoomPresetSpan = span
@@ -820,7 +845,7 @@ function Tests.test_frequency_ruler_context_menu_and_tuning()
   ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = -90, y = 205 })
   assert_eq(50e3, zoomPresetSpan, "clicking zoom preset dispatches onZoomPreset(50k)")
 
-  -- 6. Center 300k on VFO callback
+  -- 8. Center 300k on VFO callback
   local vfoCentered = false
   ruler.onCenterVFO = function(self)
     vfoCentered = true
@@ -1100,6 +1125,355 @@ function Tests.test_signalbox_chevron_drag_modifier_snapping()
   box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 36 })
 end
 
+function Tests.test_scroll_past_passband_advances_150k()
+  print("test_scroll_past_passband_advances_150k")
+  local Model = require("Model")
+  Model.spectrumCenterFreq:set(14.25e6)
+
+  local rv = RiverView({
+    freqMin = 14.10e6,
+    freqMax = 14.40e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  rv.hwCenterFreq = 14.25e6
+
+  -- Start vertical drag on River canvas
+  rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 400, y = 200 })
+  assert_true(rv.isNavigating, "navigation active")
+
+  -- 1. Small drag UP of only 5 pixels beyond edge: must clamp at boundary and NOT skip LO (deliberate 20px threshold)
+  rv:onEvent({ type = "mouseMotion", x = 400, y = 195 })
+  assert_eq(14.25e6, Model.spectrumCenterFreq:peek(), "hardware passband stays invariant during small sub-threshold drag")
+  assert_true(rv.freqMax <= 14.40e6, "freqMax clamped at upper edge of current passband")
+
+  -- 2. Deliberate drag UP exceeding 20px threshold (y = 100):
+  -- Advances to next 150 kHz boundary (14.25 + 0.15 = 14.40 MHz)
+  rv:onEvent({ type = "mouseMotion", x = 400, y = 100 })
+  assert_eq("vertical", rv.dragAxis, "drag axis locked to vertical")
+  assert_eq(14.40e6, Model.spectrumCenterFreq:peek(), "hardware passband stepped to next 150 kHz boundary (14.40 MHz)")
+  assert_eq(14.40e6, rv.hwCenterFreq, "RiverView hwCenterFreq updated to 14.40 MHz")
+  assert_close(14.25e6, rv.freqMin, 1.0, "new passband starts at 14.25 MHz")
+  assert_close(14.55e6, rv.freqMax, 1.0, "new passband spans to 14.55 MHz")
+
+  -- 3. Deliberate drag DOWN exceeding 20px threshold (y = 500):
+  -- Retreats to next 150 kHz boundary below (14.40 - 0.15 = 14.25 MHz)
+  rv:onEvent({ type = "mouseMotion", x = 400, y = 500 })
+  assert_true(Model.spectrumCenterFreq:peek() <= 14.25e6, "hardware passband moved down to next lower 150 kHz boundary")
+  assert_true(rv.freqMin <= 14.10e6, "freqMin spans into lower passband")
+
+  -- 4. Limits testing: bottom edge never below 1.8 MHz, top edge never above 30 MHz
+  rv.hwCenterFreq = 1.95e6
+  Model.spectrumCenterFreq:set(1.95e6)
+  rv.freqMin = 1.80e6
+  rv.freqMax = 2.10e6
+  rv.dragStartCenterFreq = 1.95e6
+  rv.dragStartY = 200
+  rv.lastDragY = 200
+  rv.overscrollPx = 0
+  -- Drag down past 1.8 MHz
+  rv:onEvent({ type = "mouseMotion", x = 400, y = 300 })
+  assert_true(rv.freqMin >= 1.8e6, "bottom edge never goes below 1.8 MHz")
+  assert_true(Model.spectrumCenterFreq:peek() >= 1.95e6, "passband center never drops below 1.95 MHz")
+
+  rv.hwCenterFreq = 29.85e6
+  Model.spectrumCenterFreq:set(29.85e6)
+  rv.freqMin = 29.70e6
+  rv.freqMax = 30.00e6
+  rv.dragStartCenterFreq = 29.85e6
+  rv.dragStartY = 200
+  rv.lastDragY = 200
+  rv.overscrollPx = 0
+  -- Drag up past 30 MHz
+  rv:onEvent({ type = "mouseMotion", x = 400, y = 100 })
+  assert_true(rv.freqMax <= 30.0e6, "top edge never goes above 30.0 MHz")
+  assert_true(Model.spectrumCenterFreq:peek() <= 29.85e6, "passband center never exceeds 29.85 MHz")
+
+  rv:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 400, y = 100 })
+  assert_true(not rv.isNavigating, "navigation ended")
+end
+
+function Tests.test_signalbox_move_drag_modifier_snapping()
+  print("test_signalbox_move_drag_modifier_snapping")
+  local rv = RiverView({
+    freqMin = 14.05e6,
+    freqMax = 14.35e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box = rv:spawnSignalBox(14.2e6)
+  box.mode = "USB"
+  box.bandwidth = 2800
+  box.carrierFreq = 14.2e6
+  box:layout(0, 50, 800, 30)
+
+  -- Engage move mode by clicking inside box body (y = 15)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 15 })
+  assert_eq("move", box.dragMode, "move drag mode engaged")
+  assert_eq(14200000, box.currentDragFreq, "initial carrier drag frequency is 14200000 Hz")
+
+  -- First motion UP (decreasing Y) with Shift: snaps in direction of motion to nearest multiple of 1 kHz
+  box:onEvent({ type = "mouseMotion", x = 760, y = 13, modifiers = { shift = true } })
+  assert_eq(14201000, box.currentDragFreq, "snapped UP to nearest 1 kHz multiple (14201000 Hz)")
+  assert_eq(1000, box.dragActiveDelta, "dragActiveDelta is 1000 Hz")
+  assert_eq(0, box.currentDragFreq % 1000, "currentDragFreq is integral multiple of 1 kHz")
+
+  -- Subsequent motion UP with Shift: advances in 1 kHz increments and stays on multiples
+  box:onEvent({ type = "mouseMotion", x = 760, y = 5, modifiers = { shift = true } })
+  assert_eq(14202000, box.currentDragFreq, "stepped UP by 1 kHz to 14202000 Hz")
+  assert_eq(0, box.currentDragFreq % 1000, "stays on integral multiple of 1 kHz during subsequent motion")
+
+  -- Switch modifier mid-drag to Ctrl (delta = 100 Hz), moving DOWN (increasing Y)
+  box:onEvent({ type = "mouseMotion", x = 760, y = 7, modifiers = { ctrl = true } })
+  assert_eq(14201900, box.currentDragFreq, "mid-drag switch to Ctrl snaps DOWN to nearest 100 Hz multiple (14201900 Hz)")
+  assert_eq(100, box.dragActiveDelta, "dragActiveDelta updated to 100 Hz")
+  assert_eq(0, box.currentDragFreq % 100, "currentDragFreq is integral multiple of 100 Hz")
+
+  -- Switch modifier mid-drag to Both Shift + Ctrl (delta = 10 kHz), moving UP (decreasing Y)
+  box:onEvent({ type = "mouseMotion", x = 760, y = 5, modifiers = { shift = true, ctrl = true } })
+  assert_eq(14210000, box.currentDragFreq, "mid-drag switch to Shift+Ctrl snaps UP to nearest 10 kHz multiple (14210000 Hz)")
+  assert_eq(10000, box.dragActiveDelta, "dragActiveDelta updated to 10 kHz")
+  assert_eq(0, box.currentDragFreq % 10000, "currentDragFreq is integral multiple of 10 kHz")
+
+  -- Subsequent motion UP with Shift + Ctrl: advances by 10 kHz
+  box:onEvent({ type = "mouseMotion", x = 760, y = -3, modifiers = { shift = true, ctrl = true } })
+  assert_eq(14220000, box.currentDragFreq, "stepped UP by 10 kHz to 14220000 Hz")
+  assert_eq(0, box.currentDragFreq % 10000, "stays on integral multiple of 10 kHz")
+
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = -3 })
+  assert_true(not box.isDragging, "dragging finished")
+end
+
+function Tests.test_zoomed_out_signalbox_chevrons_fixed_above_and_below()
+  print("test_zoomed_out_signalbox_chevrons_fixed_above_and_below")
+  local SignalBox = require("ui.SignalBox")
+  local box = SignalBox({
+    index = 1,
+    carrierFreq = 14.2e6,
+    bandwidth = 500,
+    mode = "CW",
+  })
+  -- Simulate extreme zoom-out where box height is only 4 pixels
+  box:layout(0, 50, 800, 4)
+
+  -- 1. Hit testing with box:contains
+  -- Top chevron is above y = 0 (y in [-14, 0])
+  assert_true(box:contains(760, -5), "contains point in top chevron area above box")
+  assert_true(box:contains(760, -14), "contains point at upper edge of top chevron")
+  assert_true(not box:contains(760, -16), "rejects point outside top chevron")
+
+  -- Bottom chevron is below y = h (y in [h, h + 14] -> [4, 18])
+  assert_true(box:contains(760, 8), "contains point in bottom chevron area below box")
+  assert_true(box:contains(760, 18), "contains point at lower edge of bottom chevron")
+  assert_true(not box:contains(760, 20), "rejects point outside bottom chevron")
+
+  -- Interior of tiny box is for moving
+  assert_true(box:contains(760, 2), "contains point inside tiny box")
+
+  -- 2. Mouse click engages correct drag mode
+  -- Click top chevron above box (y = -5)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = -5 })
+  assert_eq("topHandle", box.dragMode, "clicking above box engages topHandle")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = -5 })
+
+  -- Click bottom chevron below box (y = 8)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 8 })
+  assert_eq("bottomHandle", box.dragMode, "clicking below box engages bottomHandle")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 8 })
+
+  -- Click center of tiny box (y = 2)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 2 })
+  assert_eq("move", box.dragMode, "clicking inside box engages move")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 2 })
+end
+
+function Tests.test_unfocused_signalbox_resets_history_playback_to_live()
+  print("test_unfocused_signalbox_resets_history_playback_to_live")
+  local rv = RiverView({
+    freqMin = 14.05e6,
+    freqMax = 14.35e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box1 = rv:spawnSignalBox(14.150e6)
+  box1:layout(0, 100, 800, 20)
+
+  local stopCalled = 0
+  _G.audio = _G.audio or {}
+  _G.audio.seekPlayback = function() end
+  _G.audio.stopPlayback = function() stopCalled = stopCalled + 1 end
+
+  -- Start history playback on box1
+  box1:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 300, y = 10 })
+  box1:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 300, y = 10 })
+  assert_true(box1.playbackActive, "box1 playback is active when focused")
+
+  -- Spawning box2 unfocuses box1 and stops its history playback
+  local box2 = rv:spawnSignalBox(14.200e6)
+  assert_true(not box1.playbackActive, "box1 playback stopped when box2 spawned and took focus")
+  assert_true(stopCalled >= 1, "audio.stopPlayback() called when box1 lost focus")
+
+  -- Start playback on box2, then cycle focus back to box1 via TAB
+  box2:layout(0, 50, 800, 20)
+  box2:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 300, y = 10 })
+  box2:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 300, y = 10 })
+  assert_true(box2.playbackActive, "box2 playback active")
+
+  rv:cycleSignalBoxFocus(false)
+  assert_true(not box2.playbackActive, "box2 playback stopped when TAB cycled focus away")
+end
+
+function Tests.test_del_key_deletes_focused_signalbox()
+  print("test_del_key_deletes_focused_signalbox")
+  local rv = RiverView({
+    freqMin = 14.05e6,
+    freqMax = 14.35e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box1 = rv:spawnSignalBox(14.150e6)
+  local box2 = rv:spawnSignalBox(14.200e6)
+  assert_eq(2, #rv.signalBoxes, "two signalboxes present")
+
+  -- Pressing DELETE on box2 removes box2
+  local handled = box2:onEvent({ type = "key", key = "DELETE", isDown = true })
+  assert_true(handled, "DELETE key handled by focused SignalBox")
+  assert_eq(1, #rv.signalBoxes, "one signalbox remains after first DELETE")
+  assert_eq(box1, rv.signalBoxes[1], "remaining box is box1")
+
+  -- Pressing DELETE again removes the last remaining focused SignalBox too
+  local handledLast = box1:onEvent({ type = "key", key = "DELETE", isDown = true })
+  assert_true(handledLast, "DELETE key deletes the focused SignalBox even when it is the only box")
+  assert_eq(0, #rv.signalBoxes, "all signalboxes removed")
+end
+
+function Tests.test_dragging_wwv_box_to_15075_clears_wwv_metadata()
+  print("test_dragging_wwv_box_to_15075_clears_wwv_metadata")
+  local rv = RiverView({
+    freqMin = 14.85e6,
+    freqMax = 15.15e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box = rv:spawnSignalBox(15.000e6)
+  assert_eq("WWV 15", box.label, "at 15.000 MHz label is WWV 15")
+  assert_eq("WWV", box.callerCallsign, "at 15.000 MHz caller is WWV")
+  assert_eq("AM", box.mode, "at 15.000 MHz mode is AM")
+
+  -- Drag box to 15.075 MHz
+  local canvasH = 450 - 22
+  local hzPerPx = 300e3 / canvasH
+  local dyFor75k = -(75e3 / hzPerPx)
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = 5, gy = 200 })
+  box:onEvent({ type = "mouseMotion", x = 760, y = 5 + dyFor75k, gy = 200 + dyFor75k })
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = 5 + dyFor75k, gy = 200 + dyFor75k })
+
+  assert_close(15.075e6, box.carrierFreq, 500, "box carrier moved to ~15.075 MHz")
+  assert_true(box.label ~= "WWV 15", "box label is no longer WWV 15 at 15.075 MHz")
+  assert_eq(nil, box.callerCallsign, "callerCallsign cleared when dragged away from WWV 15")
+  assert_eq("USB", box.mode, "mode updated from AM to USB when dragged to 15.075 MHz")
+end
+
+function Tests.test_chevrons_move_1_to_1_with_mouse_at_any_zoom_and_bottom_chevron_moves()
+  print("test_chevrons_move_1_to_1_with_mouse_at_any_zoom_and_bottom_chevron_moves")
+  local rv = RiverView({
+    freqMin = 14.85e6,
+    freqMax = 15.15e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+  local box = rv:spawnSignalBox(15.000e6) -- AM, bw = 10000
+  rv:layout(0, 0, 800, 450)
+
+  local canvasH = 450 - 22
+  local hzPerPx = (rv.freqMax - rv.freqMin) / canvasH
+  local initialBottomEdgeY = box.props.y + box.props.h
+
+  -- Click bottom chevron (below bottom edge of box) and drag downward by 20 pixels
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 760, y = box.props.h + 6, gy = initialBottomEdgeY + 6 })
+  assert_eq("bottomHandle", box.dragMode, "bottomHandle engaged on AM box at 300 kHz zoom")
+  box:onEvent({ type = "mouseMotion", x = 760, y = box.props.h + 26, gy = initialBottomEdgeY + 26 })
+
+  -- Bottom edge must have moved downward by exactly 20 pixels (1:1 with mouse cursor)
+  local newBottomEdgeY = box.props.y + box.props.h
+  assert_close(initialBottomEdgeY + 20, newBottomEdgeY, 1.0, "bottom edge of box moved 20px downward 1:1 with mouse cursor")
+  assert_close(10000 + 20 * hzPerPx, box.bandwidth, 50, "bandwidth increased by 20 * hzPerPx")
+  box:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 760, y = box.props.h + 26, gy = initialBottomEdgeY + 26 })
+end
+
+function Tests.test_frequency_ruler_detent_step_150khz_and_direction()
+  print("test_frequency_ruler_detent_step_150khz_and_direction")
+  local Model = require("Model")
+  Model.spectrumCenterFreq:set(14.20e6)
+
+  local ruler = FrequencyRuler({
+    freqMin = 14.05e6,
+    freqMax = 14.35e6,
+    w = 60,
+    h = 450,
+  })
+  ruler:layout(0, 0, 60, 450)
+
+  -- Begin drag on FrequencyRuler at gy = 200
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = true, x = 30, y = 200, gy = 200 })
+  assert_true(ruler.isDragging, "ruler isDragging active")
+
+  -- 1. Sub-20px upward motion (12px up -> gy = 188): must NOT move passband yet
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 188, gy = 188 })
+  assert_eq(14.20e6, Model.spectrumCenterFreq:peek(), "no jump before 20px threshold")
+
+  -- 2. Reach 20px upward motion (another 10px up -> gy = 178):
+  -- Dragging upward makes higher frequencies visible by stepping to the next 150 kHz boundary (14.25 MHz) and stopping
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 178, gy = 178 })
+  assert_close(14.25e6, Model.spectrumCenterFreq:peek(), 1.0, "stepped UP to next 150 kHz boundary (14.25 MHz)")
+  assert_close(14.10e6, ruler.props.freqMin, 1.0, "higher frequencies now visible (fMin = 14.10 MHz)")
+  assert_close(14.40e6, ruler.props.freqMax, 1.0, "higher frequencies now visible (fMax = 14.40 MHz)")
+
+  -- 3. Another 10px upward motion (gy = 168): must stay stopped at 14.25 MHz until 20px more motion
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 168, gy = 168 })
+  assert_close(14.25e6, Model.spectrumCenterFreq:peek(), 1.0, "stopped until 20px more vertical motion")
+
+  -- 4. Complete 20px upward motion (gy = 156): steps to next 150 kHz boundary (14.40 MHz)
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 156, gy = 156 })
+  assert_close(14.40e6, Model.spectrumCenterFreq:peek(), 1.0, "stepped UP by 150 kHz to 14.40 MHz after 20px more motion")
+
+  -- 5. Drag downward by 22px (gy = 178): steps downward to lower 150 kHz boundary (14.25 MHz)
+  ruler:onEvent({ type = "mouseMotion", x = 30, y = 178, gy = 178 })
+  assert_close(14.25e6, Model.spectrumCenterFreq:peek(), 1.0, "dragging downward stepped DOWN to 14.25 MHz")
+
+  ruler:onEvent({ type = "mouseButton", button = "LEFT", isDown = false, x = 30, y = 178, gy = 178 })
+end
+
+function Tests.test_14_2m_usb_mode_accuracy_after_15m_am()
+  print("test_14_2m_usb_mode_accuracy_after_15m_am")
+  local Model = require("Model")
+  local rv = RiverView({
+    freqMin = 14.05e6,
+    freqMax = 14.35e6,
+    w = 800,
+    h = 450,
+  })
+  rv:layout(0, 0, 800, 450)
+
+  -- Spawn first box and second box, tune to 15M (WWV AM) then to 14.2M (USB voice beacon)
+  rv:spawnSignalBox(14.150e6)
+  local box2 = rv:spawnSignalBox(15.000e6)
+  assert_eq("AM", box2.mode, "at 15M mode is AM")
+  assert_eq("AM", Model.rx.selectedMode:get(), "Model.rx.selectedMode is AM at 15M")
+
+  -- Now tune to 14.2M
+  rv:tuneActiveSignalBox(14.200e6)
+  assert_eq("USB", box2.mode, "at 14.2M box mode is USB")
+  assert_eq("USB", Model.rx.selectedMode:get(), "at 14.2M Model.rx.selectedMode is USB (not stuck on AM)")
+  assert_eq("CQ WB7NAB", box2.label, "at 14.2M label is CQ WB7NAB")
+end
+
 -- =============================================================================
 -- Test Suite Runner
 -- =============================================================================
@@ -1140,6 +1514,15 @@ function Tests.runAll()
   Tests.test_gutter_left_hz_resolution_frequency_tags()
   Tests.test_river_view_faint_grid_lines_frequency_and_time()
   Tests.test_signalbox_chevron_drag_modifier_snapping()
+  Tests.test_signalbox_move_drag_modifier_snapping()
+  Tests.test_scroll_past_passband_advances_150k()
+  Tests.test_zoomed_out_signalbox_chevrons_fixed_above_and_below()
+  Tests.test_unfocused_signalbox_resets_history_playback_to_live()
+  Tests.test_del_key_deletes_focused_signalbox()
+  Tests.test_dragging_wwv_box_to_15075_clears_wwv_metadata()
+  Tests.test_chevrons_move_1_to_1_with_mouse_at_any_zoom_and_bottom_chevron_moves()
+  Tests.test_frequency_ruler_detent_step_150khz_and_direction()
+  Tests.test_14_2m_usb_mode_accuracy_after_15m_am()
 
   print(string.format("\nResults: %d passed, %d failed\n", passed, failed))
   return failed == 0

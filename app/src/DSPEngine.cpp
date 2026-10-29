@@ -109,13 +109,6 @@ static constexpr float decimCoeffs[25] = {
 void DSPEngine::processIQFrame(const nexrx::IQFrame& frame) {
   float iF, qF;
   frame.toFloat(iF, qF);
-  
-  // DC Offset Correction
-  constexpr float dcAlphaFast = 0.00025f; // ~15Hz cutoff at 384ksps
-  dc0_i = (1.0f - dcAlphaFast) * dc0_i + dcAlphaFast * iF;
-  dc0_q = (1.0f - dcAlphaFast) * dc0_q + dcAlphaFast * qF;
-  iF -= dc0_i;
-  qF -= dc0_q;
 
   // 1. Write to spectrum buffer BEFORE tuning/gain (Raw 384ksps input around VFO)
   size_t pos = iqBufferWritePos.load(std::memory_order_relaxed); 

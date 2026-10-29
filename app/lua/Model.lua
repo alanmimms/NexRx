@@ -91,10 +91,34 @@ function Model.removeSignalBox(index)
     end
 end
 
+function Model.ensureSignalBox(idx)
+    if not idx or idx < 1 then return nil end
+    local boxes = Model.signalBoxes:peek()
+    if idx > #boxes then
+        local newList = {}
+        for i, b in ipairs(boxes) do newList[i] = b end
+        for i = #boxes + 1, idx do
+            newList[i] = R.observableObject({
+                id = i,
+                frequency = 14.2e6,
+                mode = "USB",
+                bandwidth = 2800,
+                locked = false
+            })
+        end
+        Model.signalBoxes:set(newList)
+        boxes = newList
+    end
+    return boxes[idx]
+end
+
 function Model.getSelectedSignalBox()
     local boxes = Model.signalBoxes:get()
     local idx = Model.selectedSignalBoxIndex:get()
-    return boxes[idx]
+    if idx and idx >= 1 and idx <= #boxes then
+        return boxes[idx]
+    end
+    return Model.ensureSignalBox(idx)
 end
 
 -- =============================================================================
@@ -169,6 +193,7 @@ Model.rx = {
     },
     testToneEnabled = projection("rx.testToneEnabled", Types.Bool, false)
 }
+Model.rx.bandpass = Model.rx.DSP.bandpass
 
 -- Add set methods to proxies for interactive widgets
 function Model.rx.VFO.activeValue:set(val) Model.set("rx.VFO.activeValue", val) end
@@ -211,7 +236,6 @@ function Model.set(name, value)
                 local obs = getPropertyVersion("rx.selectedMode")
                 obs:set(obs:peek() + 1)
             end
-            return
         end
     elseif name:match("^rx%.VFO%.") then
         local box = Model.getSelectedSignalBox()
@@ -221,7 +245,6 @@ function Model.set(name, value)
                 local obs = getPropertyVersion("rx.VFO.activeValue")
                 obs:set(obs:peek() + 1)
             end
-            return
         end
     elseif name == "rx.bandpass.width" then
         local box = Model.getSelectedSignalBox()

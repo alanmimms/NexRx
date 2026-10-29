@@ -33,6 +33,8 @@ function FrequencyRuler:init(def)
   self.isDragging = false
   self.dragStartY = 0
   self.dragStartCenter = 0
+  self.lastDragY = 0
+  self.overscrollPx = 0
   self.contextMenuOpen = false
   self.bandMenuOpen = false
   self.tuneInputText = ""
@@ -52,19 +54,69 @@ function FrequencyRuler:calcMetrics()
   if (self.props.prefH or 0) == 0 then self.props.prefH = 300 end
 end
 
+function FrequencyRuler:contains(x, y)
+  local w = self.props.w or 0
+  local h = self.props.h or 0
+
+  if x >= 0 and x < w and y >= 0 and y < h then
+    return true
+  end
+
+  if self.contextMenuOpen or self.bandMenuOpen then
+    local menuW = 162
+    local menuH = 260
+    local menuX = -menuW - 4
+    local menuY = 4
+    if x >= menuX and x <= menuX + menuW and y >= menuY and y <= menuY + menuH then
+      return true
+    end
+  end
+
+  return false
+end
+
 function FrequencyRuler:parseFrequency(str)
   if not str or #str == 0 then return nil end
-  local clean = str:gsub("[^%d%.]", "")
+  local s = str:gsub("^%s+", ""):gsub("%s+$", "")
+  if #s == 0 then return nil end
+
+  local lower = s:lower()
+  if lower:match("m$") or lower:match("mhz$") then
+    local numStr = lower:gsub("[^%d%.]", "")
+    local val = tonumber(numStr)
+    return (val and val > 0) and (val * 1e6) or nil
+  elseif lower:match("k$") or lower:match("khz$") then
+    local numStr = lower:gsub("[^%d%.]", "")
+    local val = tonumber(numStr)
+    return (val and val > 0) and (val * 1e3) or nil
+  elseif lower:match("hz$") then
+    local numStr = lower:gsub("[^%d%.]", "")
+    local val = tonumber(numStr)
+    return (val and val > 0) and val or nil
+  end
+
+  -- Check for dot-separated Hz format like 14.200.000
+  local dotCount = 0
+  for _ in s:gmatch("%.") do dotCount = dotCount + 1 end
+  if dotCount > 1 then
+    local clean = s:gsub("[^%d]", "")
+    local val = tonumber(clean)
+    return (val and val > 0) and val or nil
+  end
+
+  -- No explicit unit suffix:
+  local clean = s:gsub("[^%d%.]", "")
   local val = tonumber(clean)
   if not val or val <= 0 then return nil end
-  if val < 30.0 then
-    -- Assume MHz (e.g. 14.074 -> 14.074e6)
+
+  if val < 100.0 then
+    -- Under 100 -> assume MHz (e.g. 14.074, 15, 7.1)
     return val * 1e6
-  elseif val < 30000.0 then
-    -- Assume kHz (e.g. 14074 -> 14.074e6, 7030 -> 7.030e6)
+  elseif val < 100000.0 then
+    -- 100 to 100,000 -> assume kHz (e.g. 14074 -> 14.074 MHz, 7030 -> 7.030 MHz)
     return val * 1e3
   else
-    -- Assume Hz (e.g. 14074000)
+    -- >= 100,000 -> assume Hz (e.g. 14200000, 13123456)
     return val
   end
 end
@@ -72,14 +124,18 @@ end
 function FrequencyRuler:commitDirectTune()
   local f = self:parseFrequency(self.tuneInputText)
   if f then
-    if self.onManualTune then
+    -- Limit passband center so bottom edge >= 1.8 MHz and top edge <= 30.0 MHz
+    f = math.max(1.8e6 + 150e3, math.min(30.0e6 - 150e3, f))
+    if self.onSetCenterFrequency then
+      self:onSetCenterFrequency(f)
+    elseif self.onManualTune then
       self:onManualTune(f)
     end
-    self.tuneInputText = ""
-    self.contextMenuOpen = false
-    self.bandMenuOpen = false
-    self.tuneInputActive = false
   end
+  self.tuneInputText = ""
+  self.contextMenuOpen = false
+  self.bandMenuOpen = false
+  self.tuneInputActive = false
 end
 
 function FrequencyRuler:drawSelf()
@@ -177,12 +233,15 @@ function FrequencyRuler:drawSelf()
     System.drawRoundedRect(menuX, menuY, menuW, menuH, 5, { 0.07, 0.1, 0.18, 0.98 })
     System.drawRectLines(menuX, menuY, menuW, menuH, 1.2, { 0.28, 0.42, 0.65, 0.95 })
 
-    -- Title Header
-    System.drawText("Frequency Ruler Menu", menuX + 8, menuY + 6, 11, { 0.75, 0.88, 1.0, 0.95 })
+    -- Title Header and Close Button
+    System.drawText("Set Center Frequency", menuX + 8, menuY + 6, 11, { 0.75, 0.88, 1.0, 0.95 })
+    local closeX = menuX + menuW - 16
+    local closeY = menuY + 5
+    System.drawText("x", closeX + 2, closeY - 1, 11, { 0.65, 0.75, 0.9, 0.85 })
     System.drawLine(menuX + 6, menuY + 20, menuX + menuW - 6, menuY + 20, 1.0, { 0.2, 0.3, 0.45, 0.7 })
 
     -- Section 1: Manual Frequency Entry
-    System.drawText("Tune Frequency:", menuX + 8, menuY + 26, 10, { 0.7, 0.75, 0.85, 0.9 })
+    System.drawText("New Passband Center:", menuX + 8, menuY + 26, 10, { 0.7, 0.75, 0.85, 0.9 })
     local inputW = 104
     local inputH = 20
     local inputX = menuX + 8
@@ -197,7 +256,7 @@ function FrequencyRuler:drawSelf()
       if self.tuneInputActive then
         displayText = "_"
       else
-        displayText = "e.g. 14.074"
+        displayText = "e.g. 15M, 14750k"
       end
     elseif self.tuneInputActive then
       displayText = displayText .. "_"
@@ -205,14 +264,14 @@ function FrequencyRuler:drawSelf()
     local textCol = (#self.tuneInputText > 0 or self.tuneInputActive) and { 1.0, 1.0, 1.0, 0.95 } or { 0.5, 0.55, 0.65, 0.7 }
     System.drawText(displayText, inputX + 4, inputY + 4, 11, textCol)
 
-    -- [Tune] Button
+    -- [Set] Button
     local goW = 38
     local goH = 20
     local goX = menuX + 116
     local goY = inputY
     System.drawRect(goX, goY, goW, goH, { 0.15, 0.45, 0.75, 0.9 })
     System.drawRectLines(goX, goY, goW, goH, 1.0, { 0.3, 0.65, 0.95, 0.9 })
-    System.drawText("Tune", goX + 6, goY + 4, 10, { 1.0, 1.0, 1.0, 0.95 })
+    System.drawText("Set", goX + 11, goY + 4, 10, { 1.0, 1.0, 1.0, 0.95 })
 
     -- Section 2: Band Selection Grid (3 columns)
     System.drawLine(menuX + 6, menuY + 66, menuX + menuW - 6, menuY + 66, 1.0, { 0.2, 0.3, 0.45, 0.7 })
@@ -273,8 +332,15 @@ end
 function FrequencyRuler:onEvent(event)
   local isMenuOpen = self.contextMenuOpen or self.bandMenuOpen
 
+  if isMenuOpen and event.type == "key" and (event.key == "ESCAPE" or event.key == "256") and event.isDown then
+    self.contextMenuOpen = false
+    self.bandMenuOpen = false
+    self.tuneInputActive = false
+    return true
+  end
+
   if event.type == "textInput" and isMenuOpen and self.tuneInputActive then
-    if event.text and event.text:match("[%d%.]") then
+    if event.text and event.text:match("[%w%.]") then
       self.tuneInputText = self.tuneInputText .. event.text
       return true
     end
@@ -285,21 +351,17 @@ function FrequencyRuler:onEvent(event)
           self.tuneInputText = self.tuneInputText:sub(1, -2)
         end
         return true
-      elseif event.key == "ENTER" and event.isDown then
+      elseif (event.key == "ENTER" or event.key == "RETURN") and event.isDown then
         self:commitDirectTune()
-        return true
-      elseif event.key == "ESCAPE" and event.isDown then
-        self.contextMenuOpen = false
-        self.bandMenuOpen = false
-        self.tuneInputActive = false
         return true
       end
     end
   elseif event.type == "mouseButton" then
-    if event.button == "RIGHT" and event.isDown then
-      self.contextMenuOpen = not self.contextMenuOpen
-      self.bandMenuOpen = self.contextMenuOpen
-      self.tuneInputActive = false
+    if (event.button == "RIGHT" or event.button == "MIDDLE" or event.button == 1) and event.isDown then
+      self.contextMenuOpen = true
+      self.bandMenuOpen = true
+      self.tuneInputActive = true
+      self.menuY = 4
       return true
     elseif event.button == "LEFT" then
       if event.isDown then
@@ -314,6 +376,16 @@ function FrequencyRuler:onEvent(event)
           local menuY = 4
 
           if lx >= menuX and lx <= menuX + menuW and ly >= menuY and ly <= menuY + menuH then
+            -- Click inside [X] close button
+            local closeX = menuX + menuW - 18
+            local closeY = menuY + 4
+            if lx >= closeX and lx <= closeX + 16 and ly >= closeY and ly <= closeY + 16 then
+              self.contextMenuOpen = false
+              self.bandMenuOpen = false
+              self.tuneInputActive = false
+              return true
+            end
+
             -- Click inside Tune Input box
             local inputX = menuX + 8
             local inputY = menuY + 40
@@ -324,7 +396,7 @@ function FrequencyRuler:onEvent(event)
               return true
             end
 
-            -- Click inside [Tune] button
+            -- Click inside [Set] button
             local goX = menuX + 116
             local goY = inputY
             local goW = 38
@@ -400,18 +472,22 @@ function FrequencyRuler:onEvent(event)
         if ly <= 24 then
           self.contextMenuOpen = not self.contextMenuOpen
           self.bandMenuOpen = self.contextMenuOpen
-          self.tuneInputActive = false
+          self.tuneInputActive = self.contextMenuOpen
+          self.menuY = 4
           return true
         end
 
         -- 3. Dragging on the ruler
         self.isDragging = true
         self.dragStartY = event.gy or event.y or 0
+        self.lastDragY = self.dragStartY
         self.dragStartCenter = (self.props.freqMin + self.props.freqMax) / 2
+        self.dragAccumPx = 0
         state.setActive(self.id)
         return true
       else
         self.isDragging = false
+        self.dragAccumPx = 0
         state.setActive(nil)
         if self.onFrequencyChange then
           self:onFrequencyChange(self.props.freqMin, self.props.freqMax, true)
@@ -420,32 +496,69 @@ function FrequencyRuler:onEvent(event)
       end
     end
   elseif event.type == "mouseMotion" and self.isDragging then
-    local dy = (event.gy or event.y or 0) - self.dragStartY
+    local curY = event.gy or event.y or 0
+    local stepY = curY - (self.lastDragY or curY)
+    self.lastDragY = curY
+
+    -- Reset accumulator if drag direction reverses
+    if (stepY < 0 and (self.dragAccumPx or 0) > 0) or (stepY > 0 and (self.dragAccumPx or 0) < 0) then
+      self.dragAccumPx = 0
+    end
+    self.dragAccumPx = (self.dragAccumPx or 0) + stepY
+
+    local STEP_THRESHOLD_PX = 20
+    if math.abs(self.dragAccumPx) < STEP_THRESHOLD_PX then
+      return true
+    end
+
+    local dir = (self.dragAccumPx < 0) and 1 or -1 -- Dragging UP (negative stepY) increases visible frequency
+    self.dragAccumPx = 0 -- Stop until at least 20 pixels more vertical motion occurs
+
     local span = self.props.freqMax - self.props.freqMin
-    local canvasH = math.max(10, (self.props.h or 300) - (self.props.rulerH or 22))
-    local hzPerPx = span / canvasH
-    local newCenter = self.dragStartCenter + (dy * hzPerPx)
-    local fMin = newCenter - span / 2
-    local fMax = newCenter + span / 2
+    local hwCenter = (Model.spectrumCenterFreq and Model.spectrumCenterFreq:peek()) or ((self.props.freqMin + self.props.freqMax) / 2)
+    local STEP_HZ = 150e3
+    local MIN_FREQ = 1.8e6
+    local MAX_FREQ = 30.0e6
 
-    -- Pin edges strictly within the receiver's active 300 kHz passband
-    local hwCenter = (Model.spectrumCenterFreq and Model.spectrumCenterFreq:peek()) or 14.2e6
-    local bandMin = hwCenter - 150e3
-    local bandMax = hwCenter + 150e3
-
-    if fMin < bandMin then
-      fMin = bandMin
-      fMax = bandMin + span
+    local rem = hwCenter % STEP_HZ
+    local newHwCenter
+    if dir > 0 then
+      if rem < 1.0 or (STEP_HZ - rem) < 1.0 then
+        newHwCenter = math.floor(hwCenter / STEP_HZ + 0.5) * STEP_HZ + STEP_HZ
+      else
+        newHwCenter = math.ceil(hwCenter / STEP_HZ) * STEP_HZ
+      end
+    else
+      if rem < 1.0 or (STEP_HZ - rem) < 1.0 then
+        newHwCenter = math.floor(hwCenter / STEP_HZ + 0.5) * STEP_HZ - STEP_HZ
+      else
+        newHwCenter = math.floor(hwCenter / STEP_HZ) * STEP_HZ
+      end
     end
-    if fMax > bandMax then
-      fMax = bandMax
-      fMin = bandMax - span
-    end
 
-    self.props.freqMin = fMin
-    self.props.freqMax = fMax
-    if self.onFrequencyChange then
-      self:onFrequencyChange(self.props.freqMin, self.props.freqMax, false)
+    newHwCenter = math.max(MIN_FREQ + 150e3, math.min(MAX_FREQ - 150e3, newHwCenter))
+    local shift = newHwCenter - hwCenter
+    if math.abs(shift) > 0.5 then
+      if Model.spectrumCenterFreq then
+        Model.spectrumCenterFreq:set(newHwCenter)
+      end
+      local bandMin = newHwCenter - 150e3
+      local bandMax = newHwCenter + 150e3
+      local fMin = math.max(bandMin, math.min(bandMax - span, self.props.freqMin + shift))
+      local fMax = fMin + span
+      if fMin < MIN_FREQ then
+        fMin = MIN_FREQ
+        fMax = math.min(MAX_FREQ, fMin + span)
+      end
+      if fMax > MAX_FREQ then
+        fMax = MAX_FREQ
+        fMin = math.max(MIN_FREQ, fMax - span)
+      end
+      self.props.freqMin = fMin
+      self.props.freqMax = fMax
+      if self.onFrequencyChange then
+        self:onFrequencyChange(self.props.freqMin, self.props.freqMax, true)
+      end
     end
     return true
   elseif event.type == "mouseWheel" then

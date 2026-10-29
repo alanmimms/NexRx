@@ -227,6 +227,7 @@ end
 function AppController.init()
     AppController.registerHandlers()
     -- Watch selected signal box frequency and sync to hardware
+    local updatingBandFromVfo = false
     R.watch(function()
         local box = Model.getSelectedSignalBox()
         if not box then return end
@@ -239,22 +240,10 @@ function AppController.init()
             bands.setCurrent(freq)
             local currentBand = bands.getCurrent()
             if currentBand ~= "OOB" and Model.rx.selectedBand:peek() ~= currentBand then
+                updatingBandFromVfo = true
                 Model.rx.selectedBand:set(currentBand)
+                updatingBandFromVfo = false
             end
-        end
-        
-        -- Automatic centering: if the signal moves off-screen, re-center
-        local zoom = Model.waterfall.zoom:peek() or 1.0
-        local span = _G.sampleRate / zoom
-        local center = Model.spectrumCenterFreq:peek()
-        local margin = span * 0.02 -- 2% margin (less aggressive)
-        
-        -- Don't auto-center if the user is currently dragging a signal box
-        local activeId = require("ui.State").getActive()
-        local isDragging = activeId and activeId:match("^sb%-")
-        
-        if not isDragging and math.abs(freq - center) > (span / 2 - margin) then
-            Model.spectrumCenterFreq:set(freq)
         end
         
         dirty.VFO = true
@@ -294,7 +283,7 @@ function AppController.init()
 
     -- Watch Bandpass filter width and center
     R.watch(function()
-        local bw = Model.rx.bandpass.width:get()
+        local bw = Model.rx.DSP.bandpass.width:get()
         local box = Model.getSelectedSignalBox()
         local mode = (box and box.mode) or Model.rx.selectedMode:get() or "USB"
         if box and box.bandwidth then
@@ -319,11 +308,12 @@ function AppController.init()
     -- Watch selected band
     R.watch(function()
         local b = Model.rx.selectedBand:get()
-        local freq = bands.getDefaultFreq(b)
+        if updatingBandFromVfo then return end
+        local freq = bands and bands.getDefaultFreq and bands.getDefaultFreq(b)
         if freq then
-            -- Only update VFO if it's not already within the band or at default
             local current = Model.rx.VFO.activeValue:peek()
-            if math.abs(current - freq) > 1 then
+            local curBand = bands and bands._getBandForFreq and bands._getBandForFreq(current)
+            if curBand ~= b and math.abs(current - freq) > 1 then
                 Model.set("rx.VFO.activeValue", freq)
             end
         end

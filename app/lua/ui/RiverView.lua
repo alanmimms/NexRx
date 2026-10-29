@@ -120,7 +120,7 @@ local function getStimuliFromTwin()
         bw = 500,
         label = isW1AW and "W1AW CQ" or "CW Beacon",
         caller = isW1AW and "W1AW" or "WWV",
-        tol = 6e3,
+        tol = 3e3,
       })
     end,
     addSsb = function(name, def)
@@ -141,7 +141,7 @@ local function getStimuliFromTwin()
         bw = 2800,
         label = label,
         caller = caller,
-        tol = 6e3,
+        tol = 3e3,
       })
     end,
     addAm = function(name, def)
@@ -160,7 +160,7 @@ local function getStimuliFromTwin()
         bw = isWWV and 10000 or 6000,
         label = label,
         caller = caller,
-        tol = isWWV and 50e3 or 6e3,
+        tol = 5e3,
       })
     end,
     remove = function() end,
@@ -198,13 +198,13 @@ local function getStimuliFromTwin()
 
   -- Default fallback stimuli table
   loadedStimuli = {
-    { freq = 15.0000e6, mode = "AM",  bw = 10000, label = "WWV 15", caller = "WWV", tol = 50e3 },
-    { freq = 14.2500e6, mode = "AM",  bw = 6000,  label = "AM Beacon", tol = 6e3 },
-    { freq = 14.0750e6, mode = "CW",  bw = 500,   label = "CW Beacon", caller = "WWV", tol = 6e3 },
-    { freq = 14.0250e6, mode = "CW",  bw = 500,   label = "W1AW CQ", caller = "W1AW", tol = 6e3 },
-    { freq = 14.1200e6, mode = "USB", bw = 2800,  label = "2-Tone", tol = 6e3 },
-    { freq = 14.1500e6, mode = "USB", bw = 2800,  label = "SSB Tone", tol = 6e3 },
-    { freq = 14.2000e6, mode = "USB", bw = 2800,  label = "CQ WB7NAB", caller = "WB7NAB", tol = 12e3 },
+    { freq = 15.0000e6, mode = "AM",  bw = 10000, label = "WWV 15", caller = "WWV", tol = 5e3 },
+    { freq = 14.2500e6, mode = "AM",  bw = 6000,  label = "AM Beacon", tol = 5e3 },
+    { freq = 14.0750e6, mode = "CW",  bw = 500,   label = "CW Beacon", caller = "WWV", tol = 3e3 },
+    { freq = 14.0250e6, mode = "CW",  bw = 500,   label = "W1AW CQ", caller = "W1AW", tol = 3e3 },
+    { freq = 14.1200e6, mode = "USB", bw = 2800,  label = "2-Tone", tol = 3e3 },
+    { freq = 14.1500e6, mode = "USB", bw = 2800,  label = "SSB Tone", tol = 3e3 },
+    { freq = 14.2000e6, mode = "USB", bw = 2800,  label = "CQ WB7NAB", caller = "WB7NAB", tol = 5e3 },
   }
   return loadedStimuli
 end
@@ -212,9 +212,9 @@ end
 function RiverView:getAutoSignalDef(freq)
   local stimuli = getStimuliFromTwin()
   for _, stim in ipairs(stimuli) do
-    local tol = stim.tol or 10e3
+    local tol = stim.tol or 5e3
     if math.abs(freq - stim.freq) <= tol then
-      return stim.mode, stim.bw, stim.label, stim.caller
+      return stim.mode, stim.bw, stim.label, stim.caller, true
     end
   end
 
@@ -228,16 +228,40 @@ function RiverView:getAutoSignalDef(freq)
         m = defaultMode
       end
       local bw = (m == "CW") and 500 or ((m == "AM") and 6000 or 2800)
-      return m, bw, m, nil
+      return m, bw, m, nil, false
     end
   end
 
-  return defaultMode, 2800, defaultMode, nil
+  return defaultMode, 2800, defaultMode, nil, false
 end
 
 function RiverView:getAutoModeForFreq(freq)
   local mode = self:getAutoSignalDef(freq)
   return mode
+end
+
+function RiverView:updateBoxMetadataForFreq(box, freq, isDirectTune)
+  if not box then return end
+  local autoMode, autoBw, autoLabel, autoCaller, matchedStimulus = self:getAutoSignalDef(freq)
+  if autoMode and autoMode ~= box.mode then
+    box:setMode(autoMode)
+    if autoBw then box.bandwidth = autoBw end
+    Model.set("rx.bandpass.width", box.bandwidth)
+  elseif isDirectTune and matchedStimulus and autoBw then
+    box.bandwidth = autoBw
+    Model.set("rx.bandpass.width", box.bandwidth)
+  end
+  if not box.isLabelLocked then
+    if matchedStimulus then
+      box.label = autoLabel
+      box.callerCallsign = autoCaller
+      box.respondentCallsign = nil
+    else
+      box.label = autoLabel or ("BOX " .. tostring(box.boxIndex or 1))
+      box.callerCallsign = nil
+      box.respondentCallsign = nil
+    end
+  end
 end
 
 function RiverView:cycleSignalBoxFocus(reverse)
@@ -246,6 +270,12 @@ function RiverView:cycleSignalBoxFocus(reverse)
   local nextIdx = reverse and (cur - 1) or (cur + 1)
   if nextIdx < 1 then nextIdx = #self.signalBoxes end
   if nextIdx > #self.signalBoxes then nextIdx = 1 end
+
+  for i, b in ipairs(self.signalBoxes) do
+    if i ~= nextIdx and b.stopPlayback then
+      b:stopPlayback()
+    end
+  end
 
   Model.selectedSignalBoxIndex:set(nextIdx)
   local box = self.signalBoxes[nextIdx]
@@ -263,6 +293,9 @@ function RiverView:cycleSignalBoxFocus(reverse)
 end
 
 function RiverView:spawnSignalBox(freq)
+  for _, b in ipairs(self.signalBoxes) do
+    if b.stopPlayback then b:stopPlayback() end
+  end
   local newIdx = #self.signalBoxes + 1
   local autoMode, autoBw, autoLabel, autoCaller = self:getAutoSignalDef(freq)
   local newBox = self:addSignalBox({
@@ -274,6 +307,7 @@ function RiverView:spawnSignalBox(freq)
     label = autoLabel or ("BOX " .. tostring(newIdx)),
     caller = autoCaller
   })
+  Model.ensureSignalBox(newIdx)
   Model.selectedSignalBoxIndex:set(newIdx)
   Model.set("rx.VFO.activeValue", freq)
   Model.set("rx.selectedMode", autoMode)
@@ -292,18 +326,9 @@ function RiverView:tuneActiveSignalBox(freq)
   end
 
   box.carrierFreq = freq
-  local autoMode, autoBw, autoLabel, autoCaller = self:getAutoSignalDef(freq)
-  if autoMode and autoMode ~= box.mode then
-    box:setMode(autoMode)
-    if autoBw then box.bandwidth = autoBw end
-    Model.set("rx.bandpass.width", box.bandwidth)
-  end
-  if not box.isLabelLocked then
-    box.label = autoLabel or ("BOX " .. tostring(curIdx))
-    box.callerCallsign = autoCaller
-    box.respondentCallsign = nil
-  end
+  self:updateBoxMetadataForFreq(box, freq, true)
   Model.set("rx.VFO.activeValue", freq)
+  Model.set("rx.selectedMode", box.mode)
   box:setFocus()
   self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
   if self.onSignalBoxesChanged then self:onSignalBoxesChanged(self.signalBoxes) end
@@ -311,10 +336,14 @@ function RiverView:tuneActiveSignalBox(freq)
 end
 
 function RiverView:removeFocusedSignalBox()
-  if #self.signalBoxes <= 1 then return false end
+  if #self.signalBoxes < 1 then return false end
   local curIdx = Model.selectedSignalBoxIndex:get() or 1
   local box = self.signalBoxes[curIdx]
   if not box then return false end
+
+  if box.stopPlayback then
+    box:stopPlayback()
+  end
 
   for i, kid in ipairs(self.kids) do
     if kid == box then
@@ -336,6 +365,8 @@ function RiverView:removeFocusedSignalBox()
     newFocused:setFocus()
     Model.set("rx.VFO.activeValue", newFocused.carrierFreq)
     Model.set("rx.selectedMode", newFocused.mode)
+  else
+    self:setFocus()
   end
 
   self:layout(self.props.x or 0, self.props.y or 0, self.props.w or 800, self.props.h or 450)
@@ -391,7 +422,7 @@ function RiverView:layout(x, y, w, h)
     local normHigh = (highFreq - self.freqMin) / fSpan
 
     local boxY = rulerH + canvasH - (normHigh * canvasH)
-    local boxH = math.max(12, (normHigh - normLow) * canvasH)
+    local boxH = math.max(2, (normHigh - normLow) * canvasH)
 
     box:layout(0, boxY, w, boxH)
   end
@@ -697,6 +728,8 @@ function RiverView:onEvent(event)
       self.clickStartY = ry
       self.dragStartX = event.gx or event.x or 0
       self.dragStartY = event.gy or event.y or 0
+      self.lastDragY = self.dragStartY
+      self.overscrollPx = 0
       self.dragStartTimeOffset = self.timeOffsetSec
       self.dragStartCenterFreq = (self.freqMin + self.freqMax) / 2
       state.setActive(self.id)
@@ -766,27 +799,115 @@ function RiverView:onEvent(event)
         end
         self.timeOffsetSec = clamp(newOffset, 0.0, self.totalBufferSec - self.timeSpanSec)
       elseif self.dragAxis == "vertical" then
+        local curY = event.gy or event.y or 0
+        local stepY = curY - (self.lastDragY or curY)
+        self.lastDragY = curY
+
         -- Vertical drag pans frequency; timeOffsetSec remains strictly unchanged
         local fSpan = self.freqMax - self.freqMin
         local rulerH = self.props.rulerH or 22
         local canvasH = math.max(10, (self.props.h or 450) - rulerH)
         local hzPerPx = fSpan / canvasH
-        local newCenter = self.dragStartCenterFreq + (dy * hzPerPx)
+        local newCenter = self.dragStartCenterFreq - (dy * hzPerPx)
         local fMin = newCenter - fSpan / 2
         local fMax = newCenter + fSpan / 2
 
-        -- Pin edges strictly within the receiver's active 300 kHz passband
+        -- Move passband to next passband if deliberately scrolling past either edge
         local hwCenter = self.hwCenterFreq or (Model.spectrumCenterFreq and Model.spectrumCenterFreq:peek()) or 14.2e6
         local bandMin = hwCenter - 150e3
         local bandMax = hwCenter + 150e3
 
-        if fMin < bandMin then
-          fMin = bandMin
-          fMax = bandMin + fSpan
-        end
+        local MIN_FREQ = 1.8e6
+        local MAX_FREQ = 30.0e6
+        local STEP_THRESHOLD_PX = 20
+        local STEP_HZ = 150e3
+
         if fMax > bandMax then
           fMax = bandMax
           fMin = bandMax - fSpan
+          if stepY < 0 then -- Dragging UP (towards higher frequency)
+            self.overscrollPx = (self.overscrollPx or 0) + (-stepY)
+            if self.overscrollPx >= STEP_THRESHOLD_PX then
+              if bandMax < MAX_FREQ then
+                local rem = hwCenter % STEP_HZ
+                local newHwCenter
+                if rem < 1.0 or (STEP_HZ - rem) < 1.0 then
+                  newHwCenter = math.floor(hwCenter / STEP_HZ + 0.5) * STEP_HZ + STEP_HZ
+                else
+                  newHwCenter = math.ceil(hwCenter / STEP_HZ) * STEP_HZ
+                end
+                if newHwCenter + 150e3 > MAX_FREQ then
+                  newHwCenter = MAX_FREQ - 150e3
+                end
+                if newHwCenter > hwCenter then
+                  local shift = newHwCenter - hwCenter
+                  hwCenter = newHwCenter
+                  bandMin = hwCenter - 150e3
+                  bandMax = hwCenter + 150e3
+                  fMax = math.min(bandMax, fMax + shift)
+                  fMin = fMax - fSpan
+                  self.hwCenterFreq = hwCenter
+                  self.dragStartCenterFreq = (fMin + fMax) / 2
+                  self.dragStartY = curY
+                  self.overscrollPx = 0
+                  if Model.spectrumCenterFreq then
+                    Model.spectrumCenterFreq:set(hwCenter)
+                  end
+                end
+              else
+                self.overscrollPx = 0
+              end
+            end
+          end
+        elseif fMin < bandMin then
+          fMin = bandMin
+          fMax = bandMin + fSpan
+          if stepY > 0 then -- Dragging DOWN (towards lower frequency)
+            self.overscrollPx = (self.overscrollPx or 0) + stepY
+            if self.overscrollPx >= STEP_THRESHOLD_PX then
+              if bandMin > MIN_FREQ then
+                local rem = hwCenter % STEP_HZ
+                local newHwCenter
+                if rem < 1.0 or (STEP_HZ - rem) < 1.0 then
+                  newHwCenter = math.floor(hwCenter / STEP_HZ + 0.5) * STEP_HZ - STEP_HZ
+                else
+                  newHwCenter = math.floor(hwCenter / STEP_HZ) * STEP_HZ
+                end
+                if newHwCenter - 150e3 < MIN_FREQ then
+                  newHwCenter = MIN_FREQ + 150e3
+                end
+                if newHwCenter < hwCenter then
+                  local shift = newHwCenter - hwCenter
+                  hwCenter = newHwCenter
+                  bandMin = hwCenter - 150e3
+                  bandMax = hwCenter + 150e3
+                  fMin = math.max(bandMin, fMin + shift)
+                  fMax = fMin + fSpan
+                  self.hwCenterFreq = hwCenter
+                  self.dragStartCenterFreq = (fMin + fMax) / 2
+                  self.dragStartY = curY
+                  self.overscrollPx = 0
+                  if Model.spectrumCenterFreq then
+                    Model.spectrumCenterFreq:set(hwCenter)
+                  end
+                end
+              else
+                self.overscrollPx = 0
+              end
+            end
+          end
+        else
+          self.overscrollPx = 0
+        end
+
+        -- Strict HF limits [1.8 MHz, 30.0 MHz]
+        if fMin < MIN_FREQ then
+          fMin = MIN_FREQ
+          fMax = math.min(MAX_FREQ, fMin + fSpan)
+        end
+        if fMax > MAX_FREQ then
+          fMax = MAX_FREQ
+          fMin = math.max(MIN_FREQ, fMax - fSpan)
         end
 
         self.freqMin = fMin

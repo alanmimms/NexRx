@@ -25,7 +25,12 @@ public:
     computeHilbertCoeffs();
   }
 
-  void setMode(Mode m) { mode = m; }
+  void setMode(Mode m) {
+    if (mode != m) {
+      mode = m;
+      amDcInitialized = false;
+    }
+  }
   Mode getMode() const { return mode; }
 
   void setBfoOffset(float hz) { bfoOffset = hz; }
@@ -70,16 +75,15 @@ public:
       }
       case Mode::AM: {
         float rawEnv = std::sqrt(magSq);
-        // Robust AM Demodulator (Envelope + DC Block)
-        // Tau ~ 100ms for carrier tracking
-        amDcOffset = amDcOffset * 0.9999f + rawEnv * 0.0001f;
+        if (!amDcInitialized) {
+          amDcOffset = rawEnv;
+          amDcInitialized = true;
+        } else {
+          amDcOffset = amDcOffset * 0.9995f + rawEnv * 0.0005f;
+        }
         
         // Remove carrier to get audio
         audio = rawEnv - amDcOffset;
-        
-        // Scale to safe range. 16.0 was too much, but AM envelope 
-        // values are smaller than SSB sidebands if carrier is large.
-        // Let's use a more moderate gain.
         audio *= 4.0f; 
         break;
       }
@@ -127,6 +131,7 @@ private:
   float sampleRate = 48000.0f;
   float bfoPhase = 0.0f;
   float amDcOffset = 0.0f;
+  bool amDcInitialized = false;
   bool filterEnabled = true;
 
   std::atomic<float> signalLevelRMS{0.0f};
