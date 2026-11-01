@@ -62,6 +62,7 @@ set(RTL_SOURCES
 # ------------------------------------------------------------------------------
 # Yosys + NextPNR Synthesis (Target: bitstream)
 # ------------------------------------------------------------------------------
+string(JOIN " " YOSYS_SOURCES ${RTL_SOURCES})
 set(PCF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/pins.pcf")
 set(SYNTH_JSON "${CMAKE_CURRENT_BINARY_DIR}/top.json")
 set(SYNTH_ASC "${CMAKE_CURRENT_BINARY_DIR}/top.asc")
@@ -74,14 +75,14 @@ find_program(ICEPACK_EXECUTABLE icepack)
 if(YOSYS_EXECUTABLE AND NEXTPNR_ICE40_EXECUTABLE AND ICEPACK_EXECUTABLE)
   add_custom_command(
     OUTPUT ${SYNTH_JSON}
-    COMMAND ${YOSYS_EXECUTABLE} -p "read_verilog -sv ${RTL_SOURCES}" -p "synth_ice40 -top top -json ${SYNTH_JSON}"
+    COMMAND ${YOSYS_EXECUTABLE} -p "read_verilog -sv ${YOSYS_SOURCES}" -p "synth_ice40 -top top -json ${SYNTH_JSON}"
     DEPENDS ${RTL_SOURCES} # Natively waits for regs.sv because it is in the binary dir
     COMMENT "Synthesizing RTL with Yosys"
   )
 
   add_custom_command(
     OUTPUT ${SYNTH_ASC}
-    COMMAND ${NEXTPNR_ICE40_EXECUTABLE} --lp384 --package sg32 --json ${SYNTH_JSON} --pcf ${PCF_FILE} --asc ${SYNTH_ASC}
+    COMMAND ${NEXTPNR_ICE40_EXECUTABLE} --lp384 --package qn32 --json ${SYNTH_JSON} --pcf ${PCF_FILE} --asc ${SYNTH_ASC}
     DEPENDS ${SYNTH_JSON} ${PCF_FILE}
     COMMENT "Placing and routing with nextpnr-ice40"
   )

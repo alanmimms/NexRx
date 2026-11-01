@@ -6,13 +6,13 @@ import CPLDRegs::*;
  */
 module top (
 	    input  logic clkTCXO,	// External TCXO
-	    input  logic clkSynth,	// Si5351 generated "VFO" for phase outputs
+	    input  logic clkOSD,	// Si5351 generated "VFO" for phase outputs
 
 	    /* SPI Slave Interface */
-	    input  logic spiSCK,
-	    input  logic spiMOSI,
-	    output logic spiMISO,
-	    input  logic spiNSS,
+	    input  logic cpldSCK,
+	    input  logic cpldMOSI,
+	    output logic cpldMISO,
+	    input  logic cpldNSS,
 
 	    input  logic gnssPPS,	// GNSS 1pps signal for TCXO freq counter
 
@@ -20,25 +20,31 @@ module top (
 	    output logic [7:0] nPh
 	    );
 
+`ifdef VERILATOR
   timeunit 1ns;
   timeprecision 1ps;
+`endif
 
   /* Clocking & Reset */
   logic clkSys;    // TCXO based Master Clock
-  logic clkVFO;	   // Current "VFO" freq clock
+
+  // Build a Verilator-compatible reset from known FPGA traits.
   logic resetN;
+  logic [3:0] porShift = 4'b0000;
+
+  assign resetN = &porShift;
+
+  always_ff @(posedge clkTCXO) begin
+    porShift <= {porShift[2:0], 1'b1};
+  end
 
   // THIS PROBABLY NEEDS GLOBAL CLOCK BUFFER.
   assign clkSys = clkTCXO;
-  assign clkVFO = clkSynth;
-
-  initial resetN = 1;
-  initial control = initCPLDControl;
 
   //==================================================================
   // Register Bank & SPI
   //==================================================================
-  tCPLDControl control;
+  CPLDRegs::tCPLDControl control;
   logic [63:0] tcxoValue;
 
   logic [31:0] shiftReg;
@@ -54,18 +60,18 @@ module top (
   //==================================================================
   // SPI Frontend
   //==================================================================
-  always_ff @(posedge spiSCK or posedge spiNSS) begin
+  always_ff @(posedge cpldSCK or posedge cpldNSS) begin
 
-    if (spiNSS) begin
+    if (cpldNSS) begin
       bitCnt <= 6'd0;
       cmdDone <= 1'b0;
       cmdLatch <= 8'h0;
     end else begin
 
       if (bitCnt < 6'd8) begin
-        cmdLatch <= {cmdLatch[6:0], spiMOSI};
+        cmdLatch <= {cmdLatch[6:0], cpldMOSI};
       end else begin
-        shiftReg <= {shiftReg[30:0], spiMOSI};
+        shiftReg <= {shiftReg[30:0], cpldMOSI};
       end
 
       if (bitCnt == 6'd39) begin
@@ -76,16 +82,16 @@ module top (
     end
   end
 
-  always_ff @(negedge spiSCK or posedge spiNSS) begin
+  always_ff @(negedge cpldSCK or posedge cpldNSS) begin
 
-    if (spiNSS) begin
-      spiMISO <= 1'b0;
+    if (cpldNSS) begin
+      cpldMISO <= 1'b0;
     end else begin
 
       if (bitCnt >= 6'd8 && bitCnt < 6'd40) begin
-        spiMISO <= dataOut[39 - bitCnt];
+        cpldMISO <= dataOut[39 - bitCnt];
       end else begin
-        spiMISO <= 1'b0;
+        cpldMISO <= 1'b0;
       end
     end
   end
@@ -109,6 +115,8 @@ module top (
         endcase
       end
     end
+
+    if (!resetN) control <= initCPLDControl;
   end
 
   always_comb begin
@@ -124,8 +132,7 @@ module top (
   //==================================================================
   // Precision frequency counter for clkSys gated by 1pps from GNSS.
   //==================================================================
-  logic [63:0] tcxoCounter;
-  initial tcxoCounter = 0;
+  logic [63:0] tcxoCounter = 0;
 
   // Synchronizer to bring 1pps signal into TCXO clock domain safely.
   logic [2:0] ppsSync;
@@ -146,11 +153,9 @@ module top (
   //==================================================================
   // Phase Generators (Walking Rings)
   //==================================================================
-  logic [7:0] osdPhases;
+  logic [7:0] osdPhases = 8'b10000000;
 
-  initial osdPhases = 8'b10000000;
-
-  always_ff @(negedge clkVFO) begin
+  always_ff @(negedge clkOSD) begin
 
     if (control.octMode)
       nPh <= ~osdPhases;

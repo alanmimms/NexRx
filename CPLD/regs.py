@@ -39,4 +39,4 @@ if __name__ == "__main__":
   os.makedirs(genDir, exist_ok=True)
   prefix = os.path.join(genDir, "regs")
   regs.writeFiles(prefix)
-  print(f"Generated registers at {prefix}.[h|md|sv]")
+  print(f"Generated registers into {prefix}.{{h,md,sv}}")

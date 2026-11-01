@@ -1,6 +1,6 @@
 # Clock Inputs
-set_io osdClk 20
-set_io tcxo 29
+set_io clkOSD 20
+set_io clkTCXO 29
 set_io gnssPPS 32
 
 # SPI Interface

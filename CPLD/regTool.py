@@ -114,8 +114,10 @@ class RegisterSet:
     lines = [
       f"// Generated SystemVerilog Register Package for {self.namespace}",
       f"package {self.namespace}Regs;",
+      f"`ifdef VERILATOR",
       f"  timeunit 1ns;",
       f"  timeprecision 1ps;",
+      f"`endif",
       ""
     ]
 
@@ -155,7 +157,7 @@ class RegisterSet:
       lines.append(f"  }} t{self.namespace}{reg.name};")
 
       initVals = [f"{f.bits}'h{f.default:X}" for f in reversed(reg.fields)]
-      lines.append(f"  localparam t{self.namespace}{reg.name} init{self.namespace}{reg.name} = {{{', '.join(initVals)}}};")
+      lines.append(f"  localparam init{self.namespace}{reg.name} = {{{', '.join(initVals)}}};")
       lines.append("")
 
       # Emit Address Map

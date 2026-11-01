@@ -4,6 +4,17 @@ sudo apt install libxinerama-dev
 sudo apt install libxcursor-dev
 sudo apt install libxi-dev
 sudo apt install libsdl2-dev
+
+Download at least Yosys 0.70 build via instructions at
+https://yosyshq.net/yosys/download.html and extract and source the
+environment script. I put mine in the default $HOME/oss-cad-suite
+directory.
+
+source ~/oss-cad-suite/environment
+source .venv/bin/activate
+
 cmake -B build
 cmake --build build/app
 cmake --build build/twin
+cmake --build build/fw
+cmake --build build/CPLD
