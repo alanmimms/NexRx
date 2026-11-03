@@ -5105,7 +5105,7 @@
           "show": false
         }
       ],
-      "filter_string": "c3",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",

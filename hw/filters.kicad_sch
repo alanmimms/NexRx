@@ -4905,7 +4905,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C52259879"
+		(property "LCSC_PN" "C394111"
 			(at 181.61 80.01 90)
 			(effects
 				(font
@@ -9175,7 +9175,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC_PN" "C52259879"
+		(property "LCSC_PN" "C394111"
 			(at 195.58 80.01 90)
 			(effects
 				(font
