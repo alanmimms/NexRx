@@ -27,3 +27,5 @@ BOM/
 zephyr/
 modules/
 .west/
+waveform.vcd
+waveform.surf.ron

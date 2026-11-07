@@ -19,7 +19,7 @@ static const char waveformFileName[] = "waveform.vcd";
 
 static uint64_t currentTime;	// Current sim time in ps
 
-struct SimTask {
+struct [[nodiscard]] SimTask {
 
   struct promise_type {
     // Saves parent coroutine that called co_await on us
@@ -34,16 +34,18 @@ struct SimTask {
         
     // The magic happens here: When this coroutine finishes, wake up the parent!
     auto final_suspend() noexcept {
+
       struct FinalAwaiter {
 	bool await_ready() noexcept { return false; }
+
 	std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> h) noexcept {
 	  // If a parent is waiting for us, return their handle to resume them instantly
-	  if (h.promise().continuation) {
-	    return h.promise().continuation;
-	  }
+	  if (h.promise().continuation) return h.promise().continuation;
+
 	  // Otherwise, just yield back to the main simulation loop
 	  return std::noop_coroutine();
 	}
+
 	void await_resume() noexcept {}
       };
       return FinalAwaiter{};
@@ -208,8 +210,40 @@ struct WaitTime {
 };
 
 
+static unsigned getBitWidthForAddr(unsigned addr) {
+  switch (addr) {
+  case aCPLDControl:	return CPLDControl::bitW;
+  case aCPLDTCXOLatch:	return CPLDTCXOLatch::bitW;
+  case aCPLDSig:	return wCPLDSig;
+
+  default:
+    std::cerr << "spiRead or spiWrite for unknown address!" << std::endl;
+    return 0;
+  }
+}
+
+
 // SPI clock 2MHz half period in ps.
 static constexpr uint64_t spiHalfPeriodPS = 1000 * 1000;
+
+
+static SimTask putBit(Vtop* top, unsigned bit) {
+  top->cpldMOSIpin = bit;
+  co_await WaitTime{spiHalfPeriodPS};
+  top->cpldSCLKpin = 1;
+  co_await WaitTime{spiHalfPeriodPS};
+  top->cpldSCLKpin = 0;
+}
+
+
+static SimTask getBit(Vtop* top, unsigned &result) {
+  top->cpldMOSIpin = 1;
+  co_await WaitTime{spiHalfPeriodPS};
+  top->cpldSCLKpin = 1;
+  result = top->cpldMISOpin;
+  co_await WaitTime{spiHalfPeriodPS};
+  top->cpldSCLKpin = 0;
+}
 
 
 // A high-level, linear SPI driver coroutine
@@ -219,64 +253,51 @@ SimTask spiWrite(Vtop* top, uint8_t addr, uint32_t data) {
   top->cpldSCLKpin = 0;
   co_await WaitTime{spiHalfPeriodPS};
     
-  addr |= 0x80;		 // It's a write.
-  uint64_t payload = (static_cast<uint64_t>(addr) << 32) | data;
+  // Send write bit and then address
+  co_await putBit(top, 1);		// WRITE bit
+  for (int k=6; k >= 0; --k) co_await putBit(top, (addr >> k) & 1);
 
-  for (int i = 39; i >= 0; i--) {
-    top->cpldMOSIpin = (payload >> i) & 1;
-    co_await WaitTime{spiHalfPeriodPS};
-    top->cpldSCLKpin = 1;
-    co_await WaitTime{spiHalfPeriodPS};
-    top->cpldSCLKpin = 0;
-  }
+  unsigned bitW = getBitWidthForAddr(addr);
+  for (int k=bitW-1; k >= 0; --k) co_await putBit(top, (data >> k) & 1);
 
   co_await WaitTime{spiHalfPeriodPS};
   top->cpldNSSpin = 1;
   co_await WaitTime{spiHalfPeriodPS};
 }
 
+
 // A true Async SPI Read Coroutine
 SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
-  std::cout << "spiRead 0x" << std::hex << std::setw(2) << std::setfill('0') << (unsigned) addr << std::endl;
+  std::cout << "spiRead 0x" << std::hex << std::setw(2) << std::setfill('0') << (unsigned) addr
+	    << std::endl << std::flush;
   top->cpldNSSpin = 0;
   top->cpldSCLKpin = 0;
-  std::cout << "spiRead NSS=0 SCK=0" << std::endl;
   co_await WaitTime{spiHalfPeriodPS};
     
-  addr &= 0x7F;		 // It's a read (MSB is 0).
-  uint64_t payload = static_cast<uint64_t>(addr) << 32;
-
   uint32_t readVal = 0;
 
-  for (int i = 39; i >= 0; i--) {
-    top->cpldMOSIpin = (payload >> i) & 1;
-    std::cout << "spiRead MOSI=" << top->cpldMOSIpin << std::endl;
-    co_await WaitTime{spiHalfPeriodPS};
-    top->cpldSCLKpin = 1;
-    std::cout << "spiRead SCK=1" << std::endl;
-    
-    // Sample MISO while SCK is high
-    if (i < 32) {
-      readVal = (readVal << 1) | (top->cpldMISOpin & 1);
-      std::cout << "spiRead MISO=" << (top->cpldMISOpin & 1) << std::endl;
-    }
-    
-    co_await WaitTime{spiHalfPeriodPS};
-    top->cpldSCLKpin = 0;
-    std::cout << "spiRead SCK=0" << std::endl;
+  // Send read bit and then address
+  co_await putBit(top, 0);		// READ bit
+  for (int k=6; k >= 0; --k) co_await putBit(top, (addr >> k) & 1);
+
+  unsigned bitW = getBitWidthForAddr(addr);
+
+  for (int k=bitW-1; k >= 0; --k) {
+    unsigned bit = 0;
+    co_await getBit(top, bit);
+    readVal = (readVal << 1) | bit;
   }
 
   dataOut = readVal;
 
   co_await WaitTime{spiHalfPeriodPS};
   top->cpldNSSpin = 1;
-  std::cout << "spiRead NSS=1" << std::endl;
   co_await WaitTime{spiHalfPeriodPS};
 }
 
 
 static SimTask runTestSequence(Vtop* top) {
-  std::cout << "runTestSequence" << std::endl;
+  std::cout << "runTestSequence" << std::endl << std::flush;
 
   // Wait 100ns before starting for luck.
   co_await WaitTime(MEG(1)/10);
@@ -285,12 +306,12 @@ static SimTask runTestSequence(Vtop* top) {
   uint32_t sig = 0;
   co_await spiRead(top, aCPLDSig, sig);
   std::cout << "SPI: Read Signature register (0x0F): 0x" 
-            << std::hex << std::setw(8) << std::setfill('0') << sig << std::dec << std::endl;
+            << std::hex << std::setw(8) << std::setfill('0') << sig << std::dec << std::endl << std::flush;
   if (sig == 0x4E785278) {
-    std::cout << "SPI: Signature matches 'NxRx' (0x4E785278) - Success!" << std::endl;
+    std::cout << "SPI: Signature matches 'NxRx' (0x4E785278) - Success!" << std::endl << std::flush;
   } else {
     std::cout << "SPI ERROR: Signature mismatch! Expected 0x4E785278, got 0x" 
-              << std::hex << sig << std::dec << std::endl;
+              << std::hex << sig << std::dec << std::endl << std::flush;
   }
 
   // Wait 10,000 TCXO cycles (assuming 40MHz clock = 25ns period)
@@ -319,7 +340,7 @@ int main(int argc, char *argv[]) {
   ClockSource clkOSD(MEG(5), &top->clkOSDpin);
 
   // This is faked to be 100kHz clock instead of 1Hz to test freq
-  // counter.
+  // counter in our lifetime.
   ClockSource gnssPPS(MEG(1)/10, &top->gnssPPSpin);
 
   // Initialize all driving pins
@@ -330,7 +351,7 @@ int main(int argc, char *argv[]) {
   top->cpldMOSIpin = 0;
   top->gnssPPSpin = 0;
 
-  std::cout << "Starting simulation..." << std::endl;
+  std::cout << "Starting simulation..." << std::endl << std::flush;
 
   std::vector<EventSource*> sources = {&clkTCXO, &clkOSD, &gnssPPS, &theTM};
   const uint64_t maxSimTime = MEG(10000); // 10ms to prevent infinite loops

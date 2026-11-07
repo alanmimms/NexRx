@@ -53,7 +53,7 @@ module top (
 
   // Build a Verilator-compatible reset from known FPGA traits.
   logic resetN;
-  logic [3:0] porShift = 4'b0000;
+  logic [3:0] porShift = 4'd0;
 
   assign resetN = &porShift;
 
@@ -109,6 +109,12 @@ module top (
   // SPI Frontend
   //==================================================================
 
+  assign cpldMISOpin = shiftReg[31];
+
+  logic [6:0] nuAddr;
+
+  assign nuAddr = {addr[5:0], syncMOSI};
+
   // We use posedge cpldNSS as our reset.
   always_ff @(posedge syncSCLK or posedge syncNSS) begin
 
@@ -121,27 +127,32 @@ module top (
       // address bits. We know what we're reading or writing by this
       // point. This also tells us how many bit clocks will follow for
       // this address.
-      if (bitCnt == 'd8) begin
-	addr <= shiftReg[6:0];
-	isWrite <= shiftReg[7];
+      if (bitCnt == 'd0) begin
+	isWrite <= syncMOSI;
+      end else if (bitCnt < 'd8) begin
+	addr <= nuAddr;
 
-	// Register read path
-	if (!shiftReg[7]) begin
-	  case (addr)
-	    aCPLDControl:	shiftReg[31:24] <= control;
-	    aCPLDTCXOLatch:	shiftReg <= {6'b000000, tcxoCounter};
+	if (!isWrite) begin	// Register read path
+
+	  case (nuAddr)
+	    aCPLDControl:	shiftReg[7:0] <= control;
+	    aCPLDTCXOLatch:	shiftReg <= {6'b0, tcxoCounter};
 	    aCPLDSig:		shiftReg <= eSigValVal;
 	    default:		shiftReg <= '0;
 	  endcase
 	end
       end else begin
-	if (!isWrite) cpldMISOpin <= shiftReg[31];
-        shiftReg <= {shiftReg[30:0], syncMOSI};
+
+	if (isWrite) begin
+	  shiftReg <= {shiftReg[30:0], syncMOSI};
+	end else begin
+	  shiftReg <= {shiftReg[30:0], shiftReg[31]};
+	end
       end
 
       if (isWrite) begin
 
-	if (addr == aCPLDControl && bitCnt == wCPLDControl) control <= shiftReg[31:24];
+	if (addr == aCPLDControl && bitCnt == wCPLDControl) control <= shiftReg[7:0];
 	else if (addr == aCPLDSig && bitCnt == wCPLDSig) ;
 	else if (addr == aCPLDTCXOLatch && bitCnt == wCPLDTCXOLatch && counterState != sCounterTCXO) begin
 //	  tcxoCounter <= shiftReg[25:0];	This isn't strictly necessary and convolutes the code to do it safely
@@ -149,7 +160,7 @@ module top (
 
       end
 
-      bitCnt <= bitCnt + 1'b1;
+      bitCnt <= bitCnt + 1;
     end
   end
 
@@ -179,7 +190,7 @@ module top (
 
     endcase
 
-    if (counterState == sCounterTCXO) tcxoCounter <= tcxoCounter + 1'b1;
+    if (counterState == sCounterTCXO) tcxoCounter <= tcxoCounter + 1;
   end
 
   //==================================================================

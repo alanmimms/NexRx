@@ -203,7 +203,8 @@ class RegisterSet:
             suffix = f"{vName[0].upper()}{vName[1:]}" if vName else ""
             lines.append(f"  e{typeName}{suffix} = {vVal},")
 
-          lines.append(f"}};")
+            lines.append(f"  w{self.namespace}{reg.name} = {reg.totalBits}")
+          lines.append("};")
           lines.append("")
 
     # Emit Structs
@@ -233,7 +234,8 @@ class RegisterSet:
 
       lines.append(f"    {uType} u;")
       lines.append("  };")
-      lines.append(f"}};")
+      lines.append(f"  static constexpr unsigned bitW = {reg.totalBits};")
+      lines.append("};")
       lines.append("")
       
     # Emit Address Enum
@@ -242,6 +244,7 @@ class RegisterSet:
     for reg in self.registers:
       lines.append(f"  a{self.namespace}{reg.name} = 0x{reg.addr:02X},")
 
+    lines.append(f"  w{self.namespace}Addr = 7")
     lines.append(f"}};")
     lines.append(f"")
     return "\n".join(lines)
