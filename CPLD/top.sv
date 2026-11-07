@@ -39,9 +39,9 @@ module top (
   SB_GB_IO #(
 	     .PIN_TYPE(6'b000001)
 	     ) tcxoClkBuffer (
-			     .PACKAGE_PIN(clkTCXOpin),
-			     .GLOBAL_BUFFER_OUTPUT(clkTCXO)
-			     );
+			      .PACKAGE_PIN(clkTCXOpin),
+			      .GLOBAL_BUFFER_OUTPUT(clkTCXO)
+			      );
 
   SB_GB_IO #(
 	     .PIN_TYPE(6'b000001)
@@ -67,33 +67,34 @@ module top (
   //==================================================================
   // Register Bank & SPI
   //==================================================================
-  CPLDRegs::tCPLDControl control;
-  logic [63:0] tcxoValue;
+  CPLDRegs::tCPLDControl control = {4'h0, counterStateIdle, 1'b0, 1'b1};
+  logic [25:0] tcxoCounter;
 
+  /* verilator lint_off PINMISSING */
   logic syncSCLK;
-  logic sclkChanged;
-  Synchronizer SCLKsyncizer(.clk(clkSys),
-			    .i(cpldSCLKpin),
-			    .o(syncSCLK),
-			    .rising(sclkChanged));
+  logic sclkRising;
+  Synchronizer SCLKsyzer(.clk(clkSys),
+			 .i(cpldSCLKpin),
+			 .o(syncSCLK),
+			 .rising(sclkRising));
 
   logic syncPPS;
-  Synchronizer PPSsyncizer(.clk(clkSys),
-			   .i(gnssPPSpin),
-			   .o(syncPPS),
-			   .rising());
+  Synchronizer PPSsyzer(.clk(clkSys),
+			.i(gnssPPSpin),
+			.o(syncPPS));
 
   logic syncNSS;
-  Synchronizer NSSsyncizer(.clk(clkSys),
-			   .i(cpldNSSpin),
-			   .o(syncNSS),
-			   .rising());
+  logic nssRising;
+  Synchronizer NSSsyzer(.clk(clkSys),
+			.i(cpldNSSpin),
+			.o(syncNSS),
+			.rising(nssRising));
 
   logic syncMOSI;
-  Synchronizer MOSIsyncizer(.clk(clkSys),
-			    .i(cpldMOSIpin),
-			    .o(syncMOSI),
-			    .rising());
+  Synchronizer MOSIsyzer(.clk(clkSys),
+			 .i(cpldMOSIpin),
+			 .o(syncMOSI));
+  /* verilator lint_on PINMISSING */
 
   // This is the max width of a payload being transferred. It's also
   // used to accumulate the read/write and address bits at the start
@@ -105,11 +106,10 @@ module top (
   logic [6:0]  addr = 0;
   logic        isWrite = 0;
 
-  logic counterLoadPending = 0;	// Set when SPI has a new value for tcxoCounter
-
-  //==================================================================
-  // SPI Frontend
-  //==================================================================
+  logic controlPending = 0;	// Set when SPI has a new control register value
+  logic controlTaken = 0;	// Handshake when new value has been consumed
+  logic counterPending = 0;	// Set when SPI has a new value for tcxoCounter
+  logic counterTaken = 0;	// Handshake when new value has been consumed
 
   assign cpldMISOpin = shiftReg[31];
 
@@ -117,14 +117,18 @@ module top (
 
   assign nuAddr = {addr[5:0], syncMOSI};
 
-  // We use posedge cpldNSS as our reset.
-  always_ff @(posedge syncSCLK or posedge syncNSS) begin
+  always_ff @(posedge clkTCXO) begin
 
-    if (syncNSS) begin
-      bitCnt <= '0;
-      shiftReg <= '0;
-    end else begin
+    if (nssRising) begin       // We use posedge cpldNSS as our reset.
+      bitCnt <= 0;
+      shiftReg <= 0;
+      controlTaken <= 0;
+      counterTaken <= 0;
+    end else if (!syncNSS && sclkRising) begin
 
+      //==================================================================
+      // SPI Frontend
+      //==================================================================
       // When we get to 8 bits, we have the read/write bit and seven
       // address bits. We know what we're reading or writing by this
       // point. This also tells us how many bit clocks will follow for
@@ -154,47 +158,48 @@ module top (
 
       if (isWrite) begin
 
-	if (addr == aCPLDControl && bitCnt == wCPLDControl) control <= shiftReg[7:0];
+	if (addr == aCPLDControl && bitCnt == wCPLDControl) controlPending <= 1;
 	else if (addr == aCPLDSig && bitCnt == wCPLDSig) ;
 	else if (addr == aCPLDTCXOLatch && bitCnt == wCPLDTCXOLatch) begin
-	  counterLoadPending <= 1;
+	  counterPending <= 1;
 	end
 
       end
 
       bitCnt <= bitCnt + 1;
     end
-  end
 
-  //==================================================================
-  // Precision frequency counter for clkTCXO gated by 1pps from GNSS.
-  //==================================================================
-  logic [25:0] tcxoCounter;
-  typedef enum logic[1:0] {sCounterIdle, sCounterTCXO, sCounterFrozen, sCounterReadable} tCounterState;
-  tCounterState counterState = sCounterIdle;
+    if (controlTaken) controlPending <= 0;
+    if (counterTaken) counterPending <= 0;
 
+    //==================================================================
+    // Precision frequency counter for clkTCXO gated by 1pps from GNSS.
+    //==================================================================
+    if (controlPending) begin
+      control <= shiftReg[7:0];
+      controlTaken <= 1;
+    end else begin
 
-  // While counter is active, each posedge of clkTCXO increments tcxoCounter.
-  always_ff @(posedge clkTCXO) begin
+      case (control.counterState)
+	counterStateIdle:
+	  if (syncPPS) control.counterState <= counterStateCounting;
 
-    case (counterState)
-      sCounterIdle:
-	if (syncPPS) counterState <= sCounterTCXO;
+	counterStateCounting:
+	  if (!syncPPS) control.counterState <= counterStateFrozen;
 
-      sCounterTCXO:
-	if (!syncPPS) counterState <= sCounterFrozen;
+	counterStateFrozen:
+	  if (syncPPS) control.counterState <= counterStateReadable;
 
-      sCounterFrozen:
-	if (syncPPS) counterState <= sCounterReadable;
+	counterStateReadable:
+	  ;
 
-      sCounterReadable:
-	;
+      endcase
+    end
 
-    endcase
-
-    if (counterLoadPending) begin
+    if (counterPending) begin
       tcxoCounter <= shiftReg[25:0];
-    end else if (counterState == sCounterTCXO) begin
+      counterTaken <= 1;
+    end else if (control.counterState == counterStateCounting) begin
       tcxoCounter <= tcxoCounter + 1;
     end
   end
@@ -213,7 +218,6 @@ module top (
 
     osdPhases <= {osdPhases[6:0], osdPhases[7]};
   end
-
 endmodule
 
 
@@ -223,7 +227,8 @@ module Synchronizer
    input logic clk,
    input logic [WIDTH-1:0] i,
    output logic [WIDTH-1:0] o,
-   output logic rising);
+   output logic rising,
+   output logic falling);
 
 `ifdef VERILATOR
   timeunit 1ns;
@@ -238,6 +243,7 @@ module Synchronizer
     stage2 <= stage1;
   end
 
-  assign rising = stage2 & !stage1;
+  assign rising =  stage2 & !stage1;
+  assign falling = !stage2 & stage1;
   assign o = stage2;
 endmodule // Synchronizer
