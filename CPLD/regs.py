@@ -8,25 +8,28 @@ if sys.version_info < (3, 7):
 
 from regTool import RegisterSet, UInt, Bit, Enum, Int
 
+
 regs = RegisterSet("CPLD")
+
 
 @regs.register(0x00, "Main control and status")
 class Control:
   octMode:      Bit(1, "Generate 8 phases if true, 4 phases otherwise")
-  reserved:     UInt(0, 31, "Reserved")
+  counterThaw:  Bit(0, "Unthaw to start on next 1pps & clock")
+  reserved:     UInt(0, 6)
 
-@regs.register(0x01, "GNSS PPS Latched Counter MSBs")
-class PPSLatchHi:
-  val:          UInt(0, 32, "Latched TCXO clock cycles count at PPS edge high word")
 
-@regs.register(0x02, "GNSS PPS Latched Counter LSBs")
-class PPSLatchLo:
-  val:          UInt(0, 32, "Latched TCXO clock cycles count at PPS edge low word")
+# Read all 32 bits at one go.
+@regs.register(0x04, "GNSS TCXO Latched Counter")
+class TCXOLatch:
+  val:          UInt(0, 32, "Latched TCXO clock cycles count at second PPS edge")
+
 
 # We can assume this never changes address.
-@regs.register(0x7F, "CPLD Hardware Signature")
+@regs.register(0x7C, "CPLD Hardware Signature")
 class Sig:
   val:          Enum(0x4E785278, 32, [("", 0x4E785278)], "Fixed value ASCII 'NxRx'")
+
 
 if __name__ == "__main__":
 

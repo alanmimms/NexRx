@@ -80,9 +80,11 @@ if(YOSYS_EXECUTABLE AND NEXTPNR_ICE40_EXECUTABLE AND ICEPACK_EXECUTABLE)
     COMMENT "Synthesizing RTL with Yosys"
   )
 
+  set(NEXTPNR_FLAGS --lp384 --package qn32 --placer-heap-cell-placement-timeout 500000 --no-promote-globals --seed 42)
+
   add_custom_command(
     OUTPUT ${SYNTH_ASC}
-    COMMAND ${NEXTPNR_ICE40_EXECUTABLE} --lp384 --package qn32 --json ${SYNTH_JSON} --pcf ${PCF_FILE} --asc ${SYNTH_ASC}
+    COMMAND ${NEXTPNR_ICE40_EXECUTABLE} ${NEXTPNR_FLAGS} --json ${SYNTH_JSON} --pcf ${PCF_FILE} --asc ${SYNTH_ASC}
     DEPENDS ${SYNTH_JSON} ${PCF_FILE}
     COMMENT "Placing and routing with nextpnr-ice40"
   )

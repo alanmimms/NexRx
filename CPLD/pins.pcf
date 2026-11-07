@@ -1,13 +1,13 @@
 # Clock Inputs
-set_io clkOSD 20
-set_io clkTCXO 29
-set_io gnssPPS 32
+set_io clkOSDpin 20
+set_io clkTCXOpin 29
+set_io gnssPPSpin 32
 
 # SPI Interface
-set_io cpldMISO 12
-set_io cpldSCK 15
-set_io cpldNSS 14
-set_io cpldMOSI 13
+set_io cpldMISOpin 12
+set_io cpldSCLKpin 15
+set_io cpldNSSpin 14
+set_io cpldMOSIpin 13
 
 # Octature clock outputs
 set_io nPh[0] 1

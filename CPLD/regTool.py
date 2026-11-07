@@ -121,6 +121,12 @@ class RegisterSet:
       ""
     ]
 
+    # Emit widths
+    for reg in self.registers:
+      lines.append(f"  localparam w{self.namespace}{reg.name} = {(reg.fields[0].bits + 7) & ~7};")
+    lines.append(f"  localparam w{self.namespace}Addr = 7;")
+    lines.append("")
+
     # Emit Enums
     for reg in self.registers:
 
@@ -135,7 +141,7 @@ class RegisterSet:
             lines.append(f"    e{reg.name}{f.name[0].upper()}{f.name[1:]}{suffix} = {f.bits}'h{vVal:X},")
             lines[-1] = lines[-1].rstrip(',') # Remove trailing comma
             lines.append(f"  }} {enumName};")
-            lines.append("")
+    lines.append("")
 
     # Emit Packed Structs
     for reg in self.registers:
@@ -151,7 +157,7 @@ class RegisterSet:
         else:
           typeStr = f"logic {signedStr}{bitsStr}"
 
-        docStr = f" // Bits {f.offset + f.bits - 1}:{f.offset}: {f.doc}" if f.doc else ""
+        docStr = f"	// {f.doc}" if f.doc else ""
         lines.append(f"    {typeStr} {f.name};{docStr}")
 
       lines.append(f"  }} t{self.namespace}{reg.name};")
@@ -162,8 +168,10 @@ class RegisterSet:
 
       # Emit Address Map
       lines.append(f"  typedef enum logic [6:0] {{")
-      for reg in self.registers:
-        lines.append(f"    a{self.namespace}{reg.name} = 7'h{reg.addr:02X},")
+      for x,reg in enumerate(self.registers):
+        docStr = f"	// {reg.doc}" if reg.doc else ""
+        comma = "" if x == len(self.registers)-1 else ","
+        lines.append(f"    a{self.namespace}{reg.name} = 7'h{reg.addr:02X}{comma}{docStr}")
 
       lines[-1] = lines[-1].rstrip(',')
 

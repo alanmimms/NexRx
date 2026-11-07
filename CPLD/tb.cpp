@@ -215,31 +215,31 @@ static constexpr uint64_t spiHalfPeriodPS = 1000 * 1000;
 // A high-level, linear SPI driver coroutine
 // A true Async SPI Master Coroutine
 SimTask spiWrite(Vtop* top, uint8_t addr, uint32_t data) {
-  top->spiNSS = 0;
-  top->spiSCK = 0;
+  top->cpldNSSpin = 0;
+  top->cpldSCLKpin = 0;
   co_await WaitTime{spiHalfPeriodPS};
     
   addr |= 0x80;		 // It's a write.
   uint64_t payload = (static_cast<uint64_t>(addr) << 32) | data;
 
   for (int i = 39; i >= 0; i--) {
-    top->spiMOSI = (payload >> i) & 1;
+    top->cpldMOSIpin = (payload >> i) & 1;
     co_await WaitTime{spiHalfPeriodPS};
-    top->spiSCK = 1;
+    top->cpldSCLKpin = 1;
     co_await WaitTime{spiHalfPeriodPS};
-    top->spiSCK = 0;
+    top->cpldSCLKpin = 0;
   }
 
   co_await WaitTime{spiHalfPeriodPS};
-  top->spiNSS = 1;
+  top->cpldNSSpin = 1;
   co_await WaitTime{spiHalfPeriodPS};
 }
 
 // A true Async SPI Read Coroutine
 SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
   std::cout << "spiRead 0x" << std::hex << std::setw(2) << std::setfill('0') << (unsigned) addr << std::endl;
-  top->spiNSS = 0;
-  top->spiSCK = 0;
+  top->cpldNSSpin = 0;
+  top->cpldSCLKpin = 0;
   std::cout << "spiRead NSS=0 SCK=0" << std::endl;
   co_await WaitTime{spiHalfPeriodPS};
     
@@ -249,27 +249,27 @@ SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
   uint32_t readVal = 0;
 
   for (int i = 39; i >= 0; i--) {
-    top->spiMOSI = (payload >> i) & 1;
-    std::cout << "spiRead MOSI=" << top->spiMOSI << std::endl;
+    top->cpldMOSIpin = (payload >> i) & 1;
+    std::cout << "spiRead MOSI=" << top->cpldMOSIpin << std::endl;
     co_await WaitTime{spiHalfPeriodPS};
-    top->spiSCK = 1;
+    top->cpldSCLKpin = 1;
     std::cout << "spiRead SCK=1" << std::endl;
     
     // Sample MISO while SCK is high
     if (i < 32) {
-      readVal = (readVal << 1) | (top->spiMISO & 1);
-      std::cout << "spiRead MISO=" << (top->spiMISO & 1) << std::endl;
+      readVal = (readVal << 1) | (top->cpldMISOpin & 1);
+      std::cout << "spiRead MISO=" << (top->cpldMISOpin & 1) << std::endl;
     }
     
     co_await WaitTime{spiHalfPeriodPS};
-    top->spiSCK = 0;
+    top->cpldSCLKpin = 0;
     std::cout << "spiRead SCK=0" << std::endl;
   }
 
   dataOut = readVal;
 
   co_await WaitTime{spiHalfPeriodPS};
-  top->spiNSS = 1;
+  top->cpldNSSpin = 1;
   std::cout << "spiRead NSS=1" << std::endl;
   co_await WaitTime{spiHalfPeriodPS};
 }
@@ -315,24 +315,24 @@ int main(int argc, char *argv[]) {
     traceP->open(waveformFileName);
   }
 
-  ClockSource clkTCXO(MEG(40), &top->clkTCXO);
-  ClockSource clkSynth(MEG(5), &top->clkSynth);
+  ClockSource clkTCXO(MEG(40), &top->clkTCXOpin);
+  ClockSource clkOSD(MEG(5), &top->clkOSDpin);
 
   // This is faked to be 100kHz clock instead of 1Hz to test freq
   // counter.
-  ClockSource gnssPPS(MEG(1)/10, &top->gnssPPS);
+  ClockSource gnssPPS(MEG(1)/10, &top->gnssPPSpin);
 
   // Initialize all driving pins
-  top->clkTCXO = 0;
-  top->clkSynth = 0;
-  top->spiNSS = 1;
-  top->spiSCK = 0;
-  top->spiMOSI = 0;
-  top->gnssPPS = 0;
+  top->clkTCXOpin = 0;
+  top->clkOSDpin = 0;
+  top->cpldNSSpin = 1;
+  top->cpldSCLKpin = 0;
+  top->cpldMOSIpin = 0;
+  top->gnssPPSpin = 0;
 
   std::cout << "Starting simulation..." << std::endl;
 
-  std::vector<EventSource*> sources = {&clkTCXO, &clkSynth, &gnssPPS, &theTM};
+  std::vector<EventSource*> sources = {&clkTCXO, &clkOSD, &gnssPPS, &theTM};
   const uint64_t maxSimTime = MEG(10000); // 10ms to prevent infinite loops
 
   // Set up coroutine that drives our test sequence.
