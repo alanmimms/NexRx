@@ -105,6 +105,8 @@ module top (
   logic [6:0]  addr = 0;
   logic        isWrite = 0;
 
+  logic counterLoadPending = 0;	// Set when SPI has a new value for tcxoCounter
+
   //==================================================================
   // SPI Frontend
   //==================================================================
@@ -137,7 +139,7 @@ module top (
 	  case (nuAddr)
 	    aCPLDControl:	shiftReg[7:0] <= control;
 	    aCPLDTCXOLatch:	shiftReg <= {6'b0, tcxoCounter};
-	    aCPLDSig:		shiftReg <= eSigValVal;
+	    aCPLDSig:		shiftReg <= sigVal;
 	    default:		shiftReg <= '0;
 	  endcase
 	end
@@ -154,8 +156,8 @@ module top (
 
 	if (addr == aCPLDControl && bitCnt == wCPLDControl) control <= shiftReg[7:0];
 	else if (addr == aCPLDSig && bitCnt == wCPLDSig) ;
-	else if (addr == aCPLDTCXOLatch && bitCnt == wCPLDTCXOLatch && counterState != sCounterTCXO) begin
-//	  tcxoCounter <= shiftReg[25:0];	This isn't strictly necessary and convolutes the code to do it safely
+	else if (addr == aCPLDTCXOLatch && bitCnt == wCPLDTCXOLatch) begin
+	  counterLoadPending <= 1;
 	end
 
       end
@@ -190,7 +192,11 @@ module top (
 
     endcase
 
-    if (counterState == sCounterTCXO) tcxoCounter <= tcxoCounter + 1;
+    if (counterLoadPending) begin
+      tcxoCounter <= shiftReg[25:0];
+    end else if (counterState == sCounterTCXO) begin
+      tcxoCounter <= tcxoCounter + 1;
+    end
   end
 
   //==================================================================

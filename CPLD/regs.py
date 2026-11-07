@@ -16,8 +16,8 @@ regs = RegisterSet("CPLD")
 class Control:
   octMode:      Bit(1, "Generate 8 phases if true, 4 phases otherwise")
   counterThaw:  Bit(0, "Unthaw to start on next 1pps & clock")
-  reserved:     UInt(0, 6)
-
+  counterState: Enum("idle", ["idle", "counting", "frozen", "readable"],
+                     doc="State of TCXO counter")
 
 # Read all 32 bits at one go.
 @regs.register(0x04, "GNSS TCXO Latched Counter")

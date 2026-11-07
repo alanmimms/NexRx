@@ -214,7 +214,7 @@ static unsigned getBitWidthForAddr(unsigned addr) {
   switch (addr) {
   case aCPLDControl:	return CPLDControl::bitW;
   case aCPLDTCXOLatch:	return CPLDTCXOLatch::bitW;
-  case aCPLDSig:	return wCPLDSig;
+  case aCPLDSig:	return CPLDSig::bitW;
 
   default:
     std::cerr << "spiRead or spiWrite for unknown address!" << std::endl;
