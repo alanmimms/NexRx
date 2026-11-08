@@ -67,8 +67,8 @@ module top (
   //==================================================================
   // Register Bank & SPI
   //==================================================================
-  CPLDRegs::tCPLDControl control = {4'h0, counterStateIdle, 1'b0, 1'b1};
-  logic [25:0] tcxoCounter;
+  CPLDRegs::tCPLDControl control = {4'h0, counterStateFrozen, 1'b0, 1'b1};
+  logic [31:0] counter = initCPLDCounter;
 
   /* verilator lint_off PINMISSING */
   logic syncSCLK;
@@ -96,43 +96,30 @@ module top (
 			 .o(syncMOSI));
   /* verilator lint_on PINMISSING */
 
-  // This is the max width of a payload being transferred. It's also
-  // used to accumulate the read/write and address bits at the start
-  // of a transaction.
-  logic [31:0] shiftReg;
+  // This accumulates an entire SPI transaction with read/*write bit
+  // at top, seven bits of addr, then 32 bits of payload.
+  logic [39:0] shiftReg;
 
   logic [5:0]  bitCnt = 0;
 
-  logic [6:0]  addr = 0;
-  logic        isWrite = 0;
+  logic        isWrite;
+  assign isWrite = shiftReg[39];
+  logic [6:0]  addr;
+  assign addr = shiftReg[38:33];
 
-  logic controlPending = 0;	// Set when SPI has a new control register value
-  logic controlTaken = 0;	// Handshake when new value has been consumed
-  logic counterPending = 0;	// Set when SPI has a new value for tcxoCounter
-  logic counterTaken = 0;	// Handshake when new value has been consumed
-
-  assign cpldMISOpin = shiftReg[31];
-
-  logic [6:0] nuAddr;
-
-  assign nuAddr = {addr[5:0], syncMOSI};
+  logic [31:0] spiPayload;
+  assign spiPayload = shiftReg[31:0];
 
   always_ff @(posedge clkTCXO) begin
 
     if (nssRising) begin       // We use posedge cpldNSS as our reset.
       bitCnt <= 0;
       shiftReg <= 0;
-      controlTaken <= 0;
-      counterTaken <= 0;
     end else if (!syncNSS && sclkRising) begin
 
       //==================================================================
       // SPI Frontend
       //==================================================================
-      // When we get to 8 bits, we have the read/write bit and seven
-      // address bits. We know what we're reading or writing by this
-      // point. This also tells us how many bit clocks will follow for
-      // this address.
       if (bitCnt == 'd0) begin
 	isWrite <= syncMOSI;
       end else if (bitCnt < 'd8) begin
@@ -142,65 +129,56 @@ module top (
 
 	  case (nuAddr)
 	    aCPLDControl:	shiftReg[7:0] <= control;
-	    aCPLDTCXOLatch:	shiftReg <= {6'b0, tcxoCounter};
+	    aCPLDCounter:	shiftReg <= counter;
 	    aCPLDSig:		shiftReg <= sigVal;
 	    default:		shiftReg <= '0;
 	  endcase
 	end
-      end else begin
+      end else if (addr == aCPLDControl && bitCnt < wCPLDControl+8 ||
+		   addr == aCPLDSig && bitCnt < wCPLDSig+8 ||
+		   addr == aCPLDCounter && bitCnt < wCPLDCounter+8)
+      begin
 
 	if (isWrite) begin
 	  shiftReg <= {shiftReg[30:0], syncMOSI};
 	end else begin
 	  shiftReg <= {shiftReg[30:0], shiftReg[31]};
 	end
+
+	bitCnt <= bitCnt + 1;
       end
 
       if (isWrite) begin
 
-	if (addr == aCPLDControl && bitCnt == wCPLDControl) controlPending <= 1;
-	else if (addr == aCPLDSig && bitCnt == wCPLDSig) ;
-	else if (addr == aCPLDTCXOLatch && bitCnt == wCPLDTCXOLatch) begin
-	  counterPending <= 1;
-	end
-
+	if (addr == aCPLDControl && bitCnt == wCPLDControl + 8) control <= shiftReg[7:0];
+	else if (addr == aCPLDSig && bitCnt == wCPLDSig + 8) ;
+	else if (addr == aCPLDCounter && bitCnt == wCPLDCounter + 8) counterLoadPending <= 1;
       end
-
-      bitCnt <= bitCnt + 1;
     end
-
-    if (controlTaken) controlPending <= 0;
-    if (counterTaken) counterPending <= 0;
 
     //==================================================================
     // Precision frequency counter for clkTCXO gated by 1pps from GNSS.
     //==================================================================
-    if (controlPending) begin
-      control <= shiftReg[7:0];
-      controlTaken <= 1;
-    end else begin
+    case (control.counterState)
+      counterStateWaiting:
+	if (syncPPS) control.counterState <= counterStateCounting1;
 
-      case (control.counterState)
-	counterStateIdle:
-	  if (syncPPS) control.counterState <= counterStateCounting;
+      counterStateCounting1:
+	if (!syncPPS) control.counterState <= counterStateCounting2;
 
-	counterStateCounting:
-	  if (!syncPPS) control.counterState <= counterStateFrozen;
+      counterStateCounting2:
+	if (syncPPS) control.counterState <= counterStateFrozen;
 
-	counterStateFrozen:
-	  if (syncPPS) control.counterState <= counterStateReadable;
+      counterStateFrozen:
 
-	counterStateReadable:
-	  ;
+	if (control.counterThaw) begin
+	  control.counterState <= counterStateWaiting;
+	  control.counterThaw <= 0;
+	end
+    endcase
 
-      endcase
-    end
-
-    if (counterPending) begin
-      tcxoCounter <= shiftReg[25:0];
-      counterTaken <= 1;
-    end else if (control.counterState == counterStateCounting) begin
-      tcxoCounter <= tcxoCounter + 1;
+    if (control.counterState == counterStateCounting1 || control.counterState == counterStateCounting2) begin
+      counter <= counter + 1;
     end
   end
 

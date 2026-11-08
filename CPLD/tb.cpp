@@ -11,6 +11,7 @@
 #include <exception>
 #include <variant>
 #include <vector>
+#include "hexout.h"
 
 constexpr uint64_t MEG(uint64_t m) { return m * 1000ull * 1000ull; }
 constexpr uint64_t SEC_TO_PS(uint64_t t) { return t * 1000ull * 1000ull * 1000ull * 1000ull; }
@@ -213,7 +214,7 @@ struct WaitTime {
 static unsigned getBitWidthForAddr(unsigned addr) {
   switch (addr) {
   case aCPLDControl:	return CPLDControl::bitW;
-  case aCPLDTCXOLatch:	return CPLDTCXOLatch::bitW;
+  case aCPLDCounter:	return CPLDCounter::bitW;
   case aCPLDSig:	return CPLDSig::bitW;
 
   default:
@@ -248,7 +249,7 @@ static SimTask getBit(Vtop* top, unsigned &result) {
 
 // A high-level, linear SPI driver coroutine
 // A true Async SPI Master Coroutine
-SimTask spiWrite(Vtop* top, uint8_t addr, uint32_t data) {
+SimTask spiWrite(Vtop* top, unsigned addr, uint32_t data) {
   top->cpldNSSpin = 0;
   top->cpldSCLKpin = 0;
   co_await WaitTime{spiHalfPeriodPS};
@@ -267,9 +268,8 @@ SimTask spiWrite(Vtop* top, uint8_t addr, uint32_t data) {
 
 
 // A true Async SPI Read Coroutine
-SimTask spiRead(Vtop* top, uint8_t addr, uint32_t &dataOut) {
-  std::cout << "spiRead 0x" << std::hex << std::setw(2) << std::setfill('0') << (unsigned) addr
-	    << std::endl << std::flush;
+SimTask spiRead(Vtop* top, unsigned addr, uint32_t &dataOut) {
+  std::cout << "spiRead " << HexOut(addr, 2) << std::endl << std::flush;
   top->cpldNSSpin = 0;
   top->cpldSCLKpin = 0;
   co_await WaitTime{spiHalfPeriodPS};
@@ -305,13 +305,33 @@ static SimTask runTestSequence(Vtop* top) {
   // Read Hardware Signature register to verify SPI read
   uint32_t sig = 0;
   co_await spiRead(top, aCPLDSig, sig);
-  std::cout << "SPI: Read Signature register (0x0F): 0x" 
-            << std::hex << std::setw(8) << std::setfill('0') << sig << std::dec << std::endl << std::flush;
+  std::cout << "SPI: Read Signature register (" << HexOut(aCPLDSig, 2) << "): "
+	    << HexOut(sig) << std::endl << std::flush;
   if (sig == 0x4E785278) {
     std::cout << "SPI: Signature matches 'NxRx' (0x4E785278) - Success!" << std::endl << std::flush;
   } else {
-    std::cout << "SPI ERROR: Signature mismatch! Expected 0x4E785278, got 0x" 
-              << std::hex << sig << std::dec << std::endl << std::flush;
+    std::cout << "SPI ERROR: Signature mismatch! Expected 0x4E785278, got " 
+              << HexOut(sig) << std::endl << std::flush;
+  }
+
+  // Write then read back the TCXO counter while it's in frozen state to validate write path.
+  CPLDControl freezer = {.octMode= 1, .counterThaw= 0, .counterState=CPLDControl::counterStateFrozen};
+  co_await spiWrite(top, aCPLDControl, freezer.u);
+
+  const uint32_t counterTest = 0x01234567;
+  co_await spiWrite(top, aCPLDCounter, counterTest);
+  co_await WaitTime{100000};	// Wait 100ns to test case TCXO counting happening while frozen
+
+  uint32_t counterVal = 0;
+  co_await spiRead(top, aCPLDCounter, counterVal);
+
+  std::cout << "SPI: Read Counter register: " << HexOut(counterVal) << std::endl << std::flush;
+  if (counterVal == counterTest) {
+    std::cout << "SPI: Counter value read matches - Success!" << std::endl << std::flush;
+  } else {
+    std::cout << "SPI ERROR: Counter value mismatch! Expected "
+	      << HexOut(counterTest) << ", got " << HexOut(counterVal)
+	      << std::endl << std::flush;
   }
 
   // Wait 10,000 TCXO cycles (assuming 40MHz clock = 25ns period)
