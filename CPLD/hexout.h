@@ -24,7 +24,7 @@ struct HexOut {
       }
     };
 
-    os << "0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(h.width) << printVal(h.val);
+    os << "0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(h.width) << (unsigned) printVal(h.val);
     return os;
   }
 };

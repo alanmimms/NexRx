@@ -238,7 +238,6 @@ static SimTask getBit(Vtop* top, unsigned &result) {
 // A true Async SPI Master Coroutine
 SimTask spiWrite(Vtop* top, unsigned addr, uint32_t data) {
   top->cpldNSSpin = 0;
-  top->cpldSCLKpin = 0;
   co_await WaitTime{spiHalfPeriodPS};
     
   // Send write bit and then address
@@ -257,7 +256,6 @@ SimTask spiWrite(Vtop* top, unsigned addr, uint32_t data) {
 SimTask spiRead(Vtop* top, unsigned addr, uint32_t &dataOut) {
   std::cout << "spiRead " << HexOut(addr, 2) << std::endl << std::flush;
   top->cpldNSSpin = 0;
-  top->cpldSCLKpin = 0;
   co_await WaitTime{spiHalfPeriodPS};
     
   uint32_t readVal = 0;
@@ -298,11 +296,12 @@ static SimTask runTestSequence(Vtop* top) {
               << HexOut(sig) << std::endl << std::flush;
   }
 
-  // Write then read back the TCXO counter while it's in frozen state to validate write path.
+  // Freeze the TCXO counter.
   CPLDControl freezer = {.octMode= 1, .counterThaw= 0, .counterState=CPLDControl::counterStateFrozen};
   co_await spiWrite(top, aCPLDControl, freezer.u);
 
-  const uint32_t counterTest = 0x01234567;
+  // Write then read back the TCXO counter while it's in frozen state to validate write path.
+  const uint32_t counterTest = 0x12345678;
   co_await spiWrite(top, aCPLDCounter, counterTest);
   co_await WaitTime{100000};	// Wait 100ns to test case TCXO counting happening while frozen
 

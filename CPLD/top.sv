@@ -102,9 +102,9 @@ module top (
   logic isWrite;
   logic [6:0]  addr;
 
-  // This allows us on the last bit of addr to know its value.
-  logic [6:0] nuAddr;
-  assign nuAddr = {addr[5:0], syncMOSI};
+  // This allows us - on the last bit of addr - to know its value.
+  logic [6:0] nextAddr;
+  assign nextAddr = {addr[5:0], syncMOSI};
 
   always_ff @(posedge clkTCXO) begin
 
@@ -112,13 +112,28 @@ module top (
     // SPI Frontend
     //==================================================================
     if (nssRising) begin       // We use posedge cpldNSS as our reset.
+
+      if (bitCnt == 40) begin
+
+	if (isWrite) begin
+
+	  // CPLD WRITE.
+	  case (addr)
+	    aCPLDControl:	control <= shiftReg;
+	    aCPLDCounter:	counter <= shiftReg;
+	    aCPLDSig:		;
+	    default:		;
+	  endcase
+	end
+      end
+
       bitCnt <= 0;
       shiftReg <= 0;
       isWrite <= 0;
       addr <= 0;
     end else if (!syncNSS && sclkRising) begin
 
-      if (bitCnt < 8) addr <= nuAddr;
+      if (bitCnt < 8) addr <= nextAddr;
 
       if (bitCnt == 0) begin
 	isWrite <= syncMOSI;
@@ -126,27 +141,13 @@ module top (
 
 	if (!isWrite && bitCnt == 7) begin
 
-	  // CPLD read. We do this one bit earlier than "usual" so
+	  // CPLD READ. We do this one bit earlier than "usual" so
 	  // it's ready to serialize out on next SPI clock.
-	  case (nuAddr)
+	  case (nextAddr)
 	    aCPLDControl:	shiftReg <= control;
 	    aCPLDCounter:	shiftReg <= counter;
 	    aCPLDSig:		shiftReg <= sigVal;
 	    default:		shiftReg <= '0;
-	  endcase
-	end
-      end
-
-      if (bitCnt == 40) begin
-
-	if (isWrite) begin
-
-	  // CPLD write.
-	  case (addr)
-	    aCPLDControl:	control <= shiftReg;
-	    aCPLDCounter:	counter <= shiftReg;
-	    aCPLDSig:		;
-	    default:		;
 	  endcase
 	end
       end
