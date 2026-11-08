@@ -107,12 +107,13 @@ class Enum(Field):
 
 class Register:
 
-  def __init__(self, name, addr, fieldsDict, doc=""):
+  def __init__(self, name, addr, fieldsDict, regWidth, doc=""):
     self.name = name
     self.addr = addr
     self.doc = doc
     self.fields = []
     self.fieldsByName = {}
+    self.totalBits = regWidth
 
     currentOffset = 0
 
@@ -123,9 +124,10 @@ class Register:
       self.fieldsByName[fName] = fObj
       currentOffset += fObj.bits
 
-    self.totalBits = max(8, (currentOffset + 7) & ~7)
+    if currentOffset > self.totalBits:
+      raise ValueError(f"Register '{name}' total field bits ({currentOffset}) exceeds regWidth ({self.totalBits})")
 
-    # Auto-pad to 8-bit boundary if needed
+    # Auto-pad to regWidth boundary
     if currentOffset < self.totalBits:
       pad = UInt(0, self.totalBits - currentOffset)
       pad.name = "reserved"
@@ -138,22 +140,22 @@ class Register:
     return self.fieldsByName[key]
 
   def __getattr__(self, name):
-    """Allows dot-notation access to fields (e.g., my_reg.txEnable)"""
     if name in self.fieldsByName:
       return self.fieldsByName[name]
     raise AttributeError(f"'{type(self).__name__}' object has no field '{name}'")
 
 class RegisterSet:
 
-  def __init__(self, namespace):
+  def __init__(self, namespace, regWidth=32):
     self.namespace = namespace
+    self.regWidth = regWidth
     self.registers = []
     self.regsByName = {}
 
   def register(self, addr, doc=""):
     def wrapper(cls):
       annotations = getattr(cls, "__annotations__", {})
-      reg = Register(cls.__name__, addr, annotations, doc)
+      reg = Register(cls.__name__, addr, annotations, regWidth=self.regWidth, doc=doc)
       self.registers.append(reg)
       self.regsByName[cls.__name__] = reg
       return cls
@@ -165,7 +167,6 @@ class RegisterSet:
     return self.regsByName[key]
 
   def __getattr__(self, name):
-    """Allows dot-notation access to registers (e.g., regs.Control)"""
     if name in self.regsByName:
       return self.regsByName[name]
     raise AttributeError(f"'{type(self).__name__}' object has no register '{name}'")
@@ -194,9 +195,7 @@ class RegisterSet:
         if isinstance(f, Enum):
           enumFieldCounts[f.name] = enumFieldCounts.get(f.name, 0) + 1
 
-    # Emit widths
-    for reg in self.registers:
-      lines.append(f"  localparam w{self.namespace}{reg.name} = {reg.totalBits};")
+    lines.append(f"  localparam w{self.namespace}Reg = {self.regWidth};")
     lines.append(f"  localparam w{self.namespace}Addr = 7;")
     lines.append("")
 
@@ -221,7 +220,6 @@ class RegisterSet:
     for reg in self.registers:
       lines.append(f"  typedef struct packed {{")
 
-      # Iterating in reversed order handles SV's MSB-to-LSB struct packing
       for f in reversed(reg.fields):
         signedStr = "signed " if f.signed else ""
         bitsStr = f"[{f.bits-1}:0]" if f.bits > 1 else "     "
@@ -269,16 +267,18 @@ class RegisterSet:
       f"// Generated Register Definitions for {self.namespace}",
       "#pragma once",
       "#include <cstdint>",
+      "",
+      f"static const unsigned {self.namespace}RegWidth = {self.regWidth};",
       ""
     ]
 
-    # Emit Structs (with nested Enums)
+    # Emit Structs
     for reg in self.registers:
       if reg.doc:
         lines.append(f"// {reg.doc}")
       lines.append(f"struct __attribute__((packed, aligned(4))) {self.namespace}{reg.name} {{")
 
-      # Nested Enums inside the register struct
+      # Nested Enums inside register struct
       for f in reg.fields:
         if isinstance(f, Enum):
           typeName = f"{capFirst(f.name)}Enum" if len(f.values) == 1 and not f.values[0][0] else capFirst(f.name)
@@ -308,18 +308,17 @@ class RegisterSet:
 
       lines.append("    };")
 
-      if reg.totalBits <= 8:
+      if self.regWidth <= 8:
         uType = "uint8_t"
-      elif reg.totalBits <= 16:
+      elif self.regWidth <= 16:
         uType = "uint16_t"
-      elif reg.totalBits <= 32:
+      elif self.regWidth <= 32:
         uType = "uint32_t"
       else:
         uType = "uint64_t"
 
       lines.append(f"    {uType} u;")
       lines.append("  };")
-      lines.append(f"  static constexpr unsigned bitW = {reg.totalBits};")
       lines.append("};")
       lines.append("")
 

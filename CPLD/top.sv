@@ -53,7 +53,7 @@ module top (
 
   // Build a Verilator-compatible reset from known FPGA traits.
   logic resetN;
-  logic [3:0] porShift = 4'd0;
+  logic [3:0] porShift = '0;
 
   assign resetN = &porShift;
 
@@ -67,7 +67,7 @@ module top (
   //==================================================================
   // Register Bank & SPI
   //==================================================================
-  CPLDRegs::tCPLDControl control = {4'h0, counterStateFrozen, 1'b0, 1'b1};
+  CPLDRegs::tCPLDControl control = {28'h0, counterStateFrozen, 1'b0, 1'b1};
   logic [31:0] counter = initCPLDCounter;
 
   /* verilator lint_off PINMISSING */
@@ -96,64 +96,71 @@ module top (
 			 .o(syncMOSI));
   /* verilator lint_on PINMISSING */
 
-  // This accumulates an entire SPI transaction with read/*write bit
-  // at top, seven bits of addr, then 32 bits of payload.
-  logic [39:0] shiftReg;
-
+  logic [31:0] shiftReg;
+  assign cpldMISOpin = shiftReg[31];
   logic [5:0]  bitCnt = 0;
-
-  logic        isWrite;
-  assign isWrite = shiftReg[39];
+  logic isWrite;
   logic [6:0]  addr;
-  assign addr = shiftReg[38:33];
 
-  logic [31:0] spiPayload;
-  assign spiPayload = shiftReg[31:0];
+  // This allows us on the last bit of addr to know its value.
+  logic [6:0] nuAddr;
+  assign nuAddr = {addr[5:0], syncMOSI};
 
   always_ff @(posedge clkTCXO) begin
 
+    //==================================================================
+    // SPI Frontend
+    //==================================================================
     if (nssRising) begin       // We use posedge cpldNSS as our reset.
       bitCnt <= 0;
       shiftReg <= 0;
+      isWrite <= 0;
+      addr <= 0;
     end else if (!syncNSS && sclkRising) begin
 
-      //==================================================================
-      // SPI Frontend
-      //==================================================================
-      if (bitCnt == 'd0) begin
+      if (bitCnt < 8) addr <= nuAddr;
+
+      if (bitCnt == 0) begin
 	isWrite <= syncMOSI;
-      end else if (bitCnt < 'd8) begin
-	addr <= nuAddr;
+      end else if (bitCnt < 8) begin
 
-	if (!isWrite) begin	// Register read path
+	if (!isWrite && bitCnt == 7) begin
 
+	  // CPLD read. We do this one bit earlier than "usual" so
+	  // it's ready to serialize out on next SPI clock.
 	  case (nuAddr)
-	    aCPLDControl:	shiftReg[7:0] <= control;
+	    aCPLDControl:	shiftReg <= control;
 	    aCPLDCounter:	shiftReg <= counter;
 	    aCPLDSig:		shiftReg <= sigVal;
 	    default:		shiftReg <= '0;
 	  endcase
 	end
-      end else if (addr == aCPLDControl && bitCnt < wCPLDControl+8 ||
-		   addr == aCPLDSig && bitCnt < wCPLDSig+8 ||
-		   addr == aCPLDCounter && bitCnt < wCPLDCounter+8)
-      begin
+      end
+
+      if (bitCnt == 40) begin
+
+	if (isWrite) begin
+
+	  // CPLD write.
+	  case (addr)
+	    aCPLDControl:	control <= shiftReg;
+	    aCPLDCounter:	counter <= shiftReg;
+	    aCPLDSig:		;
+	    default:		;
+	  endcase
+	end
+      end
+
+      if (bitCnt >= 8 && bitCnt < 40) begin		// We're serializing the payload part of transaction
 
 	if (isWrite) begin
 	  shiftReg <= {shiftReg[30:0], syncMOSI};
 	end else begin
-	  shiftReg <= {shiftReg[30:0], shiftReg[31]};
+	  shiftReg <= {shiftReg[30:0], 1'b0};
 	end
-
-	bitCnt <= bitCnt + 1;
       end
 
-      if (isWrite) begin
-
-	if (addr == aCPLDControl && bitCnt == wCPLDControl + 8) control <= shiftReg[7:0];
-	else if (addr == aCPLDSig && bitCnt == wCPLDSig + 8) ;
-	else if (addr == aCPLDCounter && bitCnt == wCPLDCounter + 8) counterLoadPending <= 1;
-      end
+      bitCnt <= bitCnt + 1;
     end
 
     //==================================================================
@@ -192,7 +199,7 @@ module top (
     if (control.octMode)
       nPh <= ~osdPhases;
     else
-      nPh <= ~{'0, osdPhases[6], '0, osdPhases[4], '0, osdPhases[2], '0, osdPhases[0]};
+      nPh <= ~{1'b0, osdPhases[6], 1'b0, osdPhases[4], 1'b0, osdPhases[2], 1'b0, osdPhases[0]};
 
     osdPhases <= {osdPhases[6:0], osdPhases[7]};
   end

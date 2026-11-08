@@ -211,19 +211,6 @@ struct WaitTime {
 };
 
 
-static unsigned getBitWidthForAddr(unsigned addr) {
-  switch (addr) {
-  case aCPLDControl:	return CPLDControl::bitW;
-  case aCPLDCounter:	return CPLDCounter::bitW;
-  case aCPLDSig:	return CPLDSig::bitW;
-
-  default:
-    std::cerr << "spiRead or spiWrite for unknown address!" << std::endl;
-    return 0;
-  }
-}
-
-
 // SPI clock 2MHz half period in ps.
 static constexpr uint64_t spiHalfPeriodPS = 1000 * 1000;
 
@@ -258,8 +245,7 @@ SimTask spiWrite(Vtop* top, unsigned addr, uint32_t data) {
   co_await putBit(top, 1);		// WRITE bit
   for (int k=6; k >= 0; --k) co_await putBit(top, (addr >> k) & 1);
 
-  unsigned bitW = getBitWidthForAddr(addr);
-  for (int k=bitW-1; k >= 0; --k) co_await putBit(top, (data >> k) & 1);
+  for (int k=31; k >= 0; --k) co_await putBit(top, (data >> k) & 1);
 
   co_await WaitTime{spiHalfPeriodPS};
   top->cpldNSSpin = 1;
@@ -280,9 +266,7 @@ SimTask spiRead(Vtop* top, unsigned addr, uint32_t &dataOut) {
   co_await putBit(top, 0);		// READ bit
   for (int k=6; k >= 0; --k) co_await putBit(top, (addr >> k) & 1);
 
-  unsigned bitW = getBitWidthForAddr(addr);
-
-  for (int k=bitW-1; k >= 0; --k) {
+  for (int k=31; k >= 0; --k) {
     unsigned bit = 0;
     co_await getBit(top, bit);
     readVal = (readVal << 1) | bit;

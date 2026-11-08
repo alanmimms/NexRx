@@ -9,7 +9,7 @@ if sys.version_info < (3, 7):
 from regTool import RegisterSet, UInt, Bit, Enum, Int
 
 
-regs = RegisterSet("CPLD")
+regs = RegisterSet("CPLD", regWidth=32)
 
 
 @regs.register(0x00, "Main control and status")
@@ -25,13 +25,13 @@ class Control:
                      doc="State of TCXO counter")
 
 # Read all 32 bits at one go.
-@regs.register(0x04, "GNSS TCXO Latched Counter")
+@regs.register(0x01, "GNSS TCXO Latched Counter")
 class Counter:
   val:          UInt(0, 32, "Latched TCXO clock cycles count at second PPS edge")
 
 
 # We can assume this never changes address.
-@regs.register(0x7C, "CPLD Hardware Signature")
+@regs.register(0x7F, "CPLD Hardware Signature")
 class Sig:
   val:          Enum(0x4E785278, 32, [("", 0x4E785278)], "Fixed value ASCII 'NxRx'")
 
