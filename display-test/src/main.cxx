@@ -165,6 +165,9 @@ int main(void) {
 
   fbP = std::make_unique<FrameBuffer>(&dmaBuffers.fbPing[0]);
 
+  // Clear frame buffer (not needed because it's static).
+  //  memset(fbP->bitsP, 0, FrameBuffer::FBSIZE);
+
   uint64_t startT = k_cycle_get_64();
 
   static struct tm startTM = {
@@ -179,29 +182,6 @@ int main(void) {
     .tm_isdst = 1,
   };
 
-  // Fill framebuffer with pattern we can predict.
-#if 0
-  for (unsigned page=0; page < 8; ++page) {
-    for (unsigned x=0; x < 192; ++x) {
-      fbP->bitsP[x + page*192] = x;
-    }
-  }
-#endif
-
-  memset(fbP->bitsP, 0, FrameBuffer::FBSIZE);
-
-#if 0
-  fbP->drawFilledRect(17, 11, 122 - 17, 37 - 11);
-  printk("Back from drawFilledRect\n");
-#endif
-
-#if 0
-  unsigned width = fbP->measureString("This is a test!", defaultFont);
-  printk("Back from measureString = %d\n", width);
-  fbP->drawString("This is a test!", 11, 19, defaultFont);
-  printk("Back from drawString\n");
-#endif
-
   extern const FrameBuffer::Font UbuntuB16;
   extern const FrameBuffer::Font UbuntuM15;
   extern const FrameBuffer::Font UbuntuB14;
@@ -213,10 +193,10 @@ int main(void) {
   fbP->drawString("UbuntuB14", 0, 32, UbuntuB14);
   fbP->drawString("UbuntuM13", 0, 48, UbuntuM13);
   fbP->drawString("UbuntuB12", 96, 48, UbuntuB12);
-
+  long drawUS = k_cyc_to_us_floor64(k_cycle_get_64() - startT);
+  printk("All of those drawString operations took %ldus\n", drawUS);
 
   updateFB();
-  printk("Back from first updateFB\n");
 
   return 0;
 
