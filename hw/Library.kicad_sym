@@ -33319,7 +33319,7 @@
 				(justify left top)
 			)
 		)
-		(property "Value" "S8401-46"
+		(property "Value" "KH-CR2032-2-1"
 			(at 6.35 5.08 0)
 			(effects
 				(font
@@ -33348,7 +33348,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Coin Cell Battery Retainer, Vertical Throughboard, for CR2032 and BR2032 Coin Cell Batteries"
+		(property "Description" "Coin Cell Battery Retainer, Flat Throughboard, for CR2032 and BR2032 Coin Cell Batteries"
 			(at -1.27 -7.62 0)
 			(effects
 				(font
@@ -33410,7 +33410,7 @@
 		(symbol "S8401-46_1_1"
 			(rectangle
 				(start 5.08 2.54)
-				(end 17.78 -5.08)
+				(end 17.78 -3.81)
 				(stroke
 					(width 0.254)
 					(type default)
@@ -33440,7 +33440,7 @@
 			(pin power_out line
 				(at 2.54 -1.27 0)
 				(length 2.54)
-				(name "+1"
+				(name "+"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -33448,24 +33448,6 @@
 					)
 				)
 				(number "2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 2.54 -3.81 0)
-				(length 2.54)
-				(name "+2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "3"
 					(effects
 						(font
 							(size 1.27 1.27)

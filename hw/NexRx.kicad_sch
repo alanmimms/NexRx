@@ -11,6 +11,210 @@
 		(comment 1 "Alan Mimms")
 	)
 	(lib_symbols
+		(symbol "Device:Battery_Cell"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "BT"
+				(at 2.54 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "Battery_Cell"
+				(at 2.54 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 1.524 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 1.524 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Single-cell battery"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Sim.Device" "V"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Sim.Type" "DC"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Sim.Pins" "1=+ 2=-"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "battery cell"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Battery_Cell_0_1"
+				(rectangle
+					(start -2.286 1.778)
+					(end 2.286 1.524)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -1.524 1.016)
+					(end 1.524 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 1.778) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0.762) (xy 0 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 3.048) (xy 1.778 3.048)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 3.556) (xy 1.27 2.54)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Battery_Cell_1_1"
+				(pin passive line
+					(at 0 5.08 270)
+					(length 2.54)
+					(name "+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 90)
+					(length 2.54)
+					(name "-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:C"
 			(pin_numbers
 				(hide yes)
@@ -1543,176 +1747,6 @@
 						)
 					)
 					(number "18"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "Library:S8401-46"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at 6.35 7.62 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Value" "S8401-46"
-				(at 6.35 5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Footprint" "Library:S8401-46"
-				(at 19.05 -94.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://cdn.harwin.com/pdfs/S8401.pdf"
-				(at 19.05 -194.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "Coin Cell Battery Retainer, Vertical Throughboard, for CR2032 and BR2032 Coin Cell Batteries"
-				(at -1.27 -7.62 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Height" ""
-				(at 19.05 -394.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Part Number" "855-S8401-46"
-				(at 19.05 -494.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Harwin/S8401-46?qs=Qom7kyPojXaFNoCO9lxVnA%3D%3D"
-				(at 19.05 -594.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer_Name" "Harwin"
-				(at 19.05 -694.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer_Part_Number" "S8401-46"
-				(at 19.05 -794.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(symbol "S8401-46_1_1"
-				(rectangle
-					(start 5.08 2.54)
-					(end 17.78 -5.08)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin passive line
-					(at 2.54 1.27 0)
-					(length 2.54)
-					(name "-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at 2.54 -1.27 0)
-					(length 2.54)
-					(name "+1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 -3.81 0)
-					(length 2.54)
-					(name "+2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3509,6 +3543,107 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "power:PWR_FLAG"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 	)
 	(bus_alias "Atten"
 		(members "24dB" "12dB" "6dB" "3dB")
@@ -3607,12 +3742,6 @@
 		(uuid "15915c90-658c-4736-89ab-41fea1bc5ced")
 	)
 	(junction
-		(at 182.88 133.35)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "1794bb23-cba0-48db-a15a-9307596d08a9")
-	)
-	(junction
 		(at 105.41 142.24)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3683,6 +3812,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8f3f20ac-3942-425c-9838-b18afa6a0ba5")
+	)
+	(junction
+		(at 173.99 133.35)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8ffec4d6-2c9c-40a4-86ee-316da03c74bb")
 	)
 	(junction
 		(at 157.48 83.82)
@@ -4016,16 +4151,6 @@
 	)
 	(wire
 		(pts
-			(xy 184.15 135.89) (xy 182.88 135.89)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1f12dcd8-dfed-420c-974f-38be5c2cfc1a")
-	)
-	(wire
-		(pts
 			(xy 187.96 33.02) (xy 217.17 33.02)
 		)
 		(stroke
@@ -4083,6 +4208,16 @@
 			(type default)
 		)
 		(uuid "2da69002-3918-4488-b843-a4a9cfe425dc")
+	)
+	(wire
+		(pts
+			(xy 194.31 133.35) (xy 194.31 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2f05f76f-8475-4cae-8b0b-8b3142d69ed1")
 	)
 	(wire
 		(pts
@@ -4544,16 +4679,6 @@
 		)
 		(uuid "6f3ab82d-c12d-4c69-a79b-cd1442837f4f")
 	)
-	(wire
-		(pts
-			(xy 182.88 138.43) (xy 182.88 139.7)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "743a2f50-624b-4940-9fc0-2af35db7c95f")
-	)
 	(bus
 		(pts
 			(xy 234.95 95.25) (xy 234.95 100.33)
@@ -4756,16 +4881,6 @@
 	)
 	(wire
 		(pts
-			(xy 182.88 133.35) (xy 182.88 135.89)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "91607e28-bc1c-4f4c-9038-9a3f43069e25")
-	)
-	(wire
-		(pts
 			(xy 110.49 19.05) (xy 110.49 21.59)
 		)
 		(stroke
@@ -4816,7 +4931,7 @@
 	)
 	(wire
 		(pts
-			(xy 171.45 133.35) (xy 175.26 133.35)
+			(xy 171.45 133.35) (xy 173.99 133.35)
 		)
 		(stroke
 			(width 0)
@@ -4836,7 +4951,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 133.35) (xy 182.88 133.35)
+			(xy 175.26 133.35) (xy 184.15 133.35)
 		)
 		(stroke
 			(width 0)
@@ -4853,16 +4968,6 @@
 			(type default)
 		)
 		(uuid "9e1cdf6f-4e42-4260-b501-aff2da8bc0fb")
-	)
-	(wire
-		(pts
-			(xy 182.88 133.35) (xy 184.15 133.35)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9eb451fc-1970-40b9-8410-159022d0ddf2")
 	)
 	(wire
 		(pts
@@ -4913,6 +5018,16 @@
 			(type default)
 		)
 		(uuid "a85ecbf7-b707-43fb-b3e6-d718577e66d2")
+	)
+	(wire
+		(pts
+			(xy 191.77 133.35) (xy 194.31 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a98d4ad0-bf09-4f5b-8668-cfe939b133c0")
 	)
 	(wire
 		(pts
@@ -5003,6 +5118,16 @@
 			(type default)
 		)
 		(uuid "b590cc7d-a839-470d-873c-a30d6b69e627")
+	)
+	(wire
+		(pts
+			(xy 173.99 133.35) (xy 175.26 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b5fe6690-344d-4453-93e0-2619f6c9781c")
 	)
 	(wire
 		(pts
@@ -5546,16 +5671,6 @@
 	)
 	(wire
 		(pts
-			(xy 182.88 138.43) (xy 184.15 138.43)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f9ad3eed-7518-4fe0-8bf3-5c87d16a18aa")
-	)
-	(wire
-		(pts
 			(xy 142.24 170.18) (xy 142.24 171.45)
 		)
 		(stroke
@@ -5593,6 +5708,16 @@
 			(type default)
 		)
 		(uuid "fcbf8faf-c082-4ea7-906e-6b9d19f8acf2")
+	)
+	(wire
+		(pts
+			(xy 173.99 132.08) (xy 173.99 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fd784cd3-f106-4750-9b3d-a5aeebdd2c8d")
 	)
 	(wire
 		(pts
@@ -7922,8 +8047,74 @@
 		)
 	)
 	(symbol
-		(lib_id "Library:S8401-46")
-		(at 181.61 137.16 0)
+		(lib_id "power:PWR_FLAG")
+		(at 173.99 132.08 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3142e881-7481-4a29-8a05-62f95d9bef90")
+		(property "Reference" "#FLG0101"
+			(at 173.99 130.175 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 173.99 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 173.99 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 173.99 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 173.99 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0c755b16-acaf-4c06-8143-602d54900a39")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff"
+					(reference "#FLG0101")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Battery_Cell")
+		(at 189.23 133.35 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7932,7 +8123,7 @@
 		(dnp no)
 		(uuid "36f01e12-2e58-493d-8c3d-58a0b006313b")
 		(property "Reference" "BT101"
-			(at 191.008 128.778 0)
+			(at 187.96 136.906 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7940,7 +8131,7 @@
 			)
 		)
 		(property "Value" "CR3032 holder"
-			(at 193.04 128.27 0)
+			(at 198.12 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7948,28 +8139,26 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Library:XDBS-CR2032-5"
-			(at 200.66 42.24 0)
+		(property "Footprint" "Library:CR2032_flat_holder-KH-CR2032-2-1"
+			(at 187.706 133.35 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://cdn.harwin.com/pdfs/S8401.pdf"
-			(at 200.66 -57.76 0)
+		(property "Datasheet" "~"
+			(at 187.706 133.35 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
 				(hide yes)
 			)
 		)
-		(property "Description" "Coin Cell Battery Retainer, Vertical Throughboard, for CR2032 and BR2032 Coin Cell Batteries"
-			(at 180.34 121.92 0)
+		(property "Description" "Single-cell battery"
+			(at 189.23 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7978,7 +8167,7 @@
 			)
 		)
 		(property "LCSC" "C48687404"
-			(at 176.53 121.92 90)
+			(at 204.47 128.27 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7987,7 +8176,7 @@
 			)
 		)
 		(property "Height" "4.24"
-			(at 200.66 -257.76 0)
+			(at 584.15 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7997,7 +8186,7 @@
 			)
 		)
 		(property "Mouser Part Number" "855-S8401-46"
-			(at 200.66 -357.76 0)
+			(at 684.15 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8007,7 +8196,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Harwin/S8401-46?qs=Qom7kyPojXaFNoCO9lxVnA%3D%3D"
-			(at 200.66 -457.76 0)
+			(at 784.15 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8017,7 +8206,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "Harwin"
-			(at 200.66 -557.76 0)
+			(at 884.15 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8027,7 +8216,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "S8401-46"
-			(at 200.66 -657.76 0)
+			(at 984.15 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8037,7 +8226,7 @@
 			)
 		)
 		(property "MFG" "Harwin"
-			(at 196.85 124.46 0)
+			(at 201.93 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8046,7 +8235,7 @@
 			)
 		)
 		(property "MPN" "S8401-46 "
-			(at 196.85 124.46 0)
+			(at 201.93 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8055,7 +8244,7 @@
 			)
 		)
 		(property "Mouser_PN" "855-S8401-46 "
-			(at 196.85 124.46 0)
+			(at 201.93 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8064,7 +8253,7 @@
 			)
 		)
 		(property "label" "GNSS backup CR2032"
-			(at 191.008 130.556 0)
+			(at 188.722 129.54 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8072,7 +8261,7 @@
 			)
 		)
 		(property "Field10" ""
-			(at 181.61 137.16 0)
+			(at 189.23 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8081,7 +8270,7 @@
 			)
 		)
 		(property "MouserPN" ""
-			(at 181.61 137.16 0)
+			(at 189.23 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8090,7 +8279,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 181.61 137.16 0)
+			(at 189.23 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8098,15 +8287,15 @@
 			)
 		)
 		(property "r-power" ""
-			(at 181.61 137.16 0)
+			(at 189.23 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "LCSC_PN" "C48687404"
-			(at 181.61 137.16 0)
+		(property "LCSC_PN" "C5365915"
+			(at 189.23 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8115,7 +8304,34 @@
 			)
 		)
 		(property "UsedIn" ""
-			(at 181.61 137.16 0)
+			(at 189.23 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" "V"
+			(at 189.23 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Type" "DC"
+			(at 189.23 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" "1=+ 2=-"
+			(at 189.23 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8128,9 +8344,6 @@
 		)
 		(pin "1"
 			(uuid "21d3950b-4088-4719-b74a-17c2a6bb61e5")
-		)
-		(pin "3"
-			(uuid "88d5255b-978b-471f-a7c2-97fa6227aa44")
 		)
 		(instances
 			(project "NexRx"
@@ -12937,7 +13150,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 182.88 139.7 0)
+		(at 194.31 135.89 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -12947,7 +13160,7 @@
 		(fields_autoplaced yes)
 		(uuid "f3e4602c-12dc-4e4f-a7b3-7ff84bbd830b")
 		(property "Reference" "#PWR0110"
-			(at 182.88 146.05 0)
+			(at 194.31 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12956,7 +13169,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 182.88 144.78 0)
+			(at 194.31 140.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12965,7 +13178,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 182.88 139.7 0)
+			(at 194.31 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12974,7 +13187,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 182.88 139.7 0)
+			(at 194.31 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12983,7 +13196,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 182.88 139.7 0)
+			(at 194.31 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
