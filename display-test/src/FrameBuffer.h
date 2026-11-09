@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <zephyr/kernel.h>
 
+
 // This supports MONO_VTILED bitmaps for monochrome LCD. It's very
 // made-for-purpose and limited. Text drawing must be done such that y
 // % 8 == 0 so the glyph blitter doesn't have to deal with crossing
@@ -45,6 +46,8 @@ class FrameBuffer {
     const uint8_t *bitsP;
   };
 
+
+#ifdef __FB_GENCODE__
   // NOTE: this assumes y is a multiple of 8 for now.
   void drawString(const char *stringP, uint8_t x, uint8_t y, const Font &font) {
 
@@ -64,6 +67,8 @@ class FrameBuffer {
 
       x += glyph.advance;
     }
+
+    LOG_INF("drawString('%s', %u, %u, ...) complete", stringP, (unsigned) x, (unsigned) y);
   }
   
 
@@ -123,7 +128,7 @@ class FrameBuffer {
       }
     }
   }
-
+#endif // __FB_GENCODE__
 
   uint8_t *bitsP;
   uint8_t width;
@@ -132,6 +137,7 @@ class FrameBuffer {
 
  protected:
 
+#ifdef __FB_GENCODE__
   // Returns a bit mask the pixel in the vertical strip of pixels in a
   // framebuffer byte for y, considered modulo 8.
   uint8_t maskForY(uint8_t y) {
@@ -176,4 +182,5 @@ class FrameBuffer {
   Canonicalized makeCanonical(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
     return Canonicalized(x, y, std::min(x + w, width - 1), std::min(y + h, height - 1));
   }
+#endif // __FB_GENCODE__
 };

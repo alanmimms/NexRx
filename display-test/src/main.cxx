@@ -1,3 +1,9 @@
+// To build this, do NOT use cmake -B build as for the rest of this
+// project. Instead, let west do it properly while selecting the board
+// and shield.
+//
+// west build -b nucleo_h753zi --shield display_uc1609
+
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
@@ -14,8 +20,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "FrameBuffer.h"
 #include <memory>
+
+LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
+
+#define __FB_GENCODE__ 1
+#include "FrameBuffer.h"
 
 extern const FrameBuffer::Font PlexL12;
 
@@ -23,8 +33,6 @@ const FrameBuffer::Font &defaultFont = PlexL12;
 
 static const int fontH = 16;
 static const int fontW = 7;
-
-LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
 static const struct device *display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
