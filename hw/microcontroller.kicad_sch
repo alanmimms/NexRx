@@ -12209,7 +12209,7 @@
 		)
 		(uuid "16e2e751-9316-4315-acf8-fdd48a7d308f")
 	)
-	(label "rf.SCL"
+	(label "clk.SCL"
 		(at 71.12 194.31 270)
 		(effects
 			(font
@@ -12329,7 +12329,7 @@
 		)
 		(uuid "40f8c083-4485-448a-b7ae-ccdbab438898")
 	)
-	(label "rf.SCL"
+	(label "clk.SCL"
 		(at 104.14 92.71 0)
 		(effects
 			(font
@@ -12429,7 +12429,7 @@
 		)
 		(uuid "5a7b2d01-3f0d-4bfc-a2cf-fb8b7d72ce1f")
 	)
-	(label "rf.SDA"
+	(label "clk.SDA"
 		(at 68.58 194.31 270)
 		(effects
 			(font
@@ -12969,7 +12969,7 @@
 		)
 		(uuid "c3ab6383-1368-4a2f-856b-46014ea650b7")
 	)
-	(label "rf.SDA"
+	(label "clk.SDA"
 		(at 104.14 95.25 0)
 		(effects
 			(font
