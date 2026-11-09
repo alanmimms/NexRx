@@ -1,20 +1,26 @@
-#include "Vtop.h"
-#include "verilated.h"
-#include "verilated_vcd_c.h"
 #include <iostream>
 #include <cstdint>
-#include "regs.h"
 #include <memory>
 #include <iomanip>
 #include <algorithm>
 #include <coroutine>
 #include <exception>
+#include <stdexcept>
 #include <variant>
 #include <vector>
+#include <sstream>
+#include <string>
 
+#include "Vtop.h"
+#include "verilated.h"
+#include "verilated_vcd_c.h"
+#include "regs.h"
 #include "hexout.h"
 #include "simtask.h"
 #include "testcase.h"
+
+
+static Vtop* top;
 
 static const char waveformFileName[] = "waveform.vcd";
 
@@ -51,6 +57,7 @@ static SimTask putBit(Vtop* top, unsigned bit) {
   top->cpldSCLKpin = 1;
   co_await WaitTime{spiHalfPeriodPS};
   top->cpldSCLKpin = 0;
+  co_return;
 }
 
 
@@ -61,6 +68,7 @@ static SimTask getBit(Vtop* top, unsigned &result) {
   result = top->cpldMISOpin;
   co_await WaitTime{spiHalfPeriodPS};
   top->cpldSCLKpin = 0;
+  co_return;
 }
 
 
@@ -79,6 +87,8 @@ SimTask spiWrite(Vtop* top, unsigned addr, uint32_t data) {
   co_await WaitTime{spiHalfPeriodPS};
   top->cpldNSSpin = 1;
   co_await WaitTime{spiHalfPeriodPS};
+
+  co_return;
 }
 
 
@@ -104,28 +114,29 @@ SimTask spiRead(Vtop* top, unsigned addr, uint32_t &dataOut) {
   co_await WaitTime{spiHalfPeriodPS};
   top->cpldNSSpin = 1;
   co_await WaitTime{spiHalfPeriodPS};
+
+  co_return;
 }
 
 
-static SimTask runTestSequence(Vtop* top) {
-  // Wait 10ns before starting for luck.
-  co_await WaitTime(10*1000);
-
-  ////////////////////////////////////////////////////////////////
-  // TEST 1: Read the hardware signature register to verify SPI read.
+// Read the hardware signature register to verify SPI read.
+TEST_CASE("readCPLDSig") {
   uint32_t sig = 0;
   co_await spiRead(top, aCPLDSig, sig);
   std::cout << "SPI: Read Signature register (" << HexOut(aCPLDSig, 2) << "): "
 	    << HexOut(sig) << std::endl << std::flush;
-  if (sig == 0x4E785278) {
-    std::cout << "SPI: Signature matches 'NxRx' (0x4E785278) - Success!" << std::endl << std::flush;
-  } else {
-    std::cout << "SPI ERROR: Signature mismatch! Expected 0x4E785278, got " 
-              << HexOut(sig) << std::endl << std::flush;
+  if (sig != CPLDSig::eVal) {
+    std::ostringstream msg;
+    msg << "SPI ERROR: Signature mismatch! "
+	<< "Expected " << HexOut(CPLDSig::eVal) << ", got " << HexOut(sig);
   }
 
-  ////////////////////////////////////////////////////////////////
-  // TEST 2: Freeze TCXO counter, write a pattern, read it back and verify.
+  co_return;
+}
+
+
+// Freeze TCXO counter, write a pattern, read it back and verify.
+TEST_CASE("readAndWriteCPLDCounter") {
   // Freeze the TCXO counter.
   CPLDControl freezer = {.octMode= 1, .counterThaw= 0, .counterState=CPLDControl::counterStateFrozen};
   co_await spiWrite(top, aCPLDControl, freezer.u);
@@ -142,39 +153,66 @@ static SimTask runTestSequence(Vtop* top) {
   if (counterVal == counterTest) {
     std::cout << "SPI: Counter value read matches - Success!" << std::endl << std::flush;
   } else {
-    std::cout << "SPI ERROR: Counter value mismatch! Expected "
-	      << HexOut(counterTest) << ", got " << HexOut(counterVal)
-	      << std::endl << std::flush;
+    std::ostringstream msg;
+    msg << "SPI ERROR: Counter value mismatch! "
+	<< "Expected " << HexOut(counterTest) << ", got " << HexOut(counterVal);
+    throw std::runtime_error(msg.str());
   }
 
-  ////////////////////////////////////////////////////////////////
-  // TEST 3: Verify TCXO counter is counting up properly in counterStateCounting1.
+  co_return;
+}
+
+
+// Verify TCXO counter is counting up properly in specified counter
+// state.
+static SimTask verifyCounterCountsInState(CPLDControl::CounterState state, Vtop *top) {
   // Zero the counter while it's frozen.
   co_await spiWrite(top, aCPLDCounter, 0);
   
-  // Unfreeze the TCXO counter into counterStateCounting1.
-  CPLDControl counting1 = {.octMode= 1, .counterThaw= 0, .counterState=CPLDControl::counterStateCounting1};
+  // Unfreeze the TCXO counter into state.
+  CPLDControl counting1 = {.octMode= 1, .counterThaw= 0, .counterState=state};
   co_await spiWrite(top, aCPLDControl, counting1.u);
   co_await WaitTime{NS_TO_PS(10)};	// Delay for a few TCXO clocks.
 
   // Read counter now while it's counting.
-  counterVal = 0;
+  uint32_t counterVal = 0;
   co_await spiRead(top, aCPLDCounter, counterVal);
   std::cout << "SPI: Read Counter register: " << HexOut(counterVal) << std::endl << std::flush;
 
-  if (counterVal > 0 && counterVal < 100) {
-      std::cout << "SPI: Counter value read is within bounds - Success!" << std::endl << std::flush;
-  } else {
-    std::cout << "SPI ERROR: Counter value out of range! Expected !=0 and < 100" << std::endl << std::flush;
+  if (counterVal == 0 || counterVal > 1000) {
+    throw std::runtime_error("SPI ERROR: Counter value out of range! Expected !=0 and < 1000");
   }
 
-  // Wait 10,000 TCXO cycles (assuming 40MHz clock = 25ns period)
+  co_return;
+}
+
+
+TEST_CASE("verifyCounterCountsInCounting1") {
+  co_await verifyCounterCountsInState(CPLDControl::counterStateCounting1, top);
+  co_return;
+}
+
+
+TEST_CASE("verifyCounterCountsInCounting2") {
+  co_await verifyCounterCountsInState(CPLDControl::counterStateCounting2, top);
+  co_return;
+}
+
+
+static SimTask runTestSequence(Vtop* top) {
+  // Wait 10ns before starting for luck.
+  co_await WaitTime(10*1000);
+
+
+
+ // Wait 10,000 TCXO cycles (assuming 40MHz clock = 25ns period)
   co_await WaitTime{10000 * NS_TO_PS(25)};
+  co_return;
 }
 
 
 int main(int argc, char *argv[]) {
-  Vtop* top = new Vtop();
+  top = new Vtop();
   VerilatedVcdC* traceP = nullptr;
   
   Verilated::commandArgs(argc, argv);
@@ -211,7 +249,7 @@ int main(int argc, char *argv[]) {
   const uint64_t maxSimTime = MEG(10000); // 10ms to prevent infinite loops
 
   // Set up coroutine that drives our test sequence.
-  auto testSeqTask = runTestSequence(top);
+  auto runAllTask = TestRegistry::getInstance().runAll(top);
 
   while (!Verilated::gotFinish() && currentTime < maxSimTime) {
     uint64_t nextTime = UINT64_MAX;

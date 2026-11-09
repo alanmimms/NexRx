@@ -1,18 +1,25 @@
 #pragma once
 #include <cstdio>
 #include <cstdint>
+#include "simtask.h"
 
+// A simple test case declaration system. Use this like:
+// TEST_CASE("Clock generation and reset sequence") {
+//   co_await resetDevice();
+//   for (int cycle = 0; cycle < 10; ++cycle) co_await stepClock();
+//   co_return;
+// }
 constexpr uint64_t MEG(uint64_t m) { return m * 1000ull * 1000ull; }
 constexpr uint64_t NS_TO_PS(uint64_t t) { return t * 1000ull; }
 constexpr uint64_t US_TO_PS(uint64_t t) { return t * 1000ull * 1000ull; }
 constexpr uint64_t MS_TO_PS(uint64_t t) { return t * 1000ull * 1000ull * 1000ull; }
 constexpr uint64_t SEC_TO_PS(uint64_t t) { return t * 1000ull * 1000ull * 1000ull * 1000ull; }
 
-using TestFunction = void (*)();
+using SimTestFunction = SimTask (*)(Vtop* top);
 
 struct TestCaseEntry {
   const char* testName;
-  TestFunction testFn;
+  SimTestFunction testFn;
   TestCaseEntry* nextNode;
 };
 
@@ -35,27 +42,33 @@ public:
     entryCount++;
   }
 
-  int runAll() {
+  SimTask runAll(Vtop *top) {
     int failureCount = 0;
     int passCount = 0;
     std::printf("[==========] Running %d test cases.\n", entryCount);
 
     for (TestCaseEntry* current = headNode; current != nullptr; current = current->nextNode) {
       std::printf("[ RUN      ] %s\n", current->testName);
-      
+
       try {
-        current->testFn();
+        // Instantiate and run each test case to completion
+        SimTask testTask = current->testFn(top);
+        co_await testTask;
+
         std::printf("[       OK ] %s\n", current->testName);
         passCount++;
+      } catch (const std::exception& ex) {
+        std::printf("[  FAILED  ] %s: %s\n", current->testName, ex.what());
+        failureCount++;
       } catch (...) {
-        std::printf("[  FAILED  ] %s (unhandled exception)\n", current->testName);
+        std::printf("[  FAILED  ] %s: unknown exception\n", current->testName);
         failureCount++;
       }
     }
 
     std::printf("[==========] %d tests ran. %d passed, %d failed.\n", 
                 entryCount, passCount, failureCount);
-    return failureCount;
+    co_return;
   }
 
   int getCount() const { return entryCount; }
@@ -73,7 +86,7 @@ void registerTestCase(TestCaseEntry* entry) {
 }
 
 struct TestAutoReg {
-  TestAutoReg(TestCaseEntry* entry, const char* name, TestFunction fn) {
+  TestAutoReg(TestCaseEntry* entry, const char* name, SimTestFunction fn) {
     entry->testName = name;
     entry->testFn = fn;
     entry->nextNode = nullptr;
@@ -86,24 +99,21 @@ struct TestAutoReg {
 #define INTERNAL_CONCAT(s1, s2) INTERNAL_CONCAT_IMPL(s1, s2)
 
 #ifdef __COUNTER__
-#define INTERNAL_ANON_ID(base) INTERNAL_CONCAT(base, __COUNTER__)
+#define INTERNAL_UNIQUE_ID __COUNTER__
 #else
-#define INTERNAL_ANON_ID(base) INTERNAL_CONCAT(base, __LINE__)
+#define INTERNAL_UNIQUE_ID __LINE__
 #endif
 
-// A simple test case declaration system. Use this like:
-// TEST_CASE("Clock generation and reset sequence") {
-//   co_await resetDevice();
-//   for (int cycle = 0; cycle < 10; ++cycle) co_await stepClock();
-//   co_return;
-// }(); }
-#define TEST_CASE(testName, ...) \
-  static void INTERNAL_ANON_ID(testWrapper_)(); \
-  static TestCaseEntry INTERNAL_ANON_ID(testEntry_); \
-  static const TestAutoReg INTERNAL_ANON_ID(autoReg_)( \
-    &INTERNAL_ANON_ID(testEntry_), testName, &INTERNAL_ANON_ID(testWrapper_)); \
-  static void INTERNAL_ANON_ID(testWrapper_)() { \
-    driveSimulationToCompletion([]() -> SimTask { \
-      __VA_ARGS__ \
-    }()); \
-  }
+// Underlying helper that freezes the unique numeric ID across all declarations
+#define TEST_CASE_IMPL(testName, id) \
+  static SimTask INTERNAL_CONCAT(testCoro_, id)(Vtop* top); \
+  static TestCaseEntry INTERNAL_CONCAT(testEntry_, id); \
+  static const TestAutoReg INTERNAL_CONCAT(autoReg_, id)( \
+    &INTERNAL_CONCAT(testEntry_, id), \
+    testName, \
+    &INTERNAL_CONCAT(testCoro_, id) \
+  ); \
+  static SimTask INTERNAL_CONCAT(testCoro_, id)(Vtop* top)
+
+// Outer macro expanding INTERNAL_UNIQUE_ID exactly once
+#define TEST_CASE(testName) TEST_CASE_IMPL(testName, INTERNAL_UNIQUE_ID)

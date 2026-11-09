@@ -38,7 +38,7 @@ struct [[nodiscard]] SimTask {
 
   std::coroutine_handle<promise_type> handle;
 
-  SimTask(std::coroutine_handle<promise_type> h) : handle(h) {}
+ SimTask(std::coroutine_handle<promise_type> h) : handle(h) {}
     
   // --- Rule of 5: Safe C++ Memory Management to prevent memory leaks ---
   SimTask(const SimTask&) = delete;
@@ -69,7 +69,7 @@ struct [[nodiscard]] SimTask {
 
 
 class EventSource {
-public:
+ public:
   virtual ~EventSource() = default;
 
   // Returns sim time (in ps) of the next event or UINT64_MAX if there
@@ -81,18 +81,18 @@ public:
 };
 
 class ClockSource : public EventSource {
-private:
+ private:
   uint64_t halfPeriodPS;
   uint64_t nextEdgeTimePS;
   CData* clkPin;
 
-public:
+ public:
  ClockSource(uint64_t freqHz, CData* pin) 
    : clkPin(pin), nextEdgeTimePS(0)
-  {
-    uint64_t periodPS = 1ull * 1000ull * 1000ull * 1000ull * 1000ull / freqHz;
-    halfPeriodPS = periodPS / 2;
-  }
+    {
+      uint64_t periodPS = 1ull * 1000ull * 1000ull * 1000ull * 1000ull / freqHz;
+      halfPeriodPS = periodPS / 2;
+    }
 
   uint64_t timeToNextEvent() const override { return nextEdgeTimePS; }
 
@@ -119,7 +119,7 @@ struct SignalCondition {
 
 
 class TaskManager : public EventSource {
-public:
+ public:
 
   struct Waiter {
     std::coroutine_handle<> handle;
@@ -129,7 +129,7 @@ public:
   std::vector<Waiter> waitingTasks;
 
   template <typename ConditionType>
-  void waitFor(std::coroutine_handle<> h, ConditionType cond) {
+    void waitFor(std::coroutine_handle<> h, ConditionType cond) {
     waitingTasks.push_back({h, cond});
   }
 
