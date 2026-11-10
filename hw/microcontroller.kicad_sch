@@ -7179,9 +7179,9 @@
 		)
 		(uuid "5e4ebef5-08f5-4d0f-92df-3ddb5edb3604")
 	)
-	(text "This baroque mess\n(highly engineered)\nis 8048.8 ohms\nwithout adding a\nsingleton."
+	(text "This baroque mess\n(steampunk engineered)\nis 8048.8 ohms\nwithout adding a\nsingleton."
 		(exclude_from_sim no)
-		(at 178.562 141.986 0)
+		(at 177.8 144.78 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7190,7 +7190,7 @@
 		)
 		(uuid "6ec400ad-fb09-4125-b3ba-dbd61eac79dc")
 	)
-	(text "SAI1a=NC\nSAI1b=NC\n\nSAI2a=master osd0\nSAI2b=slave osd1\n\nSAI3a=NC\nSAI3b=NC\n\nSAI4a=NC\nSAI4b=NC\n"
+	(text "SAI1a=NC\nSAI1b=NC\n\nSAI2a=slave osd1\nSAI2b=master osd0\n\nSAI3a=NC\nSAI3b=NC\n\nSAI4a=NC\nSAI4b=NC\n"
 		(exclude_from_sim no)
 		(at 130.048 182.372 0)
 		(effects
@@ -7200,6 +7200,16 @@
 			(justify left)
 		)
 		(uuid "862bc9fa-35cd-49f6-a5e2-b15e2c95c1c8")
+	)
+	(text "We use SN74LVC2G14 inverter\nas a current source/sink buffer\nto drive possibly higher\ncurrent LCD backlight LED."
+		(exclude_from_sim no)
+		(at 169.164 43.434 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "ae51a5c7-07aa-4450-9420-9ef752f93a44")
 	)
 	(text "Place this 100nF\nas close as possible\nto STM32 VREF+ pin."
 		(exclude_from_sim no)
@@ -7700,8 +7710,8 @@
 		(uuid "76009036-6514-4f23-9bb0-6210bf6bf4a2")
 	)
 	(no_connect
-		(at 57.15 74.93)
-		(uuid "86553f3c-2ea3-46a3-b293-9c7be2aad214")
+		(at 57.15 80.01)
+		(uuid "79f3d741-eeb2-400f-9c12-489c2b770975")
 	)
 	(no_connect
 		(at 102.87 59.69)
@@ -7741,7 +7751,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 80.01) (xy 57.15 80.01)
+			(xy 55.88 77.47) (xy 57.15 77.47)
 		)
 		(stroke
 			(width 0)
@@ -11311,7 +11321,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 77.47) (xy 57.15 77.47)
+			(xy 55.88 74.93) (xy 57.15 74.93)
 		)
 		(stroke
 			(width 0)
@@ -13382,7 +13392,7 @@
 		)
 		(uuid "24429a3d-57f6-4538-9712-f5fa6f17b077")
 	)
-	(hierarchical_label "rfOEB"
+	(hierarchical_label "clkOEB"
 		(shape output)
 		(at 104.14 87.63 0)
 		(effects
@@ -13417,7 +13427,7 @@
 	)
 	(hierarchical_label "gnssRx"
 		(shape input)
-		(at 55.88 77.47 180)
+		(at 55.88 74.93 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -13450,7 +13460,7 @@
 	)
 	(hierarchical_label "gnssTx"
 		(shape input)
-		(at 55.88 80.01 180)
+		(at 55.88 77.47 180)
 		(effects
 			(font
 				(size 1.27 1.27)

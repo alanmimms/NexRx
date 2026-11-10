@@ -13910,7 +13910,7 @@
 				(justify right)
 			)
 		)
-		(pin "rfOEB" input
+		(pin "clkOEB" input
 			(at 205.74 119.38 0)
 			(uuid "d8ea6304-e4e5-4635-a56f-02f0602f33d1")
 			(effects
@@ -14269,7 +14269,7 @@
 				(justify left)
 			)
 		)
-		(pin "rfOEB" output
+		(pin "clkOEB" output
 			(at 242.57 95.25 270)
 			(uuid "3ea95d5d-47a2-4efc-a202-33b6802fc46f")
 			(effects
