@@ -6,9 +6,8 @@
 
 LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
 
-/* USB Device Next Instance - High Speed Composite */
-USBD_DEVICE_DEFINE(nexrx_usb_dev, DEVICE_DT_GET(DT_NODELABEL(usbotg_fs)), 
-                   0x1209, 0x0001);
+/* USB Device Next Instance - High Speed Composite - StarviewLabs NexRx */
+USBD_DEVICE_DEFINE(nexrx_usb_dev, DEVICE_DT_GET(DT_NODELABEL(usbotg_fs)), 0x1209, 0x4E75);
 
 namespace nexrx {
 

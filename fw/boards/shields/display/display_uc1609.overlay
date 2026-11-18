@@ -1,0 +1,49 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/spi/spi.h>
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+#include <zephyr/dt-bindings/dma/stm32_dma.h>
+
+/ {
+	chosen {
+		zephyr,display = &disp;
+	};
+
+	display_header: display-header {
+		compatible = "zephyr,gpio-nexus";
+		#gpio-cells = <2>;
+		gpio-map-mask = <0xffffffff 0x0>;
+		gpio-map-pass-thru = <0x0 0xffffffff>;
+	};
+};
+
+&dma1 {
+	status = "okay";
+};
+
+&dma2 {
+	status = "okay";
+};
+
+&dmamux1 {
+	status = "okay";
+};
+
+
+&spi2 {
+	status = "okay";
+
+	dmas = <&dmamux1 2 38 (STM32_DMA_PERIPH_TX | STM32_DMA_PRIORITY_MEDIUM)>,
+               <&dmamux1 3 37 (STM32_DMA_PERIPH_RX | STM32_DMA_PRIORITY_MEDIUM)>;
+	dma-names = "tx", "rx";
+
+	disp: display@0 {
+		compatible = "zephyr,uc1609";
+		reg = <0>;
+		spi-max-frequency = <2000000>;
+		width = <192>;
+		height = <64>;
+
+		data-cmd-gpios = <&display_header 1 GPIO_ACTIVE_HIGH>;
+		reset-gpios    = <&display_header 2 GPIO_ACTIVE_LOW>;
+	};
+};

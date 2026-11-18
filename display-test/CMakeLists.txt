@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.20.0)
+
+set(BOARD nucleo_h753zi CACHE STRING "Target Zephyr Board" FORCE)
+set(SHIELD display_uc1609 CACHE STRING "Target Zephyr Display Shield" FORCE)
+
 list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -8,7 +12,7 @@ target_compile_features(app PRIVATE cxx_std_20)
 
 find_package(Python3 REQUIRED)
 
-set(fontScript ${CMAKE_CURRENT_SOURCE_DIR}/ttf-to-cxx.py)
+set(fontScript ${NEXRX_TOOLS_DIR}/ttf-to-cxx.py)
 target_include_directories(app PRIVATE src)
 zephyr_include_directories(${CMAKE_CURRENT_BINARY_DIR})
 

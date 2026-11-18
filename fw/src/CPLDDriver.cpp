@@ -17,7 +17,7 @@ const struct gpio_dt_spec nss1Gpio = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld1), ns
 } // namespace
 
 const struct device* CPLDDriver::getSPIDevice() {
-  static const struct device* dev = DEVICE_DT_GET(DT_NODELABEL(spi3));
+  static const struct device* dev = DEVICE_DT_GET(DT_ALIAS(cpld_spi));
   return dev;
 }
 
@@ -41,7 +41,7 @@ int CPLDDriver::writeRegister(uint8_t addr, uint32_t data, int cpldIndex) {
     .slave = static_cast<uint16_t>((cpldIndex >= 0) ? cpldIndex : 0),
   };
 
-  if (cpldIndex < 0) {
+  if (cpldIndex == BOTH_CPLDS) {
     // Broadcast to both CPLDs simultaneously
     if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 1);
     if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 1);

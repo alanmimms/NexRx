@@ -32,7 +32,7 @@ uint32_t gcd(uint32_t a, uint32_t b) {
 } // namespace
 
 const struct device* Si5351Driver::getI2CDevice() {
-  static const struct device* dev = DEVICE_DT_GET(DT_NODELABEL(i2c1));
+  static const struct device* dev = DEVICE_DT_GET(DT_ALIAS(si5351_i2c));
   return dev;
 }
 

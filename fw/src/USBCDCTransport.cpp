@@ -11,12 +11,12 @@ USBCDCTransport::USBCDCTransport()
 }
 
 bool USBCDCTransport::init() {
-  dev = DEVICE_DT_GET(DT_NODELABEL(cdc_acm_uart1));
+  dev = DEVICE_DT_GET(DT_NODELABEL(control_plane_uart));
   if (!device_is_ready(dev)) {
-    LOG_ERR("Transport: CDC_ACM_1 not ready");
+    LOG_ERR("Transport: control_plane_uart not ready");
     return false;
   }
-  LOG_INF("Transport: USB Control Plane initialized (CDC_ACM_1)");
+  LOG_INF("Transport: USB Control Plane initialized (control_plane_uart)");
   return true;
 }
 

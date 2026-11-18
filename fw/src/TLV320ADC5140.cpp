@@ -16,9 +16,9 @@ const struct gpio_dt_spec adcResetGpio = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(adc_re
 } // namespace
 
 void TLV320ADC5140::init() {
-  const struct device* spiDev = DEVICE_DT_GET(DT_NODELABEL(spi4));
+  const struct device* spiDev = DEVICE_DT_GET(DT_ALIAS(osd_spi));
   if (!device_is_ready(spiDev)) {
-    LOG_ERR("TLV320ADC5140: SPI4 not ready");
+    LOG_ERR("TLV320ADC5140: OSD SPI bus not ready");
     return;
   }
 
@@ -52,7 +52,7 @@ void TLV320ADC5140::init() {
     // Power up ADC cores, PLL, and MICBIAS
     writeRegister(dev, REG_PWR_CFG, 0xE0);
 
-    LOG_INF("TLV320ADC5140: Device %d initialized on SPI4", dev);
+    LOG_INF("TLV320ADC5140: Device %d initialized on SPI bus", dev);
   }
 }
 
@@ -107,7 +107,7 @@ bool TLV320ADC5140::setPGAGain(uint8_t gainDB) {
 }
 
 bool TLV320ADC5140::writeRegister(int devIndex, uint8_t reg, uint8_t value) {
-  const struct device* spiDev = DEVICE_DT_GET(DT_NODELABEL(spi4));
+  const struct device* spiDev = DEVICE_DT_GET(DT_ALIAS(osd_spi));
   if (!device_is_ready(spiDev)) {
     return false;
   }
@@ -136,7 +136,7 @@ bool TLV320ADC5140::readRegister(int devIndex, uint8_t reg, uint8_t* value) {
     return false;
   }
 
-  const struct device* spiDev = DEVICE_DT_GET(DT_NODELABEL(spi4));
+  const struct device* spiDev = DEVICE_DT_GET(DT_ALIAS(osd_spi));
   if (!device_is_ready(spiDev)) {
     return false;
   }

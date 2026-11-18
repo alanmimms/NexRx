@@ -1,7 +1,9 @@
 /dts-v1/;
 #include <st/h7/stm32h743Xi.dtsi>
 #include <st/h7/stm32h743vitx-pinctrl.dtsi>
-#include <zephyr/dt-bindings/mipi_dbi/mipi_dbi.h>
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+
+/delete-node/ &sram1;
 
 / {
 	model = "NexRx Receiver Board";
@@ -10,11 +12,35 @@
 	chosen {
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
+		zephyr,nocache = &sram1_nocache;
 		zephyr,dtcm = &dtcm;
 		zephyr,console = &usart6;
 		zephyr,shell-uart = &usart6;
-		zephyr,display = &st7789v;
 		zephyr,udc0 = &usbotg_fs;
+		zephyr,display = &disp;
+	};
+
+	aliases {
+		si5351-i2c = &i2c1;
+		display-spi = &spi2;
+		cpld-spi = &spi3;
+		osd-spi = &spi4;
+
+		gnss-uart = &uart7;
+	};
+
+	/* Shrink sram1 so it starts after our 8KB carve-out */
+	sram1: memory@30002000 {
+		compatible = "mmio-sram";
+		reg = <0x30002000 0x0001e000>;
+	};
+
+	/* Carve out the 8KB (0x2000 bytes) naturally aligned at 0x30000000 */
+	sram1_nocache: memory@30000000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x30000000 0x00002000>;
+		zephyr,memory-region = "SRAM1_NOCACHE";
+		zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM_NOCACHE) )>;
 	};
 
 	cpld0: cpld0 {
@@ -71,14 +97,14 @@
 		status = "okay";
 	};
 
-	gnss_control: gnss_control {
-		compatible = "nexrx,gnss-control";
+	gnss_reset: gnss_reset {
+		compatible = "nexrx,gnss-reset";
 		reset-gpios = <&gpiob 3 GPIO_ACTIVE_LOW>;
 		status = "okay";
 	};
 
-	si5351_control: si5351_control {
-		compatible = "nexrx,si5351-control";
+	si5351_OEB: si5351_OEB {
+		compatible = "nexrx,si5351-OEB";
 		oe-gpios = <&gpiob 4 GPIO_ACTIVE_HIGH>;
 		status = "okay";
 	};
@@ -87,6 +113,14 @@
 		/* USB-C CC Monitor ADC Channels */
 		io-channels = <&adc1 7>, <&adc1 8>;
 		io-channel-names = "CC2_ADC", "CC1_ADC";
+	};
+
+	display_header: display-header {
+		#gpio-cells = <3>;
+		gpio-map =
+		  <0 0 &gpioa 11 0>,  /* PA11: SPI /CS (in software) */
+		  <1 0 &gpioe 13 0>,  /* PE13: D/C pin */
+		  <2 0 &gpioe 12 0>;  /* PE12: RESET pin */
 	};
 };
 
@@ -102,20 +136,18 @@
 		     &usb_otg_hs_ulpi_nxt_pc3_c &usb_otg_hs_ulpi_stp_pc0>;
 	pinctrl-names = "default";
 
-
-
 	usb_device_0: usb_device_0 {
 		compatible = "zephyr,usb-device";
 		status = "okay";
 
-		cdc_acm_uart0: cdc_acm_uart0 {
+		console_uart: cdc_acm_uart0 {
 			compatible = "zephyr,cdc-acm-uart";
-			label = "CDC_ACM_0";
+			label = "NexRx Console";
 		};
 
-		cdc_acm_uart1: cdc_acm_uart1 {
+		control_plane_uart: cdc_acm_uart1 {
 			compatible = "zephyr,cdc-acm-uart";
-			label = "CDC_ACM_1";
+			label = "NexRx Control Plane";
 		};
 
 		iq_data_pump: iq_data_pump {
@@ -125,7 +157,7 @@
 	};
 };
 
-&adc1 {
+&adc1 {				/* USB CC1/CC2 pin sense */
 	pinctrl-0 = <&adc1_inp7_pa7 &adc1_inp8_pc5>;
 	pinctrl-names = "default";
 	st,adc-clock-source = "SYNC";
@@ -135,14 +167,14 @@
 	#size-cells = <0>;
 
 
-	channel@7 {
+	usbcc2_adc: channel@7 {
 		reg = <7>;
 		zephyr,gain = "ADC_GAIN_1";
 		zephyr,reference = "ADC_REF_INTERNAL";
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
 		zephyr,resolution = <12>;
 	};
-	channel@8 {
+	usbcc1_adc: channel@8 {
 		reg = <8>;
 		zephyr,gain = "ADC_GAIN_1";
 		zephyr,reference = "ADC_REF_INTERNAL";
@@ -151,7 +183,7 @@
 	};
 };
 
-&i2c1 {
+&i2c1 {				/* clk (Si5351) I2C */
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
 	pinctrl-names = "default";
 	status = "okay";
@@ -184,14 +216,14 @@
 	d3ppre = <2>;
 };
 
-&usart6 {
-	pinctrl-0 = <&usart6_tx_pc6>;
+&usart1 {			/* FACTORY UART test pads */
+	pinctrl-0 = <&usart1_tx_pb14 &usart1_rx_pb15>;
 	pinctrl-names = "default";
 	current-speed = <115200>;
 	status = "okay";
 };
 
-&uart7 {
+&uart7 {			/* GNSS UART */
 	pinctrl-0 = <&uart7_tx_pe8 &uart7_rx_pe7>;
 	pinctrl-names = "default";
 	current-speed = <9600>;
@@ -199,57 +231,21 @@
 };
 
 
-&spi3 {
+&spi3 {				/* CPLD0/CPLD1 */
+	status = "okay";
 	pinctrl-0 = <&spi3_sck_pc10 &spi3_miso_pc11 &spi3_mosi_pb2>;
 	pinctrl-names = "default";
 	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>, <&gpioa 15 GPIO_ACTIVE_LOW>;
-	status = "okay";
 };
 
-&spi2 {
+&spi2 {				/* Display */
+	status = "okay";
 	pinctrl-0 = <&spi2_sck_pa9 &spi2_mosi_pc1>;
 	pinctrl-names = "default";
-	cs-gpios = <&gpioa 11 GPIO_ACTIVE_LOW>;
-	status = "okay";
-
-	mipi_dbi_st7789v {
-		compatible = "zephyr,mipi-dbi-spi";
-		spi-dev = <&spi2>;
-		dc-gpios = <&gpioe 13 GPIO_ACTIVE_HIGH>;
-		reset-gpios = <&gpioe 12 GPIO_ACTIVE_LOW>;
-		write-only;
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		st7789v: st7789v@0 {
-			compatible = "sitronix,st7789v";
-			mipi-max-frequency = <32000000>;
-			reg = <0>;
-			width = <240>;
-			height = <135>;
-			x-offset = <0>;
-			y-offset = <40>;
-			vcom = <0x19>;
-			gctrl = <0x35>;
-			vrhs = <0x12>;
-			vdvs = <0x20>;
-			mdac = <0x00>;
-			gamma = <0x01>;
-			colmod = <0x05>;
-			lcm = <0x2c>;
-			porch-param = [0c 0c 00 33 33];
-			cmd2en-param = [33 06 04];
-			pwctrl1-param = [a4 a1];
-			pvgam-param = [d0 04 0d 11 13 2b 3f 54 4c 18 0d 0b 1f 23];
-			nvgam-param = [d0 04 0c 11 13 2c 3f 44 51 2f 1f 1f 20 23];
-			ram-param = [00 f0];
-			rgb-param = [cd 08 14];
-			mipi-mode = "MIPI_DBI_MODE_SPI_4WIRE";
-		};
-	};
+	cs-gpios = <&display_header 0 GPIO_ACTIVE_LOW>;
 };
 
-&spi4 {
+&spi4 {				/* OSD0/OSD1 */
 	pinctrl-0 = <&spi4_sck_pe2 &spi4_mosi_pe14 &spi4_miso_pe5>;
 	pinctrl-names = "default";
 	cs-gpios = <&gpioe 3 GPIO_ACTIVE_LOW>, <&gpioe 4 GPIO_ACTIVE_LOW>;

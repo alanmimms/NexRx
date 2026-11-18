@@ -25,9 +25,10 @@ public:
   static uint64_t getLatchedTCXOCount(int cpldIndex = 0);
 
 private:
+  static constexpr int BOTH_CPLDS = -1;
   static const struct device* getSPIDevice();
-  static int writeRegister(uint8_t addr, uint32_t data, int cpldIndex = -1);
-  static int readRegister(uint8_t addr, uint32_t &data, int cpldIndex = 0);
+  static int writeRegister(uint8_t addr, uint32_t data, int cpldIndex = BOTH_CPLDS);
+  static int readRegister(uint8_t addr, uint32_t &data, int cpldIndex);
 };
 
 } // namespace nexrx
