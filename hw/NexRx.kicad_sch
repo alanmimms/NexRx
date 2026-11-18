@@ -8252,7 +8252,7 @@
 				(hide yes)
 			)
 		)
-		(property "label" "GNSS backup CR2032"
+		(property "label" "GNSS backup"
 			(at 188.722 129.54 90)
 			(effects
 				(font
