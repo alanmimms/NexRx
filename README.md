@@ -163,3 +163,23 @@ have to add something like the following to your
 		}
 	  }
 	}
+
+
+# Building the gateware, firmware, and software
+
+To do a top-level single-command build run `./build.sh` (or `cmake -B
+build && cmake --build build`). This orchestrates all components and
+generates the complete tree in build/:
+
+  * `zephyr.bin`
+  * `top.bin`
+  * `build/app/nexrx-app`
+  * `build/twin/nexrx-signalgen`
+
+To iterate on a given subdirectory, you can repeatedly build just that
+subdirectory's components by `cd` *subdir* `&& ./build.sh`.
+
+  * `cd fw && ./build.sh` -> outputs to `fw/build/zephyr/`
+  * `cd CPLD && ./build.sh` -> outputs to `CPLD/build/`
+  * `cd app && ./build.sh` -> outputs to `app/build/`
+  * `cd twin && ./build.sh` -> outputs to `twin/build/`
