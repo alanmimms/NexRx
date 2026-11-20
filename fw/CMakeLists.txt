@@ -16,7 +16,7 @@ target_compile_features(app PRIVATE cxx_std_20)
 # Font compiler
 find_package(Python3 REQUIRED)
 
-set(fontScript ${NEXRX_TOOLS_DIR}/ttf-to-cxx.py)
+set(fontScript ${CMAKE_CURRENT_SOURCE_DIR}/../tools/ttf-to-cxx.py)
 target_include_directories(app PRIVATE src)
 zephyr_include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -55,7 +55,7 @@ genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf 13 UbuntuM13)
 genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf 12 UbuntuB12 VARIATION "Bold")
 genFont(/usr/share/fonts/truetype/ibm-plex/IBMPlexSans-Light.ttf 12 PlexL12)
 
-target_include_directories(app PRIVATE ${fontGenDir})
+target_include_directories(app PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(drivers)
 
@@ -71,8 +71,8 @@ target_sources(app PRIVATE
     src/OSDCapture.cpp
     src/ControlHandler.cpp
     src/USBCDCTransport.cpp
+    src/DisplayManager.cpp
 )
 
 # Include directories
 target_include_directories(app PRIVATE src)
-

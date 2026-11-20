@@ -92,6 +92,7 @@ else()
     lua
     GIT_REPOSITORY https://github.com/lua/lua.git
     GIT_TAG v5.4.9
+    SOURCE_SUBDIR "" # Explicitly prevents MakeAvailable from looking for CMakeLists.txt
   )
   FetchContent_GetProperties(lua)
   if(NOT lua_POPULATED)

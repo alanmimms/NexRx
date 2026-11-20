@@ -16,9 +16,9 @@
 #include <zephyr/cache.h>
 #include <zephyr/linker/section_tags.h>
 
-LOG_MODULE_REGISTER(uc1609, CONFIG_UC1609_LOG_LEVEL);
+LOG_MODULE_REGISTER(uc1609);
 
-#if defined(CONFIG_UC1609_LOG_LEVEL_DBG) || false
+#if false
 #define UC_DBG(fmt, ...) printk("[uc1609_dbg] " fmt "\n", ##__VA_ARGS__)
 #define DBGRAW(fmt, ...) printk(fmt, ##__VA_ARGS__)
 #else

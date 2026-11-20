@@ -1,22 +1,40 @@
 if SHIELD_DISPLAY_UC1609
+
+config SPI
+    default y
+
 config DISPLAY
     default y
+
 config UC1609
     default y
+
 endif
 
 if SHIELD_DISPLAY_SSD1306
+
+config SPI
+    default y
+
 config DISPLAY
     default y
+
 config SSD1306
-    bool
+    bool "Enable SSD1306 display controller support"
     default y
+
 endif
 
 if SHIELD_DISPLAY_SH1106
+
+config SPI
+    default y
+
 config DISPLAY
     default y
+
 config SH1106
-    bool
+    bool "Enable SH1106 display controller support"
     default y
+
 endif

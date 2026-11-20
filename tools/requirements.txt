@@ -1,0 +1,2 @@
+west
+# Add other packages needed for ttf-to-cxx.py or build/flash scripts.

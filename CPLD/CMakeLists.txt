@@ -64,13 +64,13 @@ set(RTL_SOURCES
 # ------------------------------------------------------------------------------
 string(JOIN " " YOSYS_SOURCES ${RTL_SOURCES})
 set(PCF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/pins.pcf")
-set(SYNTH_JSON "${CMAKE_CURRENT_BINARY_DIR}/top.json")
-set(SYNTH_ASC "${CMAKE_CURRENT_BINARY_DIR}/top.asc")
-set(SYNTH_BIN "${CMAKE_CURRENT_BINARY_DIR}/top.bin")
+set(SYNTH_JSON "${CMAKE_CURRENT_BINARY_DIR}/CPLD.json")
+set(SYNTH_ASC "${CMAKE_CURRENT_BINARY_DIR}/CPLD.asc")
+set(SYNTH_BIN "${CMAKE_CURRENT_BINARY_DIR}/CPLD.bin")
 
-find_program(YOSYS_EXECUTABLE yosys)
-find_program(NEXTPNR_ICE40_EXECUTABLE nextpnr-ice40)
-find_program(ICEPACK_EXECUTABLE icepack)
+find_program(YOSYS_EXECUTABLE yosys HINTS "$ENV{HOME}/oss-cad-suite/bin")
+find_program(NEXTPNR_ICE40_EXECUTABLE nextpnr-ice40 HINTS "$ENV{HOME}/oss-cad-suite/bin")
+find_program(ICEPACK_EXECUTABLE icepack HINTS "$ENV{HOME}/oss-cad-suite/bin")
 
 if(YOSYS_EXECUTABLE AND NEXTPNR_ICE40_EXECUTABLE AND ICEPACK_EXECUTABLE)
   add_custom_command(

@@ -1,0 +1,3 @@
+# .clangd at project root
+CompileFlags:
+  CompilationDatabase: build/app  # or build/fw depending on what you are editing
