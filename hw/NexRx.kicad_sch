@@ -5651,16 +5651,6 @@
 	)
 	(wire
 		(pts
-			(xy 187.96 41.91) (xy 217.17 41.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f816a7e4-dff0-49ef-8714-df1d755db0d5")
-	)
-	(wire
-		(pts
 			(xy 128.27 73.66) (xy 124.46 73.66)
 		)
 		(stroke
@@ -14229,16 +14219,6 @@
 				(justify left)
 			)
 		)
-		(pin "enable3V3" input
-			(at 217.17 41.91 180)
-			(uuid "35f546e2-d907-4a3c-9cfc-e317ce1a4961")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
 		(pin "osd0{OSD}" bidirectional
 			(at 217.17 55.88 180)
 			(uuid "058d40b6-98a5-45cf-a913-b5b09c1f180c")
@@ -14542,16 +14522,6 @@
 		(pin "cc2ADC" output
 			(at 187.96 39.37 0)
 			(uuid "f3819a84-de98-4f29-836f-d6f3320bee30")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "enable3V3" input
-			(at 187.96 41.91 0)
-			(uuid "9394329d-7db7-4fb8-b881-b9788d288c0c")
 			(effects
 				(font
 					(size 1.27 1.27)
