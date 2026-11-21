@@ -14,9 +14,9 @@
 		zephyr,flash = &flash0;
 		zephyr,nocache = &sram1_nocache;
 		zephyr,dtcm = &dtcm;
-		zephyr,console = &usart1;
-		zephyr,shell-uart = &usart1;
-		zephyr,udc0 = &usbotg_fs;
+		zephyr,console = &console_uart;
+		zephyr,shell-uart = &console_uart;
+		zephyr,udc0 = &usbotg_hs;
 		zephyr,display = &disp;
 	};
 
@@ -113,49 +113,76 @@
 		/* USB-C CC Monitor ADC Channels */
 		io-channels = <&adc1 7>, <&adc1 8>;
 		io-channel-names = "CC2_ADC", "CC1_ADC";
+		usb-phy-reset-gpios = <&gpioc 4 GPIO_ACTIVE_LOW>;
 	};
 
 	display_header: display-header {
 		compatible = "zephyr,gpio-nexus";
 		#gpio-cells = <2>;
 		gpio-map =
-		  <0 0 &gpioa 11 0>,  /* PA11: SPI /CS (in software) */
-		  <1 0 &gpioe 13 0>,  /* PE13: D/C pin */
-		  <2 0 &gpioe 12 0>;  /* PE12: RESET pin */
+		<0 0 &gpioa 11 0>,  /* PA11: SPI /CS (in software) */
+		<1 0 &gpioe 13 0>,  /* PE13: D/C pin */
+		<2 0 &gpioe 12 0>;  /* PE12: RESET pin */
+	};
+
+	soc {
+		usbotg_hs: usb@40040000 {
+			compatible = "st,stm32-otghs";
+			reg = <0x40040000 0x40000>;
+			interrupts = <74 0>, <75 0>, <76 0>, <77 0>;
+			interrupt-names = "ep1_out", "ep1_in", "wkup", "otghs";
+			num-bidir-endpoints = <9>;
+			ram-size = <4096>;
+			maximum-speed = "full-speed";
+			clocks = <&rcc STM32_CLOCK(AHB1, 25)>,
+			<&rcc STM32_SRC_HSI48 USB_SEL(3)>;
+			phys = <&otghs_fs_phy>;
+			status = "disabled";
+		};
+	};
+
+	usbhs_ulpi_phy: usbhs_ulpi_phy {
+		compatible = "usb-ulpi-phy";
+		#phy-cells = <0>;
+		reset-gpios = <&gpioc 4 GPIO_ACTIVE_LOW>;
+	};
+};
+
+
+&usbotg_hs {
+	pinctrl-0 = <&usb_otg_hs_ulpi_ck_pa5
+        &usb_otg_hs_ulpi_d0_pa3
+        &usb_otg_hs_ulpi_d1_pb0
+        &usb_otg_hs_ulpi_d2_pb1
+        &usb_otg_hs_ulpi_d3_pb10
+        &usb_otg_hs_ulpi_d4_pb11
+        &usb_otg_hs_ulpi_d5_pb12
+        &usb_otg_hs_ulpi_d6_pb13
+        &usb_otg_hs_ulpi_d7_pb5
+        &usb_otg_hs_ulpi_stp_pc0
+        &usb_otg_hs_ulpi_dir_pc2_c
+        &usb_otg_hs_ulpi_nxt_pc3_c>;
+	pinctrl-names = "default";
+	clocks = <&rcc STM32_CLOCK_BUS_AHB1 0x06000000>,
+	<&rcc STM32_SRC_HSI48 USB_SEL(3)>;
+	phys = <&usbhs_ulpi_phy>;
+	maximum-speed = "high-speed";
+	status = "okay";
+
+	console_uart: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "NexRx Console";
+	};
+
+	control_plane_uart: cdc_acm_uart1 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "NexRx Control Plane";
 	};
 };
 
 
 &usbotg_fs {
-	status = "okay";
-
-	pinctrl-0 = <&usb_otg_hs_ulpi_ck_pa5 &usb_otg_hs_ulpi_d0_pa3
-		     &usb_otg_hs_ulpi_d1_pb0 &usb_otg_hs_ulpi_d2_pb1
-		     &usb_otg_hs_ulpi_d3_pb10 &usb_otg_hs_ulpi_d4_pb11
-		     &usb_otg_hs_ulpi_d5_pb12 &usb_otg_hs_ulpi_d6_pb13
-		     &usb_otg_hs_ulpi_d7_pb5 &usb_otg_hs_ulpi_dir_pc2_c
-		     &usb_otg_hs_ulpi_nxt_pc3_c &usb_otg_hs_ulpi_stp_pc0>;
-	pinctrl-names = "default";
-
-	usb_device_0: usb_device_0 {
-		compatible = "zephyr,usb-device";
-		status = "okay";
-
-		console_uart: cdc_acm_uart0 {
-			compatible = "zephyr,cdc-acm-uart";
-			label = "NexRx Console";
-		};
-
-		control_plane_uart: cdc_acm_uart1 {
-			compatible = "zephyr,cdc-acm-uart";
-			label = "NexRx Control Plane";
-		};
-
-		iq_data_pump: iq_data_pump {
-			compatible = "zephyr,usb-vendor-bulk";
-			status = "okay";
-		};
-	};
+	status = "disabled";
 };
 
 &adc1 {				/* USB CC1/CC2 pin sense */
@@ -193,6 +220,10 @@
 
 &clk_hse {
 	clock-frequency = <DT_FREQ_M(26)>;
+	status = "okay";
+};
+
+&clk_hsi48 {
 	status = "okay";
 };
 

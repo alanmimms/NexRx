@@ -2,6 +2,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/usb/usbd.h>
+#include <stdint.h>
 
 namespace nexrx {
 
@@ -22,6 +23,10 @@ public:
    */
   static void onBulkInComplete(struct usbd_context* udsCtx, 
                                struct net_buf* buf, int err);
+
+  // NexRx vendor/device from pidcodes.github.com.
+  static constexpr uint16_t vendor = 0x1209;
+  static constexpr uint16_t device = 0x4E75;
 
 private:
   static struct usbd_context* usbCtx;
