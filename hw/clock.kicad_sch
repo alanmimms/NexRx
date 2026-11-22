@@ -606,7 +606,7 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "Y"
-				(at 5.334 7.112 0)
+				(at -4.191 8.382 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -614,8 +614,8 @@
 					(justify left top)
 				)
 			)
-			(property "Value" "ECS-TXO-2016-33-400-TR"
-				(at 5.334 4.572 0)
+			(property "Value" "ECS-TXO-2016-33"
+				(at -4.191 5.842 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -643,8 +643,8 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "TCXO Oscillators 40MHz 3.3V 2.5ppm -40C +85C"
-				(at 0 0 0)
+			(property "Description" "TCXO Oscillators 3.3V 2016 4 pin"
+				(at 16.51 -8.89 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -704,8 +704,8 @@
 			)
 			(symbol "ECS-TXO-2016-33-400-TR_1_1"
 				(rectangle
-					(start 5.08 2.54)
-					(end 21.59 -5.08)
+					(start -4.445 3.81)
+					(end 4.445 -3.81)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -715,8 +715,8 @@
 					)
 				)
 				(pin passive line
-					(at 0 0 0)
-					(length 5.08)
+					(at -6.985 1.27 0)
+					(length 2.54)
 					(name "VDD"
 						(effects
 							(font
@@ -733,9 +733,9 @@
 					)
 				)
 				(pin passive line
-					(at 0 -2.54 0)
-					(length 5.08)
-					(name "TRI-STATE"
+					(at -6.985 -1.27 0)
+					(length 2.54)
+					(name "EN"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -751,9 +751,9 @@
 					)
 				)
 				(pin passive line
-					(at 26.67 0 180)
-					(length 5.08)
-					(name "OUTPUT"
+					(at 6.985 1.27 180)
+					(length 2.54)
+					(name "XO"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -769,8 +769,8 @@
 					)
 				)
 				(pin passive line
-					(at 26.67 -2.54 180)
-					(length 5.08)
+					(at 6.985 -1.27 180)
+					(length 2.54)
 					(name "GND"
 						(effects
 							(font
@@ -1642,13 +1642,13 @@
 		(uuid "8d409cd3-bf29-431e-95d8-95e6782ad647")
 	)
 	(junction
-		(at 60.96 92.71)
+		(at 72.39 92.71)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a96697ea-6e39-4d88-8a90-f574211c4ba4")
 	)
 	(junction
-		(at 60.96 90.17)
+		(at 72.39 90.17)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b93a3cb0-1bdf-4c52-a822-7aebb1737408")
@@ -1713,7 +1713,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 102.87) (xy 60.96 104.14)
+			(xy 72.39 102.87) (xy 72.39 104.14)
 		)
 		(stroke
 			(width 0)
@@ -1863,7 +1863,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 90.17) (xy 60.96 88.9)
+			(xy 72.39 90.17) (xy 72.39 88.9)
 		)
 		(stroke
 			(width 0)
@@ -2073,7 +2073,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 90.17) (xy 62.23 90.17)
+			(xy 72.39 90.17) (xy 74.93 90.17)
 		)
 		(stroke
 			(width 0)
@@ -2093,7 +2093,7 @@
 	)
 	(wire
 		(pts
-			(xy 62.23 92.71) (xy 60.96 92.71)
+			(xy 72.39 92.71) (xy 74.93 92.71)
 		)
 		(stroke
 			(width 0)
@@ -2113,7 +2113,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 92.71) (xy 60.96 95.25)
+			(xy 72.39 92.71) (xy 72.39 95.25)
 		)
 		(stroke
 			(width 0)
@@ -2163,7 +2163,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 92.71) (xy 60.96 90.17)
+			(xy 72.39 92.71) (xy 72.39 90.17)
 		)
 		(stroke
 			(width 0)
@@ -2694,7 +2694,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 60.96 104.14 0)
+		(at 72.39 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2702,7 +2702,7 @@
 		(dnp no)
 		(uuid "037bde03-a11d-4d46-b1cf-1c7e6fe7e4b1")
 		(property "Reference" "#PWR01213"
-			(at 60.96 110.49 0)
+			(at 72.39 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2711,7 +2711,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 60.706 107.95 0)
+			(at 72.136 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2720,7 +2720,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 60.96 104.14 0)
+			(at 72.39 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2729,7 +2729,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 60.96 104.14 0)
+			(at 72.39 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2738,7 +2738,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 60.96 104.14 0)
+			(at 72.39 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4601,16 +4601,15 @@
 	)
 	(symbol
 		(lib_id "Library:ECS-TXO-2016-33-400-TR")
-		(at 62.23 90.17 0)
+		(at 81.915 91.44 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "695fcb33-f896-405b-9bcf-d088a89869af")
 		(property "Reference" "Y1201"
-			(at 75.565 82.55 0)
+			(at 81.788 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4618,7 +4617,7 @@
 			)
 		)
 		(property "Value" "40MHz"
-			(at 75.565 85.09 0)
+			(at 81.788 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4626,7 +4625,7 @@
 			)
 		)
 		(property "Footprint" "Library:ECSTXO201633400TR"
-			(at 96.52 185.09 0)
+			(at 116.205 186.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4636,7 +4635,7 @@
 			)
 		)
 		(property "Datasheet" "https://datasheet.datasheetarchive.com/originals/distributors/Datasheets_SAMA/fdc451124f6f80954f29114af1256858.pdf"
-			(at 96.52 285.09 0)
+			(at 116.205 286.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4645,8 +4644,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "TCXO Oscillators 40MHz 3.3V 2.5ppm -40C +85C"
-			(at 62.23 90.17 0)
+		(property "Description" "TCXO Oscillators 3.3V 2016 4 pin"
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4655,7 +4654,7 @@
 			)
 		)
 		(property "Manufacturer" "ECS"
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4664,7 +4663,7 @@
 			)
 		)
 		(property "MPN" "ECS-TXO-2016-33-400-TR"
-			(at 24.13 -43.18 0)
+			(at 43.815 -41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4673,7 +4672,7 @@
 			)
 		)
 		(property "LCSC_PN" "C2451471"
-			(at 24.13 -43.18 0)
+			(at 43.815 -41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4682,7 +4681,7 @@
 			)
 		)
 		(property "Mouser_PN" "520-TXO-2016-33-400T"
-			(at 24.13 -43.18 0)
+			(at 43.815 -41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4691,7 +4690,7 @@
 			)
 		)
 		(property "Height" "0.8"
-			(at 96.52 485.09 0)
+			(at 116.205 486.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4701,7 +4700,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/ECS/ECS-TXO-2016-33-400-TR?qs=PzGy0jfpSMtctR53CPxRHg%3D%3D"
-			(at 96.52 685.09 0)
+			(at 116.205 686.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4711,7 +4710,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4720,7 +4719,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4729,7 +4728,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4738,7 +4737,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4747,7 +4746,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4756,7 +4755,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4765,7 +4764,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4774,7 +4773,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4783,7 +4782,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4792,7 +4791,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4801,7 +4800,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4810,7 +4809,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4819,7 +4818,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4828,7 +4827,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4837,7 +4836,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4846,7 +4845,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4855,7 +4854,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4864,7 +4863,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4873,7 +4872,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4882,7 +4881,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4891,7 +4890,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4899,7 +4898,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4907,7 +4906,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4916,7 +4915,7 @@
 			)
 		)
 		(property "label" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4925,7 +4924,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4934,7 +4933,7 @@
 			)
 		)
 		(property "Mouser Part Number" "520-TXO-2016-33-400T"
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4943,7 +4942,7 @@
 			)
 		)
 		(property "MFG" "ECS"
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4952,11 +4951,31 @@
 			)
 		)
 		(property "UsedIn" ""
-			(at 62.23 90.17 0)
+			(at 81.915 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "ECS"
+			(at 116.205 786.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "ECS-TXO-2016-33-400-TR"
+			(at 116.205 886.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
 				(hide yes)
 			)
 		)
@@ -5541,8 +5560,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 60.96 99.06 0)
-		(mirror y)
+		(at 72.39 99.06 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5550,7 +5568,7 @@
 		(dnp no)
 		(uuid "8a430d5e-efbd-49ba-a7d5-2ecea7b764d9")
 		(property "Reference" "C1206"
-			(at 61.468 96.774 0)
+			(at 71.882 96.774 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5559,7 +5577,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 61.722 101.092 0)
+			(at 71.628 101.092 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5568,7 +5586,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
-			(at 59.9948 102.87 0)
+			(at 73.3552 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5577,7 +5595,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5586,7 +5604,7 @@
 			)
 		)
 		(property "Description" "Capacitor, MLCC, X7R, 25V, 20%, 100nF, 0402"
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5595,7 +5613,7 @@
 			)
 		)
 		(property "Manufacturer" "Kemet"
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5604,7 +5622,7 @@
 			)
 		)
 		(property "MPN" "GCM155R71H104KE02D"
-			(at 24.13 -43.18 0)
+			(at 109.22 -43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5613,7 +5631,7 @@
 			)
 		)
 		(property "LCSC_PN" "C307331"
-			(at 24.13 -43.18 0)
+			(at 109.22 -43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5622,7 +5640,7 @@
 			)
 		)
 		(property "Mouser_PN" "80-C0805F104K1RAUTO"
-			(at 24.13 -43.18 0)
+			(at 109.22 -43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5631,7 +5649,7 @@
 			)
 		)
 		(property "DigiKey_Part_Number" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5640,7 +5658,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5649,7 +5667,7 @@
 			)
 		)
 		(property "Display 2" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5658,7 +5676,7 @@
 			)
 		)
 		(property "Sim.Params" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5667,7 +5685,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5676,7 +5694,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5685,7 +5703,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5694,7 +5712,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5703,7 +5721,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5712,7 +5730,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5721,7 +5739,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5730,7 +5748,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5739,7 +5757,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5748,7 +5766,7 @@
 			)
 		)
 		(property "Price" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5757,7 +5775,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5766,7 +5784,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5775,7 +5793,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5784,7 +5802,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5793,7 +5811,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5802,7 +5820,7 @@
 			)
 		)
 		(property "Mouser-part-number" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5811,7 +5829,7 @@
 			)
 		)
 		(property "cap-type" "X7R"
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5819,7 +5837,7 @@
 			)
 		)
 		(property "working-voltage" "25V"
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5828,7 +5846,7 @@
 			)
 		)
 		(property "Core" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5837,7 +5855,7 @@
 			)
 		)
 		(property "label" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5846,7 +5864,7 @@
 			)
 		)
 		(property "Winding" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5855,7 +5873,7 @@
 			)
 		)
 		(property "Manufacturer_Name" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5864,7 +5882,7 @@
 			)
 		)
 		(property "MFG" "muRata"
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5873,7 +5891,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GCM155R71H104KE2D"
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5882,7 +5900,7 @@
 			)
 		)
 		(property "UsedIn" ""
-			(at 60.96 99.06 0)
+			(at 72.39 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6976,7 +6994,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 60.96 88.9 0)
+		(at 72.39 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6985,7 +7003,7 @@
 		(fields_autoplaced yes)
 		(uuid "c4a40012-e2a1-46b6-8281-844ee50c3685")
 		(property "Reference" "#PWR01211"
-			(at 60.96 92.71 0)
+			(at 72.39 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6994,7 +7012,7 @@
 			)
 		)
 		(property "Value" "+3.3VCPLDIO"
-			(at 60.96 83.82 0)
+			(at 72.39 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7002,7 +7020,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 60.96 88.9 0)
+			(at 72.39 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7011,7 +7029,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 60.96 88.9 0)
+			(at 72.39 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7020,7 +7038,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3VFPGAIO\""
-			(at 60.96 88.9 0)
+			(at 72.39 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7029,7 +7047,7 @@
 			)
 		)
 		(property "cap-type" ""
-			(at 60.96 88.9 0)
+			(at 72.39 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7037,7 +7055,7 @@
 			)
 		)
 		(property "r-power" ""
-			(at 60.96 88.9 0)
+			(at 72.39 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
