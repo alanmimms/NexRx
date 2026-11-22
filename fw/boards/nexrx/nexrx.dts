@@ -219,8 +219,22 @@
 };
 
 &clk_hse {
+	// This will change to 40MHz TCXO in future builds
 	clock-frequency = <DT_FREQ_M(26)>;
 	status = "okay";
+};
+
+&mco2 {
+	// This will change to when we switch to 40MHz TCXO in future builds
+	clocks = <&rcc STM32_SRC_HSE MCO2_SEL(2)>;
+	prescaler = <MCO2_PRE(MCO_PRE_DIV_1)>;
+	pinctrl-0 = <&rcc_mco_2_pc9>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&rcc_mco_2_pc9 {
+	slew-rate = "medium-speed"; /* or "high-speed" */
 };
 
 &clk_hsi48 {

@@ -5,6 +5,14 @@ cmake_minimum_required(VERSION 3.20.0)
 
 list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (NOT DEFINED BOARD AND NOT DEFINED ENV{BOARD})
+  set(BOARD nexrx CACHE STRING "Default target board")
+endif ()
+
+if (NOT DEFINED SHIELD AND NOT DEFINED ENV{SHIELD})
+  set(SHIELD display_uc1609 CACHE STRING "Default display shield")
+endif ()
+
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(NexRxFW)
 

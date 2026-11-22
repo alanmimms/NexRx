@@ -16,35 +16,57 @@
 LOG_MODULE_REGISTER(nexrx_main, LOG_LEVEL_INF);
 
 
-static const struct gpio_dt_spec usbPhyReset =
+static const struct gpio_dt_spec usbPHYReset =
     GPIO_DT_SPEC_GET(DT_NODELABEL(usbhs_ulpi_phy), reset_gpios);
 
-constexpr int resetPulseMs = 5;
+constexpr int resetHoldMs = 5;
 constexpr int pllLockDelayMs = 10;
 
-static int resetUsbPhy() {
-  if (!gpio_is_ready_dt(&usbPhyReset)) {
+static int resetUSBPHY() {
+  LOG_ERR("resetUSBPHY start");
+
+  bool hseReady = (RCC->CR & RCC_CR_HSERDY) != 0U;
+  static constexpr uint32_t mco2SourceHSE = (2U << RCC_CFGR_MCO2_Pos);
+  uint32_t mco2Source = RCC->CFGR & RCC_CFGR_MCO2_Msk;
+  uint32_t mco2Pre = (RCC->CFGR & RCC_CFGR_MCO2PRE_Msk) >> RCC_CFGR_MCO2PRE_Pos;
+
+  LOG_ERR("check MCO2 output");
+  if (!hseReady || mco2Source != mco2SourceHSE || mco2Pre == 0U) {
+    LOG_ERR("USB clock output MCO2 not ready");
+    return -EIO;
+  }
+
+  if (!gpio_is_ready_dt(&usbPHYReset)) {
+    LOG_ERR("USB reset GPIO not ready");
     return -ENODEV;
   }
 
+  LOG_ERR("resetUSBPHY assert");
+
   // Assert /RESET (drive PC4 low because of GPIO_ACTIVE_LOW)
-  int err = gpio_pin_configure_dt(&usbPhyReset, GPIO_OUTPUT_ACTIVE);
+  int err = gpio_pin_configure_dt(&usbPHYReset, GPIO_OUTPUT_ACTIVE);
   if (err != 0) {
+    LOG_ERR("Failed to assert USB PHY reset: %d", err);
     return err;
   }
-  k_msleep(resetPulseMs);
+  k_msleep(resetHoldMs);
+
+  LOG_ERR("resetUSBPHY deassert");
 
   // Deassert /RESET (drive PC4 high) and wait for 60 MHz CLKOUT to stabilize
-  err = gpio_pin_set_dt(&usbPhyReset, 0);
+  err = gpio_pin_set_dt(&usbPHYReset, 0);
   if (err != 0) {
+    LOG_ERR("Failed to deassert USB PHY reset: %d", err);
     return err;
   }
   k_msleep(pllLockDelayMs);
 
+  LOG_INF("USB PHY reset pulse complete, PC4 deasserted (3.3V)");
+  LOG_ERR("resetUSBPHY done");
   return 0;
 }
 
-SYS_INIT(resetUsbPhy, POST_KERNEL, 45);
+SYS_INIT(resetUSBPHY, POST_KERNEL, 45);
 
 
 

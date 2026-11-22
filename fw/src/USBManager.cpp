@@ -5,7 +5,7 @@
 #include <zephyr/usb/usbd.h>
 #include "OSDCapture.hpp"
 
-LOG_MODULE_DECLARE(nexrx_main, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(USBManager, LOG_LEVEL_ERR);
 
 /* USB Device Next Instance - High Speed Composite - StarviewLabs NexRx */
 USBD_DEVICE_DEFINE(nexrxUsbDev, DEVICE_DT_GET(DT_CHOSEN(zephyr_udc0)),
