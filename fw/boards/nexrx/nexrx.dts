@@ -2,6 +2,7 @@
 #include <st/h7/stm32h743Xi.dtsi>
 #include <st/h7/stm32h743vitx-pinctrl.dtsi>
 #include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+#include <zephyr/dt-bindings/pwm/pwm.h>
 
 /delete-node/ &sram1;
 
@@ -14,8 +15,8 @@
 		zephyr,flash = &flash0;
 		zephyr,nocache = &sram1_nocache;
 		zephyr,dtcm = &dtcm;
-//		zephyr,console = &console_uart;
-//		zephyr,shell-uart = &console_uart;
+		//		zephyr,console = &console_uart;
+		//		zephyr,shell-uart = &console_uart;
 		zephyr,console = &factory_console;
 		zephyr,shell-uart = &factory_console;
 		zephyr,udc0 = &usbotg_hs;
@@ -91,20 +92,19 @@
 		status = "okay";
 	};
 
-	status_leds: status_leds {
-		compatible = "gpio-leds";
-		status = "okay";
-		red_led: led_0 {
-			gpios = <&gpiob 9 GPIO_ACTIVE_HIGH>;
-			label = "Status Red";
+	pwmleds {
+		compatible = "pwm-leds";
+
+		// Red and blue are swapped in the pinout on EVT boards.
+		// XXX Fix this and reverse them back on future boards.
+		red_pwm_led: red_pwm_led {
+			pwms = <&pwm15 2 PWM_HZ(417) PWM_POLARITY_NORMAL>;
 		};
-		green_led: led_1 {
-			gpios = <&gpiob 8 GPIO_ACTIVE_HIGH>;
-			label = "Status Green";
+		green_pwm_led: green_pwm_led {
+			pwms = <&pwm4 3 PWM_HZ(417) PWM_POLARITY_NORMAL>;
 		};
-		blue_led: led_2 {
-			gpios = <&gpioe 6 GPIO_ACTIVE_HIGH>;
-			label = "Status Blue";
+		blue_pwm_led: blue_pwm_led {
+			pwms = <&pwm4 4 PWM_HZ(417) PWM_POLARITY_NORMAL>;
 		};
 	};
 
@@ -159,6 +159,28 @@
 	};
 };
 
+&timers4 {
+  status = "okay";
+  st,prescaler = <239>;
+
+  pwm4: pwm {
+    status = "okay";
+    pinctrl-0 = <&tim4_ch3_pb8 &tim4_ch4_pb9>;
+    pinctrl-names = "default";
+  };
+};
+
+&timers15 {
+  status = "okay";
+  st,prescaler = <239>;
+
+  pwm15: pwm {
+    status = "okay";
+    pinctrl-0 = <&tim15_ch2_pe6>;
+    pinctrl-names = "default";
+  };
+};
+
 &pinctrl {
 	usb_otg_hs_ulpi_ck_pa5 {
 		slew-rate = "very-high-speed";
@@ -200,17 +222,17 @@
 
 &usbotg_hs {
 	pinctrl-0 = <&usb_otg_hs_ulpi_ck_pa5
-        &usb_otg_hs_ulpi_d0_pa3
-        &usb_otg_hs_ulpi_d1_pb0
-        &usb_otg_hs_ulpi_d2_pb1
-        &usb_otg_hs_ulpi_d3_pb10
-        &usb_otg_hs_ulpi_d4_pb11
-        &usb_otg_hs_ulpi_d5_pb12
-        &usb_otg_hs_ulpi_d6_pb13
-        &usb_otg_hs_ulpi_d7_pb5
-        &usb_otg_hs_ulpi_stp_pc0
-        &usb_otg_hs_ulpi_dir_pc2_c
-        &usb_otg_hs_ulpi_nxt_pc3_c>;
+	&usb_otg_hs_ulpi_d0_pa3
+	&usb_otg_hs_ulpi_d1_pb0
+	&usb_otg_hs_ulpi_d2_pb1
+	&usb_otg_hs_ulpi_d3_pb10
+	&usb_otg_hs_ulpi_d4_pb11
+	&usb_otg_hs_ulpi_d5_pb12
+	&usb_otg_hs_ulpi_d6_pb13
+	&usb_otg_hs_ulpi_d7_pb5
+	&usb_otg_hs_ulpi_stp_pc0
+	&usb_otg_hs_ulpi_dir_pc2_c
+	&usb_otg_hs_ulpi_nxt_pc3_c>;
 	pinctrl-names = "default";
 	clocks = <&rcc STM32_CLOCK_BUS_AHB1 0x06000000>,
 	<&rcc STM32_SRC_HSI48 USB_SEL(3)>;
@@ -267,13 +289,13 @@
 };
 
 &clk_hse {
-	// This will change to 40MHz TCXO in future builds
+	// This will change to 40MHz TCXO in future hw builds
 	clock-frequency = <DT_FREQ_M(26)>;
 	status = "okay";
 };
 
 &mco2 {
-	// This will change to when we switch to 40MHz TCXO in future builds
+	// This will change to when we switch to 40MHz TCXO in future hw builds
 	clocks = <&rcc STM32_SRC_HSE MCO2_SEL(2)>;
 	prescaler = <MCO2_PRE(MCO_PRE_DIV_1)>;
 	pinctrl-0 = <&rcc_mco_2_pc9>;

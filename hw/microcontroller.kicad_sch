@@ -1569,7 +1569,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:LED_BGRA"
+		(symbol "Device:LED_RBGA"
 			(pin_names
 				(offset 0)
 				(hide yes)
@@ -1585,7 +1585,7 @@
 					)
 				)
 			)
-			(property "Value" "LED_BGRA"
+			(property "Value" "LED_RBGA"
 				(at 0 -8.89 0)
 				(effects
 					(font
@@ -1611,7 +1611,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "RGB LED, blue/green/red/anode"
+			(property "Description" "RGB LED, red/blue/green/anode"
 				(at 0 0 0)
 				(effects
 					(font
@@ -1638,7 +1638,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "LED_BGRA_0_0"
+			(symbol "LED_RBGA_0_0"
 				(text "R"
 					(at -1.905 3.81 0)
 					(effects
@@ -1664,7 +1664,7 @@
 					)
 				)
 			)
-			(symbol "LED_BGRA_0_1"
+			(symbol "LED_RBGA_0_1"
 				(polyline
 					(pts
 						(xy -1.27 6.35) (xy -1.27 3.81)
@@ -1996,7 +1996,7 @@
 					)
 				)
 			)
-			(symbol "LED_BGRA_1_1"
+			(symbol "LED_RBGA_1_1"
 				(pin passive line
 					(at -5.08 5.08 0)
 					(length 2.54)
@@ -2007,7 +2007,7 @@
 							)
 						)
 					)
-					(number "3"
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2025,7 +2025,7 @@
 							)
 						)
 					)
-					(number "2"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2043,7 +2043,7 @@
 							)
 						)
 					)
-					(number "1"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -6694,7 +6694,7 @@
 		(uuid "06fd454c-ef79-4add-95cd-442bb2d1fe22")
 	)
 	(junction
-		(at 137.16 161.29)
+		(at 90.17 177.8)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "0a29ce42-063d-44c7-99d5-995246cfbb0a")
@@ -7042,7 +7042,7 @@
 		(uuid "d5d1f873-227a-448c-970f-00ecf484d9bb")
 	)
 	(junction
-		(at 137.16 156.21)
+		(at 90.17 172.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d760b664-3b8f-4af9-9e2e-dc7805d08f32")
@@ -7060,7 +7060,7 @@
 		(uuid "e3bc8e0c-41ff-4d96-a90f-bb0e01a4539d")
 	)
 	(junction
-		(at 137.16 151.13)
+		(at 90.17 167.64)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e883477f-6a8b-4eed-94b6-f895fe2c4e03")
@@ -7999,7 +7999,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 161.29) (xy 138.43 161.29)
+			(xy 90.17 177.8) (xy 91.44 177.8)
 		)
 		(stroke
 			(width 0)
@@ -8269,7 +8269,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 158.75) (xy 137.16 158.75)
+			(xy 91.44 175.26) (xy 90.17 175.26)
 		)
 		(stroke
 			(width 0)
@@ -8379,7 +8379,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 163.83) (xy 137.16 161.29)
+			(xy 90.17 180.34) (xy 90.17 177.8)
 		)
 		(stroke
 			(width 0)
@@ -8539,7 +8539,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 153.67) (xy 137.16 153.67)
+			(xy 91.44 170.18) (xy 90.17 170.18)
 		)
 		(stroke
 			(width 0)
@@ -9039,7 +9039,7 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 151.13) (xy 137.16 151.13)
+			(xy 88.9 167.64) (xy 90.17 167.64)
 		)
 		(stroke
 			(width 0)
@@ -9489,7 +9489,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 151.13) (xy 138.43 151.13)
+			(xy 90.17 167.64) (xy 91.44 167.64)
 		)
 		(stroke
 			(width 0)
@@ -9539,7 +9539,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 158.75) (xy 137.16 156.21)
+			(xy 90.17 175.26) (xy 90.17 172.72)
 		)
 		(stroke
 			(width 0)
@@ -9899,7 +9899,7 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 161.29) (xy 137.16 161.29)
+			(xy 88.9 177.8) (xy 90.17 177.8)
 		)
 		(stroke
 			(width 0)
@@ -10219,7 +10219,7 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 156.21) (xy 137.16 156.21)
+			(xy 88.9 172.72) (xy 90.17 172.72)
 		)
 		(stroke
 			(width 0)
@@ -10339,7 +10339,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 156.21) (xy 138.43 156.21)
+			(xy 90.17 172.72) (xy 91.44 172.72)
 		)
 		(stroke
 			(width 0)
@@ -10389,7 +10389,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 163.83) (xy 137.16 163.83)
+			(xy 91.44 180.34) (xy 90.17 180.34)
 		)
 		(stroke
 			(width 0)
@@ -10689,7 +10689,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 153.67) (xy 137.16 151.13)
+			(xy 90.17 170.18) (xy 90.17 167.64)
 		)
 		(stroke
 			(width 0)
@@ -11388,7 +11388,7 @@
 		(uuid "046b8db0-5467-4c23-86ba-10a564b9e758")
 	)
 	(label "osd0.WCLK"
-		(at 138.43 161.29 0)
+		(at 91.44 177.8 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11478,7 +11478,7 @@
 		(uuid "131957c3-b8e8-424f-b410-3ed8e096afee")
 	)
 	(label "osdMCLK"
-		(at 135.89 151.13 180)
+		(at 88.9 167.64 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11518,7 +11518,7 @@
 		(uuid "1ba145ee-b2ce-484f-b3e0-c98d92fce860")
 	)
 	(label "osd0.MCLK"
-		(at 138.43 151.13 0)
+		(at 91.44 167.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11718,7 +11718,7 @@
 		(uuid "5089ca78-eea3-42a2-b0d1-2e370f7974d5")
 	)
 	(label "osd1.MCLK"
-		(at 138.43 153.67 0)
+		(at 91.44 170.18 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11818,7 +11818,7 @@
 		(uuid "65ee3006-b346-4215-9588-cb0cfbb92856")
 	)
 	(label "osd1.BCLK"
-		(at 138.43 158.75 0)
+		(at 91.44 175.26 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11828,7 +11828,7 @@
 		(uuid "6705c71a-7579-40a6-870a-10de01763564")
 	)
 	(label "osd0.BCLK"
-		(at 138.43 156.21 0)
+		(at 91.44 172.72 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12078,7 +12078,7 @@
 		(uuid "99b61897-0830-4dad-b643-4cafa2783488")
 	)
 	(label "osdBCLK"
-		(at 135.89 156.21 180)
+		(at 88.9 172.72 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12198,7 +12198,7 @@
 		(uuid "b40173ab-2e74-4168-940f-2095452d87a4")
 	)
 	(label "osd1.WCLK"
-		(at 138.43 163.83 0)
+		(at 91.44 180.34 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12308,7 +12308,7 @@
 		(uuid "c30c750a-023f-4a93-85d3-648fc45a0c4e")
 	)
 	(label "osdWCLK"
-		(at 135.89 161.29 180)
+		(at 88.9 177.8 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -15612,7 +15612,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:LED_BGRA")
+		(lib_id "Device:LED_RBGA")
 		(at 257.81 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -15654,7 +15654,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED, blue/green/red common anode"
+		(property "Description" "RGB LED, red/blue/green/anode"
 			(at 257.81 88.9 0)
 			(effects
 				(font

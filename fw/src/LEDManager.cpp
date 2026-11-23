@@ -17,9 +17,9 @@ constexpr LEDManager::StageConfig stageTable[] = {
 
 constexpr int stageCount = static_cast<int>(sizeof(stageTable) / sizeof(stageTable[0]));
 
-const struct pwm_dt_spec redPwm   = PWM_DT_SPEC_GET_OR(DT_NODELABEL(red_pwm_led),   {0});
-const struct pwm_dt_spec greenPwm = PWM_DT_SPEC_GET_OR(DT_NODELABEL(green_pwm_led), {0});
-const struct pwm_dt_spec bluePwm  = PWM_DT_SPEC_GET_OR(DT_NODELABEL(blue_pwm_led),  {0});
+const struct pwm_dt_spec redPWM   = PWM_DT_SPEC_GET(DT_NODELABEL(red_pwm_led));
+const struct pwm_dt_spec greenPWM = PWM_DT_SPEC_GET(DT_NODELABEL(green_pwm_led));
+const struct pwm_dt_spec bluePWM  = PWM_DT_SPEC_GET(DT_NODELABEL(blue_pwm_led));
 
 constexpr uint32_t msPerSecond = 1000U;
 constexpr uint32_t updateRateHz = 100U;
@@ -122,13 +122,13 @@ void LEDManager::init() {
           updateRateHz,
           static_cast<uint32_t>(atomic_get(&breathCycleMS)));
 
-  if (!pwm_is_ready_dt(&redPwm)) {
+  if (!pwm_is_ready_dt(&redPWM)) {
     LOG_WRN("Red PWM LED device not ready");
   }
-  if (!pwm_is_ready_dt(&greenPwm)) {
+  if (!pwm_is_ready_dt(&greenPWM)) {
     LOG_WRN("Green PWM LED device not ready");
   }
-  if (!pwm_is_ready_dt(&bluePwm)) {
+  if (!pwm_is_ready_dt(&bluePWM)) {
     LOG_WRN("Blue PWM LED device not ready");
   }
 
@@ -220,9 +220,9 @@ void LEDManager::applyOutputs(uint32_t lightness) {
   uint8_t baseG = static_cast<uint8_t>((packed >> 8) & 0xFFU);
   uint8_t baseB = static_cast<uint8_t>(packed & 0xFFU);
 
-  setChannelDuty(redPwm, baseR, lightness);
-  setChannelDuty(greenPwm, baseG, lightness);
-  setChannelDuty(bluePwm, baseB, lightness);
+  setChannelDuty(redPWM, baseR, lightness);
+  setChannelDuty(greenPWM, baseG, lightness);
+  setChannelDuty(bluePWM, baseB, lightness);
 }
 
 void LEDManager::setChannelDuty(const struct pwm_dt_spec& spec, uint8_t channelValue, uint32_t lightness) {
