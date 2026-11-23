@@ -1,5 +1,6 @@
 #include "Si5351Driver.hpp"
 #include <zephyr/logging/log.h>
+#include <zephyr/drivers/gpio.h>
 #include <algorithm>
 #include <cmath>
 
@@ -10,7 +11,9 @@ namespace nexrx {
 namespace {
 
 // Si5351 Register Map Constants
+constexpr uint8_t REG_DEVICE_STATUS    = 0;
 constexpr uint8_t REG_OUTPUT_ENABLE    = 3;
+constexpr uint8_t REG_PLL_INPUT_SOURCE = 15;
 constexpr uint8_t REG_CLK0_CONTROL     = 16;
 constexpr uint8_t REG_CLK1_CONTROL     = 17;
 constexpr uint8_t REG_PLLA_PARAMETERS  = 26;
@@ -18,6 +21,8 @@ constexpr uint8_t REG_PLLB_PARAMETERS  = 34;
 constexpr uint8_t REG_MS0_PARAMETERS   = 42;
 constexpr uint8_t REG_MS1_PARAMETERS   = 50;
 constexpr uint8_t REG_PLL_RESET        = 177;
+
+const struct gpio_dt_spec oeGpio = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(si5351_OEB), oe_gpios, {0});
 
 // Helpers to compute GCD
 uint32_t gcd(uint32_t a, uint32_t b) {
@@ -34,6 +39,14 @@ uint32_t gcd(uint32_t a, uint32_t b) {
 const struct device* Si5351Driver::getI2CDevice() {
   static const struct device* dev = DEVICE_DT_GET(DT_ALIAS(si5351_i2c));
   return dev;
+}
+
+int Si5351Driver::readRegister(uint8_t reg, uint8_t &val) {
+  const struct device* dev = getI2CDevice();
+  if (!device_is_ready(dev)) {
+    return -ENODEV;
+  }
+  return i2c_write_read(dev, i2cAddress, &reg, 1, &val, 1);
 }
 
 int Si5351Driver::writeRegister(uint8_t reg, uint8_t val) {
@@ -61,11 +74,26 @@ int Si5351Driver::writeRegisters(uint8_t startReg, const uint8_t* data, size_t l
   return i2c_write(dev, buf, len + 1, i2cAddress);
 }
 
+int Si5351Driver::readStatus(uint8_t &status) {
+  return readRegister(REG_DEVICE_STATUS, status);
+}
+
 void Si5351Driver::init() {
   LOG_INF("Initializing Si5351 Synthesizer (40 MHz TCXO Reference)...");
 
+  if (device_is_ready(oeGpio.port)) {
+    gpio_pin_configure_dt(&oeGpio, GPIO_OUTPUT_INACTIVE);
+  }
+
   // Disable all outputs while configuring
   writeRegister(REG_OUTPUT_ENABLE, 0xFF);
+
+  // Configure PLL input source: 40 MHz TCXO on CLKIN (Register 15 = 0x30)
+  // Bits [7:6]: reserved
+  // Bit 5: PLLB_SRC = 1 (CLKIN)
+  // Bit 4: PLLA_SRC = 1 (CLKIN)
+  // Bits [3:2]: CLKIN_DIV = 00 (/1)
+  writeRegister(REG_PLL_INPUT_SOURCE, 0x30);
 
   // Power down unused clocks, set CLK0 to use PLLA, CLK1 to use PLLB
   // 8mA drive strength, MultiSynth input, not inverted
@@ -76,6 +104,18 @@ void Si5351Driver::init() {
   setVFOFrequency(14200000, 12000, false);
 
   outputEnable(true);
+
+  // Verify status
+  uint8_t status = 0;
+  if (readStatus(status) == 0) {
+    LOG_INF("Si5351 Status (Reg 0): 0x%02X (CLKIN_LOS=%d, LOL_A=%d, LOL_B=%d, SYS_INIT=%d)",
+            status,
+            (status >> 4) & 1,
+            (status >> 5) & 1,
+            (status >> 6) & 1,
+            (status >> 7) & 1);
+  }
+
   LOG_INF("Si5351 Synthesizer Initialized.");
 }
 
@@ -172,7 +212,10 @@ void Si5351Driver::outputEnable(bool enable) {
   // Register 3: 0 = enabled, 1 = disabled
   // Bit 0 = CLK0, Bit 1 = CLK1
   writeRegister(REG_OUTPUT_ENABLE, enable ? 0xFC : 0xFF);
-  LOG_INF("Si5351 Outputs %s", enable ? "ENABLED" : "DISABLED");
+  if (device_is_ready(oeGpio.port)) {
+    gpio_pin_set_dt(&oeGpio, enable ? 1 : 0);
+  }
+  LOG_INF("Si5351 Outputs %s (Register 3 and PB4 OEB)", enable ? "ENABLED" : "DISABLED");
 }
 
 } // namespace nexrx

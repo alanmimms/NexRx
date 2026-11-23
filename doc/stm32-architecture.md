@@ -81,6 +81,8 @@ Each TLV320ADC5140 ADC provides four 24-bit samples at 384ksps per OSD over its 
 | `si5351SDA` | I2C1 | PB7 | bidir | Si5351 I2C data |
 | `swdSWDIO` | SWD | PA13 | bidir | SWD debug data |
 | `swdSWDCLK` | SWD | PA14 | input | SWD debug clock |
+| `usbBRESET` | USB_HS | PC4 | output | Reset USB3343 |
+| `usbREFCLK` | USB_HS | PC9 | output | STM32 MCO2 26MHz clock for USB3343 |
 | `usbDATA0` | USB_HS | PA3 | bidir | USB ULPI Data 0 |
 | `usbCLKOUT` | USB_HS | PA5 | input | USB ULPI Clock |
 | `usbDATA1` | USB_HS | PB0 | bidir | USB ULPI Data 1 |

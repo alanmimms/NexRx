@@ -1,4 +1,5 @@
 #include "CPLDDriver.hpp"
+#include "defaultCPLDBitstream.hpp"
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/spi.h>
@@ -26,8 +27,9 @@ int CPLDDriver::writeRegister(uint8_t addr, uint32_t data, int cpldIndex) {
   if (!device_is_ready(dev)) {
     return -ENODEV;
   }
+  // CPLD SPI Protocol: Bit 7 = 1 for Write, Bits [6:0] = Register Address
   uint8_t txBuf[5] = {
-    addr,
+    static_cast<uint8_t>((addr & 0x7F) | 0x80),
     static_cast<uint8_t>((data >> 24) & 0xFF),
     static_cast<uint8_t>((data >> 16) & 0xFF),
     static_cast<uint8_t>((data >> 8) & 0xFF),
@@ -38,20 +40,30 @@ int CPLDDriver::writeRegister(uint8_t addr, uint32_t data, int cpldIndex) {
 
   struct spi_config config = {
     .frequency = 10000000,
-    .slave = static_cast<uint16_t>((cpldIndex >= 0) ? cpldIndex : 0),
+    .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),
+    .slave = 0,
   };
 
   if (cpldIndex == BOTH_CPLDS) {
-    // Broadcast to both CPLDs simultaneously
     if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 1);
     if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 1);
     int ret = spi_write(dev, &config, &tx);
     if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 0);
     if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 0);
     return ret;
+  } else if (cpldIndex == 0) {
+    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 1);
+    int ret = spi_write(dev, &config, &tx);
+    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 0);
+    return ret;
+  } else if (cpldIndex == 1) {
+    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 1);
+    int ret = spi_write(dev, &config, &tx);
+    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 0);
+    return ret;
   }
 
-  return spi_write(dev, &config, &tx);
+  return -EINVAL;
 }
 
 int CPLDDriver::readRegister(uint8_t addr, uint32_t &data, int cpldIndex) {
@@ -59,7 +71,8 @@ int CPLDDriver::readRegister(uint8_t addr, uint32_t &data, int cpldIndex) {
   if (!device_is_ready(dev)) {
     return -ENODEV;
   }
-  uint8_t txBuf[5] = {static_cast<uint8_t>(addr | 0x80), 0, 0, 0, 0};
+  // CPLD SPI Protocol: Bit 7 = 0 for Read, Bits [6:0] = Register Address
+  uint8_t txBuf[5] = {static_cast<uint8_t>(addr & 0x7F), 0, 0, 0, 0};
   uint8_t rxBuf[5] = {0};
 
   struct spi_buf txStruct = {.buf = txBuf, .len = sizeof(txBuf)};
@@ -70,10 +83,25 @@ int CPLDDriver::readRegister(uint8_t addr, uint32_t &data, int cpldIndex) {
   struct spi_config config = {
     .frequency = 10000000,
     .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),
-    .slave = static_cast<uint16_t>(cpldIndex),
+    .slave = 0,
   };
 
+  if (cpldIndex == 0) {
+    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 1);
+  } else if (cpldIndex == 1) {
+    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 1);
+  } else {
+    return -EINVAL;
+  }
+
   int ret = spi_transceive(dev, &config, &tx, &rx);
+
+  if (cpldIndex == 0) {
+    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 0);
+  } else if (cpldIndex == 1) {
+    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 0);
+  }
+
   if (ret == 0) {
     data = (static_cast<uint32_t>(rxBuf[1]) << 24) |
            (static_cast<uint32_t>(rxBuf[2]) << 16) |
@@ -102,7 +130,8 @@ void CPLDDriver::init() {
     LOG_INF("CPLD already configured, validating signatures...");
     readBothSignatures();
   } else {
-    LOG_INF("CPLDs unconfigured. Awaiting host bitstream upload.");
+    LOG_INF("CPLDs unconfigured. Programming default embedded bitstream...");
+    programDefaultBitstream();
   }
 }
 
@@ -111,6 +140,12 @@ bool CPLDDriver::isConfigured() {
     return (gpio_pin_get_dt(&doneGpio) > 0);
   }
   return false;
+}
+
+bool CPLDDriver::programDefaultBitstream() {
+  LOG_INF("Programming embedded default bitstream (%u bytes)...",
+          static_cast<unsigned int>(defaultCPLDBitstreamLen));
+  return programBitstream(defaultCPLDBitstream, defaultCPLDBitstreamLen);
 }
 
 bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
@@ -122,6 +157,11 @@ bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
   const struct device* spiDev = getSPIDevice();
   if (!device_is_ready(spiDev)) {
     LOG_ERR("CPLD Program: SPI3 device not ready");
+    return false;
+  }
+
+  if (!device_is_ready(resetGpio.port) || !device_is_ready(nss0Gpio.port) || !device_is_ready(nss1Gpio.port)) {
+    LOG_ERR("CPLD Program: CPLD GPIOs not ready");
     return false;
   }
 
@@ -158,7 +198,7 @@ bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
   struct spi_buf_set dummySet = { .buffers = &dummyBuf, .count = 1 };
   spi_write(spiDev, &config, &dummySet);
 
-  // 5. Deassert chip selects high to transition CPLDs to user mode
+  // 5. Deassert chip selects high
   gpio_pin_set_dt(&nss0Gpio, 0);
   gpio_pin_set_dt(&nss1Gpio, 0);
   k_sleep(K_MSEC(2));
@@ -172,7 +212,11 @@ bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
 
   LOG_INF("CPLD Program: DONE asserted successfully.");
 
-  // 7. Validate user register signatures on both CPLDs
+  // 7. Send dummy clocks with NSS high to transition CPLDs to user mode
+  spi_write(spiDev, &config, &dummySet);
+  k_sleep(K_MSEC(2));
+
+  // 8. Validate user register signatures on both CPLDs
   return readBothSignatures();
 }
 
@@ -197,14 +241,13 @@ bool CPLDDriver::readBothSignatures() {
 void CPLDDriver::setClockMode(bool isFourPhase) {
   uint32_t ctrl = isFourPhase ? 0x01 : 0x00;
   LOG_INF("Setting CPLD Clock Mode: %s", isFourPhase ? "4-Phase QSD" : "8-Phase OSD");
-  writeRegister(regControl, ctrl, -1); // Broadcast to both CPLDs
+  writeRegister(regControl, ctrl, BOTH_CPLDS); // Broadcast to both CPLDs
 }
 
-uint64_t CPLDDriver::getLatchedTCXOCount(int cpldIndex) {
-  uint32_t hi = 0, lo = 0;
-  readRegister(regPPSLatchHi, hi, cpldIndex);
-  readRegister(regPPSLatchLo, lo, cpldIndex);
-  return (static_cast<uint64_t>(hi) << 32) | lo;
+uint32_t CPLDDriver::getTCXOCounter(int cpldIndex) {
+  uint32_t count = 0;
+  readRegister(regCounter, count, cpldIndex);
+  return count;
 }
 
 } // namespace nexrx

@@ -63,6 +63,21 @@ genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf 13 UbuntuM13)
 genFont(/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf 12 UbuntuB12 VARIATION "Bold")
 genFont(/usr/share/fonts/truetype/ibm-plex/IBMPlexSans-Light.ttf 12 PlexL12)
 
+# CPLD Bitstream compiler
+set(binScript ${CMAKE_CURRENT_SOURCE_DIR}/../tools/bin-to-cxx.py)
+set(cpldBin ${CMAKE_CURRENT_SOURCE_DIR}/../CPLD/build/CPLD.bin)
+set(cpldOut ${CMAKE_CURRENT_BINARY_DIR}/defaultCPLDBitstream.cxx)
+
+add_custom_command(
+  OUTPUT  ${cpldOut}
+  COMMAND ${Python3_EXECUTABLE} ${binScript} ${cpldBin} --name defaultCPLDBitstream --namespace nexrx > ${cpldOut}
+  DEPENDS ${binScript} ${cpldBin}
+  COMMENT "Generating C++ CPLD bitstream from ${cpldBin}..."
+  VERBATIM
+)
+
+target_sources(app PRIVATE ${cpldOut})
+
 target_include_directories(app PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(drivers)
@@ -80,6 +95,8 @@ target_sources(app PRIVATE
     src/ControlHandler.cpp
     src/USBCDCTransport.cpp
     src/DisplayManager.cpp
+    src/LEDManager.cpp
+    src/ShellCommands.cpp
 )
 
 # Include directories

@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Starview Labs (starviewlabs.com)
+# SPDX-License-Identifier: Apache-2.0
+
+description: NexRx Dual iCE40 CPLD
+
+compatible: "nexrx,cpld-ice40"
+
+properties:
+  reset-gpios:
+    type: phandle-array
+    description: Reset GPIO pin
+
+  done-gpios:
+    type: phandle-array
+    description: Done GPIO pin
+
+  nss-gpios:
+    type: phandle-array
+    description: Slave select GPIO pin

@@ -76,7 +76,7 @@ void DisplayManager::drawSplash() {
 }
 
 void DisplayManager::showStatus(const char* status) {
-  if (!status) {
+  if (!status || !displayDev) {
     return;
   }
 

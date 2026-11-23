@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Starview Labs (starviewlabs.com)
+# SPDX-License-Identifier: Apache-2.0
+
+description: NexRx Step Attenuator Switches
+
+compatible: "nexrx,atten-switches"
+
+properties:
+  atten-3db-gpios:
+    type: phandle-array
+    description: 3dB Attenuator GPIO pin
+
+  atten-6db-gpios:
+    type: phandle-array
+    description: 6dB Attenuator GPIO pin
+
+  atten-12db-gpios:
+    type: phandle-array
+    description: 12dB Attenuator GPIO pin
+
+  atten-24db-gpios:
+    type: phandle-array
+    description: 24dB Attenuator GPIO pin

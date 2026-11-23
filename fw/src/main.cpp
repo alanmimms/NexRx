@@ -12,6 +12,7 @@
 #include "OSDCapture.hpp"
 #include "ControlHandler.hpp"
 #include "USBCDCTransport.hpp"
+#include "LEDManager.hpp"
 
 LOG_MODULE_REGISTER(nexrx_main, LOG_LEVEL_INF);
 
@@ -71,31 +72,34 @@ SYS_INIT(resetUSBPHY, POST_KERNEL, 45);
 
 
 int main() {
-  /* 1. Initialize USB Connectivity First for Logging */
+  printk("\r\n=== NexRx Factory UART Console Online (115200 8N1) ===\r\n");
+
+  nexrx::LEDManager::instance().init();
+
   nexrx::USBManager::init();
   LOG_INF("NexRx MCU Firmware Starting (STM32H743VIT6 / STM32H753VIT6)...");
 
-  /* 2. Initialize Display Early for Status Feedback */
   nexrx::DisplayManager::init();
   nexrx::DisplayManager::showStatus("BOOTING...");
 
-  /* 3. Initialize Front-End Switches (Attenuators, BPF, 3.3V Power) */
   nexrx::FrontEndDriver::init();
 
-  /* 4. Initialize Synthesizer and Dual CPLDs */
-  nexrx::Si5351Driver::init();
+  nexrx::LEDManager::instance().onCPLDConfig();
   nexrx::CPLDDriver::init();
 
-  /* 5. Configure Dual TLV320ADC5140 Audio ADCs with Integrated PGAs */
+  nexrx::LEDManager::instance().onSi5351Setup();
+  nexrx::Si5351Driver::init();
+
   nexrx::TLV320ADC5140::init();
 
-  /* 6. Initialize OSD Audio DMA Data Capture & DSP Engine */
   nexrx::OSDCapture::init();
 
-  /* 7. Initialize Control Plane Transport */
+  nexrx::LEDManager::instance().onUSBConfig();
+
   static nexrx::USBCDCTransport controlTransport;
   controlTransport.init();
 
+  nexrx::LEDManager::instance().onReady();
   LOG_INF("System Initialization Complete. Automatic power hardware ready.");
   if (nexrx::CPLDDriver::isConfigured()) {
     nexrx::DisplayManager::showStatus("READY");

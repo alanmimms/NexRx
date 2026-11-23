@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Starview Labs (starviewlabs.com)
+# SPDX-License-Identifier: Apache-2.0
+
+description: NexRx Si5351 Output Enable Control
+
+compatible: "nexrx,si5351-oeb"
+
+properties:
+  oe-gpios:
+    type: phandle-array
+    description: Output enable GPIO pin (active low)

@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Starview Labs (starviewlabs.com)
+# SPDX-License-Identifier: Apache-2.0
+
+description: NexRx GNSS Reset Control
+
+compatible: "nexrx,gnss-reset"
+
+properties:
+  reset-gpios:
+    type: phandle-array
+    description: Reset GPIO pin

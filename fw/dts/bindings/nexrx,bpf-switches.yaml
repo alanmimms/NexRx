@@ -1,0 +1,31 @@
+# Copyright (c) 2026 Starview Labs (starviewlabs.com)
+# SPDX-License-Identifier: Apache-2.0
+
+description: NexRx Bandpass and Highpass Filter Switches
+
+compatible: "nexrx,bpf-switches"
+
+properties:
+  bpf1-gpios:
+    type: phandle-array
+    description: BPF 1 GPIO pin
+
+  bpf2-gpios:
+    type: phandle-array
+    description: BPF 2 GPIO pin
+
+  bpf3-gpios:
+    type: phandle-array
+    description: BPF 3 GPIO pin
+
+  bpf4-gpios:
+    type: phandle-array
+    description: BPF 4 GPIO pin
+
+  hpf-gpios:
+    type: phandle-array
+    description: HPF GPIO pin
+
+  nhpf-gpios:
+    type: phandle-array
+    description: Not-HPF GPIO pin

@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Starview Labs (starviewlabs.com)
+# SPDX-License-Identifier: Apache-2.0
+
+description: NexRx Power Rail Control
+
+compatible: "nexrx,power-control"
+
+properties:
+  enable-3v3-gpios:
+    type: phandle-array
+    description: 3.3V Power Rail Enable GPIO pin

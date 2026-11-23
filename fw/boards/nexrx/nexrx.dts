@@ -14,8 +14,10 @@
 		zephyr,flash = &flash0;
 		zephyr,nocache = &sram1_nocache;
 		zephyr,dtcm = &dtcm;
-		zephyr,console = &console_uart;
-		zephyr,shell-uart = &console_uart;
+//		zephyr,console = &console_uart;
+//		zephyr,shell-uart = &console_uart;
+		zephyr,console = &factory_console;
+		zephyr,shell-uart = &factory_console;
 		zephyr,udc0 = &usbotg_hs;
 		zephyr,display = &disp;
 	};
@@ -90,11 +92,20 @@
 	};
 
 	status_leds: status_leds {
-		compatible = "nexrx,status-leds";
-		red-gpios = <&gpiob 9 GPIO_ACTIVE_LOW>;
-		green-gpios = <&gpiob 8 GPIO_ACTIVE_LOW>;
-		blue-gpios = <&gpioe 6 GPIO_ACTIVE_LOW>;
+		compatible = "gpio-leds";
 		status = "okay";
+		red_led: led_0 {
+			gpios = <&gpiob 9 GPIO_ACTIVE_HIGH>;
+			label = "Status Red";
+		};
+		green_led: led_1 {
+			gpios = <&gpiob 8 GPIO_ACTIVE_HIGH>;
+			label = "Status Green";
+		};
+		blue_led: led_2 {
+			gpios = <&gpioe 6 GPIO_ACTIVE_HIGH>;
+			label = "Status Blue";
+		};
 	};
 
 	gnss_reset: gnss_reset {
@@ -104,8 +115,8 @@
 	};
 
 	si5351_OEB: si5351_OEB {
-		compatible = "nexrx,si5351-OEB";
-		oe-gpios = <&gpiob 4 GPIO_ACTIVE_HIGH>;
+		compatible = "nexrx,si5351-oeb";
+		oe-gpios = <&gpiob 4 GPIO_ACTIVE_LOW>;
 		status = "okay";
 	};
 
@@ -148,6 +159,44 @@
 	};
 };
 
+&pinctrl {
+	usb_otg_hs_ulpi_ck_pa5 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d0_pa3 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d1_pb0 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d2_pb1 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d3_pb10 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d4_pb11 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d5_pb12 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d6_pb13 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_d7_pb5 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_stp_pc0 {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_dir_pc2_c {
+		slew-rate = "very-high-speed";
+	};
+	usb_otg_hs_ulpi_nxt_pc3_c {
+		slew-rate = "very-high-speed";
+	};
+};
 
 &usbotg_hs {
 	pinctrl-0 = <&usb_otg_hs_ulpi_ck_pa5
@@ -179,7 +228,6 @@
 		label = "NexRx Control Plane";
 	};
 };
-
 
 &usbotg_fs {
 	status = "disabled";
@@ -262,7 +310,7 @@
 	d3ppre = <2>;
 };
 
-&usart1 {			/* FACTORY UART test pads */
+factory_console: &usart1 {			/* FACTORY UART test pads */
 	pinctrl-0 = <&usart1_tx_pb14 &usart1_rx_pb15>;
 	pinctrl-names = "default";
 	current-speed = <115200>;

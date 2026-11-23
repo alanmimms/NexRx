@@ -3,6 +3,9 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/usb/usbd.h>
+#include <cstdint>
+#include <zephyr/devicetree.h>
+#include <zephyr/sys/sys_io.h>
 #include "OSDCapture.hpp"
 
 LOG_MODULE_REGISTER(USBManager, LOG_LEVEL_ERR);
@@ -19,6 +22,20 @@ USBD_CONFIGURATION_DEFINE(nexrxHsConfig, USB_SCD_SELF_POWERED, 100, nullptr);
 USBD_CONFIGURATION_DEFINE(nexrxFsConfig, USB_SCD_SELF_POWERED, 100, nullptr);
 
 namespace nexrx {
+
+namespace {
+
+constexpr uintptr_t usbOtgHsBase = DT_REG_ADDR(DT_NODELABEL(usbotg_hs));
+constexpr uintptr_t otgDcfgOffset = 0x800U; // RM0433 OTG_DCFG register offset
+constexpr uint32_t dcfgXcvrdlyBitPos = 14U; // Transceiver delay for ULPI HS chirp
+constexpr uint32_t dcfgXcvrdlyMask = 1UL << dcfgXcvrdlyBitPos;
+
+void enableUlpiXcvrDelay() {
+  sys_set_bits(usbOtgHsBase + otgDcfgOffset, dcfgXcvrdlyMask);
+}
+
+} // namespace
+
 
 struct usbd_context* USBManager::usbCtx = &nexrxUsbDev;
 
@@ -38,18 +55,22 @@ static void fixCodeTriple(struct usbd_context* udsCtx, const enum usbd_speed spe
 }
 
 void USBManager::init() {
+  printk("USBManager::init begins\n");
+  printk("  add nexrxLang\n");
   int err = usbd_add_descriptor(usbCtx, &nexrxLang);
   if (err != 0) {
     LOG_ERR("usbd_add_descriptor(lang) failed: %d", err);
     return;
   }
 
+  printk("  add nexrxMfg\n");
   err = usbd_add_descriptor(usbCtx, &nexrxMfg);
   if (err != 0) {
     LOG_ERR("usbd_add_descriptor(mfg) failed: %d", err);
     return;
   }
 
+  printk("  add nexrxProduct\n");
   err = usbd_add_descriptor(usbCtx, &nexrxProduct);
   if (err != 0) {
     LOG_ERR("usbd_add_descriptor(product) failed: %d", err);
@@ -57,47 +78,59 @@ void USBManager::init() {
   }
 
   if (USBD_SUPPORTS_HIGH_SPEED && (usbd_caps_speed(usbCtx) == USBD_SPEED_HS)) {
+    printk("  add nexrxHsConfig\n");
     err = usbd_add_configuration(usbCtx, USBD_SPEED_HS, &nexrxHsConfig);
     if (err != 0) {
       LOG_ERR("usbd_add_configuration(HS) failed: %d", err);
       return;
     }
 
+    printk("  register_all_classes(hs)\n");
     err = usbd_register_all_classes(usbCtx, USBD_SPEED_HS, 1, nullptr);
     if (err != 0) {
       LOG_ERR("usbd_register_all_classes(HS) failed: %d", err);
       return;
     }
 
+    printk("  fixCodeTriple(hs)\n");
     fixCodeTriple(usbCtx, USBD_SPEED_HS);
   }
 
+  printk("  add nexrxFsConfig\n");
   err = usbd_add_configuration(usbCtx, USBD_SPEED_FS, &nexrxFsConfig);
   if (err != 0) {
     LOG_ERR("usbd_add_configuration(FS) failed: %d", err);
     return;
   }
 
+  printk("  register_all_classes(fs)\n");
   err = usbd_register_all_classes(usbCtx, USBD_SPEED_FS, 1, nullptr);
   if (err != 0) {
     LOG_ERR("usbd_register_all_classes(FS) failed: %d", err);
     return;
   }
 
+  printk("  fixCodeTriple(fs)\n");
   fixCodeTriple(usbCtx, USBD_SPEED_FS);
 
+  printk("  usbd_init\n");
   err = usbd_init(usbCtx);
   if (err != 0) {
     LOG_ERR("usbd_init failed: %d", err);
     return;
   }
 
+  printk("  delay for ULPI PHY\n");
+  enableUlpiXcvrDelay();
+
+  printk("  usbd_enable\n");
   err = usbd_enable(usbCtx);
   if (err != 0) {
     LOG_ERR("USB: Failed to enable stack (%d)", err);
     return;
   }
 
+  printk("USBManager::init complete\n");
   LOG_INF("USB: Device Next Initialized and Enabled (High-Speed Composite)");
 }
 

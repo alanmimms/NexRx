@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/i2c.h>
 
@@ -27,10 +28,13 @@ public:
    */
   static void outputEnable(bool enable);
 
-private:
-  static const struct device* getI2CDevice();
+  static int readRegister(uint8_t reg, uint8_t &val);
   static int writeRegister(uint8_t reg, uint8_t val);
   static int writeRegisters(uint8_t startReg, const uint8_t* data, size_t len);
+  static int readStatus(uint8_t &status);
+
+private:
+  static const struct device* getI2CDevice();
   static bool configurePll(uint8_t pll, uint32_t pllFreqHz);
   static bool configureMultisynth(uint8_t msIndex, uint32_t pllFreqHz, uint32_t outFreqHz);
 };
