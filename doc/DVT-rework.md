@@ -2,6 +2,7 @@
    1. Add 10k pullup to 3.3V for NRESET on J203 SWD 6-pin pads between
       pin 2 and 6.
    2. Add 10nF cap to GND on J203 SWD 6-pin pads between pin 2 and 1.
+   3. Remove existing 100nF cap at XXX.
 
 3. NO LONGER APPLICABLE after Rework #5 applied.
    * ~~Bridge 3.3V to VDD33 on USB3343. Short USB3343 pins 15 and 16 together.~~
