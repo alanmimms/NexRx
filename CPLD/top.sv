@@ -184,19 +184,46 @@ module top (
   end
 
   //==================================================================
-  // Phase Generators (Walking Rings)
+  // Phase Generators for Octature/Quadrature
   //==================================================================
-  logic [7:0] osdPhases = 8'b10000000;
 
-  always_ff @(negedge clkOSD) begin
+  // PIN_TYPE[5:2] = 4'b0101 (PIN_OUTPUT_REGISTERED)
+  // PIN_TYPE[1:0] = 2'b00   (PIN_NO_INPUT)
+  localparam logic [5:0] pinOutputRegistered = {4'b0101, 2'b00};
 
-    if (control.octMode)
-      nPh <= ~osdPhases;
-    else
-      nPh <= ~{1'b0, osdPhases[6], 1'b0, osdPhases[4], 1'b0, osdPhases[2], 1'b0, osdPhases[0]};
+  logic [2:0] phCnt = 3'd0;
 
-    osdPhases <= {osdPhases[6:0], osdPhases[7]};
+  always_ff @(posedge clkOSD) begin
+    phCnt <= phCnt + 3'd1;
   end
+
+  generate
+    for (genvar i = 0; i < 8; i++) begin : phGen
+      // 4-input function (phCnt[2:0], octMode) -> 1 SB_LUT4 per output pin
+      logic phActive;
+      logic dOut0;
+
+      assign phActive = control.octMode ? (phCnt      == 3'(i))
+                                        : (phCnt[2:1] == 2'(i >> 1));
+      assign dOut0 = ~phActive;
+
+`ifdef VERILATOR
+      assign nPh[i] = dOut0;
+`else
+      SB_IO #(
+              .PIN_TYPE(pinOutputRegistered),
+              .PULLUP(1'b0),
+              .NEG_TRIGGER(1'b0)
+              ) uPhIo (
+                          .PACKAGE_PIN(nPh[i]),
+                          .OUTPUT_CLK(osdClk),
+                          .CLOCK_ENABLE(1'b1),
+                          .D_OUT_0(dOut0)
+                          );
+`endif
+    end
+  endgenerate
+
 endmodule
 
 

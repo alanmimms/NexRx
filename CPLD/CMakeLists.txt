@@ -72,6 +72,13 @@ find_program(YOSYS_EXECUTABLE yosys HINTS "$ENV{HOME}/oss-cad-suite/bin")
 find_program(NEXTPNR_ICE40_EXECUTABLE nextpnr-ice40 HINTS "$ENV{HOME}/oss-cad-suite/bin")
 find_program(ICEPACK_EXECUTABLE icepack HINTS "$ENV{HOME}/oss-cad-suite/bin")
 
+# Find Yosys data directory dynamically
+execute_process(
+  COMMAND $ENV{HOME}/oss-cad-suite/bin/yosys-config --datdir
+  OUTPUT_VARIABLE YOSYS_DATDIR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 if(YOSYS_EXECUTABLE AND NEXTPNR_ICE40_EXECUTABLE AND ICEPACK_EXECUTABLE)
   add_custom_command(
     OUTPUT ${SYNTH_JSON}
@@ -111,18 +118,21 @@ endif()
 find_package(verilator HINTS $ENV{VERILATOR_ROOT})
 
 if(verilator_FOUND)
+
   set(SIM_CPP "${CMAKE_CURRENT_SOURCE_DIR}/tb.cpp")
   add_executable(sim ${SIM_CPP})
-  
+
   # Expose the generated headers in the build directory to the C++ testbench
   target_include_directories(sim PRIVATE ${REG_GEN_DIR})
-  
+
   # Force the C++ compilation to wait for the header to physically exist
   set_property(SOURCE ${SIM_CPP} APPEND PROPERTY OBJECT_DEPENDS "${REG_GEN_DIR}/regs.h")
 
   # Use the native DEPENDS argument built into the verilate() macro
   verilate(sim
-    SOURCES ${RTL_SOURCES}
+    SOURCES
+        ${RTL_SOURCES}
+        ${YOSYS_DATDIR}/ice40/cells_sim.v
     TOP_MODULE top
     PREFIX Vtop
     TRACE_VCD
