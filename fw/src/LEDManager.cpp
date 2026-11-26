@@ -21,23 +21,23 @@ const struct pwm_dt_spec redPWM   = PWM_DT_SPEC_GET(DT_NODELABEL(red_pwm_led));
 const struct pwm_dt_spec greenPWM = PWM_DT_SPEC_GET(DT_NODELABEL(green_pwm_led));
 const struct pwm_dt_spec bluePWM  = PWM_DT_SPEC_GET(DT_NODELABEL(blue_pwm_led));
 
-constexpr uint32_t msPerSecond = 1000U;
-constexpr uint32_t updateRateHz = 100U;
+constexpr uint32_t msPerSecond = 1000u;
+constexpr uint32_t updateRateHz = 100u;
 constexpr uint32_t updatePeriodMS = msPerSecond / updateRateHz;
-constexpr uint32_t defaultBreathCycleMS = 5U * msPerSecond;
+constexpr uint32_t defaultBreathCycleMS = 5u * msPerSecond;
 
-constexpr uint32_t maxChannelValue = 255U;
-constexpr uint32_t maxLightness = 65535U;
-constexpr uint32_t minLightnessFloor8Bit = 5U;
+constexpr uint32_t maxChannelValue = 255u;
+constexpr uint32_t maxLightness = 65535u;
+constexpr uint32_t minLightnessFloor8Bit = 5u;
 constexpr uint32_t minLightness = (minLightnessFloor8Bit * maxLightness) / maxChannelValue;
 constexpr uint64_t maxDutyProduct = static_cast<uint64_t>(maxChannelValue) * maxLightness;
 
 constexpr int lightnessTableBits = 8;
 constexpr int lightnessTableSize = 1 << lightnessTableBits;
 constexpr uint32_t lightnessTableMask = static_cast<uint32_t>(lightnessTableSize - 1);
-constexpr uint32_t interpFracBits = 8U;
-constexpr uint32_t interpFracScale = 1U << interpFracBits;
-constexpr uint32_t interpFracMask = interpFracScale - 1U;
+constexpr uint32_t interpFracBits = 8u;
+constexpr uint32_t interpFracScale = 1u << interpFracBits;
+constexpr uint32_t interpFracMask = interpFracScale - 1u;
 
 constexpr double pi = 3.14159265358979323846;
 
@@ -96,7 +96,7 @@ LEDManager& LEDManager::instance() {
 
 LEDManager::LEDManager()
   : currentStage(BootStage::PowerOn),
-    packedColor(ATOMIC_INIT(static_cast<atomic_val_t>(packRGB(255U, 0U, 0U)))),
+    packedColor(ATOMIC_INIT(static_cast<atomic_val_t>(packRGB(255u, 0u, 0u)))),
     breathCycleMS(ATOMIC_INIT(static_cast<atomic_val_t>(defaultBreathCycleMS))),
     breathingEnabled(ATOMIC_INIT(1)),
     isInitialized(false),
@@ -158,9 +158,9 @@ void LEDManager::setStage(BootStage stage) {
   uint32_t packed = static_cast<uint32_t>(atomic_get(&packedColor));
   LOG_INF("RGB LED Stage -> %s (RGB: %u, %u, %u)",
           stageName,
-          (packed >> 16) & 0xFFU,
-          (packed >> 8) & 0xFFU,
-          packed & 0xFFU);
+          (packed >> 16) & 0xFFu,
+          (packed >> 8) & 0xFFu,
+          packed & 0xFFu);
 }
 
 void LEDManager::setColor(uint8_t r, uint8_t g, uint8_t b) {
@@ -168,7 +168,7 @@ void LEDManager::setColor(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void LEDManager::setBreathCycleMS(uint32_t cycleMS) {
-  if (cycleMS > 0U) {
+  if (cycleMS > 0u) {
     atomic_set(&breathCycleMS, static_cast<atomic_val_t>(cycleMS));
   }
 }
@@ -203,7 +203,7 @@ void LEDManager::updateBreathing() {
 			    static_cast<uint64_t>(lightnessTableSize) *
 			    interpFracScale) / cycleMS;
     uint32_t idx0 = static_cast<uint32_t>(scaledPhase >> interpFracBits) & lightnessTableMask;
-    uint32_t idx1 = (idx0 + 1U) & lightnessTableMask;
+    uint32_t idx1 = (idx0 + 1u) & lightnessTableMask;
     int32_t frac = static_cast<int32_t>(scaledPhase & interpFracMask);
 
     int32_t l0 = static_cast<int32_t>(lightnessTable.entries[idx0]);
@@ -216,10 +216,11 @@ void LEDManager::updateBreathing() {
 
 void LEDManager::applyOutputs(uint32_t lightness) {
   uint32_t packed = static_cast<uint32_t>(atomic_get(&packedColor));
-  uint8_t baseR = static_cast<uint8_t>((packed >> 16) & 0xFFU);
-  uint8_t baseG = static_cast<uint8_t>((packed >> 8) & 0xFFU);
-  uint8_t baseB = static_cast<uint8_t>(packed & 0xFFU);
+  uint8_t baseR = static_cast<uint8_t>((packed >> 16) & 0xFFu);
+  uint8_t baseG = static_cast<uint8_t>((packed >> 8) & 0xFFu);
+  uint8_t baseB = static_cast<uint8_t>(packed & 0xFFu);
 
+  lightness = lightness / 4;
   setChannelDuty(redPWM, baseR, lightness);
   setChannelDuty(greenPWM, baseG, lightness);
   setChannelDuty(bluePWM, baseB, lightness);
@@ -230,8 +231,8 @@ void LEDManager::setChannelDuty(const struct pwm_dt_spec& spec, uint8_t channelV
     return;
   }
 
-  uint64_t pulseNs = (static_cast<uint64_t>(channelValue) * lightness * spec.period) / maxDutyProduct;
-  pwm_set_pulse_dt(&spec, static_cast<uint32_t>(pulseNs));
+  uint64_t pulseNS = (static_cast<uint64_t>(channelValue) * lightness * spec.period) / maxDutyProduct;
+  pwm_set_pulse_dt(&spec, static_cast<uint32_t>(pulseNS));
 }
 
 } // namespace nexrx
