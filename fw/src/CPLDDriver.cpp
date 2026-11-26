@@ -10,10 +10,10 @@ namespace nexrx {
 
 namespace {
 
-const struct gpio_dt_spec resetGpio = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld0), reset_gpios, {0});
-const struct gpio_dt_spec doneGpio = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld0), done_gpios, {0});
-const struct gpio_dt_spec nss0Gpio = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld0), nss_gpios, {0});
-const struct gpio_dt_spec nss1Gpio = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld1), nss_gpios, {0});
+const struct gpio_dt_spec cresetGPIO = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld0), reset_gpios, {0});
+const struct gpio_dt_spec doneGPIO = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld0), done_gpios, {0});
+const struct gpio_dt_spec nss0GPIO = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld0), nss_gpios, {0});
+const struct gpio_dt_spec nss1GPIO = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(cpld1), nss_gpios, {0});
 
 } // namespace
 
@@ -24,9 +24,6 @@ const struct device* CPLDDriver::getSPIDevice() {
 
 int CPLDDriver::writeRegister(uint8_t addr, uint32_t data, int cpldIndex) {
   const struct device* dev = getSPIDevice();
-  if (!device_is_ready(dev)) {
-    return -ENODEV;
-  }
   // CPLD SPI Protocol: Bit 7 = 1 for Write, Bits [6:0] = Register Address
   uint8_t txBuf[5] = {
     static_cast<uint8_t>((addr & 0x7F) | 0x80),
@@ -39,41 +36,25 @@ int CPLDDriver::writeRegister(uint8_t addr, uint32_t data, int cpldIndex) {
   struct spi_buf_set tx = {.buffers = &buf, .count = 1};
 
   struct spi_config config = {
-    .frequency = 10000000,
+    .frequency = 1700000,	// XXX could be 10MHz later
     .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),
     .slave = 0,
   };
 
-  if (cpldIndex == BOTH_CPLDS) {
-    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 1);
-    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 1);
-    int ret = spi_write(dev, &config, &tx);
-    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 0);
-    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 0);
-    return ret;
-  } else if (cpldIndex == 0) {
-    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 1);
-    int ret = spi_write(dev, &config, &tx);
-    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 0);
-    return ret;
-  } else if (cpldIndex == 1) {
-    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 1);
-    int ret = spi_write(dev, &config, &tx);
-    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 0);
-    return ret;
-  }
-
-  return -EINVAL;
+  if (cpldIndex != 0 && cpldIndex != 1 && cpldIndex != BOTH_CPLDS) return -EINVAL;
+  if (cpldIndex == 0 || cpldIndex == BOTH_CPLDS) gpio_pin_set_dt(&nss0GPIO, 1);
+  if (cpldIndex == 1 || cpldIndex == BOTH_CPLDS) gpio_pin_set_dt(&nss1GPIO, 1);
+  int ret = spi_write(dev, &config, &tx);
+  gpio_pin_set_dt(&nss0GPIO, 0);
+  gpio_pin_set_dt(&nss1GPIO, 0);
+  return ret;
 }
 
 int CPLDDriver::readRegister(uint8_t addr, uint32_t &data, int cpldIndex) {
   const struct device* dev = getSPIDevice();
-  if (!device_is_ready(dev)) {
-    return -ENODEV;
-  }
   // CPLD SPI Protocol: Bit 7 = 0 for Read, Bits [6:0] = Register Address
-  uint8_t txBuf[5] = {static_cast<uint8_t>(addr & 0x7F), 0, 0, 0, 0};
-  uint8_t rxBuf[5] = {0};
+  uint8_t txBuf[] = {static_cast<uint8_t>(addr & 0x7Fu), 0, 0, 0, 0};
+  uint8_t rxBuf[] = {0, 0, 0, 0, 0};
 
   struct spi_buf txStruct = {.buf = txBuf, .len = sizeof(txBuf)};
   struct spi_buf rxStruct = {.buf = rxBuf, .len = sizeof(rxBuf)};
@@ -81,63 +62,46 @@ int CPLDDriver::readRegister(uint8_t addr, uint32_t &data, int cpldIndex) {
   struct spi_buf_set rx = {.buffers = &rxStruct, .count = 1};
 
   struct spi_config config = {
-    .frequency = 10000000,
+    .frequency = 1700000,	// XXX this could be 10MHz
     .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),
     .slave = 0,
   };
 
-  if (cpldIndex == 0) {
-    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 1);
-  } else if (cpldIndex == 1) {
-    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 1);
-  } else {
-    return -EINVAL;
-  }
-
+  auto nssGPIOPtr = cpldIndex == 0 ? &nss0GPIO : &nss1GPIO;
+  gpio_pin_set_dt(nssGPIOPtr, 1);
   int ret = spi_transceive(dev, &config, &tx, &rx);
+  gpio_pin_set_dt(nssGPIOPtr, 0);
 
-  if (cpldIndex == 0) {
-    if (device_is_ready(nss0Gpio.port)) gpio_pin_set_dt(&nss0Gpio, 0);
-  } else if (cpldIndex == 1) {
-    if (device_is_ready(nss1Gpio.port)) gpio_pin_set_dt(&nss1Gpio, 0);
-  }
+  data = (static_cast<uint32_t>(rxBuf[1]) << 24) |
+    (static_cast<uint32_t>(rxBuf[2]) << 16) |
+    (static_cast<uint32_t>(rxBuf[3]) << 8)  |
+    (static_cast<uint32_t>(rxBuf[4]));
 
-  if (ret == 0) {
-    data = (static_cast<uint32_t>(rxBuf[1]) << 24) |
-           (static_cast<uint32_t>(rxBuf[2]) << 16) |
-           (static_cast<uint32_t>(rxBuf[3]) << 8)  |
-           (static_cast<uint32_t>(rxBuf[4]));
-  }
   return ret;
 }
 
 void CPLDDriver::init() {
   LOG_INF("Initializing Dual CPLD Interface...");
-  if (device_is_ready(resetGpio.port)) {
-    gpio_pin_configure_dt(&resetGpio, GPIO_OUTPUT_INACTIVE);
+  if (device_is_ready(cresetGPIO.port)) {
+    gpio_pin_configure_dt(&cresetGPIO, GPIO_OUTPUT_INACTIVE);
   }
-  if (device_is_ready(doneGpio.port)) {
-    gpio_pin_configure_dt(&doneGpio, GPIO_INPUT);
+  if (device_is_ready(doneGPIO.port)) {
+    gpio_pin_configure_dt(&doneGPIO, GPIO_INPUT);
   }
-  if (device_is_ready(nss0Gpio.port)) {
-    gpio_pin_configure_dt(&nss0Gpio, GPIO_OUTPUT_INACTIVE);
+  if (device_is_ready(nss0GPIO.port)) {
+    gpio_pin_configure_dt(&nss0GPIO, GPIO_OUTPUT_INACTIVE);
   }
-  if (device_is_ready(nss1Gpio.port)) {
-    gpio_pin_configure_dt(&nss1Gpio, GPIO_OUTPUT_INACTIVE);
+  if (device_is_ready(nss1GPIO.port)) {
+    gpio_pin_configure_dt(&nss1GPIO, GPIO_OUTPUT_INACTIVE);
   }
 
-  if (isConfigured()) {
-    LOG_INF("CPLD already configured, validating signatures...");
-    readBothSignatures();
-  } else {
-    LOG_INF("CPLDs unconfigured. Programming default embedded bitstream...");
-    programDefaultBitstream();
-  }
+  LOG_INF("Programming default embedded bitstream...");
+  programDefaultBitstream();
 }
 
 bool CPLDDriver::isConfigured() {
-  if (device_is_ready(doneGpio.port)) {
-    return (gpio_pin_get_dt(&doneGpio) > 0);
+  if (device_is_ready(doneGPIO.port)) {
+    return (gpio_pin_get_dt(&doneGPIO) > 0);
   }
   return false;
 }
@@ -160,24 +124,28 @@ bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
     return false;
   }
 
-  if (!device_is_ready(resetGpio.port) || !device_is_ready(nss0Gpio.port) || !device_is_ready(nss1Gpio.port)) {
+  if (!device_is_ready(cresetGPIO.port) ||
+      !device_is_ready(nss0GPIO.port) ||
+      !device_is_ready(nss1GPIO.port))
+  {
     LOG_ERR("CPLD Program: CPLD GPIOs not ready");
     return false;
   }
 
-  LOG_INF("CPLD Program: Starting slave SPI configuration (%u bytes)...", static_cast<unsigned int>(length));
+  LOG_INF("CPLD Program: Starting slave SPI configuration (%u bytes)...",
+	  static_cast<unsigned>(length));
 
-  // 1. Enter Configuration Mode: Pulse CRESET low
-  gpio_pin_set_dt(&resetGpio, 1); // Active low asserted
-  gpio_pin_set_dt(&nss0Gpio, 1);  // Hold both NSS low
-  gpio_pin_set_dt(&nss1Gpio, 1);
-  k_busy_wait(500); // 500 us reset pulse
+  // Enter Configuration Mode: Pulse CRESET low
+  gpio_pin_set_dt(&cresetGPIO, 1); // Active low asserted
+  gpio_pin_set_dt(&nss0GPIO, 1);  // Hold both NSS low
+  gpio_pin_set_dt(&nss1GPIO, 1);
+  k_sleep(K_MSEC(1));		// >= 500 us reset pulse
 
-  // 2. Release CRESET while keeping NSS low
-  gpio_pin_set_dt(&resetGpio, 0); // Active low deasserted
-  k_busy_wait(1500); // Wait > 1200 us for internal housekeeping / RAM clear
+  // Release CRESET while keeping NSS low
+  gpio_pin_set_dt(&cresetGPIO, 0); // Active low deasserted
+  k_sleep(K_MSEC(2)); // Wait > 1200 us for internal housekeeping / RAM clear
 
-  // 3. Stream bitstream over SPI3 simultaneously to both CPLDs
+  // Stream bitstream over SPI3 simultaneously to both CPLDs
   struct spi_config config = {
     .frequency = 10000000, // 10 MHz
     .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),
@@ -192,18 +160,18 @@ bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
     return false;
   }
 
-  // 4. Send dummy clocks (16 bytes = 128 clock cycles) while monitoring DONE
+  // Send dummy clocks (16 bytes = 128 clock cycles) while monitoring DONE
   uint8_t dummy[16] = {0};
   struct spi_buf dummyBuf = { .buf = dummy, .len = sizeof(dummy) };
   struct spi_buf_set dummySet = { .buffers = &dummyBuf, .count = 1 };
   spi_write(spiDev, &config, &dummySet);
 
-  // 5. Deassert chip selects high
-  gpio_pin_set_dt(&nss0Gpio, 0);
-  gpio_pin_set_dt(&nss1Gpio, 0);
+  // Deassert chip selects high
+  gpio_pin_set_dt(&nss0GPIO, 0);
+  gpio_pin_set_dt(&nss1GPIO, 0);
   k_sleep(K_MSEC(2));
 
-  // 6. Check DONE pin
+  // Check DONE pin
   bool done = isConfigured();
   if (!done) {
     LOG_ERR("CPLD Program: DONE pin did not assert!");
@@ -212,11 +180,11 @@ bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
 
   LOG_INF("CPLD Program: DONE asserted successfully.");
 
-  // 7. Send dummy clocks with NSS high to transition CPLDs to user mode
+  // Send dummy clocks with NSS high to transition CPLDs to user mode
   spi_write(spiDev, &config, &dummySet);
   k_sleep(K_MSEC(2));
 
-  // 8. Validate user register signatures on both CPLDs
+  // Validate user register signatures on both CPLDs
   return readBothSignatures();
 }
 

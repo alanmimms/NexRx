@@ -11,6 +11,114 @@
 		(comment 1 "Alan Mimms")
 	)
 	(lib_symbols
+		(symbol "Connector:TestPoint_Alt"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint_Alt"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "test point (alternative shape)"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TestPoint_Alt_0_1"
+				(polyline
+					(pts
+						(xy 0 2.54) (xy -0.762 3.302) (xy 0 4.064) (xy 0.762 3.302) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_Alt_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:C"
 			(pin_numbers
 				(hide yes)
@@ -1791,20 +1899,12 @@
 		(uuid "f95d0ba2-98e5-488d-8115-2edf7e2a61aa")
 	)
 	(no_connect
-		(at 78.74 148.59)
-		(uuid "24f7dcbf-00f1-4fc5-982f-6b59731a176d")
-	)
-	(no_connect
 		(at 113.03 121.92)
 		(uuid "4ad72afe-8022-4646-a4c0-78573824971e")
 	)
 	(no_connect
 		(at 123.19 121.92)
 		(uuid "619b2ec8-b8e4-4af3-ab35-2b3c4abd33a5")
-	)
-	(no_connect
-		(at 78.74 151.13)
-		(uuid "6e8b5262-a418-454a-a71e-581051d92cfa")
 	)
 	(no_connect
 		(at 115.57 121.92)
@@ -1886,6 +1986,16 @@
 	)
 	(wire
 		(pts
+			(xy 55.88 151.13) (xy 55.88 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2bbdb904-5456-43a4-95f5-73c3cdbb318d")
+	)
+	(wire
+		(pts
 			(xy 26.67 49.53) (xy 26.67 50.8)
 		)
 		(stroke
@@ -1913,6 +2023,16 @@
 			(type default)
 		)
 		(uuid "35e83c98-9298-489c-9d3e-5e365560c903")
+	)
+	(wire
+		(pts
+			(xy 78.74 151.13) (xy 55.88 151.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "36c6b25b-8412-4f9f-822f-b5e98ff195f2")
 	)
 	(wire
 		(pts
@@ -2133,6 +2253,16 @@
 			(type default)
 		)
 		(uuid "8853efe7-3bb6-4b34-81ec-81020666000d")
+	)
+	(wire
+		(pts
+			(xy 78.74 148.59) (xy 64.77 148.59)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8ab67fef-0ce9-453d-8a4c-0f598194e9ac")
 	)
 	(wire
 		(pts
@@ -2443,6 +2573,16 @@
 			(type default)
 		)
 		(uuid "e38937d9-5cd3-4c99-9c57-5c401b3ccb3f")
+	)
+	(wire
+		(pts
+			(xy 64.77 148.59) (xy 64.77 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e4635a6e-4dd9-429f-b91b-7a61c17fb7b0")
 	)
 	(wire
 		(pts
@@ -4610,6 +4750,77 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint_Alt")
+		(at 55.88 146.05 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "64342583-6372-485c-8d71-20e0cff63bfc")
+		(property "Reference" "TP1001"
+			(at 52.07 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint_Alt"
+			(at 58.42 144.0179 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 60.96 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 60.96 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CPLD test points"
+			(at 55.88 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9ca66976-566c-46c4-bb36-983af189bf06")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
+					(reference "TP1401")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/d4526fc6-bbf8-441d-8ff0-555c73258576"
+					(reference "TP1001")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 92.71 72.39 0)
 		(unit 1)
@@ -5212,6 +5423,78 @@
 				)
 				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/d4526fc6-bbf8-441d-8ff0-555c73258576"
 					(reference "#PWR01015")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint_Alt")
+		(at 64.77 146.05 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7e020665-0b62-4c1c-b1f8-8bc151b45ab2")
+		(property "Reference" "TP1002"
+			(at 60.706 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "TestPoint_Alt"
+			(at 67.31 144.0179 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 59.69 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 59.69 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CPLD test points"
+			(at 64.77 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ffa40491-33d7-4d19-9497-4c46f3ff790a")
+		)
+		(instances
+			(project "NexRx"
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/18e3a9cf-6c9a-40ce-8c7f-a4f543fd7641"
+					(reference "TP1402")
+					(unit 1)
+				)
+				(path "/8ae46c04-d01a-4756-8774-512b694bfaff/d4526fc6-bbf8-441d-8ff0-555c73258576"
+					(reference "TP1002")
 					(unit 1)
 				)
 			)

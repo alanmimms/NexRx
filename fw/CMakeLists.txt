@@ -25,7 +25,7 @@ target_compile_features(app PRIVATE cxx_std_20)
 find_package(Python3 REQUIRED)
 
 set(fontScript ${CMAKE_CURRENT_SOURCE_DIR}/../tools/ttf-to-cxx.py)
-target_include_directories(app PRIVATE src)
+target_include_directories(app PRIVATE src ../CPLD/build/gen)
 zephyr_include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 function(genFont ttf points fontName)

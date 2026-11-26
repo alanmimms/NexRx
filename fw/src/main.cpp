@@ -108,9 +108,15 @@ int main() {
   }
 
   while (true) {
+    // XXX temporarily just keep reading signature so I can look with scope.
+    (void) nexrx::CPLDDriver::readSignature(0);
+    uint32_t sig = 0;
+    (void) nexrx::CPLDDriver::readRegister(CPLDAddr::aCPLDSig, sig, 0);
+    LOG_INF("CPLD0 sig=0x%08X", static_cast<unsigned>(sig));
+
     /* Process incoming control messages */
     nexrx::ControlHandler::instance().process(controlTransport);
-    k_sleep(K_MSEC(10));
+    k_sleep(K_MSEC(10000));
   }
 
   return 0;

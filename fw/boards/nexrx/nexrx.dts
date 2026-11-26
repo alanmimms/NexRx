@@ -354,6 +354,12 @@ factory_console: &usart1 {			/* FACTORY UART test pads */
 	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>, <&gpioa 15 GPIO_ACTIVE_LOW>;
 };
 
+&spi3_miso_pc11 {
+	/delete-property/ bias-pull-down;
+	bias-pull-up;		/* XXX TEMPORARY HACK */
+};
+
+
 &spi2 {				/* Display */
 	status = "okay";
 	pinctrl-0 = <&spi2_sck_pa9 &spi2_mosi_pc1>;

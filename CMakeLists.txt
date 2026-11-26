@@ -111,9 +111,9 @@ endif()
 # Top-level meta target
 add_custom_target(all_nexrx ALL
   DEPENDS nexrxApp nexrxCpld nexrxTwin nexrxFw
+  COMMAND ${CMAKE_COMMAND} -E create_symlink "CPLD/build/CPLD.bin" "${CMAKE_CURRENT_BINARY_DIR}/CPLD.bin"
   COMMAND ${CMAKE_COMMAND} -E create_symlink "fw/build/zephyr/zephyr.bin" "${CMAKE_CURRENT_BINARY_DIR}/zephyr.bin"
   COMMAND ${CMAKE_COMMAND} -E create_symlink "fw/build/zephyr/zephyr.elf" "${CMAKE_CURRENT_BINARY_DIR}/zephyr.elf"
-  COMMAND ${CMAKE_COMMAND} -E create_symlink "CPLD/build/CPLD.bin" "${CMAKE_CURRENT_BINARY_DIR}/CPLD.bin"
   COMMAND ${CMAKE_COMMAND} -E create_symlink "app/build/nexrx-app" "${CMAKE_CURRENT_BINARY_DIR}/nexrx-app"
   COMMAND ${CMAKE_COMMAND} -E create_symlink "twin/build/nexrx-signalgen" "${CMAKE_CURRENT_BINARY_DIR}/nexrx-signalgen"
   COMMENT "Created convenience symlinks in ${CMAKE_CURRENT_BINARY_DIR} to build targets"

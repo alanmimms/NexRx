@@ -7000,7 +7000,6 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "c4a40012-e2a1-46b6-8281-844ee50c3685")
 		(property "Reference" "#PWR01211"
 			(at 72.39 92.71 0)
@@ -7012,7 +7011,7 @@
 			)
 		)
 		(property "Value" "+3.3VCPLDIO"
-			(at 72.39 83.82 0)
+			(at 68.072 84.836 0)
 			(effects
 				(font
 					(size 1.27 1.27)
