@@ -166,17 +166,17 @@ bool CPLDDriver::programBitstream(const uint8_t* data, size_t length) {
   struct spi_buf_set dummySet = { .buffers = &dummyBuf, .count = 1 };
   spi_write(spiDev, &config, &dummySet);
 
-  // Deassert chip selects high
-  gpio_pin_set_dt(&nss0GPIO, 0);
-  gpio_pin_set_dt(&nss1GPIO, 0);
-  k_sleep(K_MSEC(2));
-
   // Check DONE pin
   bool done = isConfigured();
   if (!done) {
     LOG_ERR("CPLD Program: DONE pin did not assert!");
     return false;
   }
+
+  // Deassert chip selects high
+  gpio_pin_set_dt(&nss0GPIO, 0);
+  gpio_pin_set_dt(&nss1GPIO, 0);
+  k_sleep(K_MSEC(2));
 
   LOG_INF("CPLD Program: DONE asserted successfully.");
 
