@@ -15,7 +15,7 @@ regs = RegisterSet("CPLD", regWidth=32)
 @regs.register(0x00, "Main control and status")
 class Control:
   octMode:      Bit(1, "Generate 8 phases if true, 4 phases otherwise")
-  counterThaw:  Bit(0, "Unthaw to start on next 1pps & clock")
+  counterThaw:  Bit(0, "Unfreeze to start on next 1pps & clock")
   counterState: Enum("waiting", [
                         ("waiting",   "Waiting for 1PPS high to start counting"),
                         ("counting1", "Counting TCXO pulses while 1PPS high"),
