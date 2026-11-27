@@ -1684,7 +1684,7 @@
 		(uuid "fd05f838-55a8-4e3f-a968-549605ebe740")
 	)
 	(no_connect
-		(at 132.08 87.63)
+		(at 132.08 92.71)
 		(uuid "15f44246-76ec-49ac-93a3-87eb5b218cc8")
 	)
 	(no_connect
@@ -1893,7 +1893,7 @@
 	)
 	(wire
 		(pts
-			(xy 132.08 92.71) (xy 133.35 92.71)
+			(xy 132.08 87.63) (xy 133.35 87.63)
 		)
 		(stroke
 			(width 0)
@@ -2507,7 +2507,7 @@
 	)
 	(hierarchical_label "osd1Clk"
 		(shape output)
-		(at 133.35 92.71 0)
+		(at 133.35 87.63 0)
 		(effects
 			(font
 				(size 1.27 1.27)
